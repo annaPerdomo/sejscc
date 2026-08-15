@@ -1,6 +1,11 @@
-import { signIn } from "@/auth";
+import { redirect } from "next/navigation";
+import { auth, signIn } from "@/auth";
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const session = await auth();
+  if (session?.user) {
+    redirect("/admin");
+  }
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#faf6ef] px-4">
       <div className="w-full max-w-sm rounded-xl border border-[#e5dccb] bg-white p-8 shadow-sm">
