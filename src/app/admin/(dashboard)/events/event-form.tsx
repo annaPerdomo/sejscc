@@ -1,0 +1,373 @@
+"use client";
+
+import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { upload } from "@vercel/blob/client";
+import { pdfFirstPageToPng } from "@/lib/pdf-preview";
+import { createEvent, updateEvent, type EventInput } from "./actions";
+
+type ExistingEvent = {
+  id: string;
+  title: string;
+  description: string | null;
+  flyerUrl: string | null;
+  flyerDownloadUrl: string | null;
+  startAt: Date | null;
+  endAt: Date | null;
+  location: string | null;
+  status: string;
+};
+
+const DEFAULT_LOCATION = "14615 S. Gridley Rd., Norwalk, CA 90650";
+
+function StepBadge({ n }: { n: number }) {
+  return (
+    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-ink text-sm font-semibold text-white">
+      {n}
+    </span>
+  );
+}
+
+// Stored times are LA wall-clock behind a fake UTC marker, so read them back
+// with the UTC getters to prefill the form.
+function toDateInput(d: Date | null) {
+  return d ? d.toISOString().slice(0, 10) : "";
+}
+function toTimeInput(d: Date | null) {
+  return d ? d.toISOString().slice(11, 16) : "";
+}
+
+export function EventForm({ event }: { event?: ExistingEvent }) {
+  const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [title, setTitle] = useState(event?.title ?? "");
+  const [description, setDescription] = useState(event?.description ?? "");
+  const [date, setDate] = useState(toDateInput(event?.startAt ?? null));
+  const [startTime, setStartTime] = useState(toTimeInput(event?.startAt ?? null));
+  const [endTime, setEndTime] = useState(toTimeInput(event?.endAt ?? null));
+  const [location, setLocation] = useState(event?.location ?? DEFAULT_LOCATION);
+
+  const [flyerFile, setFlyerFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(
+    event?.flyerUrl ?? null
+  );
+
+  const [busy, setBusy] = useState<"draft" | "published" | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function onPickFlyer(file: File | undefined) {
+    setError(null);
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      setError("That file is larger than 10MB. Try exporting a smaller one.");
+      return;
+    }
+    setFlyerFile(file);
+    try {
+      if (file.type === "application/pdf") {
+        const png = await pdfFirstPageToPng(file);
+        setPreviewUrl(URL.createObjectURL(png));
+      } else {
+        setPreviewUrl(URL.createObjectURL(file));
+      }
+    } catch {
+      setError(
+        "We couldn't read that file. Please try a PDF, JPG, or PNG flyer."
+      );
+      setFlyerFile(null);
+    }
+  }
+
+  async function uploadFlyer(): Promise<{
+    flyerUrl: string | null;
+    flyerDownloadUrl: string | null;
+  }> {
+    if (!flyerFile) {
+      return {
+        flyerUrl: event?.flyerUrl ?? null,
+        flyerDownloadUrl: event?.flyerDownloadUrl ?? null,
+      };
+    }
+    const opts = { access: "public", handleUploadUrl: "/api/upload" } as const;
+
+    if (flyerFile.type === "application/pdf") {
+      const png = await pdfFirstPageToPng(flyerFile);
+      const [image, original] = await Promise.all([
+        upload("flyers/flyer.png", png, opts),
+        upload(`flyers/${flyerFile.name}`, flyerFile, opts),
+      ]);
+      return { flyerUrl: image.url, flyerDownloadUrl: original.url };
+    }
+
+    const image = await upload(`flyers/${flyerFile.name}`, flyerFile, opts);
+    return { flyerUrl: image.url, flyerDownloadUrl: image.url };
+  }
+
+  async function save(status: "draft" | "published") {
+    setError(null);
+    if (!title.trim()) {
+      setError("Please enter an event title.");
+      return;
+    }
+    if (status === "published" && !previewUrl) {
+      setError("Please upload a flyer before publishing.");
+      return;
+    }
+    setBusy(status);
+    try {
+      const flyer = await uploadFlyer();
+      const input: EventInput = {
+        title,
+        description,
+        date,
+        startTime,
+        endTime,
+        location,
+        status,
+        ...flyer,
+      };
+      if (event) {
+        await updateEvent(event.id, input);
+      } else {
+        await createEvent(input);
+      }
+      router.push("/admin");
+      router.refresh();
+    } catch (e) {
+      setError(
+        e instanceof Error && e.message
+          ? e.message
+          : "Something went wrong saving the event. Please try again."
+      );
+      setBusy(null);
+    }
+  }
+
+  const dateLabel = date
+    ? new Date(`${date}T00:00:00`).toLocaleDateString("en-US", {
+        weekday: "short",
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      })
+    : null;
+  const timeLabel = startTime
+    ? [startTime, endTime]
+        .filter(Boolean)
+        .map((t) =>
+          new Date(`2000-01-01T${t}:00`).toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+          })
+        )
+        .join(" – ")
+    : null;
+
+  return (
+    <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
+      <div className="space-y-6">
+        {/* 1. Flyer */}
+        <section className="rounded-xl border border-sand bg-white p-6">
+          <div className="flex items-center gap-3">
+            <StepBadge n={1} />
+            <h2 className="font-semibold text-ink">
+              Flyer{" "}
+              <span className="text-sm font-normal text-stone">
+                (required to publish)
+              </span>
+            </h2>
+          </div>
+          <div className="mt-4 flex flex-wrap items-start gap-5">
+            {previewUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={previewUrl}
+                alt="Flyer preview"
+                className="w-40 rounded-lg border border-sand shadow-sm"
+              />
+            )}
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="flex min-h-40 w-40 flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-sand p-4 text-center text-sm text-stone hover:border-vermilion hover:text-vermilion"
+            >
+              <span className="text-2xl">↑</span>
+              {previewUrl ? "Replace flyer" : "Upload flyer"}
+              <span className="text-xs">PDF, JPG, or PNG · up to 10MB</span>
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="application/pdf,image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={(e) => onPickFlyer(e.target.files?.[0])}
+            />
+          </div>
+        </section>
+
+        {/* 2. Title */}
+        <section className="rounded-xl border border-sand bg-white p-6">
+          <div className="flex items-center gap-3">
+            <StepBadge n={2} />
+            <h2 className="font-semibold text-ink">
+              Event Title{" "}
+              <span className="text-sm font-normal text-stone">(required)</span>
+            </h2>
+          </div>
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            maxLength={150}
+            placeholder="Enter event title…"
+            className="mt-4 w-full rounded-lg border border-sand px-4 py-3 text-ink outline-none focus:border-vermilion"
+          />
+          <p className="mt-1 text-right text-xs text-stone">
+            {title.length} / 150 characters
+          </p>
+        </section>
+
+        {/* 3. Date & location */}
+        <section className="rounded-xl border border-sand bg-white p-6">
+          <div className="flex items-center gap-3">
+            <StepBadge n={3} />
+            <h2 className="font-semibold text-ink">
+              Date &amp; Location{" "}
+              <span className="text-sm font-normal text-stone">(optional)</span>
+            </h2>
+          </div>
+          <div className="mt-4 grid gap-4 sm:grid-cols-3">
+            <label className="block text-sm font-medium text-stone">
+              Date
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-sand px-3 py-2.5 text-ink outline-none focus:border-vermilion"
+              />
+            </label>
+            <label className="block text-sm font-medium text-stone">
+              Starts
+              <input
+                type="time"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-sand px-3 py-2.5 text-ink outline-none focus:border-vermilion"
+              />
+            </label>
+            <label className="block text-sm font-medium text-stone">
+              Ends
+              <input
+                type="time"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-sand px-3 py-2.5 text-ink outline-none focus:border-vermilion"
+              />
+            </label>
+          </div>
+          <label className="mt-4 block text-sm font-medium text-stone">
+            Location
+            <input
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-sand px-3 py-2.5 text-ink outline-none focus:border-vermilion"
+            />
+          </label>
+        </section>
+
+        {/* 4. Description */}
+        <section className="rounded-xl border border-sand bg-white p-6">
+          <div className="flex items-center gap-3">
+            <StepBadge n={4} />
+            <h2 className="font-semibold text-ink">
+              Description{" "}
+              <span className="text-sm font-normal text-stone">(optional)</span>
+            </h2>
+          </div>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            maxLength={1000}
+            rows={8}
+            placeholder="Tell people about your event…"
+            className="mt-4 w-full rounded-lg border border-sand px-4 py-3 text-ink outline-none focus:border-vermilion"
+          />
+          <p className="mt-1 text-right text-xs text-stone">
+            {description.length} / 1000 characters
+          </p>
+        </section>
+      </div>
+
+      {/* Live preview */}
+      <aside className="lg:sticky lg:top-24 lg:self-start">
+        <p className="text-sm font-semibold text-ink">Live Preview</p>
+        <p className="mt-1 text-xs text-stone">
+          This is how your event will appear on the website.
+        </p>
+        <div className="mt-3 overflow-hidden rounded-xl bg-ink shadow-lg">
+          <div className="aspect-[17/22] bg-cream-deep">
+            {previewUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={previewUrl}
+                alt=""
+                className="h-full w-full object-cover object-top"
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center font-serif text-4xl text-sand">
+                桜
+              </div>
+            )}
+          </div>
+          <div className="p-5 text-white">
+            <p className="font-serif text-xl leading-snug">
+              {title || "Your event title"}
+            </p>
+            <div className="mt-3 space-y-1 text-sm text-white/80">
+              {dateLabel && <p>{dateLabel}</p>}
+              {timeLabel && <p>{timeLabel}</p>}
+              {location && <p>{location}</p>}
+            </div>
+            <div className="mt-4 rounded-md bg-vermilion py-2.5 text-center text-sm font-semibold">
+              Learn More
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      {/* Action bar */}
+      <div className="lg:col-span-2">
+        {error && (
+          <p className="mb-4 rounded-lg border border-vermilion/40 bg-vermilion/5 px-4 py-3 text-sm text-vermilion-deep">
+            {error}
+          </p>
+        )}
+        <div className="flex flex-wrap items-center justify-end gap-3 border-t border-sand pt-5">
+          <button
+            type="button"
+            onClick={() => router.push("/admin")}
+            className="rounded-lg border border-sand bg-white px-5 py-3 font-medium text-ink hover:bg-cream-deep"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            disabled={busy !== null}
+            onClick={() => save("draft")}
+            className="rounded-lg border border-sand bg-white px-5 py-3 font-medium text-ink hover:bg-cream-deep disabled:opacity-50"
+          >
+            {busy === "draft" ? "Saving…" : "Save Draft"}
+          </button>
+          <button
+            type="button"
+            disabled={busy !== null}
+            onClick={() => save("published")}
+            className="rounded-lg bg-vermilion px-6 py-3 font-semibold text-white hover:bg-vermilion-deep disabled:opacity-50"
+          >
+            {busy === "published" ? "Publishing…" : "Publish Event"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
