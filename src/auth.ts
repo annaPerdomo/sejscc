@@ -22,7 +22,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
   providers: [
     Resend({
-      from: process.env.AUTH_EMAIL_FROM ?? "SEJSCC Admin <admin@sejscc.org>",
+      from: process.env.AUTH_EMAIL_FROM || "SEJSCC Admin <onboarding@resend.dev>",
     }),
   ],
   pages: {
