@@ -2,8 +2,7 @@ import { NextResponse } from "next/server";
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { auth } from "@/auth";
 
-// Issues short-lived tokens so signed-in board members can upload flyers
-// directly from the browser to Vercel Blob (bypasses serverless body limits).
+// Flyers go browser → Blob directly to stay under the serverless body limit.
 export async function POST(request: Request) {
   const body = (await request.json()) as HandleUploadBody;
 

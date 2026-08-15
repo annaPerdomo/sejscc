@@ -1,5 +1,4 @@
-// Client-only: renders page 1 of a PDF flyer to a PNG so the website can
-// display it as an image while the original PDF stays downloadable.
+// Client-only. Feeds events.flyerUrl; the PDF itself stays in flyerDownloadUrl.
 export async function pdfFirstPageToPng(file: File): Promise<Blob> {
   const pdfjs = await import("pdfjs-dist");
   pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
@@ -8,8 +7,6 @@ export async function pdfFirstPageToPng(file: File): Promise<Blob> {
     .promise;
   const page = await doc.getPage(1);
 
-  // Scale so the longest edge is ~1600px — sharp enough for the site,
-  // small enough to upload quickly.
   const base = page.getViewport({ scale: 1 });
   const scale = 1600 / Math.max(base.width, base.height);
   const viewport = page.getViewport({ scale });

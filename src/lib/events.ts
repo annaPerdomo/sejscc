@@ -5,9 +5,8 @@ import { events, groups } from "@/db/schema";
 export type Event = typeof events.$inferSelect;
 export type Group = typeof groups.$inferSelect;
 
-// Public queries fail soft (empty results) so static generation succeeds
-// before the database is provisioned and a transient DB outage degrades the
-// site instead of crashing it.
+// Swallowing is deliberate: static generation must succeed before the database
+// is provisioned, and an outage should degrade the site rather than crash it.
 async function failSoft<T>(query: Promise<T>, fallback: T): Promise<T> {
   try {
     return await query;
@@ -17,7 +16,7 @@ async function failSoft<T>(query: Promise<T>, fallback: T): Promise<T> {
   }
 }
 
-/** Now, in the "wall-clock stored as UTC" convention used by event times. */
+/** Now, in the wall-clock-stored-as-UTC convention (see src/lib/format.ts). */
 export function wallClockNow(): Date {
   const la = new Date().toLocaleString("en-US", {
     timeZone: "America/Los_Angeles",

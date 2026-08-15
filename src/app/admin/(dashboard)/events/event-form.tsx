@@ -28,8 +28,7 @@ function StepBadge({ n }: { n: number }) {
   );
 }
 
-// Stored times are LA wall-clock behind a fake UTC marker, so read them back
-// with the UTC getters to prefill the form.
+// UTC getters, not local ones — see the storage convention in src/lib/format.ts.
 function toDateInput(d: Date | null) {
   return d ? d.toISOString().slice(0, 10) : "";
 }
@@ -167,7 +166,6 @@ export function EventForm({ event }: { event?: ExistingEvent }) {
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
       <div className="space-y-6">
-        {/* 1. Flyer */}
         <section className="rounded-xl border border-sand bg-white p-6">
           <div className="flex items-center gap-3">
             <StepBadge n={1} />
@@ -206,7 +204,6 @@ export function EventForm({ event }: { event?: ExistingEvent }) {
           </div>
         </section>
 
-        {/* 2. Title */}
         <section className="rounded-xl border border-sand bg-white p-6">
           <div className="flex items-center gap-3">
             <StepBadge n={2} />
@@ -227,7 +224,6 @@ export function EventForm({ event }: { event?: ExistingEvent }) {
           </p>
         </section>
 
-        {/* 3. Date & location */}
         <section className="rounded-xl border border-sand bg-white p-6">
           <div className="flex items-center gap-3">
             <StepBadge n={3} />
@@ -275,7 +271,6 @@ export function EventForm({ event }: { event?: ExistingEvent }) {
           </label>
         </section>
 
-        {/* 4. Description */}
         <section className="rounded-xl border border-sand bg-white p-6">
           <div className="flex items-center gap-3">
             <StepBadge n={4} />
@@ -298,7 +293,6 @@ export function EventForm({ event }: { event?: ExistingEvent }) {
         </section>
       </div>
 
-      {/* Live preview */}
       <aside className="lg:sticky lg:top-24 lg:self-start">
         <p className="text-sm font-semibold text-ink">Live Preview</p>
         <p className="mt-1 text-xs text-stone">
@@ -335,7 +329,6 @@ export function EventForm({ event }: { event?: ExistingEvent }) {
         </div>
       </aside>
 
-      {/* Action bar */}
       <div className="lg:col-span-2">
         {error && (
           <p className="mb-4 rounded-lg border border-vermilion/40 bg-vermilion/5 px-4 py-3 text-sm text-vermilion-deep">

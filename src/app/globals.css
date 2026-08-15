@@ -1,7 +1,6 @@
 @import "tailwindcss";
 
 @theme {
-  /* SEJSCC palette: warm cream ground, deep navy ink, vermilion accent */
   --color-cream: #faf6ef;
   --color-cream-deep: #f3ecdf;
   --color-ink: #1f2a44;

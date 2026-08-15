@@ -18,7 +18,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     sessionsTable: sessions,
     verificationTokensTable: verificationTokens,
   }),
-  // JWT sessions so the middleware can check auth without a database round-trip.
   session: { strategy: "jwt" },
   providers: [
     Resend({
@@ -31,8 +30,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   callbacks: {
     async signIn({ user, email }) {
-      // Runs before the magic link is sent: only allowlisted board members
-      // (or already-registered users) get an email at all.
+      // Runs before the magic link is sent, so a non-allowlisted address
+      // never receives an email at all.
       if (email?.verificationRequest) {
         const address = user.email?.toLowerCase();
         if (!address) return false;

@@ -13,9 +13,9 @@ export type EventInput = {
   description: string;
   flyerUrl: string | null;
   flyerDownloadUrl: string | null;
-  date: string; // "2025-07-26" (may be empty)
-  startTime: string; // "16:00" (may be empty)
-  endTime: string; // "21:00" (may be empty)
+  date: string; // "2025-07-26", or "" for undated
+  startTime: string; // "16:00", or ""
+  endTime: string; // "21:00", or ""
   location: string;
   status: "draft" | "published";
 };
@@ -26,8 +26,7 @@ async function requireUser() {
   return session.user;
 }
 
-// Event times are stored as LA wall-clock with a fake UTC marker; see
-// src/lib/format.ts for the matching read side.
+// The fake UTC marker is the storage convention; see src/lib/format.ts.
 function toWallClock(date: string, time: string): Date | null {
   if (!date) return null;
   return new Date(`${date}T${time || "00:00"}:00Z`);

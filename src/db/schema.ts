@@ -8,10 +8,7 @@ import {
 } from "drizzle-orm/pg-core";
 import type { AdapterAccountType } from "next-auth/adapters";
 
-// ---------------------------------------------------------------------------
-// Auth.js tables (users, accounts, sessions, verification tokens)
-// ---------------------------------------------------------------------------
-
+// The four tables below are shaped by @auth/drizzle-adapter, not by us.
 export const users = pgTable("user", {
   id: text("id")
     .primaryKey()
@@ -20,7 +17,6 @@ export const users = pgTable("user", {
   email: text("email").unique().notNull(),
   emailVerified: timestamp("email_verified", { mode: "date" }),
   image: text("image"),
-  // "admin" can manage users and site settings; "editor" can manage events.
   role: text("role", { enum: ["admin", "editor"] })
     .notNull()
     .default("editor"),
@@ -66,16 +62,11 @@ export const verificationTokens = pgTable(
   (vt) => [primaryKey({ columns: [vt.identifier, vt.token] })]
 );
 
-// Board members must be on this list before a magic link will be sent.
-// Admins manage it from the admin UI so onboarding never requires a deploy.
+// Gates magic links: see the signIn callback in src/auth.ts.
 export const allowedEmails = pgTable("allowed_email", {
   email: text("email").primaryKey(),
   addedAt: timestamp("added_at", { mode: "date" }).notNull().defaultNow(),
 });
-
-// ---------------------------------------------------------------------------
-// Content
-// ---------------------------------------------------------------------------
 
 export const events = pgTable("event", {
   id: text("id")
@@ -84,10 +75,8 @@ export const events = pgTable("event", {
   slug: text("slug").unique().notNull(),
   title: text("title").notNull(),
   description: text("description"),
-  // Flyer image shown on the site (uploaded to Vercel Blob).
-  flyerUrl: text("flyer_url"),
-  // Original printable file (PDF or full-res image) for download.
-  flyerDownloadUrl: text("flyer_download_url"),
+  flyerUrl: text("flyer_url"), // image rendered on the site
+  flyerDownloadUrl: text("flyer_download_url"), // original printable PDF/image
   startAt: timestamp("start_at", { mode: "date", withTimezone: true }),
   endAt: timestamp("end_at", { mode: "date", withTimezone: true }),
   location: text("location").default(
@@ -104,7 +93,7 @@ export const events = pgTable("event", {
     .$onUpdate(() => new Date()),
 });
 
-// Groups that use the center: judo, basketball, Japanese school, etc.
+// Community organizations that use the center (judo, basketball, the gakuen).
 export const groups = pgTable("group", {
   id: text("id")
     .primaryKey()
