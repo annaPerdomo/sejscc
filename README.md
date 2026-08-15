@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SEJSCC Website
 
-## Getting Started
+New website for the Southeast Japanese School & Community Center
+(14615 S. Gridley Rd., Norwalk, CA). Public site plus a simple admin where
+board members publish events and flyers.
 
-First, run the development server:
+## Stack
+
+- **Next.js** (App Router) hosted on **Vercel** — public pages are statically
+  generated and revalidated when content changes
+- **Neon Postgres** (via Drizzle ORM) — events, groups, users
+- **Vercel Blob** — flyer uploads (web image + printable original)
+- **Auth.js magic links** (emails via Resend) — passwordless board sign-in,
+  gated by an allowlist table
+- **Zeffy** embeds for donations/payments (0% fees for nonprofits), plus Zelle
+  instructions
+
+## Local development
 
 ```bash
+npm install
+cp .env.example .env.local   # fill in values (see comments in the file)
+npx drizzle-kit push          # sync schema to the database
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## First-time provisioning (production)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Create a GitHub repo and a Vercel project pointing at it.
+2. In the Vercel dashboard: add **Neon** (Storage → Marketplace) and a
+   **Blob** store — both populate env vars automatically.
+3. Create a [Resend](https://resend.com) account, verify the sending domain,
+   and set `AUTH_RESEND_KEY` + `AUTH_EMAIL_FROM`.
+4. Set `AUTH_SECRET` (`npx auth secret`).
+5. Run `npx drizzle-kit push` against the production `DATABASE_URL`.
+6. Insert the first admin: add your email to `allowed_email`, sign in at
+   `/admin/login`, then set your row in `user` to `role = 'admin'`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Structure
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/
+├── app/
+│   ├── page.tsx              # public site (design in progress)
+│   ├── admin/
+│   │   ├── login/            # magic-link sign-in (public)
+│   │   └── (dashboard)/      # auth-guarded admin pages
+│   └── api/auth/[...nextauth]/
+├── auth.ts                   # Auth.js config (allowlist check lives here)
+└── db/
+    ├── schema.ts             # Drizzle schema: auth tables, events, groups
+    └── index.ts
+```
