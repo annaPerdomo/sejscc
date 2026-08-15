@@ -1,26 +1,38 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { getActiveGroups } from "@/lib/events";
+import { getDictionary, getDictionaryFor } from "@/lib/dictionaries";
+import { hasLocale, localePath } from "@/lib/i18n";
 
 export const revalidate = 300;
 
-export const metadata: Metadata = {
-  title: "Groups & Programs",
-  description:
-    "Japanese school, judo, basketball, and cultural groups that meet at the Southeast Japanese School & Community Center.",
-};
+type Props = { params: Promise<{ lang: string }> };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { lang } = await params;
+  if (!hasLocale(lang)) return {};
+  const dict = await getDictionaryFor(lang);
+  return {
+    title: dict.groups.metaTitle,
+    description: dict.groups.metaDescription,
+    alternates: {
+      canonical: localePath(lang, "/groups"),
+      languages: {
+        en: "/groups",
+        ja: "/ja/groups",
+        "x-default": "/groups",
+      },
+    },
+  };
+}
 
 export default async function GroupsPage() {
-  const groups = await getActiveGroups();
+  const [dict, groups] = await Promise.all([getDictionary(), getActiveGroups()]);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
-      <h1 className="font-serif text-4xl text-ink">Groups &amp; Programs</h1>
-      <p className="mt-3 max-w-2xl text-stone">
-        The center is shared by independent groups and programs — from Japanese
-        language school to judo and basketball. Reach out to a group directly
-        to join, or contact the center to start a new one.
-      </p>
+      <h1 className="font-serif text-4xl text-ink">{dict.groups.title}</h1>
+      <p className="mt-3 max-w-2xl text-stone">{dict.groups.lede}</p>
 
       {groups.length > 0 ? (
         <div className="mt-10 grid gap-6 sm:grid-cols-2">
@@ -60,7 +72,7 @@ export default async function GroupsPage() {
                       rel="noopener noreferrer"
                       className="text-vermilion hover:text-vermilion-deep"
                     >
-                      Website →
+                      {dict.groups.website}
                     </a>
                   )}
                   {group.contactEmail && (
@@ -78,25 +90,21 @@ export default async function GroupsPage() {
         </div>
       ) : (
         <p className="mt-10 rounded-xl border border-sand bg-white p-8 text-stone">
-          Group listings are coming soon. In the meantime, call the center at
-          (562) 863-5996 to learn about Japanese school, judo, basketball, and
-          other programs.
+          {dict.groups.empty}
         </p>
       )}
 
       <div className="mt-12 rounded-xl border border-sand bg-cream-deep p-8">
-        <h2 className="font-serif text-2xl text-ink">
-          Want to use the center?
-        </h2>
+        <h2 className="font-serif text-2xl text-ink">{dict.groups.useTitle}</h2>
         <p className="mt-2 max-w-2xl text-stone">
-          New clubs and classes are welcome. Contact the center at{" "}
+          {dict.groups.useBefore}
           <a
             href="mailto:info@sejscc.org"
             className="font-semibold text-vermilion hover:text-vermilion-deep"
           >
             info@sejscc.org
-          </a>{" "}
-          or (562) 863-5996 to ask about facilities and scheduling.
+          </a>
+          {dict.groups.useAfter}
         </p>
       </div>
     </div>

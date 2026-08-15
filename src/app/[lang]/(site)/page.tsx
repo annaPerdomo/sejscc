@@ -1,14 +1,19 @@
 import Link from "next/link";
 import { EventCard } from "@/components/event-card";
 import { getActiveGroups, getUpcomingEvents } from "@/lib/events";
+import { getDictionary, getLocale } from "@/lib/dictionaries";
+import { localePath } from "@/lib/i18n";
 
 export const revalidate = 300;
 
 export default async function HomePage() {
-  const [upcoming, groups] = await Promise.all([
+  const [lang, dict, upcoming, groups] = await Promise.all([
+    getLocale(),
+    getDictionary(),
     getUpcomingEvents(3),
     getActiveGroups(),
   ]);
+  const href = (path: string) => localePath(lang, path);
 
   return (
     <>
@@ -16,28 +21,26 @@ export default async function HomePage() {
       <section className="relative overflow-hidden border-b border-sand bg-cream-deep">
         <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
           <p className="text-sm font-medium tracking-[0.22em] text-vermilion uppercase">
-            Norwalk, California
+            {dict.home.kicker}
           </p>
           <h1 className="mt-4 max-w-3xl font-serif text-4xl leading-tight text-ink sm:text-6xl">
-            A home for Japanese culture and community.
+            {dict.home.heroTitle}
           </h1>
           <p className="mt-6 max-w-xl text-lg leading-relaxed text-stone">
-            For generations, the Southeast Japanese School &amp; Community
-            Center has brought neighbors together through language, arts,
-            sports, and celebration. Everyone is welcome.
+            {dict.home.heroText}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
-              href="/events"
+              href={href("/events")}
               className="rounded-md bg-vermilion px-6 py-3 font-semibold text-white hover:bg-vermilion-deep"
             >
-              Upcoming Events
+              {dict.home.heroEvents}
             </Link>
             <Link
-              href="/groups"
+              href={href("/groups")}
               className="rounded-md border border-ink/20 px-6 py-3 font-semibold text-ink hover:bg-white"
             >
-              Groups &amp; Programs
+              {dict.home.heroGroups}
             </Link>
           </div>
         </div>
@@ -46,12 +49,14 @@ export default async function HomePage() {
       {/* Upcoming events */}
       <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
         <div className="flex items-end justify-between">
-          <h2 className="font-serif text-3xl text-ink">Upcoming Events</h2>
+          <h2 className="font-serif text-3xl text-ink">
+            {dict.home.upcomingTitle}
+          </h2>
           <Link
-            href="/events"
+            href={href("/events")}
             className="text-sm font-semibold text-vermilion hover:text-vermilion-deep"
           >
-            View all →
+            {dict.home.viewAll}
           </Link>
         </div>
         {upcoming.length > 0 ? (
@@ -62,8 +67,7 @@ export default async function HomePage() {
           </div>
         ) : (
           <p className="mt-8 rounded-xl border border-sand bg-white p-8 text-stone">
-            New events are being planned — check back soon, or call the center
-            at (562) 863-5996.
+            {dict.home.noEvents}
           </p>
         )}
       </section>
@@ -72,18 +76,15 @@ export default async function HomePage() {
       <section className="border-y border-sand bg-white">
         <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
           <h2 className="font-serif text-3xl text-ink">
-            One Center, Many Communities
+            {dict.home.groupsTitle}
           </h2>
-          <p className="mt-3 max-w-2xl text-stone">
-            The center is home to Japanese language school, judo, basketball,
-            and cultural groups that meet here year-round.
-          </p>
+          <p className="mt-3 max-w-2xl text-stone">{dict.home.groupsText}</p>
           {groups.length > 0 && (
             <div className="mt-8 flex flex-wrap gap-3">
               {groups.map((group) => (
                 <Link
                   key={group.id}
-                  href="/groups"
+                  href={href("/groups")}
                   className="rounded-full border border-sand bg-cream px-5 py-2.5 text-sm font-medium text-ink hover:border-vermilion hover:text-vermilion"
                 >
                   {group.name}
@@ -92,10 +93,10 @@ export default async function HomePage() {
             </div>
           )}
           <Link
-            href="/groups"
+            href={href("/groups")}
             className="mt-8 inline-block text-sm font-semibold text-vermilion hover:text-vermilion-deep"
           >
-            Explore all groups &amp; programs →
+            {dict.home.groupsCta}
           </Link>
         </div>
       </section>
@@ -104,17 +105,16 @@ export default async function HomePage() {
       <section className="bg-ink">
         <div className="mx-auto max-w-6xl px-4 py-16 text-center sm:px-6">
           <h2 className="font-serif text-3xl text-white">
-            Keep the Center Thriving
+            {dict.home.supportTitle}
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-white/70">
-            Donations and dues keep our doors open for the next generation.
-            Every gift, large or small, makes a difference.
+            {dict.home.supportText}
           </p>
           <Link
-            href="/payments#donate"
+            href={href("/payments") + "#donate"}
             className="mt-8 inline-block rounded-md bg-vermilion px-8 py-3 font-semibold text-white hover:bg-vermilion-deep"
           >
-            Donate or Pay Dues
+            {dict.home.supportCta}
           </Link>
         </div>
       </section>

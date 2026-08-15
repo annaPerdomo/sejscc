@@ -1,0 +1,98 @@
+{
+  "meta": {
+    "siteTitle": "Southeast Japanese School & Community Center",
+    "titleTemplate": "%s · SEJSCC",
+    "siteDescription": "A home for Japanese language, culture, and community in Norwalk, California. Japanese school, judo, basketball, cultural events, and more."
+  },
+  "header": {
+    "orgTop": "Southeast Japanese",
+    "orgBottom": "School & Community Center",
+    "donate": "Donate",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
+  },
+  "nav": {
+    "events": "Events",
+    "groups": "Groups & Programs",
+    "payments": "Payments"
+  },
+  "footer": {
+    "orgName": "Southeast Japanese School & Community Center",
+    "contact": "Contact",
+    "visit": "Visit",
+    "boardSignIn": "Board sign-in",
+    "legal": "Southeast Japanese School & Community Center. A nonprofit community organization."
+  },
+  "home": {
+    "kicker": "Norwalk, California",
+    "heroTitle": "A home for Japanese culture and community.",
+    "heroText": "For generations, the Southeast Japanese School & Community Center has brought neighbors together through language, arts, sports, and celebration. Everyone is welcome.",
+    "heroEvents": "Upcoming Events",
+    "heroGroups": "Groups & Programs",
+    "upcomingTitle": "Upcoming Events",
+    "viewAll": "View all →",
+    "noEvents": "New events are being planned — check back soon, or call the center at (562) 863-5996.",
+    "groupsTitle": "One Center, Many Communities",
+    "groupsText": "The center is home to Japanese language school, judo, basketball, and cultural groups that meet here year-round.",
+    "groupsCta": "Explore all groups & programs →",
+    "supportTitle": "Keep the Center Thriving",
+    "supportText": "Donations and dues keep our doors open for the next generation. Every gift, large or small, makes a difference.",
+    "supportCta": "Donate or Pay Dues"
+  },
+  "events": {
+    "metaTitle": "Events",
+    "metaDescription": "Upcoming events at the Southeast Japanese School & Community Center in Norwalk, CA.",
+    "title": "Events",
+    "lede": "Festivals, fundraisers, bingo nights, and more — hosted by the center and the groups that call it home.",
+    "empty": "No upcoming events are posted right now. Check back soon, or call the center at (562) 863-5996.",
+    "pastTitle": "Past Events"
+  },
+  "eventDetail": {
+    "notFound": "Event not found",
+    "back": "← All events",
+    "flyerAlt": "{title} flyer",
+    "downloadFlyer": "Download printable flyer",
+    "date": "Date",
+    "time": "Time",
+    "where": "Where"
+  },
+  "groups": {
+    "metaTitle": "Groups & Programs",
+    "metaDescription": "Japanese school, judo, basketball, and cultural groups that meet at the Southeast Japanese School & Community Center.",
+    "title": "Groups & Programs",
+    "lede": "The center is shared by independent groups and programs — from Japanese language school to judo and basketball. Reach out to a group directly to join, or contact the center to start a new one.",
+    "website": "Website →",
+    "empty": "Group listings are coming soon. In the meantime, call the center at (562) 863-5996 to learn about Japanese school, judo, basketball, and other programs.",
+    "useTitle": "Want to use the center?",
+    "useBefore": "New clubs and classes are welcome. Contact the center at ",
+    "useAfter": " or (562) 863-5996 to ask about facilities and scheduling."
+  },
+  "payments": {
+    "metaTitle": "Payments & Donations",
+    "metaDescription": "Donate to the Southeast Japanese School & Community Center or pay dues and tuition.",
+    "title": "Payments & Donations",
+    "lede": "Every payment method below sends 100% (or as close to it as possible) of your money to the center — we've chosen options with no processing fees wherever we can.",
+    "donateTitle": "Donate",
+    "donateText": "Donations fund building upkeep, programs, and scholarships.",
+    "donateFrame": "Donate to SEJSCC",
+    "donateSoon": "Online donations are coming soon.",
+    "donateSoonBefore": "Until then, donations are gratefully accepted by Zelle or by check (see below), or contact the center at ",
+    "donateSoonAfter": ".",
+    "duesTitle": "Dues, Tuition & Fees",
+    "duesText": "Participant dues, Japanese school tuition, registration, and textbooks can be paid two ways — both fee-free, so the center receives your full payment.",
+    "zelleTitle": "Zelle",
+    "zelleText": "Send payments through your bank's app with Zelle — instant and no fees.",
+    "zelleBefore": "Contact ",
+    "zelleAfter": " for the center's Zelle details.",
+    "zelleMemo": "Please include the student or member name and what the payment is for in the memo.",
+    "checkTitle": "Check by Mail",
+    "checkBefore": "Make checks payable to ",
+    "checkAfter": " and mail to:",
+    "checkMemo": "Include a note with the student or member name and what the payment covers.",
+    "questionsBefore": "Questions about tuition amounts or what you owe? Email ",
+    "questionsAfter": "."
+  },
+  "languageToggle": {
+    "label": "Language"
+  }
+}

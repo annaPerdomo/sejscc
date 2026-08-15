@@ -2,21 +2,24 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Event } from "@/lib/events";
 import { formatEventDate, formatEventTime } from "@/lib/format";
+import { getDictionary, getLocale } from "@/lib/dictionaries";
+import { localePath } from "@/lib/i18n";
 
-export function EventCard({ event }: { event: Event }) {
-  const date = formatEventDate(event.startAt);
-  const time = formatEventTime(event.startAt, event.endAt);
+export async function EventCard({ event }: { event: Event }) {
+  const [lang, dict] = await Promise.all([getLocale(), getDictionary()]);
+  const date = formatEventDate(event.startAt, lang);
+  const time = formatEventTime(event.startAt, event.endAt, lang);
 
   return (
     <Link
-      href={`/events/${event.slug}`}
+      href={localePath(lang, `/events/${event.slug}`)}
       className="group flex flex-col overflow-hidden rounded-xl border border-sand bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
     >
       <div className="relative aspect-[17/22] w-full bg-cream-deep">
         {event.flyerUrl ? (
           <Image
             src={event.flyerUrl}
-            alt={`${event.title} flyer`}
+            alt={dict.eventDetail.flyerAlt.replace("{title}", event.title)}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             className="object-cover object-top"

@@ -5,8 +5,14 @@ import Link from "next/link";
 
 export function MobileNav({
   items,
+  openLabel,
+  closeLabel,
+  children,
 }: {
   items: { href: string; label: string }[];
+  openLabel: string;
+  closeLabel: string;
+  children?: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -14,7 +20,7 @@ export function MobileNav({
     <div className="sm:hidden">
       <button
         type="button"
-        aria-label={open ? "Close menu" : "Open menu"}
+        aria-label={open ? closeLabel : openLabel}
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
         className="flex h-10 w-10 items-center justify-center rounded-md text-ink hover:bg-cream-deep"
@@ -52,6 +58,9 @@ export function MobileNav({
               </li>
             ))}
           </ul>
+          {children && (
+            <div className="border-t border-sand px-7 py-4">{children}</div>
+          )}
         </nav>
       )}
     </div>

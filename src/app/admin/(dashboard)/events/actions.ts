@@ -49,10 +49,10 @@ function eventValues(input: EventInput, userId?: string) {
   };
 }
 
-function revalidateSite(slug: string) {
-  revalidatePath("/");
-  revalidatePath("/events");
-  revalidatePath(`/events/${slug}`);
+// Cache entries are keyed by route file, not browser URL, so revalidating
+// "/events" would never match. Sweeping the layout covers both locales.
+function revalidateSite() {
+  revalidatePath("/[lang]", "layout");
 }
 
 export async function createEvent(input: EventInput) {
@@ -61,7 +61,7 @@ export async function createEvent(input: EventInput) {
     .randomUUID()
     .slice(0, 6)}`;
   await db.insert(events).values({ ...eventValues(input, user.id), slug });
-  revalidateSite(slug);
+  revalidateSite();
 }
 
 export async function updateEvent(id: string, input: EventInput) {
@@ -69,7 +69,7 @@ export async function updateEvent(id: string, input: EventInput) {
   const [existing] = await db.select().from(events).where(eq(events.id, id));
   if (!existing) throw new Error("Event not found.");
   await db.update(events).set(eventValues(input)).where(eq(events.id, id));
-  revalidateSite(existing.slug);
+  revalidateSite();
 }
 
 export async function deleteEvent(id: string) {
@@ -90,5 +90,5 @@ export async function deleteEvent(id: string) {
     }
   }
 
-  revalidateSite(existing.slug);
+  revalidateSite();
 }

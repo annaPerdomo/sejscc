@@ -1,10 +1,16 @@
-// Event times are stored as Los Angeles wall-clock values with a fake UTC
-// marker (e.g. "4:00 PM in Norwalk" is stored as 16:00Z). Every formatter
-// must therefore read them back in UTC — never in server-local time.
+import type { Locale } from "@/lib/i18n";
 
-export function formatEventDate(date: Date | null) {
+// Event times are stored as LA wall-clock behind a fake UTC marker (4:00 PM in
+// Norwalk is stored as 16:00Z), so every formatter must read them back in UTC.
+
+const INTL_LOCALES: Record<Locale, string> = {
+  en: "en-US",
+  ja: "ja-JP",
+};
+
+export function formatEventDate(date: Date | null, locale: Locale = "en") {
   if (!date) return null;
-  return date.toLocaleDateString("en-US", {
+  return date.toLocaleDateString(INTL_LOCALES[locale], {
     weekday: "short",
     month: "long",
     day: "numeric",
@@ -13,10 +19,14 @@ export function formatEventDate(date: Date | null) {
   });
 }
 
-export function formatEventTime(start: Date | null, end: Date | null) {
+export function formatEventTime(
+  start: Date | null,
+  end: Date | null,
+  locale: Locale = "en"
+) {
   if (!start) return null;
   const fmt = (d: Date) =>
-    d.toLocaleTimeString("en-US", {
+    d.toLocaleTimeString(INTL_LOCALES[locale], {
       hour: "numeric",
       minute: "2-digit",
       timeZone: "UTC",
