@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { MobileNav } from "@/components/mobile-nav";
 
 const NAV = [
   { href: "/events", label: "Events" },
@@ -33,19 +34,19 @@ export default function SiteLayout({
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-40 border-b border-sand bg-cream/95 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
-          <Link href="/" className="flex items-center gap-3">
-            <SakuraMark className="h-9 w-9 shrink-0 text-vermilion" />
-            <span className="leading-tight">
-              <span className="block text-[11px] font-medium tracking-[0.18em] text-stone uppercase">
+        <div className="relative mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+          <Link href="/" className="flex min-w-0 items-center gap-2.5 sm:gap-3">
+            <SakuraMark className="h-8 w-8 shrink-0 text-vermilion sm:h-9 sm:w-9" />
+            <span className="min-w-0 leading-tight">
+              <span className="block text-[10px] font-medium tracking-[0.18em] text-stone uppercase sm:text-[11px]">
                 Southeast Japanese
               </span>
-              <span className="block font-serif text-lg text-ink">
+              <span className="block truncate font-serif text-base text-ink sm:text-lg">
                 School &amp; Community Center
               </span>
             </span>
           </Link>
-          <nav className="flex items-center gap-1 sm:gap-2">
+          <nav className="flex shrink-0 items-center gap-1 sm:gap-2">
             {NAV.map((item) => (
               <Link
                 key={item.href}
@@ -57,10 +58,11 @@ export default function SiteLayout({
             ))}
             <Link
               href="/payments#donate"
-              className="rounded-md bg-vermilion px-4 py-2 text-sm font-semibold text-white hover:bg-vermilion-deep"
+              className="rounded-md bg-vermilion px-3.5 py-2 text-sm font-semibold text-white hover:bg-vermilion-deep sm:px-4"
             >
               Donate
             </Link>
+            <MobileNav items={NAV} />
           </nav>
         </div>
       </header>
