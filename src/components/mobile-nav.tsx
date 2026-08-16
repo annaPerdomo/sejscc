@@ -23,7 +23,7 @@ export function MobileNav({
         aria-label={open ? closeLabel : openLabel}
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="flex h-10 w-10 items-center justify-center rounded-md text-ink hover:bg-cream-deep"
+        className="flex h-10 w-10 items-center justify-center rounded-md text-ink hover:bg-mist"
       >
         <svg viewBox="0 0 24 24" className="h-6 w-6" aria-hidden="true">
           {open ? (
@@ -44,14 +44,14 @@ export function MobileNav({
         </svg>
       </button>
       {open && (
-        <nav className="absolute inset-x-0 top-full border-b border-sand bg-cream shadow-lg">
+        <nav className="absolute inset-x-0 top-full border-b border-line bg-paper shadow-lg">
           <ul className="px-4 py-2">
             {items.map((item) => (
               <li key={item.href}>
                 <Link
                   href={item.href}
                   onClick={() => setOpen(false)}
-                  className="block rounded-md px-3 py-3 font-medium text-ink hover:bg-cream-deep"
+                  className="block rounded-md px-3 py-3 font-medium text-ink hover:bg-mist"
                 >
                   {item.label}
                 </Link>
@@ -59,7 +59,7 @@ export function MobileNav({
             ))}
           </ul>
           {children && (
-            <div className="border-t border-sand px-7 py-4">{children}</div>
+            <div className="border-t border-line px-7 py-4">{children}</div>
           )}
         </nav>
       )}

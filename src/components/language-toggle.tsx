@@ -42,7 +42,7 @@ export function LanguageToggle({
     <div
       role="group"
       aria-label={label}
-      className={`flex items-center rounded-full border border-sand bg-white p-0.5 ${className ?? ""}`}
+      className={`flex items-center rounded-full border border-line bg-white p-0.5 ${className ?? ""}`}
     >
       {locales.map((locale) => (
         <button

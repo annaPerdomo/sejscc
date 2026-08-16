@@ -14,7 +14,7 @@ export function DeleteEventButton({ id }: { id: string }) {
       <button
         type="button"
         onClick={() => setConfirming(true)}
-        className="rounded-lg border border-sand bg-white px-4 py-2.5 text-sm font-medium text-vermilion-deep hover:bg-vermilion/5"
+        className="rounded-lg border border-line bg-white px-4 py-2.5 text-sm font-medium text-vermilion-deep hover:bg-vermilion/5"
       >
         Delete event
       </button>

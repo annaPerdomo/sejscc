@@ -1,15 +1,16 @@
 @import "tailwindcss";
 
 @theme {
-  --color-cream: #faf6ef;
-  --color-cream-deep: #f3ecdf;
+  --color-paper: #ffffff;
+  --color-mist: #f5f6f8;
   --color-ink: #1f2a44;
   --color-ink-soft: #34405e;
   --color-vermilion: #c0392b;
   --color-vermilion-deep: #a93226;
   --color-gold: #a8842c;
-  --color-sand: #e5dccb;
-  --color-stone: #6b6355;
+  --color-pine: #3d6b52;
+  --color-line: #e4e7ec;
+  --color-stone: #5c6472;
 }
 
 @theme inline {
@@ -18,7 +19,15 @@
 }
 
 body {
-  background: var(--color-cream);
+  background: var(--color-paper);
   color: var(--color-ink);
   font-family: var(--font-sans);
+}
+
+/* Tailwind v4's preflight drops the v3 pointer cursor on buttons. */
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
 }

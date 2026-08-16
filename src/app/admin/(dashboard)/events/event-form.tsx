@@ -166,7 +166,7 @@ export function EventForm({ event }: { event?: ExistingEvent }) {
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
       <div className="space-y-6">
-        <section className="rounded-xl border border-sand bg-white p-6">
+        <section className="rounded-xl border border-line bg-white p-6">
           <div className="flex items-center gap-3">
             <StepBadge n={1} />
             <h2 className="font-semibold text-ink">
@@ -182,13 +182,13 @@ export function EventForm({ event }: { event?: ExistingEvent }) {
               <img
                 src={previewUrl}
                 alt="Flyer preview"
-                className="w-40 rounded-lg border border-sand shadow-sm"
+                className="w-40 rounded-lg border border-line shadow-sm"
               />
             )}
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="flex min-h-40 w-40 flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-sand p-4 text-center text-sm text-stone hover:border-vermilion hover:text-vermilion"
+              className="flex min-h-40 w-40 flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-line p-4 text-center text-sm text-stone hover:border-vermilion hover:text-vermilion"
             >
               <span className="text-2xl">↑</span>
               {previewUrl ? "Replace flyer" : "Upload flyer"}
@@ -204,7 +204,7 @@ export function EventForm({ event }: { event?: ExistingEvent }) {
           </div>
         </section>
 
-        <section className="rounded-xl border border-sand bg-white p-6">
+        <section className="rounded-xl border border-line bg-white p-6">
           <div className="flex items-center gap-3">
             <StepBadge n={2} />
             <h2 className="font-semibold text-ink">
@@ -217,14 +217,14 @@ export function EventForm({ event }: { event?: ExistingEvent }) {
             onChange={(e) => setTitle(e.target.value)}
             maxLength={150}
             placeholder="Enter event title…"
-            className="mt-4 w-full rounded-lg border border-sand px-4 py-3 text-ink outline-none focus:border-vermilion"
+            className="mt-4 w-full rounded-lg border border-line px-4 py-3 text-ink outline-none focus:border-vermilion"
           />
           <p className="mt-1 text-right text-xs text-stone">
             {title.length} / 150 characters
           </p>
         </section>
 
-        <section className="rounded-xl border border-sand bg-white p-6">
+        <section className="rounded-xl border border-line bg-white p-6">
           <div className="flex items-center gap-3">
             <StepBadge n={3} />
             <h2 className="font-semibold text-ink">
@@ -239,7 +239,7 @@ export function EventForm({ event }: { event?: ExistingEvent }) {
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-sand px-3 py-2.5 text-ink outline-none focus:border-vermilion"
+                className="mt-1 w-full rounded-lg border border-line px-3 py-2.5 text-ink outline-none focus:border-vermilion"
               />
             </label>
             <label className="block text-sm font-medium text-stone">
@@ -248,7 +248,7 @@ export function EventForm({ event }: { event?: ExistingEvent }) {
                 type="time"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-sand px-3 py-2.5 text-ink outline-none focus:border-vermilion"
+                className="mt-1 w-full rounded-lg border border-line px-3 py-2.5 text-ink outline-none focus:border-vermilion"
               />
             </label>
             <label className="block text-sm font-medium text-stone">
@@ -257,7 +257,7 @@ export function EventForm({ event }: { event?: ExistingEvent }) {
                 type="time"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-sand px-3 py-2.5 text-ink outline-none focus:border-vermilion"
+                className="mt-1 w-full rounded-lg border border-line px-3 py-2.5 text-ink outline-none focus:border-vermilion"
               />
             </label>
           </div>
@@ -266,12 +266,12 @@ export function EventForm({ event }: { event?: ExistingEvent }) {
             <input
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-sand px-3 py-2.5 text-ink outline-none focus:border-vermilion"
+              className="mt-1 w-full rounded-lg border border-line px-3 py-2.5 text-ink outline-none focus:border-vermilion"
             />
           </label>
         </section>
 
-        <section className="rounded-xl border border-sand bg-white p-6">
+        <section className="rounded-xl border border-line bg-white p-6">
           <div className="flex items-center gap-3">
             <StepBadge n={4} />
             <h2 className="font-semibold text-ink">
@@ -285,7 +285,7 @@ export function EventForm({ event }: { event?: ExistingEvent }) {
             maxLength={1000}
             rows={8}
             placeholder="Tell people about your event…"
-            className="mt-4 w-full rounded-lg border border-sand px-4 py-3 text-ink outline-none focus:border-vermilion"
+            className="mt-4 w-full rounded-lg border border-line px-4 py-3 text-ink outline-none focus:border-vermilion"
           />
           <p className="mt-1 text-right text-xs text-stone">
             {description.length} / 1000 characters
@@ -299,7 +299,7 @@ export function EventForm({ event }: { event?: ExistingEvent }) {
           This is how your event will appear on the website.
         </p>
         <div className="mt-3 overflow-hidden rounded-xl bg-ink shadow-lg">
-          <div className="aspect-[17/22] bg-cream-deep">
+          <div className="aspect-[17/22] bg-mist">
             {previewUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -308,7 +308,7 @@ export function EventForm({ event }: { event?: ExistingEvent }) {
                 className="h-full w-full object-cover object-top"
               />
             ) : (
-              <div className="flex h-full items-center justify-center font-serif text-4xl text-sand">
+              <div className="flex h-full items-center justify-center font-serif text-4xl text-line">
                 桜
               </div>
             )}
@@ -335,11 +335,11 @@ export function EventForm({ event }: { event?: ExistingEvent }) {
             {error}
           </p>
         )}
-        <div className="flex flex-wrap items-center justify-end gap-3 border-t border-sand pt-5">
+        <div className="flex flex-wrap items-center justify-end gap-3 border-t border-line pt-5">
           <button
             type="button"
             onClick={() => router.push("/admin")}
-            className="rounded-lg border border-sand bg-white px-5 py-3 font-medium text-ink hover:bg-cream-deep"
+            className="rounded-lg border border-line bg-white px-5 py-3 font-medium text-ink hover:bg-mist"
           >
             Cancel
           </button>
@@ -347,7 +347,7 @@ export function EventForm({ event }: { event?: ExistingEvent }) {
             type="button"
             disabled={busy !== null}
             onClick={() => save("draft")}
-            className="rounded-lg border border-sand bg-white px-5 py-3 font-medium text-ink hover:bg-cream-deep disabled:opacity-50"
+            className="rounded-lg border border-line bg-white px-5 py-3 font-medium text-ink hover:bg-mist disabled:opacity-50"
           >
             {busy === "draft" ? "Saving…" : "Save Draft"}
           </button>

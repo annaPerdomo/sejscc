@@ -37,7 +37,7 @@ export default async function AdminDashboard() {
       </div>
 
       {allEvents.length === 0 ? (
-        <div className="mt-10 rounded-xl border border-sand bg-white p-10 text-center">
+        <div className="mt-10 rounded-xl border border-line bg-white p-10 text-center">
           <p className="font-serif text-xl text-ink">No events yet</p>
           <p className="mt-2 text-stone">
             Click “Add New Event” to post your first event — all you need is a
@@ -50,9 +50,9 @@ export default async function AdminDashboard() {
             <li key={event.id}>
               <Link
                 href={`/admin/events/${event.id}`}
-                className="flex items-center gap-4 rounded-xl border border-sand bg-white p-4 transition hover:border-vermilion/50 hover:shadow-sm"
+                className="flex items-center gap-4 rounded-xl border border-line bg-white p-4 transition hover:border-vermilion/50 hover:shadow-sm"
               >
-                <div className="relative h-16 w-12 shrink-0 overflow-hidden rounded-md border border-sand bg-cream-deep">
+                <div className="relative h-16 w-12 shrink-0 overflow-hidden rounded-md border border-line bg-mist">
                   {event.flyerUrl && (
                     <Image
                       src={event.flyerUrl}
