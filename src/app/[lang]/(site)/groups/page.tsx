@@ -31,18 +31,21 @@ export default async function GroupsPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
-      <h1 className="font-serif text-4xl text-ink">{dict.groups.title}</h1>
-      <p className="mt-3 max-w-2xl text-stone">{dict.groups.lede}</p>
+      <h1 className="font-serif text-4xl text-ink sm:text-5xl">
+        {dict.groups.title}
+      </h1>
+      <div className="mt-4 h-1 w-12 rounded-full bg-vermilion" />
+      <p className="mt-5 max-w-2xl text-stone">{dict.groups.lede}</p>
 
       {groups.length > 0 ? (
         <div className="mt-10 grid gap-6 sm:grid-cols-2">
           {groups.map((group) => (
             <div
               key={group.id}
-              className="flex gap-5 rounded-xl border border-sand bg-white p-6 shadow-sm"
+              className="flex gap-5 rounded-xl border border-line bg-white p-6 shadow-sm"
             >
               {group.imageUrl && (
-                <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-cream-deep">
+                <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-mist">
                   <Image
                     src={group.imageUrl}
                     alt=""
@@ -89,12 +92,12 @@ export default async function GroupsPage() {
           ))}
         </div>
       ) : (
-        <p className="mt-10 rounded-xl border border-sand bg-white p-8 text-stone">
+        <p className="mt-10 rounded-xl border border-line bg-white p-8 text-stone">
           {dict.groups.empty}
         </p>
       )}
 
-      <div className="mt-12 rounded-xl border border-sand bg-cream-deep p-8">
+      <div className="mt-12 rounded-xl border border-line bg-mist p-8">
         <h2 className="font-serif text-2xl text-ink">{dict.groups.useTitle}</h2>
         <p className="mt-2 max-w-2xl text-stone">
           {dict.groups.useBefore}

@@ -53,7 +53,7 @@ export default async function EventPage({ params }: Props) {
       </Link>
       <div className="mt-6 grid gap-10 md:grid-cols-[2fr_3fr]">
         <div>
-          <div className="relative aspect-[17/22] overflow-hidden rounded-xl border border-sand bg-cream-deep shadow-sm">
+          <div className="relative aspect-[17/22] overflow-hidden rounded-xl border border-line bg-mist shadow-sm">
             {event.flyerUrl ? (
               <Image
                 src={event.flyerUrl}
@@ -61,11 +61,17 @@ export default async function EventPage({ params }: Props) {
                 fill
                 sizes="(max-width: 768px) 100vw, 40vw"
                 className="object-contain"
-                priority
+                preload
               />
             ) : (
-              <div className="flex h-full items-center justify-center font-serif text-5xl text-sand">
-                桜
+              <div className="flex h-full items-center justify-center">
+                <Image
+                  src="/logo-mark.png"
+                  alt=""
+                  width={72}
+                  height={72}
+                  className="opacity-10"
+                />
               </div>
             )}
           </div>
@@ -73,7 +79,7 @@ export default async function EventPage({ params }: Props) {
             <a
               href={event.flyerDownloadUrl}
               download
-              className="mt-4 block rounded-md border border-ink/20 px-4 py-2.5 text-center text-sm font-semibold text-ink hover:bg-white"
+              className="mt-4 block rounded-md border border-ink/20 px-4 py-2.5 text-center text-sm font-semibold text-ink hover:bg-mist"
             >
               {dict.eventDetail.downloadFlyer}
             </a>
@@ -83,7 +89,7 @@ export default async function EventPage({ params }: Props) {
           <h1 className="font-serif text-3xl leading-tight text-ink sm:text-4xl">
             {event.title}
           </h1>
-          <dl className="mt-6 space-y-3 rounded-xl border border-sand bg-white p-5 text-[15px]">
+          <dl className="mt-6 space-y-3 rounded-xl border border-line bg-white p-5 text-[15px]">
             {date && (
               <div className="flex gap-3">
                 <dt className="w-20 shrink-0 font-semibold text-stone">

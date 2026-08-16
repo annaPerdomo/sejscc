@@ -29,15 +29,31 @@
     "heroText": "For generations, the Southeast Japanese School & Community Center has brought neighbors together through language, arts, sports, and celebration. Everyone is welcome.",
     "heroEvents": "Upcoming Events",
     "heroGroups": "Groups & Programs",
+    "photoSoon": "Photos coming soon",
+    "missionKicker": "Our Mission",
+    "missionText": "To preserve and share Japanese language and culture, and to strengthen the bonds of community in Southeast Los Angeles County — across generations and backgrounds.",
+    "missionPillars": {
+      "community": "A Welcoming Community",
+      "education": "Education & Language",
+      "culture": "Culture & Tradition",
+      "sports": "Sports & Recreation"
+    },
     "upcomingTitle": "Upcoming Events",
     "viewAll": "View all →",
     "noEvents": "New events are being planned — check back soon, or call the center at (562) 863-5996.",
+    "groupsKicker": "Explore the Center",
     "groupsTitle": "One Center, Many Communities",
     "groupsText": "The center is home to Japanese language school, judo, basketball, and cultural groups that meet here year-round.",
     "groupsCta": "Explore all groups & programs →",
+    "groupsButton": "View All Groups & Programs",
+    "supportKicker": "Support the Center",
     "supportTitle": "Keep the Center Thriving",
     "supportText": "Donations and dues keep our doors open for the next generation. Every gift, large or small, makes a difference.",
-    "supportCta": "Donate or Pay Dues"
+    "supportCta": "Donate or Pay Dues",
+    "connectTitle": "Stay Connected",
+    "connectText": "Questions, ideas, or want to get involved? We'd love to hear from you.",
+    "connectCall": "Call (562) 863-5996",
+    "connectEmail": "Email the Center"
   },
   "events": {
     "metaTitle": "Events",

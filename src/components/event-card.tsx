@@ -13,9 +13,9 @@ export async function EventCard({ event }: { event: Event }) {
   return (
     <Link
       href={localePath(lang, `/events/${event.slug}`)}
-      className="group flex flex-col overflow-hidden rounded-xl border border-sand bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+      className="group flex flex-col overflow-hidden rounded-xl border border-line bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
     >
-      <div className="relative aspect-[17/22] w-full bg-cream-deep">
+      <div className="relative aspect-[17/22] w-full bg-mist">
         {event.flyerUrl ? (
           <Image
             src={event.flyerUrl}
@@ -25,8 +25,14 @@ export async function EventCard({ event }: { event: Event }) {
             className="object-cover object-top"
           />
         ) : (
-          <div className="flex h-full items-center justify-center font-serif text-3xl text-sand">
-            桜
+          <div className="flex h-full items-center justify-center">
+            <Image
+              src="/logo-mark.png"
+              alt=""
+              width={56}
+              height={56}
+              className="opacity-10"
+            />
           </div>
         )}
       </div>
