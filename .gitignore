@@ -40,3 +40,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .env*.local
+
+# pre-redesign survey of the legacy site — kept locally for reference, not shipped
+/docs/legacy-site/
