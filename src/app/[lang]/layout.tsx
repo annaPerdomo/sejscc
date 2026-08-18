@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { geist, lora } from "../fonts";
+import { jost, shipporiMincho, zenMaruGothic } from "../fonts";
 import { hasLocale, localePath, locales } from "@/lib/i18n";
 import { getDictionaryFor } from "@/lib/dictionaries";
 import "../globals.css";
@@ -47,7 +47,9 @@ export default async function RootLayout({ children, params }: Props) {
 
   return (
     <html lang={lang}>
-      <body className={`${geist.variable} ${lora.variable} antialiased`}>
+      <body
+        className={`${jost.variable} ${shipporiMincho.variable} ${zenMaruGothic.variable} font-sans antialiased`}
+      >
         {children}
       </body>
     </html>

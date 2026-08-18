@@ -9,7 +9,10 @@
     "orgBottom": "コミュニティセンター",
     "donate": "寄付する",
     "openMenu": "メニューを開く",
-    "closeMenu": "メニューを閉じる"
+    "closeMenu": "メニューを閉じる",
+    "announcementAccent": "次回",
+    "announcementLabel": "Next Up",
+    "announcementCta": "申し込む"
   },
   "nav": {
     "events": "イベント",
@@ -21,39 +24,152 @@
     "contact": "お問い合わせ",
     "visit": "ご案内",
     "boardSignIn": "役員ログイン",
-    "legal": "サウスイースト日本語学園・コミュニティセンター（非営利のコミュニティ団体）"
+    "legal": "サウスイースト日本語学園・コミュニティセンター（非営利のコミュニティ団体）",
+    "farewellAccent": "またお会いしましょう。",
+    "farewellCaption": "— センターでお待ちしています"
   },
   "home": {
-    "kicker": "カリフォルニア州ノーウォーク",
-    "heroTitle": "日本の文化とコミュニティが集う場所。",
-    "heroText": "サウスイースト日本語学園・コミュニティセンターは、何世代にもわたり、日本語、芸術、スポーツ、季節の行事を通じて地域の人々をつないできました。どなたでも歓迎します。",
-    "heroEvents": "今後のイベント",
-    "heroGroups": "グループ・プログラム",
     "photoSoon": "写真は準備中です",
-    "missionKicker": "私たちの使命",
-    "missionText": "日本語と日本文化を守り伝えるとともに、世代や背景を越えて、サウスイースト・ロサンゼルス郡地域のコミュニティの絆を深めることを目指しています。",
-    "missionPillars": {
-      "community": "皆を迎えるコミュニティ",
-      "education": "教育と日本語",
-      "culture": "文化と伝統",
-      "sports": "スポーツとレクリエーション"
-    },
-    "upcomingTitle": "今後のイベント",
-    "viewAll": "すべて見る →",
+    "heroTabs": [
+      {
+        "id": "center",
+        "tabLabel": "The Center",
+        "tabLabelAccent": "施設",
+        "kickerAccent": "ようこそ",
+        "kickerCaption": "Welcome · Norwalk, California · Since 1925",
+        "headingLine1": "サウスイースト日本語学園・",
+        "headingLine2": "コミュニティセンター",
+        "body": "この地で101年、土曜日といえば日本語学校です。平日は柔道、フラ、ウクレレ、ビンゴなど――どなたでも歓迎します。",
+        "primaryCta": "今後のイベントを見る",
+        "secondaryCta": "グループ・プログラムを見る"
+      },
+      {
+        "id": "school",
+        "tabLabel": "Japanese School",
+        "tabLabelAccent": "日本語学校",
+        "kickerAccent": "日本語学校",
+        "kickerCaption": "Saturdays · 8:45–12:15",
+        "headingLine1": "サウスイースト学園",
+        "headingLine2": "日本語学校",
+        "body": "幼稚園からレベル12まで、日本語・読解・書道を学べます。大人向けのオンライン講座もあります。日本語の経験は問いません。",
+        "primaryCta": "授業料・登録案内",
+        "secondaryCta": "活動グループを見る"
+      },
+      {
+        "id": "clubs",
+        "tabLabel": "Sports & Classes",
+        "tabLabelAccent": "クラブ活動",
+        "kickerAccent": "クラブ活動",
+        "kickerCaption": "20+ groups call the center home",
+        "headingLine1": "ひとつ屋根の下、",
+        "headingLine2": "広がる輪",
+        "body": "柔道、剣道、バスケットボール、フラ、ウクレレ――道場、体育館、工作テーブルで。多くのグループが初心者を歓迎しています。",
+        "primaryCta": "スポーツ・クラブを見る"
+      },
+      {
+        "id": "about",
+        "tabLabel": "About Us",
+        "tabLabelAccent": "私たちについて",
+        "kickerAccent": "私たちについて",
+        "kickerCaption": "A nonprofit community organization",
+        "headingLine1": "私たちについて、",
+        "headingLine2": "活動のご紹介",
+        "body": "1925年の創立以来、ノーウォークの日系家族と地域の皆さまに寄り添うボランティア運営の非営利団体です。",
+        "primaryCta": "お問い合わせ"
+      },
+      {
+        "id": "donate",
+        "tabLabel": "Donate",
+        "tabLabelAccent": "寄付",
+        "kickerAccent": "寄付",
+        "kickerCaption": "SEJSCC is a 501(c)(3) nonprofit",
+        "headingLine1": "センターを",
+        "headingLine2": "支える",
+        "body": "皆さまのご支援が、学校・ホール・4世代にわたり親しまれてきたお祭りを支えています。",
+        "primaryCta": "寄付する"
+      }
+    ],
+    "heroTabsLabel": "センターの見どころ",
+    "upcomingKickerAccent": "おしらせ",
+    "upcomingKickerCaption": "Everyone Is Invited",
+    "upcomingTitle": "あなたのための席があります",
+    "viewAll": "今後のイベントをすべて見る →",
     "noEvents": "新しいイベントを準備中です。またご確認いただくか、センター（(562) 863-5996）までお電話ください。",
-    "groupsKicker": "センターを知る",
-    "groupsTitle": "ひとつのセンター、多彩なコミュニティ",
-    "groupsText": "センターには、日本語学校、柔道、バスケットボール、文化団体など、年間を通じて活動するグループが集まっています。",
-    "groupsCta": "グループ・プログラムを見る →",
-    "groupsButton": "グループ・プログラムをすべて見る",
-    "supportKicker": "センターを支える",
-    "supportTitle": "センターの未来を支える",
-    "supportText": "皆さまからの寄付と会費が、次の世代のためにセンターの扉を開き続けます。金額の大小にかかわらず、すべてのご支援が力になります。",
-    "supportCta": "寄付・会費のお支払い",
-    "connectTitle": "つながりを大切に",
-    "connectText": "ご質問やご意見、参加のご希望など、お気軽にお問い合わせください。",
+    "upcomingNextUp": "次回",
+    "upcomingPrev": "前のイベント",
+    "upcomingNext": "次のイベント",
+    "upcomingDetails": "詳細",
+    "japaneseSchool": {
+      "kicker": "日本語学校",
+      "headingLine1": "日本の心を、",
+      "headingLine2": "生涯の学びに。",
+      "subheading": "1925年から、土曜日の朝に。",
+      "body": "幼稚園からレベル12まで、日本語・読解・書道を学びます。大人向けのオンライン講座もあり、日本語の経験がなくても、どなたでも一緒に学べます。",
+      "photoLabel": "写真は準備中です",
+      "highlights": [
+        {
+          "title": "土曜日の朝",
+          "text": "毎週土曜日 8:45〜12:15に開講"
+        },
+        {
+          "title": "幼稚園〜レベル12",
+          "text": "全年齢向けの日本語クラス"
+        },
+        {
+          "title": "大人向けオンライン講座",
+          "text": "どこからでも学べます"
+        },
+        {
+          "title": "年間を通じた文化行事",
+          "text": "コミュニティをつなぐ行事の数々"
+        }
+      ],
+      "primaryCta": "授業料・登録案内",
+      "secondaryCta": "活動グループを見る"
+    },
+    "sportsClubs": {
+      "kickerAccent": "クラブ活動",
+      "kickerCaption": "Sports, Clubs & Classes",
+      "headingLine1": "ひとつ屋根の下、",
+      "headingLine2": "広がる輪",
+      "body": "道場、体育館、工作テーブル――20以上のグループがセンターを拠点に活動しています。多くが初心者も年間を通じて歓迎しています。",
+      "photoLabel": "写真は準備中です",
+      "cta": "スポーツ・クラブをすべて見る",
+      "empty": "グループの一覧は準備中です。日本語学校、柔道、バスケットボールなどのプログラムについては、センター（(562) 863-5996）までお問い合わせください。"
+    },
+    "history": {
+      "kickerAccent": "私たちの歩み",
+      "kickerCaption": "Our History",
+      "headingLine1": "101年の歩み、",
+      "headingLine2": "今なお続く成長。",
+      "body": "1925年、日本からの移民家族の小さな集まりとして始まり、今では活気あるコミュニティへと育ちました。伝統を大切にしながら、次の世代へとつながりを築いています。",
+      "photoLabel": "歴史的写真は準備中です",
+      "milestones": [
+        {
+          "year": "1925",
+          "text": "地域の日本語学校として、ノーウォーク学園を創立。"
+        },
+        {
+          "year": "1962",
+          "text": "コミュニティの成長に伴い、サウスイースト学園と改称。"
+        },
+        {
+          "year": "1970年代〜2000年代",
+          "text": "文化教室、スポーツなど、全年齢向けのプログラムが拡大。"
+        },
+        {
+          "year": "2025〜2026年",
+          "text": "学びとコミュニティ、絆の101周年を祝う。"
+        }
+      ]
+    },
+    "connectKickerAccent": "コミュニティ",
+    "connectKickerCaption": "Our Community",
+    "connectTitle": "すべての世代が、ひとつのコミュニティに。",
+    "connectText": "サウスイースト日本語学園・コミュニティセンターは、どなたでも歓迎する非営利団体です。人種や信仰に関わらず、すべての活動にご参加いただけます。共に学び、祝い、力を尽くし、一生の思い出を作りましょう。",
     "connectCall": "(562) 863-5996 に電話する",
-    "connectEmail": "メールで問い合わせる"
+    "connectEmail": "メールで問い合わせる",
+    "connectPhotoLabel": "写真は準備中です"
   },
   "events": {
     "metaTitle": "イベント",

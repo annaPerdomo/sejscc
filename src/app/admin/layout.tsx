@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { geist, lora } from "../fonts";
+import { jost, shipporiMincho, zenMaruGothic } from "../fonts";
 import "../globals.css";
 
 export const metadata: Metadata = {
@@ -16,7 +16,9 @@ export default function AdminRootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${geist.variable} ${lora.variable} antialiased`}>
+      <body
+        className={`${jost.variable} ${shipporiMincho.variable} ${zenMaruGothic.variable} font-sans antialiased`}
+      >
         {children}
       </body>
     </html>

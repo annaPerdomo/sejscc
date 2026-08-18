@@ -31,10 +31,10 @@ export default async function GroupsPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
-      <h1 className="font-serif text-4xl text-ink sm:text-5xl">
+      <h1 className="font-display text-4xl text-ink sm:text-5xl">
         {dict.groups.title}
       </h1>
-      <div className="mt-4 h-1 w-12 rounded-full bg-vermilion" />
+      <div className="mt-4 h-1 w-12 rounded-full bg-indigo" />
       <p className="mt-5 max-w-2xl text-stone">{dict.groups.lede}</p>
 
       {groups.length > 0 ? (
@@ -56,9 +56,9 @@ export default async function GroupsPage() {
                 </div>
               )}
               <div>
-                <h2 className="font-serif text-xl text-ink">{group.name}</h2>
+                <h2 className="font-display text-xl text-ink">{group.name}</h2>
                 {group.meetingSchedule && (
-                  <p className="mt-1 text-sm font-medium text-vermilion">
+                  <p className="mt-1 text-sm font-medium text-indigo">
                     {group.meetingSchedule}
                   </p>
                 )}
@@ -73,7 +73,7 @@ export default async function GroupsPage() {
                       href={group.websiteUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-vermilion hover:text-vermilion-deep"
+                      className="text-indigo hover:text-indigo-deep"
                     >
                       {dict.groups.website}
                     </a>
@@ -81,7 +81,7 @@ export default async function GroupsPage() {
                   {group.contactEmail && (
                     <a
                       href={`mailto:${group.contactEmail}`}
-                      className="text-vermilion hover:text-vermilion-deep"
+                      className="text-indigo hover:text-indigo-deep"
                     >
                       {group.contactEmail}
                     </a>
@@ -98,12 +98,12 @@ export default async function GroupsPage() {
       )}
 
       <div className="mt-12 rounded-xl border border-line bg-mist p-8">
-        <h2 className="font-serif text-2xl text-ink">{dict.groups.useTitle}</h2>
+        <h2 className="font-display text-2xl text-ink">{dict.groups.useTitle}</h2>
         <p className="mt-2 max-w-2xl text-stone">
           {dict.groups.useBefore}
           <a
             href="mailto:info@sejscc.org"
-            className="font-semibold text-vermilion hover:text-vermilion-deep"
+            className="font-semibold text-indigo hover:text-indigo-deep"
           >
             info@sejscc.org
           </a>

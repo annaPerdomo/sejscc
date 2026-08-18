@@ -1,272 +1,307 @@
 import Image from "next/image";
 import Link from "next/link";
-import { EventCard } from "@/components/event-card";
+import { HeroCarousel, type HeroTab } from "@/components/hero-carousel";
+import { EventsCarousel, type CarouselEvent } from "@/components/events-carousel";
 import { PhotoPlaceholder } from "@/components/photo-placeholder";
+import { WaveDivider } from "@/components/wave-divider";
+import { KanjiWatermark } from "@/components/kanji-watermark";
 import { getActiveGroups, getUpcomingEvents } from "@/lib/events";
+import { formatEventDate, formatEventTime } from "@/lib/format";
 import { getDictionary, getLocale } from "@/lib/dictionaries";
 import { localePath } from "@/lib/i18n";
 
 export const revalidate = 300;
 
-const pillars = [
-  {
-    key: "community",
-    color: "bg-ink",
-    icon: (
-      <g>
-        <circle cx="12" cy="13" r="3.2" />
-        <circle cx="20" cy="13" r="3.2" />
-        <circle cx="28" cy="13" r="3.2" />
-        <path d="M6.5 27c0-3.2 2.4-5.5 5.5-5.5S17.5 23.8 17.5 27" />
-        <path d="M14.5 27c0-3.2 2.4-5.5 5.5-5.5s5.5 2.3 5.5 5.5" />
-        <path d="M22.5 27c0-3.2 2.4-5.5 5.5-5.5s5.5 2.3 5.5 5.5" />
-      </g>
-    ),
+const HERO_LINKS: Record<
+  string,
+  { primary: (href: (p: string) => string) => string; secondary?: (href: (p: string) => string) => string }
+> = {
+  center: {
+    primary: (href) => href("/events"),
+    secondary: (href) => href("/groups"),
   },
-  {
-    key: "education",
-    color: "bg-vermilion",
-    icon: (
-      <g>
-        <path d="M20 12c-2.5-2-6.5-2.5-10-2.5v18c3.5 0 7.5.5 10 2.5 2.5-2 6.5-2.5 10-2.5v-18c-3.5 0-7.5.5-10 2.5Z" />
-        <path d="M20 12v18" />
-      </g>
-    ),
+  school: {
+    primary: (href) => href("/payments"),
+    secondary: (href) => href("/groups"),
   },
-  {
-    key: "culture",
-    color: "bg-pine",
-    icon: (
-      <g>
-        <path d="M7.5 12.5c8.5-3 16.5-3 25 0" />
-        <path d="M13 29.5V13M27 29.5V13" />
-        <path d="M10.5 18.5h19" />
-        <path d="M20 18.5v-6.7" />
-      </g>
-    ),
+  clubs: {
+    primary: (href) => href("/groups"),
   },
-  {
-    key: "sports",
-    color: "bg-gold",
-    icon: (
-      <g>
-        <circle cx="20" cy="20" r="10.5" />
-        <path d="M20 9.5v21M9.5 20h21" />
-        <path d="M12.6 12.8c2 1.8 3.2 4.4 3.2 7.2s-1.2 5.4-3.2 7.2M27.4 12.8c-2 1.8-3.2 4.4-3.2 7.2s1.2 5.4 3.2 7.2" />
-      </g>
-    ),
+  about: {
+    primary: (href) => href("/") + "#connect",
   },
-] as const;
+  donate: {
+    primary: (href) => href("/payments") + "#donate",
+  },
+};
 
 export default async function HomePage() {
   const [lang, dict, upcoming, groups] = await Promise.all([
     getLocale(),
     getDictionary(),
-    getUpcomingEvents(3),
+    getUpcomingEvents(8),
     getActiveGroups(),
   ]);
   const href = (path: string) => localePath(lang, path);
 
+  const heroTabs: HeroTab[] = dict.home.heroTabs.map((tab) => {
+    const links = HERO_LINKS[tab.id];
+    return {
+      id: tab.id,
+      tabLabel: tab.tabLabel,
+      tabLabelAccent: tab.tabLabelAccent,
+      kickerAccent: tab.kickerAccent,
+      kickerCaption: tab.kickerCaption,
+      headingLine1: tab.headingLine1,
+      headingLine2: tab.headingLine2,
+      body: tab.body,
+      primaryCta: { label: tab.primaryCta, href: links.primary(href) },
+      secondaryCta:
+        "secondaryCta" in tab && tab.secondaryCta && links.secondary
+          ? { label: tab.secondaryCta, href: links.secondary(href) }
+          : undefined,
+      photoSrc:
+        tab.id === "center"
+          ? "https://www.sejscc.org/wp-content/uploads/2021/06/VideoPage.jpg"
+          : undefined,
+      photoAlt:
+        tab.id === "center" ? "The Southeast Japanese School & Community Center campus" : undefined,
+      placeholderLabel: dict.home.photoSoon,
+    };
+  });
+
+  const carouselEvents: CarouselEvent[] = upcoming.map((event) => ({
+    id: event.id,
+    href: href(`/events/${event.slug}`),
+    title: event.title,
+    date: formatEventDate(event.startAt, lang),
+    time: formatEventTime(event.startAt, event.endAt, lang),
+    location: event.location,
+    description: event.description,
+    flyerUrl: event.flyerUrl,
+    flyerAlt: dict.eventDetail.flyerAlt.replace("{title}", event.title),
+  }));
+
   return (
     <>
-      {/* Hero */}
-      <section className="border-b border-line bg-paper">
-        <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-2 lg:gap-14">
-          <div>
-            <p className="text-sm font-semibold tracking-[0.22em] text-vermilion uppercase">
-              {dict.home.kicker}
-            </p>
-            <h1 className="mt-4 font-serif text-4xl leading-tight text-ink sm:text-5xl lg:text-6xl">
-              {dict.home.heroTitle}
-            </h1>
-            <div className="mt-6 h-1 w-16 rounded-full bg-vermilion" />
-            <p className="mt-6 max-w-xl text-lg leading-relaxed text-stone">
-              {dict.home.heroText}
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                href={href("/events")}
-                className="rounded-md bg-vermilion px-6 py-3 font-semibold text-white hover:bg-vermilion-deep"
-              >
-                {dict.home.heroEvents}
-              </Link>
-              <Link
-                href={href("/groups")}
-                className="rounded-md border border-ink/25 px-6 py-3 font-semibold text-ink hover:border-ink hover:bg-mist"
-              >
-                {dict.home.heroGroups}
-              </Link>
+      <HeroCarousel tabs={heroTabs} tabsLabel={dict.home.heroTabsLabel} />
+
+      <section className="relative bg-white pt-14 pb-16 sm:pt-16">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-3">
+                <span className="font-accent text-sm font-bold tracking-[0.2em] text-indigo">
+                  {dict.home.upcomingKickerAccent}
+                </span>
+                <span className="h-px w-9 bg-indigo" />
+                <span className="font-display text-xs font-semibold tracking-[0.2em] text-stone uppercase">
+                  {dict.home.upcomingKickerCaption}
+                </span>
+              </div>
+              <h2 className="mt-3 font-display text-3xl font-normal tracking-[0.02em] text-ink">
+                {dict.home.upcomingTitle}
+              </h2>
             </div>
+            <Link
+              href={href("/events")}
+              className="font-display text-sm font-semibold text-indigo hover:text-indigo-deep"
+            >
+              {dict.home.viewAll}
+            </Link>
+          </div>
+          {carouselEvents.length > 0 ? (
+            <EventsCarousel
+              events={carouselEvents}
+              nextUpLabel={dict.home.upcomingNextUp}
+              prevLabel={dict.home.upcomingPrev}
+              nextLabel={dict.home.upcomingNext}
+              detailsLabel={dict.home.upcomingDetails}
+            />
+          ) : (
+            <p className="rounded-2xl border border-line bg-mist p-8 text-ink-soft">
+              {dict.home.noEvents}
+            </p>
+          )}
+        </div>
+      </section>
+
+      <section className="relative overflow-hidden bg-navy text-white">
+        <KanjiWatermark char="学" className="-top-14 -left-10 text-white/5" />
+        <div className="relative mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-[1fr_auto] lg:items-center">
+          <div>
+            <span className="block font-display text-xs font-semibold tracking-[0.24em] text-sky uppercase">
+              {dict.home.japaneseSchool.kicker}
+            </span>
+            <span className="mt-5 mb-5 block h-0.5 w-9 bg-indigo" />
+            <h2 className="font-display text-3xl leading-snug font-normal tracking-[0.02em] sm:text-4xl">
+              <span className="block text-white">{dict.home.japaneseSchool.headingLine1}</span>
+              <span className="block text-sky">{dict.home.japaneseSchool.headingLine2}</span>
+            </h2>
+            <p className="mt-4 font-display text-lg font-semibold text-sky">
+              {dict.home.japaneseSchool.subheading}
+            </p>
+            <p className="mt-5 max-w-lg leading-relaxed text-white/75">
+              {dict.home.japaneseSchool.body}
+            </p>
           </div>
           <PhotoPlaceholder
-            label={dict.home.photoSoon}
-            className="aspect-[4/3] w-full"
+            dark
+            shape="circle"
+            label={dict.home.japaneseSchool.photoLabel}
+            className="mx-auto aspect-square w-64 sm:w-80 lg:w-96"
           />
         </div>
-      </section>
-
-      {/* Upcoming events */}
-      <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-        <div className="flex items-end justify-between">
-          <h2 className="font-serif text-3xl text-ink">
-            {dict.home.upcomingTitle}
-          </h2>
+        <div className="relative mx-auto grid max-w-6xl grid-cols-2 gap-x-6 gap-y-10 px-4 pb-4 sm:grid-cols-4 sm:px-6">
+          {dict.home.japaneseSchool.highlights.map((item, i) => (
+            <div key={i} className="flex flex-col items-start border-t border-white/15 pt-6">
+              <PhotoPlaceholder
+                dark
+                shape="circle"
+                label={dict.home.photoSoon}
+                className="h-28 w-28"
+              />
+              <span className="mt-5 block h-0.5 w-8 bg-indigo" />
+              <span className="mt-3.5 font-display text-lg leading-tight font-semibold text-white">
+                {item.title}
+              </span>
+              <span className="mt-2.5 text-sm leading-relaxed text-white/70">{item.text}</span>
+            </div>
+          ))}
+        </div>
+        <div className="relative mx-auto flex max-w-6xl flex-wrap gap-3 px-4 pt-8 pb-14 sm:px-6">
           <Link
-            href={href("/events")}
-            className="text-sm font-semibold text-vermilion hover:text-vermilion-deep"
+            href={href("/payments")}
+            className="rounded-lg bg-indigo px-7 py-3.5 font-display text-sm font-semibold text-white hover:bg-indigo-deep"
           >
-            {dict.home.viewAll}
+            {dict.home.japaneseSchool.primaryCta} →
+          </Link>
+          <Link
+            href={href("/groups")}
+            className="rounded-lg border-2 border-white/50 px-7 py-3 font-display text-sm font-semibold text-white hover:border-white hover:bg-white/10"
+          >
+            {dict.home.japaneseSchool.secondaryCta} →
           </Link>
         </div>
-        {upcoming.length > 0 ? (
-          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {upcoming.map((event) => (
-              <EventCard key={event.id} event={event} />
-            ))}
-          </div>
-        ) : (
-          <p className="mt-8 rounded-2xl border border-line bg-mist p-8 text-stone">
-            {dict.home.noEvents}
-          </p>
-        )}
+        <WaveDivider className="text-mist" />
       </section>
 
-      {/* Mission */}
-      <section className="border-t border-line bg-mist">
-        <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1fr_auto]">
-          <div className="max-w-md">
-            <p className="text-sm font-semibold tracking-[0.22em] text-vermilion uppercase">
-              {dict.home.missionKicker}
-            </p>
-            <p className="mt-4 font-serif text-xl leading-relaxed text-ink">
-              {dict.home.missionText}
-            </p>
+      <section className="relative overflow-hidden bg-mist">
+        <KanjiWatermark char="輪" className="-right-10 -bottom-16 text-indigo/5" />
+        <div className="relative mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+          <div className="mb-10 text-center">
+            <div className="mb-3.5 flex items-center justify-center gap-3">
+              <span className="font-accent text-sm font-bold tracking-[0.2em] text-indigo">
+                {dict.home.sportsClubs.kickerAccent}
+              </span>
+              <span className="h-px w-9 bg-indigo" />
+              <span className="font-display text-xs font-semibold tracking-[0.2em] text-stone uppercase">
+                {dict.home.sportsClubs.kickerCaption}
+              </span>
+            </div>
+            <h2 className="font-display text-3xl font-normal tracking-[0.02em] text-ink">
+              <span className="text-indigo">{dict.home.sportsClubs.headingLine1}</span>{" "}
+              {dict.home.sportsClubs.headingLine2}
+            </h2>
+            <p className="mx-auto mt-3.5 max-w-2xl text-ink-soft">{dict.home.sportsClubs.body}</p>
           </div>
-          <div className="grid grid-cols-2 gap-x-10 gap-y-8 sm:grid-cols-4 lg:gap-x-12">
-            {pillars.map((pillar) => (
-              <div key={pillar.key} className="flex w-24 flex-col items-center text-center sm:w-28">
-                <span
-                  className={`flex h-16 w-16 items-center justify-center rounded-full text-white ${pillar.color}`}
-                >
-                  <svg
-                    viewBox="0 0 40 40"
-                    className="h-8 w-8"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    {pillar.icon}
-                  </svg>
-                </span>
-                <p className="mt-3 text-sm font-medium leading-snug text-ink">
-                  {dict.home.missionPillars[pillar.key]}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Groups & programs */}
-      <section className="border-y border-line bg-paper">
-        <div className="mx-auto max-w-6xl px-4 py-16 text-center sm:px-6">
-          <p className="text-sm font-semibold tracking-[0.22em] text-vermilion uppercase">
-            {dict.home.groupsKicker}
-          </p>
-          <h2 className="mt-3 font-serif text-3xl text-ink sm:text-4xl">
-            {dict.home.groupsTitle}
-          </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-stone">
-            {dict.home.groupsText}
-          </p>
-          {groups.length > 0 && (
-            <div className="mt-10 grid gap-6 text-left sm:grid-cols-2 lg:grid-cols-3">
+          {groups.length > 0 ? (
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {groups.map((group) => (
-                <Link
+                <div
                   key={group.id}
-                  href={href("/groups")}
-                  className="group flex flex-col overflow-hidden rounded-2xl border border-line bg-paper shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                  className="flex flex-col overflow-hidden rounded-xl border border-line bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
                 >
-                  <div className="relative flex aspect-[16/9] items-center justify-center bg-mist">
-                    {group.imageUrl ? (
+                  {group.imageUrl ? (
+                    <div className="relative h-44 w-full">
                       <Image
                         src={group.imageUrl}
                         alt=""
                         fill
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                         className="object-cover"
                       />
-                    ) : (
-                      <Image
-                        src="/logo-mark.png"
-                        alt=""
-                        width={64}
-                        height={64}
-                        className="opacity-10"
-                      />
-                    )}
-                  </div>
-                  <div className="flex flex-1 flex-col p-5">
-                    <h3 className="font-serif text-xl text-ink group-hover:text-vermilion">
-                      {group.name}
-                    </h3>
+                    </div>
+                  ) : (
+                    <PhotoPlaceholder
+                      label={dict.home.sportsClubs.photoLabel}
+                      frame={false}
+                      className="h-44 w-full"
+                    />
+                  )}
+                  <div className="flex flex-1 flex-col gap-1.5 p-4">
+                    <span className="font-display text-lg font-semibold text-ink">{group.name}</span>
                     {group.meetingSchedule && (
-                      <p className="mt-1 text-sm font-medium text-vermilion">
-                        {group.meetingSchedule}
-                      </p>
+                      <span className="text-sm text-ink-soft">{group.meetingSchedule}</span>
                     )}
                     {group.description && (
-                      <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-stone">
+                      <p className="mt-0.5 line-clamp-2 text-sm leading-relaxed text-ink-soft">
                         {group.description}
                       </p>
                     )}
-                    <span
-                      aria-hidden="true"
-                      className="mt-4 text-vermilion transition group-hover:translate-x-1"
+                    <Link
+                      href={group.websiteUrl ?? href("/groups")}
+                      className="mt-auto pt-3 font-display text-sm font-semibold text-indigo hover:text-indigo-deep"
                     >
-                      →
-                    </span>
+                      {dict.groups.website}
+                    </Link>
                   </div>
-                </Link>
+                </div>
               ))}
             </div>
+          ) : (
+            <p className="rounded-2xl border border-line bg-white p-8 text-center text-ink-soft">
+              {dict.home.sportsClubs.empty}
+            </p>
           )}
-          <Link
-            href={href("/groups")}
-            className="mt-10 inline-block rounded-md bg-ink px-6 py-3 text-sm font-semibold tracking-[0.08em] text-white uppercase hover:bg-ink-soft"
-          >
-            {dict.home.groupsButton}
-          </Link>
+          <div className="mt-11 text-center">
+            <Link
+              href={href("/groups")}
+              className="inline-block rounded-lg bg-ink px-7 py-3 font-display text-sm font-semibold text-white hover:bg-ink-soft"
+            >
+              {dict.home.sportsClubs.cta}
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* Support band */}
-      <section className="bg-ink">
-        <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:gap-14">
+      <section className="relative overflow-hidden bg-paper">
+        <KanjiWatermark char="和" className="-bottom-10 left-4 text-ink/5" />
+        <div className="relative mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-2 lg:items-center">
           <div>
-            <p className="text-sm font-semibold tracking-[0.22em] text-gold uppercase">
-              {dict.home.supportKicker}
-            </p>
-            <h2 className="mt-4 font-serif text-3xl text-white sm:text-4xl">
-              {dict.home.supportTitle}
+            <div className="flex items-center gap-3">
+              <span className="font-display text-xs font-semibold tracking-[0.2em] text-indigo uppercase">
+                {dict.home.history.kickerCaption}
+              </span>
+              <span className="h-0.5 w-9 bg-magenta" />
+              <span className="font-accent text-sm font-bold tracking-[0.2em] text-indigo">
+                {dict.home.history.kickerAccent}
+              </span>
+            </div>
+            <h2 className="mt-5 font-display text-3xl leading-snug font-normal tracking-[0.02em]">
+              <span className="text-ink">{dict.home.history.headingLine1}</span>
+              <br />
+              <span className="text-magenta">{dict.home.history.headingLine2}</span>
             </h2>
-            <p className="mt-4 max-w-xl leading-relaxed text-white/70">
-              {dict.home.supportText}
-            </p>
-            <Link
-              href={href("/payments") + "#donate"}
-              className="mt-8 inline-block rounded-md bg-vermilion px-8 py-3 font-semibold text-white hover:bg-vermilion-deep"
-            >
-              {dict.home.supportCta}
-            </Link>
+            <p className="mt-5 max-w-md leading-relaxed text-ink-soft">{dict.home.history.body}</p>
+            <div className="relative mt-9 flex flex-col gap-6">
+              <span className="absolute top-1.5 bottom-1.5 left-1.5 w-px bg-line" />
+              {dict.home.history.milestones.map((step) => (
+                <div key={step.year} className="relative flex items-start gap-4 pl-0">
+                  <span className="mt-1 h-3 w-3 shrink-0 rounded-full bg-magenta ring-4 ring-magenta/15" />
+                  <div>
+                    <p className="font-display text-sm font-bold tracking-[0.05em] text-ink">
+                      {step.year}
+                    </p>
+                    <p className="mt-1 text-sm leading-relaxed text-ink-soft">{step.text}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
           <PhotoPlaceholder
-            label={dict.home.photoSoon}
-            dark
-            className="aspect-[4/3] w-full"
+            label={dict.home.history.photoLabel}
+            className="aspect-[4/3] w-full lg:-rotate-2"
           />
         </div>
       </section>

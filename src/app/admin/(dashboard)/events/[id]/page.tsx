@@ -20,7 +20,7 @@ export default async function EditEventPage({
     <div>
       <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="font-serif text-3xl text-ink">Edit Event</h1>
+          <h1 className="font-display text-3xl text-ink">Edit Event</h1>
           <p className="mt-1 text-stone">
             {event.status === "published"
               ? "This event is live on the website."

@@ -7,12 +7,12 @@ export default async function LoginPage() {
     redirect("/admin");
   }
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#faf6ef] px-4">
-      <div className="w-full max-w-sm rounded-xl border border-[#e5dccb] bg-white p-8 shadow-sm">
-        <h1 className="text-xl font-semibold text-[#1f2a44]">
+    <div className="flex min-h-screen items-center justify-center bg-mist px-4">
+      <div className="w-full max-w-sm rounded-xl border border-line bg-white p-8 shadow-sm">
+        <h1 className="font-display text-xl font-semibold text-ink">
           SEJSCC Board Sign-In
         </h1>
-        <p className="mt-2 text-sm text-[#6b6355]">
+        <p className="mt-2 text-sm text-ink-soft">
           Enter your email and we&apos;ll send you a sign-in link. No password
           needed.
         </p>
@@ -31,11 +31,11 @@ export default async function LoginPage() {
             name="email"
             required
             placeholder="you@example.com"
-            className="w-full rounded-lg border border-[#d8cfbc] px-4 py-3 text-[#1f2a44] outline-none focus:border-[#c0392b]"
+            className="w-full rounded-lg border border-line px-4 py-3 text-ink outline-none focus:border-indigo"
           />
           <button
             type="submit"
-            className="w-full rounded-lg bg-[#c0392b] px-4 py-3 font-medium text-white hover:bg-[#a93226]"
+            className="w-full rounded-lg bg-indigo px-4 py-3 font-medium text-white hover:bg-indigo-deep"
           >
             Email me a sign-in link
           </button>

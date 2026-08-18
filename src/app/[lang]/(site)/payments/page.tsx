@@ -33,14 +33,14 @@ export default async function PaymentsPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-14 sm:px-6">
-      <h1 className="font-serif text-4xl text-ink sm:text-5xl">
+      <h1 className="font-display text-4xl text-ink sm:text-5xl">
         {dict.payments.title}
       </h1>
-      <div className="mt-4 h-1 w-12 rounded-full bg-vermilion" />
+      <div className="mt-4 h-1 w-12 rounded-full bg-indigo" />
       <p className="mt-5 max-w-2xl text-stone">{dict.payments.lede}</p>
 
       <section id="donate" className="mt-12 scroll-mt-24">
-        <h2 className="font-serif text-2xl text-ink">
+        <h2 className="font-display text-2xl text-ink">
           {dict.payments.donateTitle}
         </h2>
         <p className="mt-2 text-stone">{dict.payments.donateText}</p>
@@ -61,7 +61,7 @@ export default async function PaymentsPage() {
                 {dict.payments.donateSoonBefore}
                 <a
                   href="mailto:info@sejscc.org"
-                  className="font-semibold text-vermilion"
+                  className="font-semibold text-indigo"
                 >
                   info@sejscc.org
                 </a>
@@ -73,14 +73,14 @@ export default async function PaymentsPage() {
       </section>
 
       <section id="dues" className="mt-12 scroll-mt-24">
-        <h2 className="font-serif text-2xl text-ink">
+        <h2 className="font-display text-2xl text-ink">
           {dict.payments.duesTitle}
         </h2>
         <p className="mt-2 max-w-2xl text-stone">{dict.payments.duesText}</p>
 
         <div className="mt-6 grid gap-6 sm:grid-cols-2">
           <div className="rounded-xl border border-line bg-white p-6">
-            <h3 className="font-serif text-xl text-ink">
+            <h3 className="font-display text-xl text-ink">
               {dict.payments.zelleTitle}
             </h3>
             <p className="mt-2 text-sm leading-relaxed text-stone">
@@ -92,7 +92,7 @@ export default async function PaymentsPage() {
                   {dict.payments.zelleBefore}
                   <a
                     href="mailto:gakuen@sejscc.org"
-                    className="font-semibold text-vermilion"
+                    className="font-semibold text-indigo"
                   >
                     gakuen@sejscc.org
                   </a>
@@ -103,7 +103,7 @@ export default async function PaymentsPage() {
             <p className="mt-3 text-sm text-stone">{dict.payments.zelleMemo}</p>
           </div>
           <div className="rounded-xl border border-line bg-white p-6">
-            <h3 className="font-serif text-xl text-ink">
+            <h3 className="font-display text-xl text-ink">
               {dict.payments.checkTitle}
             </h3>
             <p className="mt-2 text-sm leading-relaxed text-stone">
@@ -126,7 +126,7 @@ export default async function PaymentsPage() {
           {dict.payments.questionsBefore}
           <a
             href="mailto:gakuen@sejscc.org"
-            className="font-semibold text-vermilion"
+            className="font-semibold text-indigo"
           >
             gakuen@sejscc.org
           </a>

@@ -1,27 +1,35 @@
 @import "tailwindcss";
 
 @theme {
-  --color-paper: #ffffff;
-  --color-mist: #f5f6f8;
-  --color-ink: #1f2a44;
-  --color-ink-soft: #34405e;
-  --color-vermilion: #c0392b;
-  --color-vermilion-deep: #a93226;
-  --color-gold: #a8842c;
-  --color-pine: #3d6b52;
-  --color-line: #e4e7ec;
-  --color-stone: #5c6472;
+  --color-paper: #fbfdff;
+  --color-mist: #f2f7fd;
+  --color-ink: #14304f;
+  --color-ink-soft: #46617d;
+  --color-indigo: #1e63b0;
+  --color-indigo-deep: #14498a;
+  --color-sky: #8fc1f0;
+  --color-magenta: #b02d76;
+  --color-magenta-deep: #8f2560;
+  --color-blossom: #f2a3c8;
+  --color-gold: #ae9665;
+  --color-navy: #12365f;
+  --color-line: #d3e4f4;
+  --color-stone: #4f6d8f;
+
+  --aspect-flyer: 4 / 5;
 }
 
 @theme inline {
-  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
-  --font-serif: var(--font-lora), Georgia, serif;
+  --font-sans: var(--font-zen-maru-gothic), system-ui, sans-serif;
+  /* Jost and Georgia carry no CJK glyphs — without a Japanese face behind
+     them, Japanese text drops to the OS font. */
+  --font-display: var(--font-jost), var(--font-zen-maru-gothic), system-ui, sans-serif;
+  --font-accent: var(--font-shippori-mincho), var(--font-zen-maru-gothic), Georgia, serif;
 }
 
 body {
   background: var(--color-paper);
   color: var(--color-ink);
-  font-family: var(--font-sans);
 }
 
 /* Tailwind v4's preflight drops the v3 pointer cursor on buttons. */

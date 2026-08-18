@@ -16,8 +16,8 @@ export default async function AdminLayout({
     <div className="min-h-screen bg-paper">
       <header className="sticky top-0 z-40 border-b border-line bg-white">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-6 py-3">
-          <Link href="/admin" className="font-serif text-lg text-ink">
-            SEJSCC <span className="text-vermilion">Admin</span>
+          <Link href="/admin" className="font-display text-lg text-ink">
+            SEJSCC <span className="text-indigo">Admin</span>
           </Link>
           <div className="flex items-center gap-4">
             <Link

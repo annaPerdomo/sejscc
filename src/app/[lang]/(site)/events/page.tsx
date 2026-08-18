@@ -35,10 +35,10 @@ export default async function EventsPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
-      <h1 className="font-serif text-4xl text-ink sm:text-5xl">
+      <h1 className="font-display text-4xl text-ink sm:text-5xl">
         {dict.events.title}
       </h1>
-      <div className="mt-4 h-1 w-12 rounded-full bg-vermilion" />
+      <div className="mt-4 h-1 w-12 rounded-full bg-indigo" />
       <p className="mt-5 max-w-2xl text-stone">{dict.events.lede}</p>
 
       {upcoming.length > 0 ? (
@@ -55,7 +55,7 @@ export default async function EventsPage() {
 
       {past.length > 0 && (
         <section className="mt-16">
-          <h2 className="font-serif text-2xl text-ink">
+          <h2 className="font-display text-2xl text-ink">
             {dict.events.pastTitle}
           </h2>
           <div className="mt-6 grid gap-6 opacity-80 sm:grid-cols-2 lg:grid-cols-3">

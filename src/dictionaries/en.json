@@ -9,7 +9,10 @@
     "orgBottom": "School & Community Center",
     "donate": "Donate",
     "openMenu": "Open menu",
-    "closeMenu": "Close menu"
+    "closeMenu": "Close menu",
+    "announcementAccent": "次回",
+    "announcementLabel": "Next Up",
+    "announcementCta": "Sign up"
   },
   "nav": {
     "events": "Events",
@@ -21,39 +24,152 @@
     "contact": "Contact",
     "visit": "Visit",
     "boardSignIn": "Board sign-in",
-    "legal": "Southeast Japanese School & Community Center. A nonprofit community organization."
+    "legal": "Southeast Japanese School & Community Center. A nonprofit community organization.",
+    "farewellAccent": "またお会いしましょう。",
+    "farewellCaption": "— see you at the center"
   },
   "home": {
-    "kicker": "Norwalk, California",
-    "heroTitle": "A home for Japanese culture and community.",
-    "heroText": "For generations, the Southeast Japanese School & Community Center has brought neighbors together through language, arts, sports, and celebration. Everyone is welcome.",
-    "heroEvents": "Upcoming Events",
-    "heroGroups": "Groups & Programs",
     "photoSoon": "Photos coming soon",
-    "missionKicker": "Our Mission",
-    "missionText": "To preserve and share Japanese language and culture, and to strengthen the bonds of community in Southeast Los Angeles County — across generations and backgrounds.",
-    "missionPillars": {
-      "community": "A Welcoming Community",
-      "education": "Education & Language",
-      "culture": "Culture & Tradition",
-      "sports": "Sports & Recreation"
-    },
-    "upcomingTitle": "Upcoming Events",
-    "viewAll": "View all →",
+    "heroTabs": [
+      {
+        "id": "center",
+        "tabLabel": "The Center",
+        "tabLabelAccent": "施設",
+        "kickerAccent": "ようこそ",
+        "kickerCaption": "Welcome · Norwalk, California · Since 1925",
+        "headingLine1": "Southeast Japanese School",
+        "headingLine2": "and Community Center",
+        "body": "For 101 years, Saturdays here have meant Japanese school. The rest of the week: judo, hula, ukulele, and bingo — everyone is welcome.",
+        "primaryCta": "See upcoming events",
+        "secondaryCta": "Explore groups & programs"
+      },
+      {
+        "id": "school",
+        "tabLabel": "Japanese School",
+        "tabLabelAccent": "日本語学校",
+        "kickerAccent": "日本語学校",
+        "kickerCaption": "Saturdays · 8:45–12:15",
+        "headingLine1": "Southeast Gakuen",
+        "headingLine2": "Japanese School",
+        "body": "Language, reading, and calligraphy from kindergarten through Level 12, with adult classes online. No Japanese background required.",
+        "primaryCta": "Tuition & registration",
+        "secondaryCta": "Meet our groups"
+      },
+      {
+        "id": "clubs",
+        "tabLabel": "Sports & Classes",
+        "tabLabelAccent": "クラブ活動",
+        "kickerAccent": "クラブ活動",
+        "kickerCaption": "20+ groups call the center home",
+        "headingLine1": "One roof,",
+        "headingLine2": "many circles",
+        "body": "Judo, kendo, basketball, hula, ukulele — the dojo, the gym, and the craft tables. Most groups welcome beginners year-round.",
+        "primaryCta": "Browse sports & clubs"
+      },
+      {
+        "id": "about",
+        "tabLabel": "About Us",
+        "tabLabelAccent": "私たちについて",
+        "kickerAccent": "私たちについて",
+        "kickerCaption": "A nonprofit community organization",
+        "headingLine1": "Who we are,",
+        "headingLine2": "and what we do",
+        "body": "A volunteer-run nonprofit serving Japanese American families and neighbors in Norwalk since 1925.",
+        "primaryCta": "Get in touch"
+      },
+      {
+        "id": "donate",
+        "tabLabel": "Donate",
+        "tabLabelAccent": "寄付",
+        "kickerAccent": "寄付",
+        "kickerCaption": "SEJSCC is a 501(c)(3) nonprofit",
+        "headingLine1": "Support",
+        "headingLine2": "the center",
+        "body": "Every gift sustains the school, the hall, and the festivals four generations call home.",
+        "primaryCta": "Donate now"
+      }
+    ],
+    "heroTabsLabel": "Highlights of the center",
+    "upcomingKickerAccent": "おしらせ",
+    "upcomingKickerCaption": "Everyone Is Invited",
+    "upcomingTitle": "There's a Seat for You",
+    "viewAll": "See all upcoming events →",
     "noEvents": "New events are being planned — check back soon, or call the center at (562) 863-5996.",
-    "groupsKicker": "Explore the Center",
-    "groupsTitle": "One Center, Many Communities",
-    "groupsText": "The center is home to Japanese language school, judo, basketball, and cultural groups that meet here year-round.",
-    "groupsCta": "Explore all groups & programs →",
-    "groupsButton": "View All Groups & Programs",
-    "supportKicker": "Support the Center",
-    "supportTitle": "Keep the Center Thriving",
-    "supportText": "Donations and dues keep our doors open for the next generation. Every gift, large or small, makes a difference.",
-    "supportCta": "Donate or Pay Dues",
-    "connectTitle": "Stay Connected",
-    "connectText": "Questions, ideas, or want to get involved? We'd love to hear from you.",
+    "upcomingNextUp": "Next Up",
+    "upcomingPrev": "Previous events",
+    "upcomingNext": "Next events",
+    "upcomingDetails": "Details",
+    "japaneseSchool": {
+      "kicker": "Japanese School",
+      "headingLine1": "Japanese at heart.",
+      "headingLine2": "Learning for life.",
+      "subheading": "Saturday mornings, since 1925.",
+      "body": "Language, reading, and calligraphy from kindergarten through Level 12, with adult classes online. No Japanese background required — students of every heritage learn side by side.",
+      "photoLabel": "Photo coming soon",
+      "highlights": [
+        {
+          "title": "Saturday Mornings",
+          "text": "Classes meet every Saturday, 8:45–12:15"
+        },
+        {
+          "title": "Kindergarten–Level 12",
+          "text": "Japanese language for all ages"
+        },
+        {
+          "title": "Adult Classes Online",
+          "text": "Learn from wherever you are"
+        },
+        {
+          "title": "Cultural Events Year-Round",
+          "text": "Bringing our community together"
+        }
+      ],
+      "primaryCta": "Tuition & registration",
+      "secondaryCta": "Meet our groups"
+    },
+    "sportsClubs": {
+      "kickerAccent": "クラブ活動",
+      "kickerCaption": "Sports, Clubs & Classes",
+      "headingLine1": "One roof,",
+      "headingLine2": "many circles",
+      "body": "20+ groups call the center home — the dojo, the gym, and the craft tables. Most welcome beginners year-round.",
+      "photoLabel": "Photo coming soon",
+      "cta": "See all sports & classes",
+      "empty": "Group listings are coming soon. Call the center at (562) 863-5996 to learn about Japanese school, judo, basketball, and other programs."
+    },
+    "history": {
+      "kickerAccent": "私たちの歩み",
+      "kickerCaption": "Our History",
+      "headingLine1": "101 years,",
+      "headingLine2": "still growing.",
+      "body": "From a small group of Japanese immigrant families in 1925 to a vibrant community today. We honor our heritage while building connections for the future.",
+      "photoLabel": "Historic photo coming soon",
+      "milestones": [
+        {
+          "year": "1925",
+          "text": "Founded as Norwalk Gakuen, a Japanese language school for the local community."
+        },
+        {
+          "year": "1962",
+          "text": "Renamed Southeast Gakuen as the community grew."
+        },
+        {
+          "year": "1970s–2000s",
+          "text": "Programs expand — cultural classes, sports, and activities for all ages."
+        },
+        {
+          "year": "2025–2026",
+          "text": "Celebrating 101 years of learning, community, and belonging."
+        }
+      ]
+    },
+    "connectKickerAccent": "コミュニティ",
+    "connectKickerCaption": "Our Community",
+    "connectTitle": "All Generations. One Community.",
+    "connectText": "Everyone is welcome at SEJSCC. We are a nonprofit organization and all of our activities are open to anyone, regardless of race or religion. Together we learn, celebrate, volunteer, and create memories that last a lifetime.",
     "connectCall": "Call (562) 863-5996",
-    "connectEmail": "Email the Center"
+    "connectEmail": "Email the Center",
+    "connectPhotoLabel": "Photo coming soon"
   },
   "events": {
     "metaTitle": "Events",

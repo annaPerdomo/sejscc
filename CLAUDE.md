@@ -18,10 +18,20 @@ through naming and structure instead. When in doubt, leave it out.
 ## Styling: one theme, no one-offs
 
 All design tokens live in `@theme` in [globals.css](src/app/globals.css)
-(colors: `paper`, `mist`, `ink`, `ink-soft`, `vermilion`, `vermilion-deep`,
-`gold`, `pine`, `line`, `stone`; fonts: `font-sans`, `font-serif`). Every
-component must be built from these tokens via Tailwind utility classes.
+(colors: `paper`, `mist`, `ink`, `ink-soft`, `stone`, `line`, `navy`,
+`indigo`, `indigo-deep`, `sky`, `magenta`, `magenta-deep`, `blossom`,
+`gold`; aspect ratios: `aspect-flyer`; fonts: `font-sans` (Zen Maru Gothic,
+body copy), `font-display` (Jost, headings and UI labels), `font-accent`
+(Shippori Mincho, Japanese kicker text)). Every component must be built from
+these tokens via Tailwind utility classes.
 
+- Text colors must meet WCAG AA (4.5:1 for body copy, 3:1 for large text)
+  against the background they sit on. `sky` and `blossom` are the two
+  readable text colors on `navy`; `indigo`, `magenta` and `gold` are not —
+  use them for fills and rules there, never for words. On light backgrounds
+  `stone` is the lightest color still safe for body copy.
+- Jost carries no CJK glyphs, so `font-display` falls back to Zen Maru
+  Gothic for Japanese. Never add a font stack without a Japanese face in it.
 - Never introduce a raw hex value, arbitrary Tailwind value (`text-[#...]`,
   `w-[13px]`), or a one-off inline style. If a design need isn't covered by
   an existing token, add the token to `@theme` first, then use it — don't
