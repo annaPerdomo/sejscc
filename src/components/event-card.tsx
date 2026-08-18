@@ -15,14 +15,14 @@ export async function EventCard({ event }: { event: Event }) {
       href={localePath(lang, `/events/${event.slug}`)}
       className="group flex flex-col overflow-hidden rounded-xl border border-line bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
     >
-      <div className="relative aspect-[17/22] w-full bg-mist">
+      <div className="relative aspect-flyer w-full bg-mist p-2">
         {event.flyerUrl ? (
           <Image
             src={event.flyerUrl}
             alt={dict.eventDetail.flyerAlt.replace("{title}", event.title)}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            className="object-cover object-top"
+            className="object-contain"
           />
         ) : (
           <div className="flex h-full items-center justify-center">
@@ -37,11 +37,11 @@ export async function EventCard({ event }: { event: Event }) {
         )}
       </div>
       <div className="flex flex-1 flex-col gap-1.5 p-4">
-        <h3 className="font-serif text-lg leading-snug text-ink group-hover:text-vermilion">
+        <h3 className="font-display text-lg leading-snug text-ink group-hover:text-indigo">
           {event.title}
         </h3>
         {date && (
-          <p className="text-sm font-medium text-vermilion">
+          <p className="text-sm font-medium text-indigo">
             {date}
             {time ? ` · ${time}` : ""}
           </p>

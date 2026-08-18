@@ -182,13 +182,13 @@ export function EventForm({ event }: { event?: ExistingEvent }) {
               <img
                 src={previewUrl}
                 alt="Flyer preview"
-                className="w-40 rounded-lg border border-line shadow-sm"
+                className="w-40 rounded-lg border border-line bg-mist object-contain shadow-sm"
               />
             )}
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="flex min-h-40 w-40 flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-line p-4 text-center text-sm text-stone hover:border-vermilion hover:text-vermilion"
+              className="flex min-h-40 w-40 flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-line p-4 text-center text-sm text-stone hover:border-indigo hover:text-indigo"
             >
               <span className="text-2xl">↑</span>
               {previewUrl ? "Replace flyer" : "Upload flyer"}
@@ -217,7 +217,7 @@ export function EventForm({ event }: { event?: ExistingEvent }) {
             onChange={(e) => setTitle(e.target.value)}
             maxLength={150}
             placeholder="Enter event title…"
-            className="mt-4 w-full rounded-lg border border-line px-4 py-3 text-ink outline-none focus:border-vermilion"
+            className="mt-4 w-full rounded-lg border border-line px-4 py-3 text-ink outline-none focus:border-indigo"
           />
           <p className="mt-1 text-right text-xs text-stone">
             {title.length} / 150 characters
@@ -239,7 +239,7 @@ export function EventForm({ event }: { event?: ExistingEvent }) {
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-line px-3 py-2.5 text-ink outline-none focus:border-vermilion"
+                className="mt-1 w-full rounded-lg border border-line px-3 py-2.5 text-ink outline-none focus:border-indigo"
               />
             </label>
             <label className="block text-sm font-medium text-stone">
@@ -248,7 +248,7 @@ export function EventForm({ event }: { event?: ExistingEvent }) {
                 type="time"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-line px-3 py-2.5 text-ink outline-none focus:border-vermilion"
+                className="mt-1 w-full rounded-lg border border-line px-3 py-2.5 text-ink outline-none focus:border-indigo"
               />
             </label>
             <label className="block text-sm font-medium text-stone">
@@ -257,7 +257,7 @@ export function EventForm({ event }: { event?: ExistingEvent }) {
                 type="time"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-line px-3 py-2.5 text-ink outline-none focus:border-vermilion"
+                className="mt-1 w-full rounded-lg border border-line px-3 py-2.5 text-ink outline-none focus:border-indigo"
               />
             </label>
           </div>
@@ -266,7 +266,7 @@ export function EventForm({ event }: { event?: ExistingEvent }) {
             <input
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-line px-3 py-2.5 text-ink outline-none focus:border-vermilion"
+              className="mt-1 w-full rounded-lg border border-line px-3 py-2.5 text-ink outline-none focus:border-indigo"
             />
           </label>
         </section>
@@ -285,7 +285,7 @@ export function EventForm({ event }: { event?: ExistingEvent }) {
             maxLength={1000}
             rows={8}
             placeholder="Tell people about your event…"
-            className="mt-4 w-full rounded-lg border border-line px-4 py-3 text-ink outline-none focus:border-vermilion"
+            className="mt-4 w-full rounded-lg border border-line px-4 py-3 text-ink outline-none focus:border-indigo"
           />
           <p className="mt-1 text-right text-xs text-stone">
             {description.length} / 1000 characters
@@ -299,22 +299,25 @@ export function EventForm({ event }: { event?: ExistingEvent }) {
           This is how your event will appear on the website.
         </p>
         <div className="mt-3 overflow-hidden rounded-xl bg-ink shadow-lg">
-          <div className="aspect-[17/22] bg-mist">
+          <div className="aspect-flyer bg-mist p-2">
             {previewUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={previewUrl}
                 alt=""
-                className="h-full w-full object-cover object-top"
+                className="h-full w-full object-contain"
               />
             ) : (
-              <div className="flex h-full items-center justify-center font-serif text-4xl text-line">
+              <div
+                aria-hidden="true"
+                className="flex h-full items-center justify-center font-accent text-4xl text-line"
+              >
                 桜
               </div>
             )}
           </div>
           <div className="p-5 text-white">
-            <p className="font-serif text-xl leading-snug">
+            <p className="font-display text-xl leading-snug">
               {title || "Your event title"}
             </p>
             <div className="mt-3 space-y-1 text-sm text-white/80">
@@ -322,7 +325,7 @@ export function EventForm({ event }: { event?: ExistingEvent }) {
               {timeLabel && <p>{timeLabel}</p>}
               {location && <p>{location}</p>}
             </div>
-            <div className="mt-4 rounded-md bg-vermilion py-2.5 text-center text-sm font-semibold">
+            <div className="mt-4 rounded-md bg-indigo py-2.5 text-center text-sm font-semibold">
               Learn More
             </div>
           </div>
@@ -331,7 +334,7 @@ export function EventForm({ event }: { event?: ExistingEvent }) {
 
       <div className="lg:col-span-2">
         {error && (
-          <p className="mb-4 rounded-lg border border-vermilion/40 bg-vermilion/5 px-4 py-3 text-sm text-vermilion-deep">
+          <p className="mb-4 rounded-lg border border-indigo/40 bg-indigo/5 px-4 py-3 text-sm text-indigo-deep">
             {error}
           </p>
         )}
@@ -355,7 +358,7 @@ export function EventForm({ event }: { event?: ExistingEvent }) {
             type="button"
             disabled={busy !== null}
             onClick={() => save("published")}
-            className="rounded-lg bg-vermilion px-6 py-3 font-semibold text-white hover:bg-vermilion-deep disabled:opacity-50"
+            className="rounded-lg bg-indigo px-6 py-3 font-semibold text-white hover:bg-indigo-deep disabled:opacity-50"
           >
             {busy === "published" ? "Publishing…" : "Publish Event"}
           </button>

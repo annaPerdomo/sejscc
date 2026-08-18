@@ -47,13 +47,13 @@ export default async function EventPage({ params }: Props) {
     <div className="mx-auto max-w-5xl px-4 py-14 sm:px-6">
       <Link
         href={localePath(lang, "/events")}
-        className="text-sm font-semibold text-vermilion hover:text-vermilion-deep"
+        className="text-sm font-semibold text-indigo hover:text-indigo-deep"
       >
         {dict.eventDetail.back}
       </Link>
       <div className="mt-6 grid gap-10 md:grid-cols-[2fr_3fr]">
         <div>
-          <div className="relative aspect-[17/22] overflow-hidden rounded-xl border border-line bg-mist shadow-sm">
+          <div className="relative aspect-flyer overflow-hidden rounded-xl border border-line bg-mist p-3 shadow-sm">
             {event.flyerUrl ? (
               <Image
                 src={event.flyerUrl}
@@ -86,7 +86,7 @@ export default async function EventPage({ params }: Props) {
           )}
         </div>
         <div>
-          <h1 className="font-serif text-3xl leading-tight text-ink sm:text-4xl">
+          <h1 className="font-display text-3xl leading-tight text-ink sm:text-4xl">
             {event.title}
           </h1>
           <dl className="mt-6 space-y-3 rounded-xl border border-line bg-white p-5 text-[15px]">

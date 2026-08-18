@@ -23,14 +23,14 @@ export default async function AdminDashboard() {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="font-serif text-3xl text-ink">Events</h1>
+          <h1 className="font-display text-3xl text-ink">Events</h1>
           <p className="mt-1 text-stone">
             Add, edit, and publish events for the website.
           </p>
         </div>
         <Link
           href="/admin/events/new"
-          className="rounded-lg bg-vermilion px-5 py-3 font-semibold text-white hover:bg-vermilion-deep"
+          className="rounded-lg bg-indigo px-5 py-3 font-semibold text-white hover:bg-indigo-deep"
         >
           + Add New Event
         </Link>
@@ -38,7 +38,7 @@ export default async function AdminDashboard() {
 
       {allEvents.length === 0 ? (
         <div className="mt-10 rounded-xl border border-line bg-white p-10 text-center">
-          <p className="font-serif text-xl text-ink">No events yet</p>
+          <p className="font-display text-xl text-ink">No events yet</p>
           <p className="mt-2 text-stone">
             Click “Add New Event” to post your first event — all you need is a
             flyer and a title.
@@ -50,16 +50,16 @@ export default async function AdminDashboard() {
             <li key={event.id}>
               <Link
                 href={`/admin/events/${event.id}`}
-                className="flex items-center gap-4 rounded-xl border border-line bg-white p-4 transition hover:border-vermilion/50 hover:shadow-sm"
+                className="flex items-center gap-4 rounded-xl border border-line bg-white p-4 transition hover:border-indigo/50 hover:shadow-sm"
               >
-                <div className="relative h-16 w-12 shrink-0 overflow-hidden rounded-md border border-line bg-mist">
+                <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md border border-line bg-mist p-1">
                   {event.flyerUrl && (
                     <Image
                       src={event.flyerUrl}
                       alt=""
                       fill
-                      sizes="48px"
-                      className="object-cover object-top"
+                      sizes="64px"
+                      className="object-contain"
                     />
                   )}
                 </div>
@@ -78,7 +78,7 @@ export default async function AdminDashboard() {
                 >
                   {event.status}
                 </span>
-                <span className="text-sm font-semibold text-vermilion">
+                <span className="text-sm font-semibold text-indigo">
                   Edit →
                 </span>
               </Link>
