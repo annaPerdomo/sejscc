@@ -10,9 +10,9 @@ import {
   type Locale,
 } from "@/lib/i18n";
 
-const LABELS: Record<Locale, string> = {
-  en: "EN",
-  ja: "日本語",
+const LABELS: Record<Locale, { text: string; typeClass: string }> = {
+  en: { text: "EN", typeClass: "font-display text-xs font-semibold" },
+  ja: { text: "日本語", typeClass: "font-accent text-sm font-bold" },
 };
 
 // The proxy reads this cookie and stops auto-redirecting against the choice.
@@ -51,13 +51,13 @@ export function LanguageToggle({
           lang={locale}
           onClick={() => switchTo(locale)}
           aria-pressed={locale === current}
-          className={`rounded-full px-2.5 py-1 text-xs font-semibold transition ${
+          className={`rounded-full px-2.5 py-1 leading-5 transition ${LABELS[locale].typeClass} ${
             locale === current
               ? "bg-ink text-white"
-              : "text-stone hover:text-ink"
+              : "text-navy hover:text-indigo"
           }`}
         >
-          {LABELS[locale]}
+          {LABELS[locale].text}
         </button>
       ))}
     </div>

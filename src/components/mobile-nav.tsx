@@ -17,7 +17,7 @@ export function MobileNav({
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="sm:hidden">
+    <div className="lg:hidden">
       <button
         type="button"
         aria-label={open ? closeLabel : openLabel}

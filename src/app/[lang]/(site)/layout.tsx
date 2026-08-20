@@ -52,7 +52,7 @@ export default async function SiteLayout({
           </div>
         )}
         <header className="border-b border-line bg-paper/95 backdrop-blur">
-          <div className="relative mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+          <div className="relative mx-auto flex max-w-6xl items-center gap-4 px-4 py-3 sm:px-6">
             <Link href={href("/")} className="flex min-w-0 items-center gap-2.5 sm:gap-3">
               <Image
                 src="/logo-mark.png"
@@ -70,20 +70,22 @@ export default async function SiteLayout({
                 </span>
               </span>
             </Link>
-            <nav className="flex shrink-0 items-center gap-1 sm:gap-2">
+            <nav className="hidden flex-1 items-center justify-center gap-1 lg:flex xl:gap-3">
               {nav.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="hidden rounded-md px-3 py-2 font-display text-[13px] font-semibold tracking-[0.08em] text-ink-soft uppercase hover:text-indigo sm:block"
+                  className="rounded-md px-3 py-2 font-display text-[13px] font-semibold tracking-[0.08em] text-ink-soft uppercase hover:text-indigo"
                 >
                   {item.label}
                 </Link>
               ))}
+            </nav>
+            <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3 lg:ml-0">
               <LanguageToggle
                 current={lang}
                 label={dict.languageToggle.label}
-                className="hidden sm:flex"
+                className="hidden lg:flex"
               />
               <Link
                 href={href("/payments") + "#donate"}
@@ -102,7 +104,7 @@ export default async function SiteLayout({
                   className="w-fit"
                 />
               </MobileNav>
-            </nav>
+            </div>
           </div>
         </header>
       </div>
