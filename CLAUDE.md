@@ -18,18 +18,21 @@ through naming and structure instead. When in doubt, leave it out.
 ## Styling: one theme, no one-offs
 
 All design tokens live in `@theme` in [globals.css](src/app/globals.css)
-(colors: `paper`, `mist`, `ink`, `ink-soft`, `stone`, `line`, `navy`,
-`indigo`, `indigo-deep`, `sky`, `magenta`, `magenta-deep`, `blossom`,
-`gold`; aspect ratios: `aspect-flyer`; fonts: `font-sans` (Zen Maru Gothic,
-body copy), `font-display` (Jost, headings and UI labels), `font-accent`
-(Shippori Mincho, Japanese kicker text)). Every component must be built from
-these tokens via Tailwind utility classes.
+(text and line colors: `ink`, `ink-soft`, `stone`, `line`, `navy`, `indigo`,
+`indigo-deep`, `sky`, `magenta`, `magenta-deep`, `blossom`, `gold`; surface
+colors, for backgrounds only: `paper`, `mist`, `cloud`, `cream`, `celadon`,
+`peach`, `lilac`; aspect ratios: `aspect-flyer`; fonts: `font-sans` (Zen Maru
+Gothic, body copy), `font-display` (Jost, headings and UI labels),
+`font-accent` (Shippori Mincho, Japanese kicker text)). Every component must
+be built from these tokens via Tailwind utility classes.
 
 - Text colors must meet WCAG AA (4.5:1 for body copy, 3:1 for large text)
   against the background they sit on. `sky` and `blossom` are the two
   readable text colors on `navy`; `indigo`, `magenta` and `gold` are not —
-  use them for fills and rules there, never for words. On light backgrounds
-  `stone` is the lightest color still safe for body copy.
+  use them for fills and rules there, never for words. On `paper` and `mist`,
+  `stone` is the lightest color still safe for body copy; on the tinted
+  surfaces (`celadon`, `peach`, `lilac`, `cream`) it falls below AA, so use
+  `ink-soft` or `ink` there.
 - Jost carries no CJK glyphs, so `font-display` falls back to Zen Maru
   Gothic for Japanese. Never add a font stack without a Japanese face in it.
 - Never introduce a raw hex value, arbitrary Tailwind value (`text-[#...]`,
@@ -42,6 +45,14 @@ these tokens via Tailwind utility classes.
   [src/components/](src/components/) as shared components, not copy-pasted
   className strings. If you're styling the same combination of utilities in
   a second place, extract it.
+- Shared visual treatments that aren't components in their own right live as
+  classes in `@layer components` in [globals.css](src/app/globals.css):
+  `surface-card` (plus `surface-card-link` for a clickable card),
+  `button-primary`, `button-donate`, `page-shell`, `section-rule`, and the
+  `section-wash-*` backgrounds. Extend one of these rather than restyling a
+  card or button inline, and build them from tokens — use
+  `--alpha(var(--color-x) / 20%)` for a tint instead of writing the color
+  out again.
 
 ## Built for a non-technical admin
 

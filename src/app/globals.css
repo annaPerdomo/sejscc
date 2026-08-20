@@ -1,8 +1,13 @@
 @import "tailwindcss";
 
 @theme {
-  --color-paper: #fbfdff;
-  --color-mist: #f2f7fd;
+  --color-paper: #fcfdff;
+  --color-mist: #f1f6fd;
+  --color-cloud: #f8faff;
+  --color-cream: #fff8f3;
+  --color-celadon: #d9eee7;
+  --color-peach: #ffe0ce;
+  --color-lilac: #e9e3fb;
   --color-ink: #14304f;
   --color-ink-soft: #46617d;
   --color-indigo: #1e63b0;
@@ -28,8 +33,111 @@
 }
 
 body {
-  background: var(--color-paper);
+  background:
+    radial-gradient(circle at 4% 12%, --alpha(var(--color-celadon) / 48%), transparent 19rem),
+    radial-gradient(circle at 96% 44%, --alpha(var(--color-lilac) / 42%), transparent 22rem),
+    var(--color-paper);
   color: var(--color-ink);
+}
+
+::selection {
+  background: var(--color-peach);
+  color: var(--color-navy);
+}
+
+@layer components {
+  .page-shell {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .page-shell::before {
+    position: absolute;
+    z-index: -1;
+    top: 0;
+    right: 7%;
+    width: 12rem;
+    height: 12rem;
+    background: radial-gradient(circle, --alpha(var(--color-peach) / 42%), transparent 70%);
+    content: "";
+  }
+
+  .section-rule {
+    height: 0.25rem;
+    width: 3rem;
+    border-radius: 9999px;
+    background: linear-gradient(90deg, var(--color-indigo), var(--color-magenta), var(--color-peach));
+  }
+
+  .section-wash-events {
+    background: linear-gradient(
+      135deg,
+      var(--color-white),
+      var(--color-cloud) 58%,
+      color-mix(in srgb, var(--color-celadon) 43%, var(--color-cloud))
+    );
+  }
+
+  .section-wash-groups {
+    background: linear-gradient(135deg, var(--color-mist), var(--color-white) 52%, var(--color-lilac));
+  }
+
+  .section-wash-history {
+    background: linear-gradient(145deg, var(--color-paper), var(--color-cream) 55%, var(--color-paper));
+  }
+
+  .section-wash-connect {
+    background: linear-gradient(135deg, var(--color-mist), var(--color-lilac));
+  }
+
+  .callout-celadon {
+    background: linear-gradient(135deg, var(--color-celadon), var(--color-white));
+  }
+
+  .surface-card {
+    border: 1px solid --alpha(var(--color-line) / 90%);
+    border-radius: var(--radius-xl);
+    background: var(--color-white);
+    box-shadow:
+      0 14px 35px --alpha(var(--color-ink) / 7%),
+      0 2px 6px --alpha(var(--color-ink) / 3%);
+  }
+
+  .surface-card-link {
+    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+  }
+
+  .surface-card-link:hover {
+    border-color: --alpha(var(--color-sky) / 90%);
+    box-shadow:
+      0 20px 44px --alpha(var(--color-ink) / 12%),
+      0 3px 8px --alpha(var(--color-ink) / 4%);
+    transform: translateY(-0.25rem);
+  }
+
+  .button-primary {
+    background: var(--color-indigo);
+    box-shadow: 0 9px 20px --alpha(var(--color-indigo) / 25%);
+    transition: transform 180ms ease, background-color 180ms ease, box-shadow 180ms ease;
+  }
+
+  .button-primary:hover {
+    background: var(--color-indigo-deep);
+    box-shadow: 0 13px 28px --alpha(var(--color-indigo) / 34%);
+    transform: translateY(-1px);
+  }
+
+  .button-donate {
+    background: var(--color-magenta);
+    box-shadow: 0 8px 18px --alpha(var(--color-magenta) / 24%);
+    transition: transform 180ms ease, background-color 180ms ease, box-shadow 180ms ease;
+  }
+
+  .button-donate:hover {
+    background: var(--color-magenta-deep);
+    box-shadow: 0 12px 24px --alpha(var(--color-magenta) / 30%);
+    transform: translateY(-1px);
+  }
 }
 
 /* Tailwind v4's preflight drops the v3 pointer cursor on buttons. */
