@@ -13,7 +13,7 @@ export async function EventCard({ event }: { event: Event }) {
   return (
     <Link
       href={localePath(lang, `/events/${event.slug}`)}
-      className="group flex flex-col overflow-hidden rounded-xl border border-line bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+      className="surface-card surface-card-link group flex flex-col overflow-hidden"
     >
       <div className="relative aspect-flyer w-full bg-mist p-2">
         {event.flyerUrl ? (

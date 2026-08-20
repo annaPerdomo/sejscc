@@ -32,11 +32,11 @@ export default async function PaymentsPage() {
   const dict = await getDictionary();
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-14 sm:px-6">
+    <div className="page-shell mx-auto max-w-4xl px-4 py-14 sm:px-6">
       <h1 className="font-display text-4xl text-ink sm:text-5xl">
         {dict.payments.title}
       </h1>
-      <div className="mt-4 h-1 w-12 rounded-full bg-indigo" />
+      <div className="section-rule mt-4" />
       <p className="mt-5 max-w-2xl text-stone">{dict.payments.lede}</p>
 
       <section id="donate" className="mt-12 scroll-mt-24">
@@ -44,7 +44,7 @@ export default async function PaymentsPage() {
           {dict.payments.donateTitle}
         </h2>
         <p className="mt-2 text-stone">{dict.payments.donateText}</p>
-        <div className="mt-5 overflow-hidden rounded-xl border border-line bg-white">
+        <div className="surface-card mt-5 overflow-hidden">
           {ZEFFY_DONATION_EMBED_URL ? (
             <iframe
               title={dict.payments.donateFrame}
@@ -79,7 +79,7 @@ export default async function PaymentsPage() {
         <p className="mt-2 max-w-2xl text-stone">{dict.payments.duesText}</p>
 
         <div className="mt-6 grid gap-6 sm:grid-cols-2">
-          <div className="rounded-xl border border-line bg-white p-6">
+          <div className="surface-card p-6">
             <h3 className="font-display text-xl text-ink">
               {dict.payments.zelleTitle}
             </h3>
@@ -102,7 +102,7 @@ export default async function PaymentsPage() {
             </p>
             <p className="mt-3 text-sm text-stone">{dict.payments.zelleMemo}</p>
           </div>
-          <div className="rounded-xl border border-line bg-white p-6">
+          <div className="surface-card p-6">
             <h3 className="font-display text-xl text-ink">
               {dict.payments.checkTitle}
             </h3>

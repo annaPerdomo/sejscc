@@ -34,11 +34,11 @@ export default async function EventsPage() {
   ]);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
+    <div className="page-shell mx-auto max-w-6xl px-4 py-14 sm:px-6">
       <h1 className="font-display text-4xl text-ink sm:text-5xl">
         {dict.events.title}
       </h1>
-      <div className="mt-4 h-1 w-12 rounded-full bg-indigo" />
+      <div className="section-rule mt-4" />
       <p className="mt-5 max-w-2xl text-stone">{dict.events.lede}</p>
 
       {upcoming.length > 0 ? (
@@ -48,9 +48,7 @@ export default async function EventsPage() {
           ))}
         </div>
       ) : (
-        <p className="mt-10 rounded-xl border border-line bg-white p-8 text-stone">
-          {dict.events.empty}
-        </p>
+        <p className="surface-card mt-10 p-8 text-stone">{dict.events.empty}</p>
       )}
 
       {past.length > 0 && (

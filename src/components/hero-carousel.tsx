@@ -75,7 +75,8 @@ export function HeroCarousel({ tabs, tabsLabel }: { tabs: HeroTab[]; tabsLabel: 
             )}
           </div>
         ))}
-        <div className="absolute inset-0 bg-gradient-to-r from-navy/95 via-navy/75 to-navy/30" />
+        <div className="absolute inset-0 bg-gradient-to-r from-navy via-navy/78 to-indigo/25" />
+        <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-navy via-navy/80 to-transparent" />
 
         <div
           role="tablist"
@@ -95,11 +96,11 @@ export function HeroCarousel({ tabs, tabsLabel }: { tabs: HeroTab[]; tabsLabel: 
                 pointerEvents: i === active ? "auto" : "none",
               }}
             >
-              <div className="flex items-center gap-3">
-                <span className="font-accent text-sm font-bold tracking-[0.2em] text-sky">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                <span className="shrink-0 font-accent text-sm font-bold tracking-[0.2em] text-sky">
                   {tab.kickerAccent}
                 </span>
-                <span className="h-px w-9 bg-sky" />
+                <span className="h-px w-9 shrink-0 bg-sky" />
                 <span className="font-display text-xs font-semibold tracking-[0.2em] text-sky uppercase">
                   {tab.kickerCaption}
                 </span>
@@ -115,7 +116,7 @@ export function HeroCarousel({ tabs, tabsLabel }: { tabs: HeroTab[]; tabsLabel: 
                 <Link
                   href={tab.primaryCta.href}
                   tabIndex={i === active ? 0 : -1}
-                  className="rounded-lg bg-indigo px-7 py-3.5 font-display text-sm font-semibold tracking-[0.03em] text-white hover:bg-indigo-deep"
+                  className="button-primary rounded-lg px-7 py-3.5 font-display text-sm font-semibold tracking-[0.03em] text-white"
                 >
                   {tab.primaryCta.label}
                 </Link>
@@ -159,7 +160,7 @@ export function HeroCarousel({ tabs, tabsLabel }: { tabs: HeroTab[]; tabsLabel: 
               </span>
               <span
                 className={`font-accent text-[11px] font-bold tracking-[0.15em] ${
-                  i === active ? "text-sky" : "text-white/70"
+                  i === active ? "text-white" : "text-white/70"
                 }`}
               >
                 {tab.tabLabelAccent}

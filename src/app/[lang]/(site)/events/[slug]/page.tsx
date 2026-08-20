@@ -44,7 +44,7 @@ export default async function EventPage({ params }: Props) {
   const time = formatEventTime(event.startAt, event.endAt, lang);
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-14 sm:px-6">
+    <div className="page-shell mx-auto max-w-5xl px-4 py-14 sm:px-6">
       <Link
         href={localePath(lang, "/events")}
         className="text-sm font-semibold text-indigo hover:text-indigo-deep"
@@ -53,7 +53,7 @@ export default async function EventPage({ params }: Props) {
       </Link>
       <div className="mt-6 grid gap-10 md:grid-cols-[2fr_3fr]">
         <div>
-          <div className="relative aspect-flyer overflow-hidden rounded-xl border border-line bg-mist p-3 shadow-sm">
+          <div className="surface-card relative aspect-flyer overflow-hidden bg-mist p-3">
             {event.flyerUrl ? (
               <Image
                 src={event.flyerUrl}
@@ -89,7 +89,7 @@ export default async function EventPage({ params }: Props) {
           <h1 className="font-display text-3xl leading-tight text-ink sm:text-4xl">
             {event.title}
           </h1>
-          <dl className="mt-6 space-y-3 rounded-xl border border-line bg-white p-5 text-[15px]">
+          <dl className="surface-card mt-6 space-y-3 p-5 text-[15px]">
             {date && (
               <div className="flex gap-3">
                 <dt className="w-20 shrink-0 font-semibold text-stone">

@@ -29,7 +29,7 @@ export default async function SiteLayout({
   return (
     <div className="flex min-h-screen flex-col">
       <div className="sticky top-0 z-40">
-        <div className="h-[3px] bg-gradient-to-r from-indigo via-sky to-magenta" />
+        <div className="h-1 bg-gradient-to-r from-indigo via-sky via-60% to-magenta" />
         {nextEvent && (
           <div className="flex items-center justify-center gap-3 bg-navy px-4 py-2">
             <span className="shrink-0 font-accent text-sm font-bold tracking-[0.1em] text-sky">
@@ -89,7 +89,7 @@ export default async function SiteLayout({
               />
               <Link
                 href={href("/payments") + "#donate"}
-                className="rounded-md bg-magenta px-3.5 py-2 font-display text-sm font-semibold text-white hover:bg-magenta-deep sm:px-4"
+                className="button-donate rounded-md px-3.5 py-2 font-display text-sm font-semibold text-white sm:px-4"
               >
                 {dict.header.donate}
               </Link>
@@ -111,19 +111,19 @@ export default async function SiteLayout({
 
       <main className="flex-1">{children}</main>
 
-      <section id="connect" className="grid scroll-mt-16 bg-mist md:grid-cols-2">
+      <section id="connect" className="section-wash-connect grid scroll-mt-16 md:grid-cols-2">
         <PhotoPlaceholder
           label={dict.home.connectPhotoLabel}
           frame={false}
           className="min-h-64 w-full"
         />
         <div className="flex flex-col justify-center px-6 py-14 sm:px-10 lg:px-14">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
             <span className="font-display text-xs font-semibold tracking-[0.2em] text-indigo uppercase">
               {dict.home.connectKickerCaption}
             </span>
-            <span className="h-0.5 w-9 bg-magenta" />
-            <span className="font-accent text-sm font-bold tracking-[0.2em] text-indigo">
+            <span className="h-0.5 w-9 shrink-0 bg-magenta" />
+            <span className="shrink-0 font-accent text-sm font-bold tracking-[0.2em] text-indigo">
               {dict.home.connectKickerAccent}
             </span>
           </div>
@@ -136,7 +136,7 @@ export default async function SiteLayout({
           <div className="mt-7 flex flex-wrap gap-3">
             <a
               href="tel:+15628635996"
-              className="rounded-lg bg-indigo px-5 py-2.5 font-display text-sm font-semibold text-white hover:bg-indigo-deep"
+              className="button-primary rounded-lg px-5 py-2.5 font-display text-sm font-semibold text-white"
             >
               {dict.home.connectCall}
             </a>

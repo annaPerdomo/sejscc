@@ -86,15 +86,15 @@ export default async function HomePage() {
     <>
       <HeroCarousel tabs={heroTabs} tabsLabel={dict.home.heroTabsLabel} />
 
-      <section className="relative bg-white pt-14 pb-16 sm:pt-16">
+      <section className="section-wash-events relative overflow-hidden pt-14 pb-16 sm:pt-16">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
             <div>
-              <div className="flex items-center gap-3">
-                <span className="font-accent text-sm font-bold tracking-[0.2em] text-indigo">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                <span className="shrink-0 font-accent text-sm font-bold tracking-[0.2em] text-indigo">
                   {dict.home.upcomingKickerAccent}
                 </span>
-                <span className="h-px w-9 bg-indigo" />
+                <span className="h-px w-9 shrink-0 bg-indigo" />
                 <span className="font-display text-xs font-semibold tracking-[0.2em] text-stone uppercase">
                   {dict.home.upcomingKickerCaption}
                 </span>
@@ -128,7 +128,7 @@ export default async function HomePage() {
 
       <section className="relative overflow-hidden bg-navy text-white">
         <KanjiWatermark char="学" className="-top-14 -left-10 text-white/5" />
-        <div className="relative mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-[1fr_auto] lg:items-center">
+        <div className="relative mx-auto grid max-w-6xl gap-10 px-4 pt-12 pb-8 sm:px-6 sm:pt-14 sm:pb-10 lg:grid-cols-[1fr_auto] lg:items-center">
           <div>
             <span className="block font-display text-xs font-semibold tracking-[0.24em] text-sky uppercase">
               {dict.home.japaneseSchool.kicker}
@@ -169,10 +169,10 @@ export default async function HomePage() {
             </div>
           ))}
         </div>
-        <div className="relative mx-auto flex max-w-6xl flex-wrap gap-3 px-4 pt-8 pb-14 sm:px-6">
+        <div className="relative mx-auto flex max-w-6xl flex-wrap gap-3 px-4 pt-8 pb-20 sm:px-6 sm:pb-28">
           <Link
             href={href("/payments")}
-            className="rounded-lg bg-indigo px-7 py-3.5 font-display text-sm font-semibold text-white hover:bg-indigo-deep"
+            className="button-primary rounded-lg px-7 py-3.5 font-display text-sm font-semibold text-white"
           >
             {dict.home.japaneseSchool.primaryCta} →
           </Link>
@@ -186,31 +186,38 @@ export default async function HomePage() {
         <WaveDivider className="text-mist" />
       </section>
 
-      <section className="relative overflow-hidden bg-mist">
-        <KanjiWatermark char="輪" className="-right-10 -bottom-16 text-indigo/5" />
+      <section className="section-wash-groups relative overflow-hidden">
+        <KanjiWatermark
+          char="輪"
+          className="-right-10 -bottom-16 text-indigo/5"
+        />
         <div className="relative mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
           <div className="mb-10 text-center">
-            <div className="mb-3.5 flex items-center justify-center gap-3">
-              <span className="font-accent text-sm font-bold tracking-[0.2em] text-indigo">
+            <div className="mb-3.5 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5">
+              <span className="shrink-0 font-accent text-sm font-bold tracking-[0.2em] text-indigo">
                 {dict.home.sportsClubs.kickerAccent}
               </span>
-              <span className="h-px w-9 bg-indigo" />
+              <span className="h-px w-9 shrink-0 bg-indigo" />
               <span className="font-display text-xs font-semibold tracking-[0.2em] text-stone uppercase">
                 {dict.home.sportsClubs.kickerCaption}
               </span>
             </div>
             <h2 className="font-display text-3xl font-normal tracking-[0.02em] text-ink">
-              <span className="text-indigo">{dict.home.sportsClubs.headingLine1}</span>{" "}
+              <span className="text-indigo">
+                {dict.home.sportsClubs.headingLine1}
+              </span>{" "}
               {dict.home.sportsClubs.headingLine2}
             </h2>
-            <p className="mx-auto mt-3.5 max-w-2xl text-ink-soft">{dict.home.sportsClubs.body}</p>
+            <p className="mx-auto mt-3.5 max-w-2xl text-ink-soft">
+              {dict.home.sportsClubs.body}
+            </p>
           </div>
           {groups.length > 0 ? (
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {groups.map((group) => (
                 <div
                   key={group.id}
-                  className="flex flex-col overflow-hidden rounded-xl border border-line bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+                  className="surface-card surface-card-link flex flex-col overflow-hidden"
                 >
                   {group.imageUrl ? (
                     <div className="relative h-44 w-full">
@@ -230,7 +237,9 @@ export default async function HomePage() {
                     />
                   )}
                   <div className="flex flex-1 flex-col gap-1.5 p-4">
-                    <span className="font-display text-lg font-semibold text-ink">{group.name}</span>
+                    <span className="font-display text-lg font-semibold text-ink">
+                      {group.name}
+                    </span>
                     {group.meetingSchedule && (
                       <span className="text-sm text-ink-soft">{group.meetingSchedule}</span>
                     )}
@@ -257,7 +266,7 @@ export default async function HomePage() {
           <div className="mt-11 text-center">
             <Link
               href={href("/groups")}
-              className="inline-block rounded-lg bg-ink px-7 py-3 font-display text-sm font-semibold text-white hover:bg-ink-soft"
+              className="button-primary inline-block rounded-lg px-7 py-3 font-display text-sm font-semibold text-white"
             >
               {dict.home.sportsClubs.cta}
             </Link>
@@ -265,16 +274,16 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-paper">
+      <section className="section-wash-history relative overflow-hidden">
         <KanjiWatermark char="和" className="-bottom-10 left-4 text-ink/5" />
         <div className="relative mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-2 lg:items-center">
           <div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
               <span className="font-display text-xs font-semibold tracking-[0.2em] text-indigo uppercase">
                 {dict.home.history.kickerCaption}
               </span>
-              <span className="h-0.5 w-9 bg-magenta" />
-              <span className="font-accent text-sm font-bold tracking-[0.2em] text-indigo">
+              <span className="h-0.5 w-9 shrink-0 bg-magenta" />
+              <span className="shrink-0 font-accent text-sm font-bold tracking-[0.2em] text-indigo">
                 {dict.home.history.kickerAccent}
               </span>
             </div>

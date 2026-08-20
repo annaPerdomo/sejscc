@@ -30,20 +30,17 @@ export default async function GroupsPage() {
   const [dict, groups] = await Promise.all([getDictionary(), getActiveGroups()]);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
+    <div className="page-shell mx-auto max-w-6xl px-4 py-14 sm:px-6">
       <h1 className="font-display text-4xl text-ink sm:text-5xl">
         {dict.groups.title}
       </h1>
-      <div className="mt-4 h-1 w-12 rounded-full bg-indigo" />
+      <div className="section-rule mt-4" />
       <p className="mt-5 max-w-2xl text-stone">{dict.groups.lede}</p>
 
       {groups.length > 0 ? (
         <div className="mt-10 grid gap-6 sm:grid-cols-2">
           {groups.map((group) => (
-            <div
-              key={group.id}
-              className="flex gap-5 rounded-xl border border-line bg-white p-6 shadow-sm"
-            >
+            <div key={group.id} className="surface-card flex gap-5 p-6">
               {group.imageUrl && (
                 <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-mist">
                   <Image
@@ -92,14 +89,12 @@ export default async function GroupsPage() {
           ))}
         </div>
       ) : (
-        <p className="mt-10 rounded-xl border border-line bg-white p-8 text-stone">
-          {dict.groups.empty}
-        </p>
+        <p className="surface-card mt-10 p-8 text-stone">{dict.groups.empty}</p>
       )}
 
-      <div className="mt-12 rounded-xl border border-line bg-mist p-8">
+      <div className="callout-celadon mt-12 rounded-xl border border-celadon p-8 shadow-sm">
         <h2 className="font-display text-2xl text-ink">{dict.groups.useTitle}</h2>
-        <p className="mt-2 max-w-2xl text-stone">
+        <p className="mt-2 max-w-2xl text-ink-soft">
           {dict.groups.useBefore}
           <a
             href="mailto:info@sejscc.org"

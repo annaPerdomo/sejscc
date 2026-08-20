@@ -91,8 +91,8 @@ export function EventsCarousel({
               key={event.id}
               data-card
               href={event.href}
-              className={`group flex w-72 shrink-0 snap-start flex-col overflow-hidden rounded-xl bg-white p-3.5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg sm:w-80 ${
-                i === 0 ? "border-2 border-indigo" : "border border-line"
+              className={`surface-card surface-card-link group flex w-72 shrink-0 snap-start flex-col overflow-hidden p-3.5 sm:w-80 ${
+                i === 0 ? "border-2 border-indigo" : ""
               }`}
             >
               {i === 0 && (
