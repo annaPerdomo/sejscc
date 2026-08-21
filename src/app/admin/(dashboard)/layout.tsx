@@ -23,15 +23,17 @@ export default async function AdminLayout({
             role: session.user.role,
           }}
         />
-        <main className="flex-1 bg-paper">
-          <div className="mx-auto max-w-5xl px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
-            {children}
-          </div>
-        </main>
+        <div className="flex flex-1 flex-col">
+          <main className="flex-1 bg-paper">
+            <div className="mx-auto max-w-5xl px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
+              {children}
+            </div>
+          </main>
+          <footer className="border-t border-line bg-white px-4 py-4 text-center">
+            <MadeWithLove madeWith="Made with" by="by" className="text-xs text-stone" />
+          </footer>
+        </div>
       </div>
-      <footer className="border-t border-line bg-white px-4 py-4 text-center">
-        <MadeWithLove madeWith="Made with" by="by" className="text-xs text-stone" />
-      </footer>
     </>
   );
 }
