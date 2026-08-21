@@ -1,11 +1,10 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { del } from "@vercel/blob";
 import { eq } from "drizzle-orm";
-import { auth } from "@/auth";
 import { db } from "@/db";
 import { events } from "@/db/schema";
+import { requireUser, revalidateSite } from "@/lib/admin";
 import { slugify } from "@/lib/format";
 
 export type EventInput = {
@@ -19,12 +18,6 @@ export type EventInput = {
   location: string;
   status: "draft" | "published";
 };
-
-async function requireUser() {
-  const session = await auth();
-  if (!session?.user) throw new Error("Not signed in.");
-  return session.user;
-}
 
 // The fake UTC marker is the storage convention; see src/lib/format.ts.
 function toWallClock(date: string, time: string): Date | null {
@@ -46,12 +39,6 @@ function eventValues(input: EventInput, userId?: string) {
     status: input.status,
     ...(userId ? { createdById: userId } : {}),
   };
-}
-
-// Cache entries are keyed by route file, not browser URL, so revalidating
-// "/events" would never match. Sweeping the layout covers both locales.
-function revalidateSite() {
-  revalidatePath("/[lang]", "layout");
 }
 
 export async function createEvent(input: EventInput) {
