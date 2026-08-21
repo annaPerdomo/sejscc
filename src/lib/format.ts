@@ -82,18 +82,8 @@ export function normalizeContactEmail(raw: string): string | null {
   return trimmed;
 }
 
-// Resend magic-link sign-in never populates `name`, so both helpers below
-// fall back to deriving something presentable from the email address.
-export function firstNameFrom(user: {
-  name?: string | null;
-  email?: string | null;
-}): string | null {
-  if (user.name?.trim()) return user.name.trim().split(/\s+/)[0];
-  const local = user.email?.split("@")[0];
-  const first = local?.split(/[._-]+/)[0];
-  return first ? first[0].toUpperCase() + first.slice(1) : null;
-}
-
+// Resend magic-link sign-in never populates `name`, so this falls back to
+// deriving initials from the email address until the admin sets one.
 export function initialsFrom(user: {
   name?: string | null;
   email?: string | null;

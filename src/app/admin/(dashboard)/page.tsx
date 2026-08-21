@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import { auth } from "@/auth";
 import { getActiveGroups, getUpcomingEvents } from "@/lib/events";
-import { firstNameFrom } from "@/lib/format";
 import { AdminButtonLink } from "@/components/admin/admin-button";
 import { AdminCard } from "@/components/admin/admin-card";
 
@@ -53,7 +52,7 @@ export default async function AdminDashboard() {
     getUpcomingEvents(),
   ]);
 
-  const name = session?.user ? firstNameFrom(session.user) : null;
+  const firstName = session?.user?.name?.trim().split(/\s+/)[0] ?? null;
   const today = new Date();
 
   return (
@@ -61,8 +60,14 @@ export default async function AdminDashboard() {
       <div className="flex flex-wrap items-end justify-between gap-6">
         <div>
           <h1 className="font-display text-3xl text-ink sm:text-4xl">
-            Welcome back
-            {name && <>, <span className="text-indigo">{name.toUpperCase()}</span></>}
+            {firstName ? (
+              <>
+                Welcome back,{" "}
+                <span className="text-indigo">{firstName.toUpperCase()}</span>
+              </>
+            ) : (
+              "Welcome back"
+            )}
           </h1>
           <p className="mt-2 text-stone">What would you like to do today?</p>
         </div>
@@ -83,6 +88,18 @@ export default async function AdminDashboard() {
           </p>
         </div>
       </div>
+
+      {!firstName && (
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-line bg-cream px-5 py-4">
+          <p className="text-sm text-ink-soft">
+            We don’t have your name yet — add it so the site can greet you by
+            name.
+          </p>
+          <AdminButtonLink href="/admin/profile" variant="secondary">
+            Add your name
+          </AdminButtonLink>
+        </div>
+      )}
 
       <div className="mt-10 grid gap-6 sm:grid-cols-2">
         <SummaryCard

@@ -11,7 +11,7 @@ import {
   verificationTokens,
 } from "@/db/schema";
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
   adapter: DrizzleAdapter(db, {
     usersTable: users,
     accountsTable: accounts,
@@ -48,10 +48,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       return true;
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
         token.role = (user as { role?: string }).role ?? "editor";
+      }
+      if (trigger === "update") {
+        // Set by updateProfileName() in the profile form's server action.
+        const updatedName = (session as { user?: { name?: string } } | undefined)
+          ?.user?.name;
+        if (typeof updatedName === "string" && updatedName.trim()) {
+          token.name = updatedName.trim();
+        }
       }
       return token;
     },

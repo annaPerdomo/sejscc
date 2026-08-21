@@ -141,9 +141,16 @@ export function AdminSidebar({
               </span>
             </span>
           </div>
-          <div className="mt-4 flex items-center gap-5 text-xs font-semibold tracking-wide">
+          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-semibold tracking-wide">
             <Link href="/" className="text-white/70 hover:text-white">
               View website
+            </Link>
+            <Link
+              href="/admin/profile"
+              onClick={() => setOpen(false)}
+              className="text-white/70 hover:text-white"
+            >
+              Edit profile
             </Link>
             <form action={signOutAction}>
               <button type="submit" className="text-white/70 hover:text-white">
