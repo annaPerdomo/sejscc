@@ -18,10 +18,10 @@ through naming and structure instead. When in doubt, leave it out.
 ## Styling: one theme, no one-offs
 
 All design tokens live in `@theme` in [globals.css](src/app/globals.css)
-(text and line colors: `ink`, `ink-soft`, `stone`, `line`, `navy`, `indigo`,
-`indigo-deep`, `sky`, `magenta`, `magenta-deep`, `blossom`, `gold`; surface
-colors, for backgrounds only: `paper`, `mist`, `cloud`, `cream`, `celadon`,
-`peach`, `lilac`; aspect ratios: `aspect-flyer`; fonts: `font-sans` (Zen Maru
+(text and line colors: `ink`, `ink-deep`, `ink-soft`, `stone`, `line`, `navy`,
+`indigo`, `indigo-deep`, `sky`, `magenta`, `magenta-deep`, `blossom`, `gold`,
+`sand`; surface colors, for backgrounds only: `paper`, `mist`, `cloud`,
+`cream`, `celadon`, `peach`, `lilac`; aspect ratios: `aspect-flyer`; fonts: `font-sans` (Zen Maru
 Gothic, body copy), `font-display` (Jost, headings and UI labels),
 `font-accent` (Shippori Mincho, Japanese kicker text)). Every component must
 be built from these tokens via Tailwind utility classes.
@@ -32,7 +32,15 @@ be built from these tokens via Tailwind utility classes.
   use them for fills and rules there, never for words. On `paper` and `mist`,
   `stone` is the lightest color still safe for body copy; on the tinted
   surfaces (`celadon`, `peach`, `lilac`, `cream`) it falls below AA, so use
-  `ink-soft` or `ink` there.
+  `ink-soft` or `ink` there. `sand` is a light stroke color for decoration on
+  dark surfaces only; `ink-deep` is darker than `navy` and takes the same
+  text colors.
+- A background that washes over `navy` eats the headroom `sky` text depends
+  on: `sky` clears 4.5:1 on flat `navy` by a margin of roughly 0.04 relative
+  luminance, so a light wash of even 12–17% drops it below AA. The composed
+  backgrounds that sit under text (`section-navy-scene`, the `seigaiha-rings`
+  textures) are tuned against that ceiling — re-check the darkest text on
+  them, at mobile widths, before lightening any layer.
 - Jost carries no CJK glyphs, so `font-display` falls back to Zen Maru
   Gothic for Japanese. Never add a font stack without a Japanese face in it.
 - Never introduce a raw hex value, arbitrary Tailwind value (`text-[#...]`,
@@ -41,6 +49,10 @@ be built from these tokens via Tailwind utility classes.
   hardcode around it.
 - Don't fork spacing/radius/shadow scales per component. Reuse Tailwind's
   default scale everywhere so spacing stays consistent across the site.
+- Use `overflow-clip`, not `overflow-hidden`, to clip decoration on a section.
+  `overflow-hidden` makes the element a scroll container, and `reveal-rise`'s
+  `view()` timeline binds to the nearest ancestor scroll container — an
+  unscrollable one leaves the animation inert on everything inside.
 - Recurring UI patterns (card, button, form field, badge) belong in
   [src/components/](src/components/) as shared components, not copy-pasted
   className strings. If you're styling the same combination of utilities in
@@ -48,8 +60,9 @@ be built from these tokens via Tailwind utility classes.
 - Shared visual treatments that aren't components in their own right live as
   classes in `@layer components` in [globals.css](src/app/globals.css):
   `surface-card` (plus `surface-card-link` for a clickable card),
-  `button-primary`, `button-donate`, `page-shell`, `section-rule`, and the
-  `section-wash-*` backgrounds. Extend one of these rather than restyling a
+  `button-primary`, `button-donate`, `page-shell`, `section-rule`,
+  `seigaiha-rings` (with `seigaiha-rings-sky`), `reveal-rise`, and the
+  `section-wash-*` / `section-navy-scene` backgrounds. Extend one of these rather than restyling a
   card or button inline, and build them from tokens — use
   `--alpha(var(--color-x) / 20%)` for a tint instead of writing the color
   out again.

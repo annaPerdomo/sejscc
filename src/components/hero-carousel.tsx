@@ -4,7 +4,10 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { PhotoPlaceholder } from "@/components/photo-placeholder";
+import { SectionKicker } from "@/components/section-kicker";
+import { WaveDivider } from "@/components/wave-divider";
 
+// Must match --animate-hero-tab-fill's duration in globals.css.
 const ROTATE_MS = 6500;
 
 export type HeroTab = {
@@ -60,10 +63,13 @@ export function HeroCarousel({ tabs, tabsLabel }: { tabs: HeroTab[]; tabsLabel: 
                 src={tab.photoSrc}
                 alt={tab.photoAlt ?? ""}
                 fill
-                priority={i === 0}
+                preload={i === 0}
                 sizes="100vw"
-                className="object-cover"
-                style={{ objectPosition: "center 46%" }}
+                className="object-cover motion-safe:animate-hero-drift"
+                style={{
+                  objectPosition: "center 46%",
+                  animationPlayState: i === active ? "running" : "paused",
+                }}
               />
             ) : (
               <PhotoPlaceholder
@@ -75,8 +81,8 @@ export function HeroCarousel({ tabs, tabsLabel }: { tabs: HeroTab[]; tabsLabel: 
             )}
           </div>
         ))}
-        <div className="absolute inset-0 bg-gradient-to-r from-navy via-navy/78 to-indigo/25" />
-        <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-navy via-navy/80 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-navy/95 via-navy/65 via-40% to-transparent to-90%" />
+        <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-navy/90 via-navy/45 to-transparent" />
 
         <div
           role="tablist"
@@ -90,26 +96,22 @@ export function HeroCarousel({ tabs, tabsLabel }: { tabs: HeroTab[]; tabsLabel: 
               id={`hero-panel-${tab.id}`}
               aria-labelledby={`hero-tab-${tab.id}`}
               aria-hidden={i !== active}
-              className="absolute inset-x-5 top-1/2 max-w-xl -translate-y-1/2 transition-opacity duration-500 ease-in-out sm:inset-x-10 lg:left-18"
+              className="absolute inset-x-5 top-1/2 max-w-xl -translate-y-1/2 transition-opacity duration-500 ease-in-out sm:inset-x-10 lg:left-18 lg:max-w-2xl"
               style={{
                 opacity: i === active ? 1 : 0,
                 pointerEvents: i === active ? "auto" : "none",
               }}
             >
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-                <span className="shrink-0 font-accent text-sm font-bold tracking-[0.2em] text-sky">
-                  {tab.kickerAccent}
-                </span>
-                <span className="h-px w-9 shrink-0 bg-sky" />
-                <span className="font-display text-xs font-semibold tracking-[0.2em] text-sky uppercase">
-                  {tab.kickerCaption}
-                </span>
-              </div>
-              <h1 className="mt-4 font-display text-3xl leading-tight font-normal tracking-[0.02em] sm:text-4xl">
+              <SectionKicker
+                accent={tab.kickerAccent}
+                caption={tab.kickerCaption}
+                tone="sky"
+              />
+              <h1 className="mt-4 font-display text-3xl leading-tight font-normal tracking-[0.02em] sm:text-4xl lg:text-5xl">
                 <span className="block text-white">{tab.headingLine1}</span>
                 <span className="block text-sky">{tab.headingLine2}</span>
               </h1>
-              <p className="mt-5 max-w-md text-base leading-relaxed text-white/80">
+              <p className="mt-5 max-w-md text-base leading-relaxed text-white/80 lg:text-lg">
                 {tab.body}
               </p>
               <div className="mt-7 flex flex-wrap gap-3">
@@ -134,7 +136,9 @@ export function HeroCarousel({ tabs, tabsLabel }: { tabs: HeroTab[]; tabsLabel: 
           ))}
         </div>
 
-        <div className="absolute right-5 bottom-5 left-5 z-10 flex gap-4 overflow-x-auto border-t border-white/20 sm:right-10 sm:bottom-6 sm:left-10 sm:gap-0 lg:right-18 lg:left-18">
+        <WaveDivider id="hero" className="absolute inset-x-0 bottom-0 text-white" />
+
+        <div className="absolute right-5 bottom-10 left-5 z-10 flex gap-4 overflow-x-auto border-t border-white/20 sm:right-10 sm:bottom-16 sm:left-10 sm:gap-0 lg:right-18 lg:bottom-21 lg:left-18">
           {tabs.map((tab, i) => (
             <button
               key={tab.id}
@@ -147,10 +151,18 @@ export function HeroCarousel({ tabs, tabsLabel }: { tabs: HeroTab[]; tabsLabel: 
                 setActive(i);
                 setPaused(true);
               }}
-              className={`-mt-px flex shrink-0 flex-col gap-1 border-t-2 px-1 pt-3 text-left whitespace-nowrap transition sm:flex-1 ${
-                i === active ? "border-sky" : "border-transparent hover:border-white/50"
+              className={`relative -mt-px flex shrink-0 flex-col gap-1 border-t-2 border-transparent px-1 pt-3 text-left whitespace-nowrap transition sm:flex-1 ${
+                i === active ? "" : "hover:border-white/50"
               }`}
             >
+              {i === active && (
+                <span
+                  aria-hidden="true"
+                  className={`absolute inset-x-0 -top-0.5 h-0.5 origin-left bg-sky ${
+                    paused ? "" : "motion-safe:animate-hero-tab-fill"
+                  }`}
+                />
+              )}
               <span
                 className={`hidden font-display text-xs font-semibold tracking-[0.05em] sm:block ${
                   i === active ? "text-white" : "text-white/60"

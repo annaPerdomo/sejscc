@@ -1,8 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
+import { BambooGrove } from "@/components/bamboo-grove";
+import { BrushEdge } from "@/components/brush-edge";
 import { HeroCarousel, type HeroTab } from "@/components/hero-carousel";
 import { EventsCarousel, type CarouselEvent } from "@/components/events-carousel";
 import { PhotoPlaceholder } from "@/components/photo-placeholder";
+import { SectionKicker } from "@/components/section-kicker";
 import { WaveDivider } from "@/components/wave-divider";
 import { KanjiWatermark } from "@/components/kanji-watermark";
 import { getActiveGroups, getUpcomingEvents } from "@/lib/events";
@@ -86,20 +89,16 @@ export default async function HomePage() {
     <>
       <HeroCarousel tabs={heroTabs} tabsLabel={dict.home.heroTabsLabel} />
 
-      <section className="section-wash-events relative overflow-hidden pt-14 pb-16 sm:pt-16">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+      <section className="section-wash-events relative overflow-clip pt-14 pb-16 sm:pt-16">
+        <BambooGrove />
+        <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
+          <div className="reveal-rise mb-8 flex flex-wrap items-end justify-between gap-4">
             <div>
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-                <span className="shrink-0 font-accent text-sm font-bold tracking-[0.2em] text-indigo">
-                  {dict.home.upcomingKickerAccent}
-                </span>
-                <span className="h-px w-9 shrink-0 bg-indigo" />
-                <span className="font-display text-xs font-semibold tracking-[0.2em] text-stone uppercase">
-                  {dict.home.upcomingKickerCaption}
-                </span>
-              </div>
-              <h2 className="mt-3 font-display text-3xl font-normal tracking-[0.02em] text-ink">
+              <SectionKicker
+                accent={dict.home.upcomingKickerAccent}
+                caption={dict.home.upcomingKickerCaption}
+              />
+              <h2 className="mt-3 font-display text-3xl font-normal tracking-[0.02em] text-ink sm:text-4xl">
                 {dict.home.upcomingTitle}
               </h2>
             </div>
@@ -126,10 +125,11 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-navy text-white">
+      <section className="section-navy-scene relative overflow-clip text-white">
         <KanjiWatermark char="学" className="-top-14 -left-10 text-white/5" />
-        <div className="relative mx-auto grid max-w-6xl gap-10 px-4 pt-12 pb-8 sm:px-6 sm:pt-14 sm:pb-10 lg:grid-cols-[1fr_auto] lg:items-center">
-          <div>
+        <WaveDivider id="school-top" position="top" seed={12} className="relative text-white" />
+        <div className="relative mx-auto grid max-w-6xl gap-10 px-4 pt-6 pb-8 sm:px-6 sm:pb-10 lg:grid-cols-[1fr_auto] lg:items-center">
+          <div className="reveal-rise">
             <span className="block font-display text-xs font-semibold tracking-[0.24em] text-sky uppercase">
               {dict.home.japaneseSchool.kicker}
             </span>
@@ -145,16 +145,90 @@ export default async function HomePage() {
               {dict.home.japaneseSchool.body}
             </p>
           </div>
-          <PhotoPlaceholder
-            dark
-            shape="circle"
-            label={dict.home.japaneseSchool.photoLabel}
-            className="mx-auto aspect-square w-64 sm:w-80 lg:w-96"
-          />
+          <div className="reveal-rise relative mx-auto aspect-square w-64 sm:w-80 lg:-mr-6 lg:w-120">
+            <PhotoPlaceholder
+              dark
+              shape="circle"
+              label={dict.home.japaneseSchool.photoLabel}
+              className="h-full w-full"
+            />
+            <svg
+              viewBox="0 0 640 640"
+              aria-hidden="true"
+              className="pointer-events-none absolute -inset-4 overflow-visible sm:-inset-6"
+            >
+              <defs>
+                <filter id="enso-a" x="-30%" y="-30%" width="160%" height="160%">
+                  <feTurbulence
+                    type="fractalNoise"
+                    baseFrequency="0.045"
+                    numOctaves="4"
+                    seed="11"
+                    result="n"
+                  />
+                  <feDisplacementMap in="SourceGraphic" in2="n" scale="10" />
+                </filter>
+                <filter id="enso-b" x="-30%" y="-30%" width="160%" height="160%">
+                  <feTurbulence
+                    type="fractalNoise"
+                    baseFrequency="0.11"
+                    numOctaves="3"
+                    seed="4"
+                    result="n"
+                  />
+                  <feDisplacementMap in="SourceGraphic" in2="n" scale="8" />
+                </filter>
+              </defs>
+              <g transform="rotate(118 320 320)">
+                <circle
+                  cx="320"
+                  cy="320"
+                  r="311"
+                  fill="none"
+                  className="stroke-sand/70"
+                  strokeWidth="16"
+                  strokeLinecap="round"
+                  strokeDasharray="794 1161"
+                  opacity="0.9"
+                  filter="url(#enso-a)"
+                />
+                <circle
+                  cx="320"
+                  cy="320"
+                  r="319"
+                  fill="none"
+                  className="stroke-sand/50"
+                  strokeWidth="6"
+                  strokeLinecap="round"
+                  strokeDasharray="56 20 166 28 460 1223"
+                  strokeDashoffset="77"
+                  opacity="0.55"
+                  filter="url(#enso-b)"
+                />
+              </g>
+              <g transform="rotate(-52 320 320)">
+                <circle
+                  cx="320"
+                  cy="320"
+                  r="314"
+                  fill="none"
+                  className="stroke-sand/40"
+                  strokeWidth="8"
+                  strokeLinecap="round"
+                  strokeDasharray="294 1660"
+                  opacity="0.6"
+                  filter="url(#enso-b)"
+                />
+              </g>
+            </svg>
+          </div>
         </div>
         <div className="relative mx-auto grid max-w-6xl grid-cols-2 gap-x-6 gap-y-10 px-4 pb-4 sm:grid-cols-4 sm:px-6">
           {dict.home.japaneseSchool.highlights.map((item, i) => (
-            <div key={i} className="flex flex-col items-start border-t border-white/15 pt-6">
+            <div
+              key={i}
+              className="reveal-rise flex flex-col items-start border-t border-white/15 pt-6 sm:border-t-0 sm:border-l sm:pt-0 sm:pl-8 sm:first:border-l-0 sm:first:pl-0"
+            >
               <PhotoPlaceholder
                 dark
                 shape="circle"
@@ -169,7 +243,7 @@ export default async function HomePage() {
             </div>
           ))}
         </div>
-        <div className="relative mx-auto flex max-w-6xl flex-wrap gap-3 px-4 pt-8 pb-20 sm:px-6 sm:pb-28">
+        <div className="relative mx-auto flex max-w-6xl flex-wrap gap-3 px-4 pt-8 pb-16 sm:px-6 sm:pb-20">
           <Link
             href={href("/payments")}
             className="button-primary rounded-lg px-7 py-3.5 font-display text-sm font-semibold text-white"
@@ -183,26 +257,23 @@ export default async function HomePage() {
             {dict.home.japaneseSchool.secondaryCta} →
           </Link>
         </div>
-        <WaveDivider className="text-mist" />
+        <BrushEdge id="school-bottom" variant="ink" className="absolute inset-x-0 bottom-0" />
       </section>
 
-      <section className="section-wash-groups relative overflow-hidden">
+      <section className="section-wash-groups seigaiha-rings">
         <KanjiWatermark
           char="輪"
           className="-right-10 -bottom-16 text-indigo/5"
         />
+        <BrushEdge id="clubs-bottom" variant="paper" className="absolute inset-x-0 bottom-0" />
         <div className="relative mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
-          <div className="mb-10 text-center">
-            <div className="mb-3.5 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5">
-              <span className="shrink-0 font-accent text-sm font-bold tracking-[0.2em] text-indigo">
-                {dict.home.sportsClubs.kickerAccent}
-              </span>
-              <span className="h-px w-9 shrink-0 bg-indigo" />
-              <span className="font-display text-xs font-semibold tracking-[0.2em] text-stone uppercase">
-                {dict.home.sportsClubs.kickerCaption}
-              </span>
-            </div>
-            <h2 className="font-display text-3xl font-normal tracking-[0.02em] text-ink">
+          <div className="reveal-rise mb-10 text-center">
+            <SectionKicker
+              accent={dict.home.sportsClubs.kickerAccent}
+              caption={dict.home.sportsClubs.kickerCaption}
+              className="mb-3.5 justify-center"
+            />
+            <h2 className="font-display text-3xl font-normal tracking-[0.02em] text-ink sm:text-4xl">
               <span className="text-indigo">
                 {dict.home.sportsClubs.headingLine1}
               </span>{" "}
@@ -217,16 +288,16 @@ export default async function HomePage() {
               {groups.map((group) => (
                 <div
                   key={group.id}
-                  className="surface-card surface-card-link flex flex-col overflow-hidden"
+                  className="surface-card surface-card-link reveal-rise group flex flex-col overflow-hidden"
                 >
                   {group.imageUrl ? (
-                    <div className="relative h-44 w-full">
+                    <div className="relative h-44 w-full overflow-hidden">
                       <Image
                         src={group.imageUrl}
                         alt=""
                         fill
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                        className="object-cover"
+                        className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
                       />
                     </div>
                   ) : (
@@ -274,19 +345,16 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="section-wash-history relative overflow-hidden">
+      <section className="section-wash-history relative overflow-clip">
         <KanjiWatermark char="和" className="-bottom-10 left-4 text-ink/5" />
         <div className="relative mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-2 lg:items-center">
-          <div>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-              <span className="font-display text-xs font-semibold tracking-[0.2em] text-indigo uppercase">
-                {dict.home.history.kickerCaption}
-              </span>
-              <span className="h-0.5 w-9 shrink-0 bg-magenta" />
-              <span className="shrink-0 font-accent text-sm font-bold tracking-[0.2em] text-indigo">
-                {dict.home.history.kickerAccent}
-              </span>
-            </div>
+          <div className="reveal-rise">
+            <SectionKicker
+              accent={dict.home.history.kickerAccent}
+              caption={dict.home.history.kickerCaption}
+              tone="magenta"
+              order="caption-first"
+            />
             <h2 className="mt-5 font-display text-3xl leading-snug font-normal tracking-[0.02em]">
               <span className="text-ink">{dict.home.history.headingLine1}</span>
               <br />
@@ -310,7 +378,7 @@ export default async function HomePage() {
           </div>
           <PhotoPlaceholder
             label={dict.home.history.photoLabel}
-            className="aspect-[4/3] w-full lg:-rotate-2"
+            className="reveal-rise aspect-[4/3] w-full lg:-rotate-2"
           />
         </div>
       </section>

@@ -1,8 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
+import { KanjiWatermark } from "@/components/kanji-watermark";
 import { LanguageToggle } from "@/components/language-toggle";
 import { MobileNav } from "@/components/mobile-nav";
 import { PhotoPlaceholder } from "@/components/photo-placeholder";
+import { SectionKicker } from "@/components/section-kicker";
+import { WaveDivider } from "@/components/wave-divider";
 import { getUpcomingEvents } from "@/lib/events";
 import { formatEventDate } from "@/lib/format";
 import { getDictionary, getLocale } from "@/lib/dictionaries";
@@ -111,22 +114,27 @@ export default async function SiteLayout({
 
       <main className="flex-1">{children}</main>
 
-      <section id="connect" className="section-wash-connect grid scroll-mt-16 md:grid-cols-2">
+      <section id="connect" className="section-wash-connect relative grid scroll-mt-16 md:grid-cols-2">
+        <WaveDivider
+          id="connect-top"
+          position="top"
+          accent="magenta"
+          seed={27}
+          className="absolute inset-x-0 top-0 z-10 text-paper"
+        />
         <PhotoPlaceholder
           label={dict.home.connectPhotoLabel}
           frame={false}
           className="min-h-64 w-full"
         />
-        <div className="flex flex-col justify-center px-6 py-14 sm:px-10 lg:px-14">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-            <span className="font-display text-xs font-semibold tracking-[0.2em] text-indigo uppercase">
-              {dict.home.connectKickerCaption}
-            </span>
-            <span className="h-0.5 w-9 shrink-0 bg-magenta" />
-            <span className="shrink-0 font-accent text-sm font-bold tracking-[0.2em] text-indigo">
-              {dict.home.connectKickerAccent}
-            </span>
-          </div>
+        <div className="reveal-rise relative flex flex-col justify-center overflow-clip px-6 py-14 sm:px-10 md:pt-32 md:pb-20 lg:px-14 lg:pt-44 lg:pb-28">
+          <KanjiWatermark char="絆" className="-top-4 -right-6 text-indigo/5" />
+          <SectionKicker
+            accent={dict.home.connectKickerAccent}
+            caption={dict.home.connectKickerCaption}
+            tone="magenta"
+            order="caption-first"
+          />
           <h2 className="mt-4 font-display text-2xl leading-snug font-normal tracking-[0.02em] text-ink sm:text-3xl">
             {dict.home.connectTitle}
           </h2>
@@ -150,7 +158,7 @@ export default async function SiteLayout({
         </div>
       </section>
 
-      <footer className="bg-navy text-white">
+      <footer className="seigaiha-rings seigaiha-rings-sky bg-navy text-white">
         <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:grid-cols-3 sm:px-6">
           <div>
             <div className="flex items-center gap-3">

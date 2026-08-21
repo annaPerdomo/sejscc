@@ -107,7 +107,7 @@ export function EventsCarousel({
                     alt={event.flyerAlt}
                     fill
                     sizes="(max-width: 640px) 300px, 340px"
-                    className="object-contain"
+                    className="object-contain transition-transform duration-500 ease-out group-hover:scale-105"
                   />
                 ) : (
                   <Image
@@ -137,7 +137,13 @@ export function EventsCarousel({
                   </p>
                 )}
                 <span className="mt-auto pt-3 font-display text-sm font-semibold text-indigo">
-                  {detailsLabel} →
+                  {detailsLabel}{" "}
+                  <span
+                    aria-hidden="true"
+                    className="inline-block transition-transform duration-200 group-hover:translate-x-1"
+                  >
+                    →
+                  </span>
                 </span>
               </div>
             </Link>
