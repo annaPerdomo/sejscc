@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
+import { AdminNav } from "./admin-nav";
 
 export default async function AdminLayout({
   children,
@@ -41,6 +42,7 @@ export default async function AdminLayout({
             </form>
           </div>
         </div>
+        <AdminNav />
       </header>
       <main className="mx-auto max-w-5xl px-6 py-8">{children}</main>
     </div>
