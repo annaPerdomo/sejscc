@@ -5,7 +5,13 @@ import { formatEventDate, formatEventTime } from "@/lib/format";
 import { getDictionary, getLocale } from "@/lib/dictionaries";
 import { localePath } from "@/lib/i18n";
 
-export async function EventCard({ event }: { event: Event }) {
+export async function EventCard({
+  event,
+  className = "",
+}: {
+  event: Event;
+  className?: string;
+}) {
   const [lang, dict] = await Promise.all([getLocale(), getDictionary()]);
   const date = formatEventDate(event.startAt, lang);
   const time = formatEventTime(event.startAt, event.endAt, lang);
@@ -13,16 +19,16 @@ export async function EventCard({ event }: { event: Event }) {
   return (
     <Link
       href={localePath(lang, `/events/${event.slug}`)}
-      className="surface-card surface-card-link group flex flex-col overflow-hidden"
+      className={`surface-card surface-card-link group flex flex-col overflow-hidden ${className}`}
     >
-      <div className="relative aspect-flyer w-full bg-mist p-2">
+      <div className="relative aspect-flyer w-full overflow-hidden bg-mist p-2">
         {event.flyerUrl ? (
           <Image
             src={event.flyerUrl}
             alt={dict.eventDetail.flyerAlt.replace("{title}", event.title)}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            className="object-contain"
+            className="object-contain transition-transform duration-500 ease-out group-hover:scale-105"
           />
         ) : (
           <div className="flex h-full items-center justify-center">

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { PageHeader } from "@/components/page-header";
 import { getActiveGroups } from "@/lib/events";
 import { getDictionary, getDictionaryFor } from "@/lib/dictionaries";
 import { hasLocale, localePath } from "@/lib/i18n";
@@ -31,16 +32,17 @@ export default async function GroupsPage() {
 
   return (
     <div className="page-shell mx-auto max-w-6xl px-4 py-14 sm:px-6">
-      <h1 className="font-display text-4xl text-ink sm:text-5xl">
-        {dict.groups.title}
-      </h1>
-      <div className="section-rule mt-4" />
-      <p className="mt-5 max-w-2xl text-stone">{dict.groups.lede}</p>
+      <PageHeader
+        accent={dict.groups.kickerAccent}
+        caption={dict.groups.kickerCaption}
+        title={dict.groups.title}
+        lede={dict.groups.lede}
+      />
 
       {groups.length > 0 ? (
         <div className="mt-10 grid gap-6 sm:grid-cols-2">
           {groups.map((group) => (
-            <div key={group.id} className="surface-card flex gap-5 p-6">
+            <div key={group.id} className="surface-card reveal-rise flex gap-5 p-6">
               {group.imageUrl && (
                 <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-mist">
                   <Image

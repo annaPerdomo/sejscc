@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { EventCard } from "@/components/event-card";
+import { PageHeader } from "@/components/page-header";
 import { getPastEvents, getUpcomingEvents } from "@/lib/events";
 import { getDictionary, getDictionaryFor } from "@/lib/dictionaries";
 import { hasLocale, localePath } from "@/lib/i18n";
@@ -35,16 +36,17 @@ export default async function EventsPage() {
 
   return (
     <div className="page-shell mx-auto max-w-6xl px-4 py-14 sm:px-6">
-      <h1 className="font-display text-4xl text-ink sm:text-5xl">
-        {dict.events.title}
-      </h1>
-      <div className="section-rule mt-4" />
-      <p className="mt-5 max-w-2xl text-stone">{dict.events.lede}</p>
+      <PageHeader
+        accent={dict.events.kickerAccent}
+        caption={dict.events.kickerCaption}
+        title={dict.events.title}
+        lede={dict.events.lede}
+      />
 
       {upcoming.length > 0 ? (
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {upcoming.map((event) => (
-            <EventCard key={event.id} event={event} />
+            <EventCard key={event.id} event={event} className="reveal-rise" />
           ))}
         </div>
       ) : (
@@ -58,7 +60,7 @@ export default async function EventsPage() {
           </h2>
           <div className="mt-6 grid gap-6 opacity-80 sm:grid-cols-2 lg:grid-cols-3">
             {past.map((event) => (
-              <EventCard key={event.id} event={event} />
+              <EventCard key={event.id} event={event} className="reveal-rise" />
             ))}
           </div>
         </section>

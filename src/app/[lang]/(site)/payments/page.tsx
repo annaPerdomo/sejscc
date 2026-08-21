@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PageHeader } from "@/components/page-header";
 import { getDictionary, getDictionaryFor } from "@/lib/dictionaries";
 import { hasLocale, localePath } from "@/lib/i18n";
 
@@ -33,11 +34,12 @@ export default async function PaymentsPage() {
 
   return (
     <div className="page-shell mx-auto max-w-4xl px-4 py-14 sm:px-6">
-      <h1 className="font-display text-4xl text-ink sm:text-5xl">
-        {dict.payments.title}
-      </h1>
-      <div className="section-rule mt-4" />
-      <p className="mt-5 max-w-2xl text-stone">{dict.payments.lede}</p>
+      <PageHeader
+        accent={dict.payments.kickerAccent}
+        caption={dict.payments.kickerCaption}
+        title={dict.payments.title}
+        lede={dict.payments.lede}
+      />
 
       <section id="donate" className="mt-12 scroll-mt-24">
         <h2 className="font-display text-2xl text-ink">
