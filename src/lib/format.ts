@@ -1,3 +1,4 @@
+import type { UserRole } from "@/db/schema";
 import type { Locale } from "@/lib/i18n";
 
 // Event times are stored as LA wall-clock behind a fake UTC marker (4:00 PM in
@@ -81,6 +82,11 @@ export function normalizeContactEmail(raw: string): string | null {
   }
   return trimmed;
 }
+
+export const ROLE_LABELS: Record<UserRole, string> = {
+  admin: "Administrator",
+  editor: "Volunteer",
+};
 
 // Resend magic-link sign-in never populates `name`, so this falls back to
 // deriving initials from the email address until the admin sets one.

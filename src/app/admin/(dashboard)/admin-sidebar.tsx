@@ -4,9 +4,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { AdminUserIdentity } from "@/components/admin/admin-user-identity";
 import { KanjiWatermark } from "@/components/kanji-watermark";
 import { SectionKicker } from "@/components/section-kicker";
-import { initialsFrom } from "@/lib/format";
+import type { UserRole } from "@/db/schema";
 import { signOutAction } from "./sign-out-action";
 
 const NAV = [
@@ -15,11 +16,6 @@ const NAV = [
   { href: "/admin/events", label: "Events", kanji: "祭" },
 ];
 
-const ROLE_LABELS: Record<"admin" | "editor", string> = {
-  admin: "Administrator",
-  editor: "Volunteer",
-};
-
 function isActiveHref(pathname: string, href: string) {
   return href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
 }
@@ -27,11 +23,10 @@ function isActiveHref(pathname: string, href: string) {
 export function AdminSidebar({
   user,
 }: {
-  user: { name: string | null; email: string | null; role: "admin" | "editor" };
+  user: { name: string | null; email: string | null; role: UserRole };
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const displayName = user.name?.trim() || user.email || "Volunteer";
 
   return (
     <header className="section-navy-scene relative isolate overflow-clip text-white lg:flex lg:w-72 lg:shrink-0 lg:flex-col">
@@ -128,19 +123,7 @@ export function AdminSidebar({
         </div>
 
         <div className="mt-6 border-t border-white/15 pt-5 lg:mt-auto">
-          <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-sky/40 bg-white/10 font-display text-xs font-semibold text-white">
-              {initialsFrom(user)}
-            </span>
-            <span className="min-w-0">
-              <span className="block truncate text-sm font-semibold text-white">
-                {displayName}
-              </span>
-              <span className="block truncate text-xs text-sky">
-                {ROLE_LABELS[user.role]}
-              </span>
-            </span>
-          </div>
+          <AdminUserIdentity user={user} />
           <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-semibold tracking-wide">
             <Link href="/" className="text-white/70 hover:text-white">
               View website

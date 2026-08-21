@@ -22,6 +22,8 @@ export const users = pgTable("user", {
     .default("editor"),
 });
 
+export type UserRole = (typeof users.$inferSelect)["role"];
+
 export const accounts = pgTable(
   "account",
   {

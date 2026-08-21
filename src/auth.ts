@@ -9,6 +9,7 @@ import {
   sessions,
   users,
   verificationTokens,
+  type UserRole,
 } from "@/db/schema";
 
 export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
@@ -53,7 +54,7 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
     async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
-        token.role = (user as { role?: string }).role ?? "editor";
+        token.role = (user as { role?: UserRole }).role ?? "editor";
       }
       if (trigger === "update") {
         // Set by updateProfileName() in the profile form's server action.
@@ -68,7 +69,7 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
-        session.user.role = token.role as "admin" | "editor";
+        session.user.role = token.role as UserRole;
       }
       return session;
     },
@@ -79,7 +80,7 @@ declare module "next-auth" {
   interface Session {
     user: {
       id: string;
-      role: "admin" | "editor";
+      role: UserRole;
       name?: string | null;
       email?: string | null;
       image?: string | null;
