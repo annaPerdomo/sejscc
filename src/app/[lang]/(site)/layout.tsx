@@ -201,7 +201,7 @@ export default async function SiteLayout({
               ))}
               <li>
                 <Link href="/admin" className="hover:text-white">
-                  {dict.footer.boardSignIn}
+                  {dict.footer.volunteerSignIn}
                 </Link>
               </li>
             </ul>
