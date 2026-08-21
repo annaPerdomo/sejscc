@@ -32,24 +32,16 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
     error: "/admin/login",
   },
   callbacks: {
-    async signIn({ user, email }) {
-      // Runs before the magic link is sent, so a non-allowlisted address
-      // never receives an email at all.
-      if (email?.verificationRequest) {
-        const address = user.email?.toLowerCase();
-        if (!address) return false;
-        const [allowed] = await db
-          .select()
-          .from(allowedEmails)
-          .where(eq(allowedEmails.email, address));
-        if (allowed) return true;
-        const [existing] = await db
-          .select()
-          .from(users)
-          .where(eq(users.email, address));
-        return Boolean(existing);
-      }
-      return true;
+    async signIn({ user }) {
+      // Auth.js runs this on both the request and the redeem, and links stay
+      // valid 24h — gating only the request leaves sent links working.
+      const address = user.email?.toLowerCase();
+      if (!address) return false;
+      const [allowed] = await db
+        .select()
+        .from(allowedEmails)
+        .where(eq(allowedEmails.email, address));
+      return Boolean(allowed);
     },
     async jwt({ token, user, trigger, session }) {
       if (user) {

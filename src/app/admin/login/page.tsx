@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { AuthError } from "next-auth";
-import { auth, signIn } from "@/auth";
+import { signIn } from "@/auth";
+import { getCurrentUser } from "@/lib/admin";
 import { AdminAlert } from "@/components/admin/admin-alert";
 import { SectionKicker } from "@/components/section-kicker";
 import { LoginBrandPanel } from "./brand-panel";
@@ -30,8 +31,8 @@ export default async function LoginPage({
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
-  const session = await auth();
-  if (session?.user) {
+  const user = await getCurrentUser();
+  if (user) {
     redirect("/admin");
   }
 

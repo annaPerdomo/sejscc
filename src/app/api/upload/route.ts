@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
-import { auth } from "@/auth";
+import { requireUser } from "@/lib/admin";
 
 // Flyers go browser → Blob directly to stay under the serverless body limit.
 export async function POST(request: Request) {
@@ -11,10 +11,7 @@ export async function POST(request: Request) {
       body,
       request,
       onBeforeGenerateToken: async () => {
-        const session = await auth();
-        if (!session?.user) {
-          throw new Error("You must be signed in to upload files.");
-        }
+        await requireUser();
         return {
           allowedContentTypes: [
             "image/jpeg",

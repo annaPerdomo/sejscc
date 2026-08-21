@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { getCurrentUser } from "@/lib/admin";
 import { MadeWithLove } from "@/components/made-with-love";
 import { AdminSidebar } from "./admin-sidebar";
 
@@ -8,8 +8,8 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
-  if (!session?.user) {
+  const user = await getCurrentUser();
+  if (!user) {
     redirect("/admin/login");
   }
 
@@ -18,9 +18,9 @@ export default async function AdminLayout({
       <div className="flex flex-1 flex-col lg:flex-row">
         <AdminSidebar
           user={{
-            name: session.user.name ?? null,
-            email: session.user.email ?? null,
-            role: session.user.role,
+            name: user.name ?? null,
+            email: user.email ?? null,
+            role: user.role,
           }}
         />
         <div className="flex flex-1 flex-col">

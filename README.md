@@ -35,6 +35,9 @@ npm run dev
 5. Run `npx drizzle-kit push` against the production `DATABASE_URL`.
 6. Insert the first admin: add your email to `allowed_email`, sign in at
    `/admin/login`, then set your row in `user` to `role = 'admin'`.
+7. Run `npm run backfill-allowed-emails` once, so any account created before
+   the allowlist became the sole gate keeps its access. Everyone added after
+   that comes in through Volunteers in the admin dashboard.
 
 ## Structure
 
