@@ -1,76 +1,114 @@
-import Image from "next/image";
-import { desc } from "drizzle-orm";
-import { db } from "@/db";
-import { events } from "@/db/schema";
-import { formatEventDate } from "@/lib/format";
-import { AdminBadge, type AdminBadgeTone } from "@/components/admin/admin-badge";
+import type { ReactNode } from "react";
+import { auth } from "@/auth";
+import { getActiveGroups, getUpcomingEvents } from "@/lib/events";
+import { firstNameFrom } from "@/lib/format";
 import { AdminButtonLink } from "@/components/admin/admin-button";
-import { AdminEmptyState } from "@/components/admin/admin-card";
-import { AdminListRow } from "@/components/admin/admin-list-row";
+import { AdminCard } from "@/components/admin/admin-card";
 
 export const dynamic = "force-dynamic";
 
-const STATUS_BADGES: Record<string, { tone: AdminBadgeTone; label: string }> = {
-  published: { tone: "live", label: "Published" },
-  draft: { tone: "pending", label: "Draft" },
-  archived: { tone: "muted", label: "Archived" },
-};
+function SummaryCard({
+  kanji,
+  title,
+  children,
+  addHref,
+  addLabel,
+  viewHref,
+  viewLabel,
+}: {
+  kanji: string;
+  title: string;
+  children: ReactNode;
+  addHref: string;
+  addLabel: string;
+  viewHref: string;
+  viewLabel: string;
+}) {
+  return (
+    <AdminCard>
+      <div className="flex items-center gap-4">
+        <span
+          aria-hidden="true"
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-line bg-mist font-accent text-xl font-bold text-indigo"
+        >
+          {kanji}
+        </span>
+        <h2 className="font-display text-xl text-ink">{title}</h2>
+      </div>
+      <p className="mt-4 text-sm leading-relaxed text-stone">{children}</p>
+      <div className="mt-6 flex flex-col gap-3">
+        <AdminButtonLink href={addHref}>{addLabel}</AdminButtonLink>
+        <AdminButtonLink href={viewHref} variant="secondary">
+          {viewLabel}
+        </AdminButtonLink>
+      </div>
+    </AdminCard>
+  );
+}
 
 export default async function AdminDashboard() {
-  const allEvents = await db
-    .select()
-    .from(events)
-    .orderBy(desc(events.createdAt));
+  const session = await auth();
+  const [activeGroups, upcomingEvents] = await Promise.all([
+    getActiveGroups(),
+    getUpcomingEvents(),
+  ]);
+
+  const name = session?.user ? firstNameFrom(session.user) : null;
+  const today = new Date();
 
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-wrap items-end justify-between gap-6">
         <div>
-          <h1 className="font-display text-3xl text-ink">Events</h1>
-          <p className="mt-1 text-stone">
-            Add, edit, and publish events for the website.
+          <h1 className="font-display text-3xl text-ink sm:text-4xl">
+            Welcome back
+            {name && <>, <span className="text-indigo">{name.toUpperCase()}</span></>}
+          </h1>
+          <p className="mt-2 text-stone">What would you like to do today?</p>
+        </div>
+        <div className="text-right">
+          <p className="font-display text-xs font-semibold tracking-[0.14em] text-stone uppercase">
+            {today.toLocaleDateString("en-US", {
+              weekday: "long",
+              timeZone: "America/Los_Angeles",
+            })}
+          </p>
+          <p className="font-display text-sm text-ink">
+            {today.toLocaleDateString("en-US", {
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+              timeZone: "America/Los_Angeles",
+            })}
           </p>
         </div>
-        <AdminButtonLink href="/admin/events/new">
-          + Add New Event
-        </AdminButtonLink>
       </div>
 
-      {allEvents.length === 0 ? (
-        <AdminEmptyState title="No events yet">
-          Click “Add New Event” to post your first event — all you need is a
-          flyer and a title.
-        </AdminEmptyState>
-      ) : (
-        <ul className="mt-8 space-y-3">
-          {allEvents.map((event) => {
-            const badge = STATUS_BADGES[event.status] ?? STATUS_BADGES.draft;
-            return (
-              <li key={event.id}>
-                <AdminListRow
-                  href={`/admin/events/${event.id}`}
-                  thumbnail={
-                    event.flyerUrl ? (
-                      <Image
-                        src={event.flyerUrl}
-                        alt=""
-                        fill
-                        sizes="64px"
-                        className="object-contain"
-                      />
-                    ) : null
-                  }
-                  title={event.title}
-                  subtitle={formatEventDate(event.startAt) ?? "No date set"}
-                  badge={
-                    <AdminBadge tone={badge.tone}>{badge.label}</AdminBadge>
-                  }
-                />
-              </li>
-            );
-          })}
-        </ul>
-      )}
+      <div className="mt-10 grid gap-6 sm:grid-cols-2">
+        <SummaryCard
+          kanji="部"
+          title="Groups"
+          addHref="/admin/groups/new"
+          addLabel="+ Add a new group"
+          viewHref="/admin/groups"
+          viewLabel="View & edit all groups →"
+        >
+          {activeGroups.length} {activeGroups.length === 1 ? "group is" : "groups are"}{" "}
+          listed on the community page.
+        </SummaryCard>
+        <SummaryCard
+          kanji="祭"
+          title="Events"
+          addHref="/admin/events/new"
+          addLabel="+ Add a new event"
+          viewHref="/admin/events"
+          viewLabel="View & edit all events →"
+        >
+          {upcomingEvents.length} upcoming{" "}
+          {upcomingEvents.length === 1 ? "event is" : "events are"} on the
+          community calendar.
+        </SummaryCard>
+      </div>
     </div>
   );
 }

@@ -81,3 +81,29 @@ export function normalizeContactEmail(raw: string): string | null {
   }
   return trimmed;
 }
+
+// Resend magic-link sign-in never populates `name`, so both helpers below
+// fall back to deriving something presentable from the email address.
+export function firstNameFrom(user: {
+  name?: string | null;
+  email?: string | null;
+}): string | null {
+  if (user.name?.trim()) return user.name.trim().split(/\s+/)[0];
+  const local = user.email?.split("@")[0];
+  const first = local?.split(/[._-]+/)[0];
+  return first ? first[0].toUpperCase() + first.slice(1) : null;
+}
+
+export function initialsFrom(user: {
+  name?: string | null;
+  email?: string | null;
+}): string {
+  const name = user.name?.trim();
+  if (name) {
+    const parts = name.split(/\s+/);
+    return parts.length > 1
+      ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+      : parts[0].slice(0, 2).toUpperCase();
+  }
+  return user.email?.slice(0, 2).toUpperCase() ?? "?";
+}

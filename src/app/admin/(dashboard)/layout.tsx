@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { auth, signOut } from "@/auth";
-import { AdminNav } from "./admin-nav";
+import { auth } from "@/auth";
+import { MadeWithLove } from "@/components/made-with-love";
+import { AdminSidebar } from "./admin-sidebar";
 
 export default async function AdminLayout({
   children,
@@ -14,37 +14,24 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="flex-1 bg-paper">
-      <header className="sticky top-0 z-40 border-b border-line bg-white">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-6 py-3">
-          <Link href="/admin" className="font-display text-lg text-ink">
-            SEJSCC <span className="text-indigo">Admin</span>
-          </Link>
-          <div className="flex items-center gap-4">
-            <Link
-              href="/"
-              className="text-sm font-medium text-stone hover:text-ink"
-            >
-              View website
-            </Link>
-            <span className="hidden text-sm text-stone sm:block">
-              {session.user.email}
-            </span>
-            <form
-              action={async () => {
-                "use server";
-                await signOut({ redirectTo: "/admin/login" });
-              }}
-            >
-              <button className="rounded-md border border-line px-3 py-1.5 text-sm font-medium text-ink hover:bg-mist">
-                Sign out
-              </button>
-            </form>
+    <>
+      <div className="flex flex-1 flex-col lg:flex-row">
+        <AdminSidebar
+          user={{
+            name: session.user.name ?? null,
+            email: session.user.email ?? null,
+            role: session.user.role,
+          }}
+        />
+        <main className="flex-1 bg-paper">
+          <div className="mx-auto max-w-5xl px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
+            {children}
           </div>
-        </div>
-        <AdminNav />
-      </header>
-      <main className="mx-auto max-w-5xl px-6 py-8">{children}</main>
-    </div>
+        </main>
+      </div>
+      <footer className="border-t border-line bg-white px-4 py-4 text-center">
+        <MadeWithLove madeWith="Made with" by="by" className="text-xs text-stone" />
+      </footer>
+    </>
   );
 }

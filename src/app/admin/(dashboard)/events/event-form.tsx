@@ -139,7 +139,7 @@ export function EventForm({ event }: { event?: ExistingEvent }) {
       } else {
         await createEvent(input);
       }
-      router.push("/admin");
+      router.push("/admin/events");
       router.refresh();
     } catch (e) {
       setError(
@@ -333,7 +333,9 @@ export function EventForm({ event }: { event?: ExistingEvent }) {
       <div className="space-y-4 lg:col-span-2">
         {error && <AdminAlert>{error}</AdminAlert>}
         <AdminFormActions>
-          <AdminButton onClick={() => router.push("/admin")}>Cancel</AdminButton>
+          <AdminButton onClick={() => router.push("/admin/events")}>
+            Cancel
+          </AdminButton>
           <AdminButton disabled={busy !== null} onClick={() => save("draft")}>
             {busy === "draft" ? "Saving…" : "Save Draft"}
           </AdminButton>

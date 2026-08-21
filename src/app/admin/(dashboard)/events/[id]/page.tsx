@@ -32,7 +32,7 @@ export default async function EditEventPage({
           action={deleteEvent.bind(null, event.id)}
           label="Delete event"
           prompt="Delete this event for good?"
-          redirectTo="/admin"
+          redirectTo="/admin/events"
         />
       </div>
       <EventForm event={event} />
