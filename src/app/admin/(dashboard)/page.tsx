@@ -1,16 +1,19 @@
 import Image from "next/image";
-import Link from "next/link";
 import { desc } from "drizzle-orm";
 import { db } from "@/db";
 import { events } from "@/db/schema";
 import { formatEventDate } from "@/lib/format";
+import { AdminBadge, type AdminBadgeTone } from "@/components/admin/admin-badge";
+import { AdminButtonLink } from "@/components/admin/admin-button";
+import { AdminEmptyState } from "@/components/admin/admin-card";
+import { AdminListRow } from "@/components/admin/admin-list-row";
 
 export const dynamic = "force-dynamic";
 
-const STATUS_STYLES: Record<string, string> = {
-  published: "bg-green-100 text-green-800",
-  draft: "bg-amber-100 text-amber-800",
-  archived: "bg-gray-100 text-gray-600",
+const STATUS_BADGES: Record<string, { tone: AdminBadgeTone; label: string }> = {
+  published: { tone: "live", label: "Published" },
+  draft: { tone: "pending", label: "Draft" },
+  archived: { tone: "muted", label: "Archived" },
 };
 
 export default async function AdminDashboard() {
@@ -28,62 +31,44 @@ export default async function AdminDashboard() {
             Add, edit, and publish events for the website.
           </p>
         </div>
-        <Link
-          href="/admin/events/new"
-          className="rounded-lg bg-indigo px-5 py-3 font-semibold text-white hover:bg-indigo-deep"
-        >
+        <AdminButtonLink href="/admin/events/new">
           + Add New Event
-        </Link>
+        </AdminButtonLink>
       </div>
 
       {allEvents.length === 0 ? (
-        <div className="mt-10 rounded-xl border border-line bg-white p-10 text-center">
-          <p className="font-display text-xl text-ink">No events yet</p>
-          <p className="mt-2 text-stone">
-            Click “Add New Event” to post your first event — all you need is a
-            flyer and a title.
-          </p>
-        </div>
+        <AdminEmptyState title="No events yet">
+          Click “Add New Event” to post your first event — all you need is a
+          flyer and a title.
+        </AdminEmptyState>
       ) : (
         <ul className="mt-8 space-y-3">
-          {allEvents.map((event) => (
-            <li key={event.id}>
-              <Link
-                href={`/admin/events/${event.id}`}
-                className="flex items-center gap-4 rounded-xl border border-line bg-white p-4 transition hover:border-indigo/50 hover:shadow-sm"
-              >
-                <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md border border-line bg-mist p-1">
-                  {event.flyerUrl && (
-                    <Image
-                      src={event.flyerUrl}
-                      alt=""
-                      fill
-                      sizes="64px"
-                      className="object-contain"
-                    />
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-semibold text-ink">
-                    {event.title}
-                  </p>
-                  <p className="mt-0.5 text-sm text-stone">
-                    {formatEventDate(event.startAt) ?? "No date set"}
-                  </p>
-                </div>
-                <span
-                  className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${
-                    STATUS_STYLES[event.status] ?? STATUS_STYLES.draft
-                  }`}
-                >
-                  {event.status}
-                </span>
-                <span className="text-sm font-semibold text-indigo">
-                  Edit →
-                </span>
-              </Link>
-            </li>
-          ))}
+          {allEvents.map((event) => {
+            const badge = STATUS_BADGES[event.status] ?? STATUS_BADGES.draft;
+            return (
+              <li key={event.id}>
+                <AdminListRow
+                  href={`/admin/events/${event.id}`}
+                  thumbnail={
+                    event.flyerUrl ? (
+                      <Image
+                        src={event.flyerUrl}
+                        alt=""
+                        fill
+                        sizes="64px"
+                        className="object-contain"
+                      />
+                    ) : null
+                  }
+                  title={event.title}
+                  subtitle={formatEventDate(event.startAt) ?? "No date set"}
+                  badge={
+                    <AdminBadge tone={badge.tone}>{badge.label}</AdminBadge>
+                  }
+                />
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

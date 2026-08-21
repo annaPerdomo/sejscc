@@ -4,6 +4,14 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { upload } from "@vercel/blob/client";
 import { pdfFirstPageToPng } from "@/lib/pdf-preview";
+import { AdminAlert } from "@/components/admin/admin-alert";
+import { AdminButton, AdminFormActions } from "@/components/admin/admin-button";
+import { AdminCard } from "@/components/admin/admin-card";
+import {
+  AdminCharacterCount,
+  AdminTextArea,
+  AdminTextField,
+} from "@/components/admin/admin-field";
 import { createEvent, updateEvent, type EventInput } from "./actions";
 
 type ExistingEvent = {
@@ -166,7 +174,7 @@ export function EventForm({ event }: { event?: ExistingEvent }) {
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
       <div className="space-y-6">
-        <section className="rounded-xl border border-line bg-white p-6">
+        <AdminCard>
           <div className="flex items-center gap-3">
             <StepBadge n={1} />
             <h2 className="font-semibold text-ink">
@@ -202,29 +210,29 @@ export function EventForm({ event }: { event?: ExistingEvent }) {
               onChange={(e) => onPickFlyer(e.target.files?.[0])}
             />
           </div>
-        </section>
+        </AdminCard>
 
-        <section className="rounded-xl border border-line bg-white p-6">
-          <div className="flex items-center gap-3">
-            <StepBadge n={2} />
-            <h2 className="font-semibold text-ink">
-              Event Title{" "}
-              <span className="text-sm font-normal text-stone">(required)</span>
-            </h2>
-          </div>
-          <input
+        <AdminCard>
+          <AdminTextField
+            size="lg"
+            badge={<StepBadge n={2} />}
+            label={
+              <>
+                Event Title{" "}
+                <span className="text-sm font-normal text-stone">
+                  (required)
+                </span>
+              </>
+            }
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             maxLength={150}
             placeholder="Enter event title…"
-            className="mt-4 w-full rounded-lg border border-line px-4 py-3 text-ink outline-none focus:border-indigo"
           />
-          <p className="mt-1 text-right text-xs text-stone">
-            {title.length} / 150 characters
-          </p>
-        </section>
+          <AdminCharacterCount value={title} max={150} />
+        </AdminCard>
 
-        <section className="rounded-xl border border-line bg-white p-6">
+        <AdminCard>
           <div className="flex items-center gap-3">
             <StepBadge n={3} />
             <h2 className="font-semibold text-ink">
@@ -233,67 +241,57 @@ export function EventForm({ event }: { event?: ExistingEvent }) {
             </h2>
           </div>
           <div className="mt-4 grid gap-4 sm:grid-cols-3">
-            <label className="block text-sm font-medium text-stone">
-              Date
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-line px-3 py-2.5 text-ink outline-none focus:border-indigo"
-              />
-            </label>
-            <label className="block text-sm font-medium text-stone">
-              Starts
-              <input
-                type="time"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-line px-3 py-2.5 text-ink outline-none focus:border-indigo"
-              />
-            </label>
-            <label className="block text-sm font-medium text-stone">
-              Ends
-              <input
-                type="time"
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-line px-3 py-2.5 text-ink outline-none focus:border-indigo"
-              />
-            </label>
+            <AdminTextField
+              label="Date"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+            />
+            <AdminTextField
+              label="Starts"
+              type="time"
+              value={startTime}
+              onChange={(e) => setStartTime(e.target.value)}
+            />
+            <AdminTextField
+              label="Ends"
+              type="time"
+              value={endTime}
+              onChange={(e) => setEndTime(e.target.value)}
+            />
           </div>
-          <label className="mt-4 block text-sm font-medium text-stone">
-            Location
-            <input
+          <div className="mt-4">
+            <AdminTextField
+              label="Location"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-line px-3 py-2.5 text-ink outline-none focus:border-indigo"
             />
-          </label>
-        </section>
-
-        <section className="rounded-xl border border-line bg-white p-6">
-          <div className="flex items-center gap-3">
-            <StepBadge n={4} />
-            <h2 className="font-semibold text-ink">
-              Description{" "}
-              <span className="text-sm font-normal text-stone">(optional)</span>
-            </h2>
           </div>
-          <textarea
+        </AdminCard>
+
+        <AdminCard>
+          <AdminTextArea
+            size="lg"
+            badge={<StepBadge n={4} />}
+            label={
+              <>
+                Description{" "}
+                <span className="text-sm font-normal text-stone">
+                  (optional)
+                </span>
+              </>
+            }
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             maxLength={1000}
             rows={8}
             placeholder="Tell people about your event…"
-            className="mt-4 w-full rounded-lg border border-line px-4 py-3 text-ink outline-none focus:border-indigo"
           />
-          <p className="mt-1 text-right text-xs text-stone">
-            {description.length} / 1000 characters
-          </p>
-        </section>
+          <AdminCharacterCount value={description} max={1000} />
+        </AdminCard>
       </div>
 
-      <aside className="lg:sticky lg:top-24 lg:self-start">
+      <aside className="lg:sticky lg:top-28 lg:self-start">
         <p className="text-sm font-semibold text-ink">Live Preview</p>
         <p className="mt-1 text-xs text-stone">
           This is how your event will appear on the website.
@@ -332,37 +330,21 @@ export function EventForm({ event }: { event?: ExistingEvent }) {
         </div>
       </aside>
 
-      <div className="lg:col-span-2">
-        {error && (
-          <p className="mb-4 rounded-lg border border-indigo/40 bg-indigo/5 px-4 py-3 text-sm text-indigo-deep">
-            {error}
-          </p>
-        )}
-        <div className="flex flex-wrap items-center justify-end gap-3 border-t border-line pt-5">
-          <button
-            type="button"
-            onClick={() => router.push("/admin")}
-            className="rounded-lg border border-line bg-white px-5 py-3 font-medium text-ink hover:bg-mist"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            disabled={busy !== null}
-            onClick={() => save("draft")}
-            className="rounded-lg border border-line bg-white px-5 py-3 font-medium text-ink hover:bg-mist disabled:opacity-50"
-          >
+      <div className="space-y-4 lg:col-span-2">
+        {error && <AdminAlert>{error}</AdminAlert>}
+        <AdminFormActions>
+          <AdminButton onClick={() => router.push("/admin")}>Cancel</AdminButton>
+          <AdminButton disabled={busy !== null} onClick={() => save("draft")}>
             {busy === "draft" ? "Saving…" : "Save Draft"}
-          </button>
-          <button
-            type="button"
+          </AdminButton>
+          <AdminButton
+            variant="primary"
             disabled={busy !== null}
             onClick={() => save("published")}
-            className="rounded-lg bg-indigo px-6 py-3 font-semibold text-white hover:bg-indigo-deep disabled:opacity-50"
           >
             {busy === "published" ? "Publishing…" : "Publish Event"}
-          </button>
-        </div>
+          </AdminButton>
+        </AdminFormActions>
       </div>
     </div>
   );

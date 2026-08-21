@@ -2,8 +2,9 @@ import { notFound } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { events } from "@/db/schema";
+import { ConfirmDeleteButton } from "@/components/admin/confirm-delete-button";
 import { EventForm } from "../event-form";
-import { DeleteEventButton } from "../delete-event-button";
+import { deleteEvent } from "../actions";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +28,12 @@ export default async function EditEventPage({
               : "This event is a draft — visitors can’t see it yet."}
           </p>
         </div>
-        <DeleteEventButton id={event.id} />
+        <ConfirmDeleteButton
+          action={deleteEvent.bind(null, event.id)}
+          label="Delete event"
+          prompt="Delete this event for good?"
+          redirectTo="/admin"
+        />
       </div>
       <EventForm event={event} />
     </div>
