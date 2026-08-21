@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { AuthError } from "next-auth";
 import { auth, signIn } from "@/auth";
 import { AdminAlert } from "@/components/admin/admin-alert";
 import { SectionKicker } from "@/components/section-kicker";
@@ -7,11 +8,22 @@ import { LoginBrandPanel } from "./brand-panel";
 const ERROR_MESSAGES: Record<string, string> = {
   AccessDenied:
     "That email isn't on the volunteer list yet. Ask a board member to add you, then try again.",
-  EmailSignin:
-    "We couldn't send that sign-in link. Check the address and try again.",
   Verification:
     "That sign-in link expired or was already used. Request a new one below.",
+  Configuration:
+    "Something went wrong on our end. Please try again in a few minutes, or contact the site admin.",
 };
+
+const FALLBACK_ERROR_MESSAGE =
+  "Something went wrong signing you in. Please try again.";
+
+// Auth.js raises AccessDenied both when the signIn callback returns false and
+// when it throws; only the thrown case sets `cause.err`.
+function signInErrorCode(error: AuthError) {
+  return error.type === "AccessDenied" && !error.cause?.err
+    ? "AccessDenied"
+    : "Configuration";
+}
 
 export default async function LoginPage({
   searchParams,
@@ -25,8 +37,9 @@ export default async function LoginPage({
 
   const { error } = await searchParams;
   const errorMessage = error
-    ? (ERROR_MESSAGES[error] ??
-      "Something went wrong sending your sign-in link. Please try again.")
+    ? (Object.hasOwn(ERROR_MESSAGES, error)
+        ? ERROR_MESSAGES[error]
+        : FALLBACK_ERROR_MESSAGE)
     : null;
 
   return (
@@ -48,10 +61,20 @@ export default async function LoginPage({
             className="mt-8"
             action={async (formData) => {
               "use server";
-              await signIn("resend", {
-                email: formData.get("email"),
-                redirectTo: "/admin",
-              });
+              try {
+                await signIn("resend", {
+                  email: formData.get("email"),
+                  redirectTo: "/admin",
+                });
+              } catch (error) {
+                // From a server action signIn throws AuthError instead of
+                // redirecting to pages.error, so without this catch the
+                // visitor gets a blank server-error screen.
+                if (error instanceof AuthError) {
+                  redirect(`/admin/login?error=${signInErrorCode(error)}`);
+                }
+                throw error;
+              }
             }}
           >
             <label

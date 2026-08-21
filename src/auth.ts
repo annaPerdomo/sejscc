@@ -27,6 +27,8 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
   pages: {
     signIn: "/admin/login",
     verifyRequest: "/admin/login/check-email",
+    // Without this, Auth.js falls back to its own bare "Server error" page.
+    error: "/admin/login",
   },
   callbacks: {
     async signIn({ user, email }) {
