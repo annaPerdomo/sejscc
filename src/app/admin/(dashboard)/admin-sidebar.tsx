@@ -10,10 +10,16 @@ import { SectionKicker } from "@/components/section-kicker";
 import type { UserRole } from "@/db/schema";
 import { signOutAction } from "./sign-out-action";
 
-const NAV = [
+const NAV: {
+  href: string;
+  label: string;
+  kanji: string;
+  adminOnly?: boolean;
+}[] = [
   { href: "/admin", label: "Dashboard", kanji: "家" },
   { href: "/admin/groups", label: "Groups", kanji: "部" },
   { href: "/admin/events", label: "Events", kanji: "祭" },
+  { href: "/admin/volunteers", label: "Volunteers", kanji: "友", adminOnly: true },
 ];
 
 function isActiveHref(pathname: string, href: string) {
@@ -93,7 +99,9 @@ export function AdminSidebar({
             className="mb-4"
           />
           <nav aria-label="Admin sections" className="flex flex-col gap-1">
-            {NAV.map((item) => {
+            {NAV.filter(
+              (item) => !item.adminOnly || user.role === "admin"
+            ).map((item) => {
               const active = isActiveHref(pathname, item.href);
               return (
                 <Link
