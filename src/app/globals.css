@@ -258,12 +258,31 @@ body {
       }
     }
   }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .beating-heart {
+      animation: beating-heart 1.5s ease-in-out infinite;
+    }
+  }
 }
 
 @keyframes reveal-rise {
   from {
     opacity: 0;
     transform: translateY(1.25rem);
+  }
+}
+
+@keyframes beating-heart {
+  0%,
+  28%,
+  56%,
+  100% {
+    transform: scale(1);
+  }
+  14%,
+  42% {
+    transform: scale(1.3);
   }
 }
 

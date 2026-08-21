@@ -14,7 +14,7 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-paper">
+    <div className="flex-1 bg-paper">
       <header className="sticky top-0 z-40 border-b border-line bg-white">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-6 py-3">
           <Link href="/admin" className="font-display text-lg text-ink">

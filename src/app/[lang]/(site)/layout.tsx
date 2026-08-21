@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { KanjiWatermark } from "@/components/kanji-watermark";
 import { LanguageToggle } from "@/components/language-toggle";
+import { MadeWithLove } from "@/components/made-with-love";
 import { MobileNav } from "@/components/mobile-nav";
 import { PhotoPlaceholder } from "@/components/photo-placeholder";
 import { SectionKicker } from "@/components/section-kicker";
@@ -159,8 +160,8 @@ export default async function SiteLayout({
       </section>
 
       <footer className="seigaiha-rings seigaiha-rings-sky bg-navy text-white">
-        <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:grid-cols-3 sm:px-6">
-          <div>
+        <div className="mx-auto grid max-w-6xl grid-cols-2 gap-x-4 gap-y-8 px-4 py-10 sm:grid-cols-3 sm:gap-10 sm:px-6 sm:py-14">
+          <div className="col-span-2 sm:col-span-1">
             <div className="flex items-center gap-3">
               <Image src="/logo-mark-white.png" alt="" width={40} height={40} />
               <p className="font-display text-lg leading-snug font-normal">
@@ -208,10 +209,16 @@ export default async function SiteLayout({
           </div>
         </div>
         <div className="border-t border-white/15 px-4 py-5 sm:px-6">
-          <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 text-center sm:flex-row sm:text-left">
+          <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 text-center lg:flex-row lg:items-baseline lg:justify-between lg:gap-6 lg:text-left">
             <span className="text-xs text-white/60">
               © {new Date().getFullYear()} {dict.footer.legal}
             </span>
+            <MadeWithLove
+              madeWith={dict.footer.madeWith}
+              by={dict.footer.madeBy}
+              className="text-xs text-white/60"
+              heartClassName="text-blossom"
+            />
             <span className="text-xs text-white/60">
               <span className="font-accent font-bold text-white">
                 {dict.footer.farewellAccent}
