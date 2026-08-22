@@ -24,6 +24,7 @@
   --color-stone: #4f6d8f;
 
   --aspect-flyer: 4 / 5;
+  --aspect-photo: 3 / 2;
 
   --text-watermark: clamp(12rem, 24vw, 25rem);
   --text-watermark--line-height: 1;
@@ -104,6 +105,14 @@ body {
 
   .section-wash-groups {
     background: var(--color-mist);
+  }
+
+  /* Capped at 14% sky: `stone` caption text clears 4.5:1 on mist by a thin
+     margin, and a brighter wash drops the top-right corner under AA. */
+  .section-wash-groups-hero {
+    background:
+      radial-gradient(46rem 30rem at 88% 14%, --alpha(var(--color-sky) / 14%), transparent 60%),
+      linear-gradient(165deg, var(--color-paper), var(--color-mist) 62%);
   }
 
   /* Paper with faint shoji-screen verticals and a soft white fade at the top. */

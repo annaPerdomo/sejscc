@@ -197,7 +197,7 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
             <img
               src={previewUrl}
               alt="Group photo preview"
-              className="h-28 w-28 rounded-lg border border-line bg-mist object-cover shadow-sm"
+              className="aspect-photo w-full max-w-xs rounded-lg border border-line bg-mist object-contain p-3 shadow-sm"
             />
           )}
           <div className="flex flex-col items-start gap-2">
