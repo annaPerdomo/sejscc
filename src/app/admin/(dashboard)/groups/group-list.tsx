@@ -9,6 +9,7 @@ import { AdminAlert } from "@/components/admin/admin-alert";
 import { AdminBadge } from "@/components/admin/admin-badge";
 import { AdminListRow } from "@/components/admin/admin-list-row";
 import { moveGroup } from "./actions";
+import { GROUP_STATUS_LABELS } from "./status";
 
 type Group = InferSelectModel<typeof groupsTable>;
 type Direction = "up" | "down";
@@ -98,10 +99,14 @@ export function GroupList({ groups }: { groups: Group[] }) {
                 badge={
                   <div className="flex flex-wrap items-center justify-end gap-2">
                     {group.active && group.status === "paused" && (
-                      <AdminBadge tone="pending">Paused</AdminBadge>
+                      <AdminBadge tone="pending">
+                        {GROUP_STATUS_LABELS.paused}
+                      </AdminBadge>
                     )}
                     {group.active && group.status === "cancelled" && (
-                      <AdminBadge tone="cancelled">Cancelled</AdminBadge>
+                      <AdminBadge tone="cancelled">
+                        {GROUP_STATUS_LABELS.cancelled}
+                      </AdminBadge>
                     )}
                     <AdminBadge tone={group.active ? "live" : "muted"}>
                       {group.active ? "On the site" : "Hidden"}

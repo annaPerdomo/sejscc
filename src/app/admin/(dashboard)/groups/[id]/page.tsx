@@ -5,6 +5,7 @@ import { groups } from "@/db/schema";
 import { ConfirmDeleteButton } from "@/components/admin/confirm-delete-button";
 import { GroupForm } from "../group-form";
 import { deleteGroup } from "../actions";
+import { GROUP_STATUS_LABELS } from "../status";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +27,9 @@ export default async function EditGroupPage({
             {group.active
               ? group.status === "meeting"
                 ? "This group is live on the website."
-                : `This group is live on the website, marked as ${group.status}.`
+                : `This group is live on the website, marked as ${GROUP_STATUS_LABELS[
+                  group.status
+                ].toLowerCase()}.`
               : "This group is hidden — visitors can’t see it."}
           </p>
         </div>
