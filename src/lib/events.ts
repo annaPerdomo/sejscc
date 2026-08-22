@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, lt } from "drizzle-orm";
+import { and, asc, desc, eq, gte, lt, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { events, groups } from "@/db/schema";
 
@@ -57,13 +57,17 @@ export async function getEventBySlug(slug: string) {
   return event?.status === "published" ? event : null;
 }
 
+// Alphabetical order would sort "cancelled" before "meeting", so the
+// display order is spelled out explicitly instead.
+const GROUP_STATUS_RANK = sql`case ${groups.status} when 'meeting' then 0 when 'paused' then 1 else 2 end`;
+
 export function getActiveGroups() {
   return failSoft(
     db
       .select()
       .from(groups)
       .where(eq(groups.active, true))
-      .orderBy(asc(groups.sortOrder), asc(groups.name)),
+      .orderBy(GROUP_STATUS_RANK, asc(groups.sortOrder), asc(groups.name)),
     []
   );
 }

@@ -109,4 +109,9 @@ export const groups = pgTable("group", {
   meetingSchedule: text("meeting_schedule"),
   sortOrder: integer("sort_order").notNull().default(0),
   active: boolean("active").notNull().default(true),
+  status: text("status", { enum: ["meeting", "paused", "cancelled"] })
+    .notNull()
+    .default("meeting"),
 });
+
+export type GroupStatus = (typeof groups.$inferSelect)["status"];

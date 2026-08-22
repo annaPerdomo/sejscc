@@ -24,7 +24,9 @@ export default async function EditGroupPage({
           <h1 className="font-display text-3xl text-ink">Edit Group</h1>
           <p className="mt-1 text-stone">
             {group.active
-              ? "This group is live on the website."
+              ? group.status === "meeting"
+                ? "This group is live on the website."
+                : `This group is live on the website, marked as ${group.status}.`
               : "This group is hidden — visitors can’t see it."}
           </p>
         </div>

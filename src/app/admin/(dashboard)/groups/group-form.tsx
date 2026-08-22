@@ -8,9 +8,11 @@ import { AdminButton, AdminFormActions } from "@/components/admin/admin-button";
 import { AdminCard } from "@/components/admin/admin-card";
 import {
   AdminCharacterCount,
+  AdminSelect,
   AdminTextArea,
   AdminTextField,
 } from "@/components/admin/admin-field";
+import type { GroupStatus } from "@/db/schema";
 import { normalizeContactEmail, normalizeWebsiteUrl } from "@/lib/format";
 import { createGroup, updateGroup, type GroupInput } from "./actions";
 
@@ -23,7 +25,14 @@ type ExistingGroup = {
   contactEmail: string | null;
   meetingSchedule: string | null;
   active: boolean;
+  status: GroupStatus;
 };
+
+const STATUS_OPTIONS: { value: GroupStatus; label: string }[] = [
+  { value: "meeting", label: "Meeting normally" },
+  { value: "paused", label: "Paused — temporarily not meeting" },
+  { value: "cancelled", label: "Cancelled" },
+];
 
 export function GroupForm({ group }: { group?: ExistingGroup }) {
   const router = useRouter();
@@ -37,6 +46,7 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
   const [websiteUrl, setWebsiteUrl] = useState(group?.websiteUrl ?? "");
   const [contactEmail, setContactEmail] = useState(group?.contactEmail ?? "");
   const [active, setActive] = useState(group?.active ?? true);
+  const [status, setStatus] = useState<GroupStatus>(group?.status ?? "meeting");
 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(
@@ -97,6 +107,7 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
         websiteUrl,
         contactEmail,
         active,
+        status,
         imageUrl: await uploadImage(),
       };
       if (group) {
@@ -253,6 +264,25 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
             </span>
           </span>
         </label>
+      </AdminCard>
+
+      <AdminCard>
+        <AdminSelect
+          label="Meeting status"
+          value={status}
+          onChange={(e) => setStatus(e.target.value as GroupStatus)}
+        >
+          {STATUS_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </AdminSelect>
+        <p className="mt-3 text-sm text-stone">
+          Paused and cancelled groups stay on the website — with a label
+          showing their status — but move to the bottom of the list instead
+          of needing to be manually reordered.
+        </p>
       </AdminCard>
 
       <div className="space-y-4">

@@ -55,7 +55,19 @@ export default async function GroupsPage() {
                 </div>
               )}
               <div>
-                <h2 className="font-display text-xl text-ink">{group.name}</h2>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="font-display text-xl text-ink">{group.name}</h2>
+                  {group.status === "paused" && (
+                    <span className="rounded-full bg-peach px-2.5 py-0.5 text-xs font-semibold text-ink">
+                      {dict.groups.pausedLabel}
+                    </span>
+                  )}
+                  {group.status === "cancelled" && (
+                    <span className="rounded-full bg-lilac px-2.5 py-0.5 text-xs font-semibold text-ink">
+                      {dict.groups.cancelledLabel}
+                    </span>
+                  )}
+                </div>
                 {group.meetingSchedule && (
                   <p className="mt-1 text-sm font-medium text-indigo">
                     {group.meetingSchedule}

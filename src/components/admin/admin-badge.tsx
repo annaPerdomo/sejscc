@@ -4,6 +4,7 @@ const TONE_STYLES = {
   live: "bg-green-100 text-green-800",
   pending: "bg-amber-100 text-amber-800",
   muted: "bg-gray-100 text-gray-600",
+  cancelled: "bg-rose-100 text-rose-700",
 };
 
 export type AdminBadgeTone = keyof typeof TONE_STYLES;

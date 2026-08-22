@@ -96,9 +96,17 @@ export function GroupList({ groups }: { groups: Group[] }) {
                 title={group.name}
                 subtitle={group.meetingSchedule}
                 badge={
-                  <AdminBadge tone={group.active ? "live" : "muted"}>
-                    {group.active ? "On the site" : "Hidden"}
-                  </AdminBadge>
+                  <div className="flex flex-wrap items-center justify-end gap-2">
+                    {group.active && group.status === "paused" && (
+                      <AdminBadge tone="pending">Paused</AdminBadge>
+                    )}
+                    {group.active && group.status === "cancelled" && (
+                      <AdminBadge tone="cancelled">Cancelled</AdminBadge>
+                    )}
+                    <AdminBadge tone={group.active ? "live" : "muted"}>
+                      {group.active ? "On the site" : "Hidden"}
+                    </AdminBadge>
+                  </div>
                 }
               />
             </div>

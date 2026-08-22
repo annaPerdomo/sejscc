@@ -75,6 +75,26 @@ export function AdminTextArea({
   );
 }
 
+export function AdminSelect({
+  label,
+  badge,
+  size = "sm",
+  ...props
+}: Omit<ComponentProps<"select">, "size"> & {
+  label: ReactNode;
+  badge?: ReactNode;
+  size?: FieldSize;
+}) {
+  return (
+    <label className="block">
+      <FieldLabel size={size} badge={badge}>
+        {label}
+      </FieldLabel>
+      <select {...props} className={`${controlBase} ${CONTROL_STYLES[size]}`} />
+    </label>
+  );
+}
+
 export function AdminCharacterCount({
   value,
   max,

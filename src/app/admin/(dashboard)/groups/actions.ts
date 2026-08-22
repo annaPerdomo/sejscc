@@ -3,7 +3,7 @@
 import { del } from "@vercel/blob";
 import { asc, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { groups } from "@/db/schema";
+import { groups, type GroupStatus } from "@/db/schema";
 import { requireUser, revalidateSite } from "@/lib/admin";
 import {
   normalizeContactEmail,
@@ -19,6 +19,7 @@ export type GroupInput = {
   contactEmail: string;
   meetingSchedule: string;
   active: boolean;
+  status: GroupStatus;
 };
 
 // Uploads go straight to Vercel Blob from the browser, so a URL on any other
@@ -54,6 +55,7 @@ function groupValues(input: GroupInput) {
     contactEmail: normalizeContactEmail(input.contactEmail),
     meetingSchedule: trimmed(input.meetingSchedule, 100),
     active: input.active,
+    status: input.status,
   };
 }
 
