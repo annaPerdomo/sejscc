@@ -5,8 +5,8 @@
     "siteDescription": "A home for Japanese language, culture, and community in Norwalk, California. Japanese school, judo, basketball, cultural events, and more."
   },
   "header": {
-    "orgTop": "Southeast Japanese",
-    "orgBottom": "School & Community Center",
+    "orgTop": "Southeast Japanese School",
+    "orgBottom": "& Community Center",
     "donate": "Donate",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
@@ -15,15 +15,16 @@
     "announcementCta": "Sign up"
   },
   "nav": {
+    "japaneseSchool": "Japanese School",
     "events": "Events",
     "groups": "Groups & Programs",
-    "payments": "Payments"
+    "payments": "Payments",
+    "volunteerSignIn": "Volunteer sign-in"
   },
   "footer": {
     "orgName": "Southeast Japanese School & Community Center",
     "contact": "Contact",
     "visit": "Visit",
-    "volunteerSignIn": "Volunteer sign-in",
     "legal": "Southeast Japanese School & Community Center. A nonprofit community organization.",
     "farewellAccent": "またお会いしましょう。",
     "farewellCaption": "— see you at the center",
@@ -95,7 +96,7 @@
     "upcomingKickerAccent": "おしらせ",
     "upcomingKickerCaption": "Everyone Is Invited",
     "upcomingTitle": "There's a Seat for You",
-    "viewAll": "See all upcoming events →",
+    "viewAll": "See all upcoming events",
     "noEvents": "New events are being planned — check back soon, or call the center at (562) 863-5996.",
     "upcomingNextUp": "Next Up",
     "upcomingPrev": "Previous events",
@@ -181,8 +182,8 @@
     "titleLine1": "Events &",
     "titleLine2": "Festivals",
     "lede": "Festivals, fundraisers, bingo nights, and more — hosted by the center and the groups that call it home.",
-    "upcomingCta": "See what's coming up ↓",
-    "pastCta": "Look back at past events →",
+    "upcomingCta": "See what's coming up",
+    "pastCta": "Look back at past events",
     "photoLabel": "Photo coming soon",
     "upcomingAccent": "開催予定",
     "upcomingCaption": "On the Calendar",
@@ -195,8 +196,8 @@
       "caption": "Room Bookings",
       "title": "Class & facility calendars",
       "lede": "The two calendars the center keeps day to day: room bookings for every club and class, and the school's holidays and center-wide events.",
-      "heroCta": "Check the calendars ↓",
-      "openLabel": "Open in Google Calendar →",
+      "heroCta": "Check the calendars",
+      "openLabel": "Open in Google Calendar",
       "facilities": {
         "label": "Facilities calendar",
         "description": "Which rooms are booked, day by day. For a group's regular meeting day, see the Groups page.",
@@ -231,13 +232,13 @@
     "titleLine1": "Groups &",
     "titleLine2": "Programs",
     "lede": "The center is shared by independent groups and programs — from Japanese language school to judo and basketball. Reach out to a group directly to join, or contact the center to start a new one.",
-    "scheduleCta": "Weekly schedule ↓",
-    "startCta": "Have an idea? Start a new club →",
+    "scheduleCta": "Weekly schedule",
+    "startCta": "Have an idea? Start a new club",
     "photoLabel": "Photo coming soon",
     "directoryAccent": "全団体",
     "directoryCaption": "Who Meets Here",
     "directoryTitle": "Every group at the center",
-    "website": "Website →",
+    "website": "Website",
     "pausedLabel": "Paused",
     "cancelledLabel": "Discontinued",
     "empty": "Group listings are coming soon. In the meantime, call the center at (562) 863-5996 to learn about Japanese school, judo, basketball, and other programs.",
@@ -266,6 +267,311 @@
     "useEmailCta": "Email the center",
     "useCallCta": "Call the center"
   },
+  "school": {
+    "metaTitle": "Japanese School",
+    "metaDescription": "Southeast Japanese Language School (Southeast Gakuen) has taught Japanese in Norwalk since 1925. Classes meet every Saturday morning, kindergarten through high school level, with adult classes online.",
+    "kickerAccent": "日本語学校",
+    "kickerCaption": "Saturdays Since 1925",
+    "titleLine1": "Southeast Japanese",
+    "titleLine2": "Language School",
+    "lede": "Japanese language and culture on Saturday mornings — a kindergarten program from age five, the regular program from age six, and adult classes online. No prior language knowledge required.",
+    "registerCta": "Online registration",
+    "tuitionCta": "Classes & tuition",
+    "photoLabel": "Photo coming soon",
+    "facts": [
+      {
+        "label": "School hours",
+        "value": "Saturdays · 8:45 – 12:15",
+        "note": "Level 4 – Level 12: 9:00 – 12:30"
+      },
+      {
+        "label": "New semester begins",
+        "value": "Third Saturday in August",
+        "note": "The school year ends at the end of June"
+      },
+      {
+        "label": "Fall registration begins",
+        "value": "Early June",
+        "note": "New student registration"
+      },
+      {
+        "label": "Levels",
+        "value": "Kindergarten – high school",
+        "note": "Adult classes online"
+      }
+    ],
+    "classes": {
+      "accent": "クラス案内",
+      "caption": "Class Descriptions",
+      "titleLead": "From first words",
+      "titleRest": "to fluent conversation",
+      "lede": "The school includes a kindergarten program for children who are five years old. The regular program is recommended for children six years and older, and adult classes meet online.",
+      "tablistLabel": "Class levels",
+      "levels": [
+        {
+          "name": "Kindergarten Program",
+          "nameJa": "幼稚園",
+          "summary": "Age 5",
+          "status": "",
+          "description": "Children who are five years old learn the Japanese culture through organized activities involving crafts, songs, and the Japanese language.",
+          "points": [
+            "Age 5",
+            "Crafts, songs, and the Japanese language"
+          ]
+        },
+        {
+          "name": "Beginning Level Japanese",
+          "nameJa": "初級",
+          "summary": "No prior language knowledge required",
+          "status": "",
+          "description": "Children will be introduced to the language with emphasis on listening and speaking, with some reading and writing. Culture lessons and crafts will be integrated into the lessons.",
+          "points": [
+            "Ages 6 and up",
+            "Emphasis on listening and speaking",
+            "Culture lessons and crafts"
+          ]
+        },
+        {
+          "name": "Elementary Level",
+          "nameJa": "小学",
+          "summary": "Everyday conversation",
+          "status": "",
+          "description": "Students will continue to develop basic conversational skills as well as reading and writing of short sentences. Students will be able to hold short conversations on topics relating to daily life. Culturally appropriate behavior as well as annual cultural festivities will be integrated into the lesson.",
+          "points": [
+            "Short conversations on daily life",
+            "Reading and writing short sentences"
+          ]
+        },
+        {
+          "name": "Intermediate Level Japanese",
+          "nameJa": "中級",
+          "summary": "Mostly conducted in Japanese",
+          "status": "",
+          "description": "Students will further develop their abilities to function in a Japanese speaking environment through listening, speaking, reading, and writing. Students learn how to request information, converse in a participatory manner, and exchange detailed factual information. Classes will be conducted in Japanese for a majority of the time, including participation in discussions and activities in Japanese.",
+          "points": [
+            "Conducted in Japanese most of the time",
+            "Discussions and activities in Japanese"
+          ]
+        },
+        {
+          "name": "Advanced Level Japanese",
+          "nameJa": "上級",
+          "summary": "Through Level 12",
+          "status": "",
+          "description": "Students will continue refining their ability to listen, speak, read, and write in Japanese. Students will be able to converse and discuss topics of current interest and express personal opinions. They will be able to narrate, describe, and explain. Students will be able to initiate, sustain, and close a general conversation with a number of communicative strategies. Students will use Japanese in culturally authentic and practical situations, incorporating idiomatic expressions, and will learn the appropriate language to use in a variety of social interactions.",
+          "points": [
+            "Topics of current interest and personal opinions",
+            "Idiomatic expressions",
+            "Culturally authentic, practical situations"
+          ]
+        },
+        {
+          "name": "Adult Classes",
+          "nameJa": "大人",
+          "summary": "Online only at this time",
+          "status": "",
+          "description": "Beginning Level students will learn basic Japanese which will enable the student to function as a tourist in Japan. The classes are held 70 minutes every Saturday, and students are welcome to join more than one class each week for additional review. Reading and writing of the script will be incorporated into the lessons, with emphasis on the spoken language. The classes will be on a continuing basis up to the advanced level, in which idiomatic phrases and appropriate language for a variety of social interactions will be taught. Adult classes are online this year with 3 levels.",
+          "points": [
+            "Level 1 · 10:45 – 11:55",
+            "Level 2 · 9:30 – 10:40",
+            "Level 3 · 8:15 – 9:25"
+          ]
+        },
+        {
+          "name": "After School Shuji Class",
+          "nameJa": "習字",
+          "summary": "Brush calligraphy",
+          "status": "Currently unavailable",
+          "description": "Students may participate in after school Shuji class, or brush calligraphy. Students learn this art form using the traditional brush and ink. No prior experience is necessary. Shuji helps students to learn proper lettering techniques. It also instills good mental attitude and enthusiasm toward studies, as well as training for perseverance. Shuji class begins after lunch from 12:30 – 1:30 PM. Students must purchase their own equipment (approximately $30).",
+          "points": [
+            "Saturdays · 12:30 – 1:30 PM",
+            "No prior experience necessary",
+            "Equipment approximately $30"
+          ]
+        }
+      ]
+    },
+    "year": {
+      "accent": "年中行事",
+      "caption": "Annual Cultural Events",
+      "titleLead": "A cultural event",
+      "titleRest": "every month",
+      "lede": "Our program provides a rich variety of cultural activities, including monthly cultural events to enhance cultural experience and understanding.",
+      "tablistLabel": "Cultural events by month",
+      "months": [
+        {
+          "abbr": "Jan",
+          "nameJa": "一月",
+          "termJa": "お正月",
+          "when": "January",
+          "title": "Oshogatsu",
+          "description": "In January, to welcome the new year, the students are served ozoni."
+        },
+        {
+          "abbr": "Feb",
+          "nameJa": "二月",
+          "termJa": "節分",
+          "when": "Beginning of February",
+          "title": "Setsubun",
+          "description": "In the beginning of February, students celebrate Setsubun. They are given roasted soybeans to eat to ensure their good luck throughout the new year."
+        },
+        {
+          "abbr": "Mar",
+          "nameJa": "三月",
+          "termJa": "ひな祭り",
+          "when": "March",
+          "title": "Hinamatsuri",
+          "description": "March is Hinamatsuri — a doll festival to celebrate girls. Boys and girls alike observe the hina-ningyo display that showcases the Emperor and Empress's court."
+        },
+        {
+          "abbr": "Apr",
+          "nameJa": "四月",
+          "termJa": "お花見",
+          "when": "The arrival of spring",
+          "title": "Hanami",
+          "description": "Students learn about Japan's appreciation for nature and celebrate the arrival of spring."
+        },
+        {
+          "abbr": "May",
+          "nameJa": "五月",
+          "termJa": "お話会",
+          "when": "Speech program & Children's Day",
+          "title": "Ohanashikai · Kodomo no Hi",
+          "description": "Students showcase what they have learned in the past year through a speech program held onstage. On Children's Day, the koi no bori — fish flags — and samurai helmets and dolls are displayed, and children learn about this festival through a presentation."
+        },
+        {
+          "abbr": "Jun–Jul",
+          "nameJa": "六・七月",
+          "termJa": "七夕",
+          "when": "Cultural Festival · second weekend in June",
+          "title": "Tanabata",
+          "description": "The star festival is celebrated by allowing the students to write down their wishes and hang them on a traditional tanabata tree. Our school holds an annual Cultural Festival the second weekend in June. School ends at the end of June, with vacation time during the month of July."
+        },
+        {
+          "abbr": "Aug",
+          "nameJa": "八月",
+          "termJa": "始業",
+          "when": "Third Saturday of the month",
+          "title": "School Begins",
+          "description": "School begins on the third Saturday of the month."
+        },
+        {
+          "abbr": "Sep",
+          "nameJa": "九月",
+          "termJa": "授業参観",
+          "when": "Back to School Day",
+          "title": "Back to School",
+          "description": "Back to School Day is held to learn about our curriculum and school program."
+        },
+        {
+          "abbr": "Oct",
+          "nameJa": "十月",
+          "termJa": "運動会",
+          "when": "Annual athletic event",
+          "title": "Undokai",
+          "description": "Undokai is an annual athletic event held in October. Every student attending the Southeast Japanese School will participate in the various sport games at a nearby park."
+        },
+        {
+          "abbr": "Nov",
+          "nameJa": "十一月",
+          "termJa": "七五三",
+          "when": "Each November",
+          "title": "Shichi-go san",
+          "description": "The Seven-five-three Festival is held in November each year at local shrines in Japan. At Southeast Japanese School, students learn about the festival, and a few students will have the opportunity to dress in the traditional kimono for the occasion."
+        },
+        {
+          "abbr": "Dec",
+          "nameJa": "十二月",
+          "termJa": "年越し",
+          "when": "Oshogatsu festivities",
+          "title": "New Years",
+          "description": "Students experience a sample of the oshogatsu festivities by viewing traditional mochi pounding and tasting toshikoshi soba."
+        }
+      ]
+    },
+    "tuition": {
+      "accent": "授業料",
+      "caption": "Tuition & Dues",
+      "titleLead": "Simple,",
+      "titleRest": "family-friendly pricing",
+      "lede": "Pay for the year or in 11 monthly installments — immediate family discounts are available either way.",
+      "note": "Registration for the fall semester opens in early June. Participant dues to the community center are required for all families and are invoiced separately.",
+      "plans": [
+        {
+          "id": "youth",
+          "badge": "Japanese School",
+          "name": "Kindergarten – High School Level",
+          "meta": "Saturday mornings · 8:45 AM to 12:15 noon",
+          "price": "$115",
+          "priceNote": "/month",
+          "points": [
+            "Tuition: $1,265 a year plus materials (textbook, workbook)",
+            "11 monthly installments may be made at $119.60 a month",
+            "Immediate family discounts available",
+            "Participant dues to the community center are required and invoiced separately"
+          ],
+          "cta": "New student registration"
+        },
+        {
+          "id": "adult",
+          "badge": "Online · three levels",
+          "name": "Adult Classes",
+          "meta": "Saturday mornings · 70 minutes",
+          "price": "$90",
+          "priceNote": "/month",
+          "points": [
+            "Tuition: $990 a year, materials included",
+            "11 monthly installments may be made at $93.60 a month",
+            "Immediate family discounts available",
+            "Participant dues to the community center are required and invoiced separately"
+          ],
+          "cta": "Online registration for adults"
+        },
+        {
+          "id": "dues",
+          "badge": "Required for all families",
+          "name": "Participation Dues",
+          "meta": "Collected separately by the community center",
+          "price": "$120",
+          "priceNote": "per year, one person",
+          "points": [
+            "Families of two or more: $180 a year",
+            "Membership entitles all family members to participate in any organization",
+            "Participation is open to anyone regardless of race or religion"
+          ],
+          "cta": "Dues & payments"
+        }
+      ]
+    },
+    "history": {
+      "accent": "学校の歩み",
+      "caption": "History of the School",
+      "titleLine1": "A century of",
+      "titleLine2": "Saturday mornings.",
+      "body": [
+        "Southeast Japanese Language School (Southeast Gakuen) was first established in 1925 as Norwalk Gakuen to teach Japanese to children of Japanese immigrants. In 1962, the school was renamed Southeast Japanese School. Presently, the school teaches Japanese as a foreign language to all students regardless of race or religion.",
+        "The school provides students the opportunity to experience Japanese culture as they learn the language. Our program provides a rich variety of cultural activities including monthly cultural events to enhance cultural experience and understanding. It is hoped that the experience at the Southeast Japanese School will provide students with a better understanding of the Japanese people.",
+        "We believe that foreign language is best taught at a young age when children are most responsive to new languages. The school includes a kindergarten program for children who are 5 years old. Our regular program is recommended for children 6 years and older. Our program includes all modalities of the language including listening, speaking, reading, writing, and culture.",
+        "The school year begins in late August and ends at the end of June."
+      ],
+      "missionLabel": "Our mission",
+      "mission": "“We, at Southeast Japanese School, are committed to providing instructions in the Japanese language and culture. Our goal is to enable students to successfully function in a Japanese-speaking environment and to foster an appreciation of the Japanese culture.”",
+      "thenCaption": "Norwalk Gakuen · 1925",
+      "nowCaption": "Southeast Gakuen · today",
+      "thenPhotoLabel": "Historic photo coming soon"
+    },
+    "join": {
+      "accent": "ようこそ、サウスイースト学園へ",
+      "titleLead": "Join us",
+      "titleRest": "this Saturday",
+      "leadBefore": "Registration for the fall semester opens in early June. For further information, please email your questions to ",
+      "leadBetween": " or call ",
+      "leadAfter": " and leave a message.",
+      "registerCta": "Online registration",
+      "emailCta": "Email the school",
+      "note": "We do not return phone calls to out of area numbers."
+    }
+  },
   "payments": {
     "metaTitle": "Payments & Donations",
     "metaDescription": "Donate to the Southeast Japanese School & Community Center or pay dues and tuition.",
@@ -274,8 +580,8 @@
     "titleLine1": "Payments &",
     "titleLine2": "Donations",
     "lede": "Every payment method below sends 100% of your money to the center — we've chosen options with no processing fees wherever we can.",
-    "donateCta": "Donate now ↓",
-    "duesCta": "Dues & tuition →",
+    "donateCta": "Donate now",
+    "duesCta": "Dues & tuition",
     "photoLabel": "Photo coming soon",
     "donateAccent": "ご寄付",
     "donateCaption": "Give to the Center",
@@ -285,7 +591,7 @@
     "donateText": "Donations fund building upkeep, programs, and scholarships.",
     "donateFrame": "Donate to SEJSCC",
     "donateTroubleBefore": "Having trouble with the form? ",
-    "donateTroubleLink": "Open it on Zeffy ↗",
+    "donateTroubleLink": "Open it on Zeffy",
     "donateSoon": "Online donations are coming soon.",
     "donateSoonBefore": "Until then, donations are gratefully accepted by Zelle or by check (see below), or contact the center at ",
     "donateSoonAfter": ".",

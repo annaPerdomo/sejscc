@@ -24,7 +24,8 @@ export function PageHero({
   wash:
     | "section-wash-events-hero"
     | "section-wash-groups-hero"
-    | "section-wash-payments-hero";
+    | "section-wash-payments-hero"
+    | "section-wash-school-hero";
   watermark: string;
   watermarkClassName: string;
   accent: string;
@@ -40,7 +41,11 @@ export function PageHero({
   return (
     <section className={`relative overflow-clip ${wash}`}>
       <KanjiWatermark char={watermark} className={watermarkClassName} />
-      <div className="relative mx-auto grid max-w-6xl gap-10 px-4 pt-12 pb-16 sm:px-6 sm:pt-14 lg:grid-cols-[1fr_auto] lg:items-center lg:gap-14 lg:pb-24">
+      <div
+        className={`relative mx-auto grid max-w-6xl gap-10 px-4 pt-12 sm:px-6 sm:pt-14 lg:grid-cols-[1fr_auto] lg:items-center lg:gap-14 ${
+          facts ? "pb-10" : "pb-16 lg:pb-24"
+        }`}
+      >
         <div className="reveal-rise">
           {eyebrow && <div className="mb-5">{eyebrow}</div>}
           <SectionKicker accent={accent} caption={caption} />
@@ -52,7 +57,6 @@ export function PageHero({
           {lede && (
             <p className="mt-6 max-w-xl leading-relaxed text-ink-soft">{lede}</p>
           )}
-          {facts && <div className="mt-8">{facts}</div>}
           {actions && (
             <div className="mt-8 flex flex-wrap items-center gap-x-7 gap-y-4">
               {actions}
@@ -61,6 +65,11 @@ export function PageHero({
         </div>
         {media}
       </div>
+      {facts && (
+        <div className="reveal-rise relative mx-auto max-w-6xl px-4 pb-16 sm:px-6 lg:pb-20">
+          {facts}
+        </div>
+      )}
       <BrushEdge id={`${id}-hero`} variant="paper" className="absolute inset-x-0 bottom-0" />
     </section>
   );

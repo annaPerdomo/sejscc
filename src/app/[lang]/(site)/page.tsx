@@ -25,7 +25,7 @@ const HERO_LINKS: Record<
     secondary: (href) => href("/groups"),
   },
   school: {
-    primary: (href) => href("/payments"),
+    primary: (href) => href("/school"),
     secondary: (href) => href("/groups"),
   },
   clubs: {
@@ -126,7 +126,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="section-navy-scene relative overflow-clip text-white">
+      <section id="school" className="section-navy-scene relative scroll-mt-28 overflow-clip text-white">
         <KanjiWatermark char="学" className="-top-14 -left-10 text-white/5" />
         <WaveDivider id="school-top" position="top" seed={12} className="relative text-white" />
         <div className="relative mx-auto grid max-w-6xl gap-10 px-4 pt-6 pb-8 sm:px-6 sm:pb-10 lg:grid-cols-[1fr_auto] lg:items-center">
@@ -246,16 +246,16 @@ export default async function HomePage() {
         </div>
         <div className="relative mx-auto flex max-w-6xl flex-wrap gap-3 px-4 pt-8 pb-16 sm:px-6 sm:pb-20">
           <Link
-            href={href("/payments")}
+            href={`${href("/school")}#tuition`}
             className="button-primary rounded-lg px-7 py-3.5 font-display text-sm font-semibold text-white"
           >
-            {dict.home.japaneseSchool.primaryCta} →
+            {dict.home.japaneseSchool.primaryCta}
           </Link>
           <Link
             href={href("/groups")}
             className="rounded-lg border-2 border-white/50 px-7 py-3 font-display text-sm font-semibold text-white hover:border-white hover:bg-white/10"
           >
-            {dict.home.japaneseSchool.secondaryCta} →
+            {dict.home.japaneseSchool.secondaryCta}
           </Link>
         </div>
         <BrushEdge id="school-bottom" variant="ink" className="absolute inset-x-0 bottom-0" />

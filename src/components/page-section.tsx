@@ -25,7 +25,7 @@ export function PageSection({
   watermarkClassName: string;
   accent: string;
   caption: string;
-  title: string;
+  title: ReactNode;
   lede?: string;
   children: ReactNode;
 }) {

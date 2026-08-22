@@ -101,6 +101,15 @@ body {
       linear-gradient(165deg, var(--color-paper), var(--color-cream) 62%);
   }
 
+  /* Capped at 14% sky, like the groups hero: `stone` caption text clears
+     4.5:1 on mist by a thin margin, so a brighter wash drops the top-right
+     corner under AA. */
+  .section-wash-school-hero {
+    background:
+      radial-gradient(47rem 30rem at 92% 20%, --alpha(var(--color-sky) / 14%), transparent 62%),
+      linear-gradient(160deg, var(--color-paper), var(--color-mist) 55%);
+  }
+
   /* Capped at 40% celadon: any brighter and `stone` caption text drops under
      4.5:1 on cloud. */
   .section-wash-payments-hero {
