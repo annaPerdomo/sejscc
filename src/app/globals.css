@@ -25,6 +25,7 @@
 
   --aspect-flyer: 4 / 5;
   --aspect-photo: 3 / 2;
+  --aspect-band: 5 / 2;
 
   --text-watermark: clamp(12rem, 24vw, 25rem);
   --text-watermark--line-height: 1;
@@ -67,29 +68,6 @@ body {
 }
 
 @layer components {
-  .page-shell {
-    position: relative;
-    isolation: isolate;
-  }
-
-  .page-shell::before {
-    position: absolute;
-    z-index: -1;
-    top: 0;
-    right: 7%;
-    width: 12rem;
-    height: 12rem;
-    background: radial-gradient(circle, --alpha(var(--color-peach) / 42%), transparent 70%);
-    content: "";
-  }
-
-  .section-rule {
-    height: 0.25rem;
-    width: 3rem;
-    border-radius: 9999px;
-    background: linear-gradient(90deg, var(--color-indigo), var(--color-magenta), var(--color-peach));
-  }
-
   /* Warm off-white that fades in from white at the top and settles back to
      white at the bottom, so both adjoining wave dividers keep matching. */
   .section-wash-events {
@@ -113,6 +91,22 @@ body {
     background:
       radial-gradient(46rem 30rem at 88% 14%, --alpha(var(--color-sky) / 14%), transparent 60%),
       linear-gradient(165deg, var(--color-paper), var(--color-mist) 62%);
+  }
+
+  /* Capped at 22% peach: any brighter and `stone` caption text drops under
+     4.5:1 on cream. */
+  .section-wash-events-hero {
+    background:
+      radial-gradient(44rem 29rem at 86% 12%, --alpha(var(--color-peach) / 22%), transparent 60%),
+      linear-gradient(165deg, var(--color-paper), var(--color-cream) 62%);
+  }
+
+  /* Capped at 40% celadon: any brighter and `stone` caption text drops under
+     4.5:1 on cloud. */
+  .section-wash-payments-hero {
+    background:
+      radial-gradient(42rem 28rem at 10% 8%, --alpha(var(--color-celadon) / 40%), transparent 62%),
+      linear-gradient(200deg, var(--color-paper), var(--color-cloud) 70%);
   }
 
   /* Paper with faint shoji-screen verticals and a soft white fade at the top. */
