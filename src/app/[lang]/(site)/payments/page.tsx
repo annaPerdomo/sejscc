@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import { ExternalLink } from "@/components/external-link";
 import { HeroPhotos } from "@/components/hero-photos";
 import { PageHero } from "@/components/page-hero";
 import { PageSection } from "@/components/page-section";
 import { getDictionary, getDictionaryFor } from "@/lib/dictionaries";
-import { ZEFFY_DONATION_URL } from "@/lib/donate";
+import { ZEFFY_DONATION_EMBED_URL, ZEFFY_DONATION_URL } from "@/lib/donate";
 import { hasLocale, localePath } from "@/lib/i18n";
 
 const HERO_LAYOUT = [
@@ -32,7 +33,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 // Set to null to show the fallback message below if the embed ever needs to come down.
-const ZEFFY_DONATION_EMBED_URL: string | null = ZEFFY_DONATION_URL;
+const DONATION_EMBED_URL: string | null = ZEFFY_DONATION_EMBED_URL;
 
 // TODO(launch): the recipient name + email/phone shown in the center's banking app.
 const ZELLE_RECIPIENT: string | null = null;
@@ -79,46 +80,8 @@ export default async function PaymentsPage() {
       />
 
       <PageSection
-        id="donate"
-        surface="white"
-        watermark="寄"
-        watermarkClassName="top-40 -right-16 text-magenta/5"
-        accent={dict.payments.donateAccent}
-        caption={dict.payments.donateCaption}
-        title={dict.payments.donateTitle}
-        lede={dict.payments.donateText}
-      >
-        <div className="surface-card reveal-rise max-w-3xl overflow-clip">
-          {ZEFFY_DONATION_EMBED_URL ? (
-            <iframe
-              title={dict.payments.donateFrame}
-              src={ZEFFY_DONATION_EMBED_URL}
-              className="h-[720px] w-full"
-              allow="payment"
-            />
-          ) : (
-            <div className="p-8 text-ink-soft">
-              <p className="font-display text-lg font-semibold text-ink">
-                {dict.payments.donateSoon}
-              </p>
-              <p className="mt-2 text-sm leading-relaxed">
-                {dict.payments.donateSoonBefore}
-                <a
-                  href="mailto:info@sejscc.org"
-                  className="font-semibold text-indigo hover:text-indigo-deep"
-                >
-                  info@sejscc.org
-                </a>
-                {dict.payments.donateSoonAfter}
-              </p>
-            </div>
-          )}
-        </div>
-      </PageSection>
-
-      <PageSection
         id="dues"
-        surface="mist"
+        surface="white"
         watermark="納"
         watermarkClassName="-right-12 -bottom-20 text-indigo/5"
         accent={dict.payments.duesAccent}
@@ -180,6 +143,56 @@ export default async function PaymentsPage() {
           </a>
           {dict.payments.questionsAfter}
         </p>
+      </PageSection>
+
+      <PageSection
+        id="donate"
+        surface="mist"
+        watermark="寄"
+        watermarkClassName="top-40 -right-16 text-magenta/5"
+        accent={dict.payments.donateAccent}
+        caption={dict.payments.donateCaption}
+        title={dict.payments.donateTitle}
+        lede={dict.payments.donateText}
+      >
+        <div className="surface-card reveal-rise max-w-3xl overflow-clip">
+          {DONATION_EMBED_URL ? (
+            <iframe
+              title={dict.payments.donateFrame}
+              src={DONATION_EMBED_URL}
+              className="h-160 w-full"
+              allow="payment"
+            />
+          ) : (
+            <div className="p-8 text-ink-soft">
+              <p className="font-display text-lg font-semibold text-ink">
+                {dict.payments.donateSoon}
+              </p>
+              <p className="mt-2 text-sm leading-relaxed">
+                {dict.payments.donateSoonBefore}
+                <a
+                  href="mailto:info@sejscc.org"
+                  className="font-semibold text-indigo hover:text-indigo-deep"
+                >
+                  info@sejscc.org
+                </a>
+                {dict.payments.donateSoonAfter}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {DONATION_EMBED_URL && (
+          <p className="reveal-rise mt-4 max-w-3xl text-sm text-ink-soft">
+            {dict.payments.donateTroubleBefore}
+            <ExternalLink
+              href={ZEFFY_DONATION_URL}
+              className="font-semibold text-indigo hover:text-indigo-deep"
+            >
+              {dict.payments.donateTroubleLink}
+            </ExternalLink>
+          </p>
+        )}
       </PageSection>
     </>
   );

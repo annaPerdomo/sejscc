@@ -9,7 +9,6 @@ import { SectionHeading } from "@/components/section-heading";
 import { SectionKicker } from "@/components/section-kicker";
 import { WaveDivider } from "@/components/wave-divider";
 import { KanjiWatermark } from "@/components/kanji-watermark";
-import { ZEFFY_DONATION_URL } from "@/lib/donate";
 import { getActiveGroups, getUpcomingEvents } from "@/lib/events";
 import { formatEventDate, formatEventTime } from "@/lib/format";
 import { getDictionary, getLocale } from "@/lib/dictionaries";
@@ -36,7 +35,7 @@ const HERO_LINKS: Record<
     primary: (href) => href("/") + "#connect",
   },
   donate: {
-    primary: () => ZEFFY_DONATION_URL,
+    primary: (href) => href("/payments") + "#donate",
   },
 };
 

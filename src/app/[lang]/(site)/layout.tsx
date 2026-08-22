@@ -1,11 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ExternalLink } from "@/components/external-link";
 import { LanguageToggle } from "@/components/language-toggle";
 import { MadeWithLove } from "@/components/made-with-love";
 import { MobileNav } from "@/components/mobile-nav";
 import { SiteNav } from "@/components/site-nav";
-import { ZEFFY_DONATION_URL } from "@/lib/donate";
 import { getUpcomingEvents } from "@/lib/events";
 import { formatEventDate } from "@/lib/format";
 import { getDictionary, getLocale } from "@/lib/dictionaries";
@@ -80,12 +78,12 @@ export default async function SiteLayout({
                 label={dict.languageToggle.label}
                 className="hidden lg:flex"
               />
-              <ExternalLink
-                href={ZEFFY_DONATION_URL}
+              <Link
+                href={`${localePath(lang, "/payments")}#donate`}
                 className="button-donate rounded-md px-3.5 py-2 font-display text-sm font-semibold text-white sm:px-4"
               >
                 {dict.header.donate}
-              </ExternalLink>
+              </Link>
               <MobileNav
                 items={nav}
                 openLabel={dict.header.openMenu}
