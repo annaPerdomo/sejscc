@@ -4,6 +4,7 @@ import { LanguageToggle } from "@/components/language-toggle";
 import { MadeWithLove } from "@/components/made-with-love";
 import { MobileNav } from "@/components/mobile-nav";
 import { SiteNav } from "@/components/site-nav";
+import { VolunteerSignInLink } from "@/components/volunteer-sign-in-link";
 import { getUpcomingEvents } from "@/lib/events";
 import { formatEventDate } from "@/lib/format";
 import { getDictionary, getLocale } from "@/lib/dictionaries";
@@ -22,6 +23,7 @@ export default async function SiteLayout({
   const href = (path: string) => localePath(lang, path);
 
   const nav = [
+    { href: href("/school"), label: dict.nav.japaneseSchool },
     { href: href("/events"), label: dict.nav.events },
     { href: href("/groups"), label: dict.nav.groups },
     { href: href("/payments"), label: dict.nav.payments },
@@ -31,56 +33,63 @@ export default async function SiteLayout({
     <div className="flex min-h-screen flex-col">
       <div className="sticky top-0 z-40">
         <div className="h-1 bg-gradient-to-r from-indigo via-sky via-60% to-magenta" />
-        {nextEvent && (
-          <div className="flex items-center justify-center gap-3 bg-navy px-4 py-2">
-            <span className="shrink-0 font-accent text-sm font-bold tracking-[0.1em] text-sky">
-              {dict.header.announcementAccent}
-            </span>
-            <span className="hidden shrink-0 font-display text-[11px] font-bold tracking-[0.2em] text-white uppercase sm:inline">
-              {dict.header.announcementLabel}
-            </span>
-            <span className="min-w-0 truncate text-xs text-white/85">
-              {nextEvent.title}
-              {formatEventDate(nextEvent.startAt, lang) &&
-                ` · ${formatEventDate(nextEvent.startAt, lang)}`}
-            </span>
-            <Link
-              href={href(`/events/${nextEvent.slug}`)}
-              className="shrink-0 font-display text-xs font-bold text-blossom underline-offset-4 hover:text-white hover:underline"
-            >
-              {dict.header.announcementCta} →
-            </Link>
+        <div className="bg-navy">
+          <div className="flex items-center gap-3 px-5 py-2 sm:px-10 lg:px-11">
+            <div className="flex min-w-0 flex-1 items-center justify-center gap-2 sm:gap-3">
+              {nextEvent && (
+                <>
+                  <span className="shrink-0 font-accent text-sm font-bold tracking-[0.1em] text-sky">
+                    {dict.header.announcementAccent}
+                  </span>
+                  <span className="hidden shrink-0 font-display text-[11px] font-bold tracking-[0.18em] text-sky uppercase sm:inline">
+                    {dict.header.announcementLabel}
+                  </span>
+                  <span className="min-w-0 truncate text-xs text-white/85">
+                    {nextEvent.title}
+                    {formatEventDate(nextEvent.startAt, lang) &&
+                      ` · ${formatEventDate(nextEvent.startAt, lang)}`}
+                  </span>
+                  <Link
+                    href={href(`/events/${nextEvent.slug}`)}
+                    className="shrink-0 font-display text-xs font-bold text-blossom underline-offset-4 hover:text-white hover:underline"
+                  >
+                    {dict.header.announcementCta}
+                  </Link>
+                </>
+              )}
+            </div>
+            <LanguageToggle
+              current={lang}
+              label={dict.languageToggle.label}
+              className="shrink-0"
+            />
           </div>
-        )}
+        </div>
         <header className="border-b border-line bg-paper/95 backdrop-blur">
-          <div className="relative mx-auto flex max-w-6xl items-center gap-4 px-4 py-3 sm:px-6">
+          <div className="relative flex items-center justify-between gap-4 px-5 py-3 sm:px-10 lg:px-11">
             <Link href={href("/")} className="flex min-w-0 items-center gap-2.5 sm:gap-3">
               <Image
                 src="/logo-mark.png"
                 alt=""
-                width={44}
-                height={44}
-                className="h-9 w-9 shrink-0 sm:h-11 sm:w-11"
+                width={48}
+                height={48}
+                className="h-10 w-10 shrink-0 sm:h-12 sm:w-12"
               />
-              <span className="min-w-0 leading-tight">
-                <span className="block text-[10px] font-semibold tracking-[0.18em] text-indigo uppercase sm:text-[11px]">
-                  {dict.header.orgTop}
-                </span>
-                <span className="block truncate font-display text-base text-ink sm:text-lg">
-                  {dict.header.orgBottom}
-                </span>
+              <span className="min-w-0 font-display text-[11px] leading-snug font-semibold tracking-[0.06em] text-ink uppercase sm:text-sm">
+                <span className="block truncate">{dict.header.orgTop}</span>
+                <span className="block truncate">{dict.header.orgBottom}</span>
               </span>
             </Link>
-            <SiteNav items={nav} />
-            <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3 lg:ml-0">
-              <LanguageToggle
-                current={lang}
-                label={dict.languageToggle.label}
-                className="hidden lg:flex"
+            <div className="flex shrink-0 items-center gap-2 sm:gap-3 lg:gap-5">
+              <SiteNav items={nav} />
+              <VolunteerSignInLink
+                label={dict.nav.volunteerSignIn}
+                className="max-lg:hidden"
+                labelClassName="max-xl:sr-only"
               />
               <Link
                 href={`${localePath(lang, "/payments")}#donate`}
-                className="button-donate rounded-md px-3.5 py-2 font-display text-sm font-semibold text-white sm:px-4"
+                className="button-donate rounded-lg px-4 py-2.5 font-display text-sm font-semibold text-white sm:px-5"
               >
                 {dict.header.donate}
               </Link>
@@ -89,11 +98,7 @@ export default async function SiteLayout({
                 openLabel={dict.header.openMenu}
                 closeLabel={dict.header.closeMenu}
               >
-                <LanguageToggle
-                  current={lang}
-                  label={dict.languageToggle.label}
-                  className="w-fit"
-                />
+                <VolunteerSignInLink label={dict.nav.volunteerSignIn} />
               </MobileNav>
             </div>
           </div>
@@ -145,7 +150,7 @@ export default async function SiteLayout({
               ))}
               <li>
                 <Link href="/admin" className="hover:text-white">
-                  {dict.footer.volunteerSignIn}
+                  {dict.nav.volunteerSignIn}
                 </Link>
               </li>
             </ul>

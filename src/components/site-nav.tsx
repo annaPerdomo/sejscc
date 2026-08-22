@@ -19,7 +19,7 @@ export function SiteNav({ items }: { items: NavItem[] }) {
   const isCurrentPage = useIsCurrentPage();
 
   return (
-    <nav className="hidden flex-1 items-center justify-center gap-1 lg:flex xl:gap-3">
+    <nav className="hidden items-center gap-5 lg:flex xl:gap-6">
       {items.map((item) => {
         const current = isCurrentPage(item.href);
         return (
@@ -27,10 +27,10 @@ export function SiteNav({ items }: { items: NavItem[] }) {
             key={item.href}
             href={item.href}
             aria-current={current ? "page" : undefined}
-            className={`relative rounded-md px-3 py-2 font-display text-[13px] font-semibold tracking-[0.08em] uppercase after:absolute after:inset-x-3 after:bottom-0.5 after:h-0.5 after:rounded-full ${
+            className={`relative rounded-sm px-1 py-2 font-display text-sm after:absolute after:inset-x-1 after:bottom-0.5 after:h-0.5 after:rounded-full ${
               current
-                ? "text-indigo after:bg-indigo"
-                : "text-ink-soft hover:text-indigo hover:after:bg-line"
+                ? "font-semibold text-indigo after:bg-indigo"
+                : "font-medium text-ink hover:text-indigo hover:after:bg-line"
             }`}
           >
             {item.label}

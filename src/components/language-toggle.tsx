@@ -1,5 +1,6 @@
 "use client";
 
+import { Fragment } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LOCALE_COOKIE,
@@ -11,8 +12,8 @@ import {
 } from "@/lib/i18n";
 
 const LABELS: Record<Locale, { text: string; typeClass: string }> = {
-  en: { text: "EN", typeClass: "font-display text-xs font-semibold" },
-  ja: { text: "日本語", typeClass: "font-accent text-sm font-bold" },
+  en: { text: "EN", typeClass: "font-display text-xs font-bold tracking-[0.08em]" },
+  ja: { text: "日本語", typeClass: "font-accent text-xs font-semibold" },
 };
 
 // The proxy reads this cookie and stops auto-redirecting against the choice.
@@ -42,23 +43,23 @@ export function LanguageToggle({
     <div
       role="group"
       aria-label={label}
-      className={`flex items-center rounded-full border border-line bg-white p-0.5 ${className ?? ""}`}
+      className={`flex items-center gap-2 ${className ?? ""}`}
     >
-      {locales.map((locale) => (
-        <button
-          key={locale}
-          type="button"
-          lang={locale}
-          onClick={() => switchTo(locale)}
-          aria-pressed={locale === current}
-          className={`rounded-full px-2.5 py-1 leading-5 transition ${LABELS[locale].typeClass} ${
-            locale === current
-              ? "bg-ink text-white"
-              : "text-navy hover:text-indigo"
-          }`}
-        >
-          {LABELS[locale].text}
-        </button>
+      {locales.map((locale, index) => (
+        <Fragment key={locale}>
+          {index > 0 && <span aria-hidden="true" className="h-3 w-px bg-sky/45" />}
+          <button
+            type="button"
+            lang={locale}
+            onClick={() => switchTo(locale)}
+            aria-pressed={locale === current}
+            className={`rounded-sm px-2 py-1 leading-5 transition ${LABELS[locale].typeClass} ${
+              locale === current ? "text-white" : "text-sky hover:text-white"
+            }`}
+          >
+            {LABELS[locale].text}
+          </button>
+        </Fragment>
       ))}
     </div>
   );
