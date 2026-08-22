@@ -190,6 +190,24 @@
     "pastAccent": "これまで",
     "pastCaption": "Looking Back",
     "empty": "No upcoming events are posted right now. Check back soon, or call the center at (562) 863-5996.",
+    "calendars": {
+      "accent": "スケジュール",
+      "caption": "Room Bookings",
+      "title": "Class & facility calendars",
+      "lede": "The two calendars the center keeps day to day: room bookings for every club and class, and the school's holidays and center-wide events.",
+      "heroCta": "Check the calendars ↓",
+      "openLabel": "Open in Google Calendar →",
+      "facilities": {
+        "label": "Facilities calendar",
+        "description": "Which rooms are booked, day by day. For a group's regular meeting day, see the Groups page.",
+        "frameTitle": "SEJSCC facilities calendar, showing room bookings for classes and clubs"
+      },
+      "comingEvents": {
+        "label": "Coming events",
+        "description": "School holidays, closures, and center-wide events such as the June Cultural Festival.",
+        "frameTitle": "Coming events at the Southeast Japanese School & Community Center"
+      }
+    },
     "pastTitle": "Past Events"
   },
   "eventDetail": {

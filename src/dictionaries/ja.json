@@ -190,6 +190,24 @@
     "pastAccent": "これまで",
     "pastCaption": "Looking Back",
     "empty": "現在、予定されているイベントはありません。またご確認いただくか、センター（(562) 863-5996）までお電話ください。",
+    "calendars": {
+      "accent": "スケジュール",
+      "caption": "Room Bookings",
+      "title": "教室・施設カレンダー",
+      "lede": "センターが日々使用している2つのカレンダーです。各クラブ・クラスの施設予約と、学園の休校日やセンター全体の行事をご覧いただけます。",
+      "heroCta": "カレンダーを見る ↓",
+      "openLabel": "Google カレンダーで開く →",
+      "facilities": {
+        "label": "施設カレンダー",
+        "description": "日々の施設予約状況です。各グループの定例活動日はグループのページをご覧ください。",
+        "frameTitle": "SEJSCC 施設カレンダー（クラブ・クラスの施設予約）"
+      },
+      "comingEvents": {
+        "label": "今後の予定",
+        "description": "学園の休校日・休館日、6月の文化祭などセンター全体の行事。",
+        "frameTitle": "サウスイースト日本語学園・コミュニティセンターの今後の予定"
+      }
+    },
     "pastTitle": "過去のイベント"
   },
   "eventDetail": {

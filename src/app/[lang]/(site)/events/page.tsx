@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { EventCard } from "@/components/event-card";
+import { GoogleCalendar } from "@/components/google-calendar";
 import { HeroPhotos } from "@/components/hero-photos";
 import { PageHero } from "@/components/page-hero";
 import { PageSection } from "@/components/page-section";
+import { calendarSources } from "@/lib/calendars";
 import { getPastEvents, getUpcomingEvents } from "@/lib/events";
-import { getDictionary, getDictionaryFor } from "@/lib/dictionaries";
+import { getDictionary, getDictionaryFor, getLocale } from "@/lib/dictionaries";
 import { hasLocale, localePath } from "@/lib/i18n";
 
 export const revalidate = 300;
@@ -36,13 +38,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function EventsPage() {
-  const [dict, upcoming, past] = await Promise.all([
+  const [dict, locale, upcoming, past] = await Promise.all([
     getDictionary(),
+    getLocale(),
     getUpcomingEvents(),
     getPastEvents(6),
   ]);
-
-  const hasEvents = upcoming.length > 0 || past.length > 0;
 
   return (
     <>
@@ -57,26 +58,30 @@ export default async function EventsPage() {
         titleLine2={dict.events.titleLine2}
         lede={dict.events.lede}
         actions={
-          hasEvents ? (
-            <>
-              {upcoming.length > 0 && (
-                <a
-                  href="#upcoming"
-                  className="button-primary rounded-lg px-6 py-3.5 font-display text-sm font-semibold text-white"
-                >
-                  {dict.events.upcomingCta}
-                </a>
-              )}
-              {past.length > 0 && (
-                <a
-                  href="#past"
-                  className="font-display text-sm font-semibold text-magenta hover:text-magenta-deep"
-                >
-                  {dict.events.pastCta}
-                </a>
-              )}
-            </>
-          ) : undefined
+          <>
+            {upcoming.length > 0 && (
+              <a
+                href="#upcoming"
+                className="button-primary rounded-lg px-6 py-3.5 font-display text-sm font-semibold text-white"
+              >
+                {dict.events.upcomingCta}
+              </a>
+            )}
+            <a
+              href="#calendars"
+              className="font-display text-sm font-semibold text-magenta hover:text-magenta-deep"
+            >
+              {dict.events.calendars.heroCta}
+            </a>
+            {past.length > 0 && (
+              <a
+                href="#past"
+                className="font-display text-sm font-semibold text-magenta hover:text-magenta-deep"
+              >
+                {dict.events.pastCta}
+              </a>
+            )}
+          </>
         }
         media={
           <HeroPhotos
@@ -110,10 +115,35 @@ export default async function EventsPage() {
         )}
       </PageSection>
 
+      <PageSection
+        id="calendars"
+        surface="mist"
+        watermark="週"
+        watermarkClassName="top-48 -right-16 text-indigo/5"
+        accent={dict.events.calendars.accent}
+        caption={dict.events.calendars.caption}
+        title={dict.events.calendars.title}
+        lede={dict.events.calendars.lede}
+      >
+        <div className="grid gap-6">
+          {calendarSources.map((source) => (
+            <GoogleCalendar
+              key={source.key}
+              source={source}
+              locale={locale}
+              label={dict.events.calendars[source.key].label}
+              description={dict.events.calendars[source.key].description}
+              frameTitle={dict.events.calendars[source.key].frameTitle}
+              openLabel={dict.events.calendars.openLabel}
+            />
+          ))}
+        </div>
+      </PageSection>
+
       {past.length > 0 && (
         <PageSection
           id="past"
-          surface="mist"
+          surface="white"
           watermark="昔"
           watermarkClassName="-right-12 -bottom-20 text-indigo/5"
           accent={dict.events.pastAccent}
