@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import { ExternalLink } from "@/components/external-link";
 import { PhotoPlaceholder } from "@/components/photo-placeholder";
 import { SectionKicker } from "@/components/section-kicker";
 import { WaveDivider } from "@/components/wave-divider";
@@ -115,21 +115,21 @@ export function HeroCarousel({ tabs, tabsLabel }: { tabs: HeroTab[]; tabsLabel: 
                 {tab.body}
               </p>
               <div className="mt-7 flex flex-wrap gap-3">
-                <Link
+                <ExternalLink
                   href={tab.primaryCta.href}
                   tabIndex={i === active ? 0 : -1}
                   className="button-primary rounded-lg px-7 py-3.5 font-display text-sm font-semibold tracking-[0.03em] text-white"
                 >
                   {tab.primaryCta.label}
-                </Link>
+                </ExternalLink>
                 {tab.secondaryCta && (
-                  <Link
+                  <ExternalLink
                     href={tab.secondaryCta.href}
                     tabIndex={i === active ? 0 : -1}
                     className="rounded-lg border-2 border-white/55 px-7 py-3 font-display text-sm font-semibold tracking-[0.03em] text-white hover:border-white hover:bg-white hover:text-ink"
                   >
                     {tab.secondaryCta.label}
-                  </Link>
+                  </ExternalLink>
                 )}
               </div>
             </div>

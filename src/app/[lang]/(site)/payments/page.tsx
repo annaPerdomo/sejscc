@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/page-header";
 import { getDictionary, getDictionaryFor } from "@/lib/dictionaries";
+import { ZEFFY_DONATION_URL } from "@/lib/donate";
 import { hasLocale, localePath } from "@/lib/i18n";
 
 type Props = { params: Promise<{ lang: string }> };
@@ -23,8 +24,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-// TODO(launch): Zeffy dashboard → form → Share → Embed, once the account clears.
-const ZEFFY_DONATION_EMBED_URL: string | null = null;
+// Set to null to show the fallback message below if the embed ever needs to come down.
+const ZEFFY_DONATION_EMBED_URL: string | null = ZEFFY_DONATION_URL;
 
 // TODO(launch): the recipient name + email/phone shown in the center's banking app.
 const ZELLE_RECIPIENT: string | null = null;

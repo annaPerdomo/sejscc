@@ -1,12 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
-import { KanjiWatermark } from "@/components/kanji-watermark";
+import { ExternalLink } from "@/components/external-link";
 import { LanguageToggle } from "@/components/language-toggle";
 import { MadeWithLove } from "@/components/made-with-love";
 import { MobileNav } from "@/components/mobile-nav";
-import { PhotoPlaceholder } from "@/components/photo-placeholder";
-import { SectionKicker } from "@/components/section-kicker";
-import { WaveDivider } from "@/components/wave-divider";
+import { ZEFFY_DONATION_URL } from "@/lib/donate";
 import { getUpcomingEvents } from "@/lib/events";
 import { formatEventDate } from "@/lib/format";
 import { getDictionary, getLocale } from "@/lib/dictionaries";
@@ -91,12 +89,12 @@ export default async function SiteLayout({
                 label={dict.languageToggle.label}
                 className="hidden lg:flex"
               />
-              <Link
-                href={href("/payments") + "#donate"}
+              <ExternalLink
+                href={ZEFFY_DONATION_URL}
                 className="button-donate rounded-md px-3.5 py-2 font-display text-sm font-semibold text-white sm:px-4"
               >
                 {dict.header.donate}
-              </Link>
+              </ExternalLink>
               <MobileNav
                 items={nav}
                 openLabel={dict.header.openMenu}
@@ -114,50 +112,6 @@ export default async function SiteLayout({
       </div>
 
       <main className="flex-1">{children}</main>
-
-      <section id="connect" className="section-wash-connect relative grid scroll-mt-16 md:grid-cols-2">
-        <WaveDivider
-          id="connect-top"
-          position="top"
-          accent="magenta"
-          seed={27}
-          className="absolute inset-x-0 top-0 z-10 text-paper"
-        />
-        <PhotoPlaceholder
-          label={dict.home.connectPhotoLabel}
-          frame={false}
-          className="min-h-64 w-full"
-        />
-        <div className="reveal-rise relative flex flex-col justify-center overflow-clip px-6 py-14 sm:px-10 md:pt-32 md:pb-20 lg:px-14 lg:pt-44 lg:pb-28">
-          <KanjiWatermark char="絆" className="-top-4 -right-6 text-indigo/5" />
-          <SectionKicker
-            accent={dict.home.connectKickerAccent}
-            caption={dict.home.connectKickerCaption}
-            tone="magenta"
-            order="caption-first"
-          />
-          <h2 className="mt-4 font-display text-2xl leading-snug font-normal tracking-[0.02em] text-ink sm:text-3xl">
-            {dict.home.connectTitle}
-          </h2>
-          <p className="mt-4 max-w-lg leading-relaxed text-ink-soft">
-            {dict.home.connectText}
-          </p>
-          <div className="mt-7 flex flex-wrap gap-3">
-            <a
-              href="tel:+15628635996"
-              className="button-primary rounded-lg px-5 py-2.5 font-display text-sm font-semibold text-white"
-            >
-              {dict.home.connectCall}
-            </a>
-            <a
-              href="mailto:info@sejscc.org"
-              className="rounded-lg border-2 border-ink/20 px-5 py-2.5 font-display text-sm font-semibold text-ink hover:border-ink"
-            >
-              {dict.home.connectEmail}
-            </a>
-          </div>
-        </div>
-      </section>
 
       <footer className="seigaiha-rings seigaiha-rings-sky bg-navy text-white">
         <div className="mx-auto grid max-w-6xl grid-cols-2 gap-x-4 gap-y-8 px-4 py-10 sm:grid-cols-3 sm:gap-10 sm:px-6 sm:py-14">
