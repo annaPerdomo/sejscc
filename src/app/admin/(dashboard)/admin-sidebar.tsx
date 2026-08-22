@@ -146,7 +146,7 @@ export function AdminSidebar({
             </Link>
             <form action={signOutAction}>
               <button type="submit" className="text-white/70 hover:text-white">
-                Sign out →
+                Sign out
               </button>
             </form>
           </div>

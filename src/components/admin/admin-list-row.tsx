@@ -28,7 +28,7 @@ export function AdminListRow({
         </div>
         <div className="flex w-full items-center justify-between gap-4 sm:w-auto">
           {badge}
-          <span className="text-sm font-semibold text-indigo">Edit →</span>
+          <span className="text-sm font-semibold text-indigo">Edit</span>
         </div>
       </div>
     </AdminCardLink>

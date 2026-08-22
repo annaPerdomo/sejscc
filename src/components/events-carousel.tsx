@@ -137,13 +137,7 @@ export function EventsCarousel({
                   </p>
                 )}
                 <span className="mt-auto pt-3 font-display text-sm font-semibold text-indigo">
-                  {detailsLabel}{" "}
-                  <span
-                    aria-hidden="true"
-                    className="inline-block transition-transform duration-200 group-hover:translate-x-1"
-                  >
-                    →
-                  </span>
+                  {detailsLabel}
                 </span>
               </div>
             </Link>

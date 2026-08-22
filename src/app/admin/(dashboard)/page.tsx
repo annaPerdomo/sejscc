@@ -108,7 +108,7 @@ export default async function AdminDashboard() {
           addHref="/admin/groups/new"
           addLabel="+ Add a new group"
           viewHref="/admin/groups"
-          viewLabel="View & edit all groups →"
+          viewLabel="View & edit all groups"
         >
           {activeGroups.length} {activeGroups.length === 1 ? "group is" : "groups are"}{" "}
           listed on the community page.
@@ -119,7 +119,7 @@ export default async function AdminDashboard() {
           addHref="/admin/events/new"
           addLabel="+ Add a new event"
           viewHref="/admin/events"
-          viewLabel="View & edit all events →"
+          viewLabel="View & edit all events"
         >
           {upcomingEvents.length} upcoming{" "}
           {upcomingEvents.length === 1 ? "event is" : "events are"} on the
