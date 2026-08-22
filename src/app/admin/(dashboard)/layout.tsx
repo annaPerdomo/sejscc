@@ -29,7 +29,7 @@ export default async function AdminLayout({
               {children}
             </div>
           </main>
-          <footer className="border-t border-line bg-white px-4 py-4 text-center">
+          <footer className="bg-paper px-4 pb-4 text-center">
             <MadeWithLove madeWith="Made with" by="by" className="text-xs text-stone" />
           </footer>
         </div>
