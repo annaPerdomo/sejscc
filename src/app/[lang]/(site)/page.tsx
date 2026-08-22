@@ -5,6 +5,7 @@ import { BrushEdge } from "@/components/brush-edge";
 import { HeroCarousel, type HeroTab } from "@/components/hero-carousel";
 import { EventsCarousel, type CarouselEvent } from "@/components/events-carousel";
 import { PhotoPlaceholder } from "@/components/photo-placeholder";
+import { SectionHeading } from "@/components/section-heading";
 import { SectionKicker } from "@/components/section-kicker";
 import { WaveDivider } from "@/components/wave-divider";
 import { KanjiWatermark } from "@/components/kanji-watermark";
@@ -99,9 +100,9 @@ export default async function HomePage() {
                 accent={dict.home.upcomingKickerAccent}
                 caption={dict.home.upcomingKickerCaption}
               />
-              <h2 className="mt-3 font-display text-3xl font-normal tracking-[0.02em] text-ink sm:text-4xl">
+              <SectionHeading className="mt-3">
                 {dict.home.upcomingTitle}
-              </h2>
+              </SectionHeading>
             </div>
             <Link
               href={href("/events")}
@@ -274,12 +275,12 @@ export default async function HomePage() {
               caption={dict.home.sportsClubs.kickerCaption}
               className="mb-3.5 justify-center"
             />
-            <h2 className="font-display text-3xl font-normal tracking-[0.02em] text-ink sm:text-4xl">
+            <SectionHeading>
               <span className="text-indigo">
                 {dict.home.sportsClubs.headingLine1}
               </span>{" "}
               {dict.home.sportsClubs.headingLine2}
-            </h2>
+            </SectionHeading>
             <p className="mx-auto mt-3.5 max-w-2xl text-ink-soft">
               {dict.home.sportsClubs.body}
             </p>
