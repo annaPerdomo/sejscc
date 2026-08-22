@@ -2,13 +2,14 @@ import { redirect } from "next/navigation";
 import { AuthError } from "next-auth";
 import { signIn } from "@/auth";
 import { getCurrentUser } from "@/lib/admin";
+import { getAccessRequestEmail } from "@/lib/site-settings";
 import { AdminAlert } from "@/components/admin/admin-alert";
 import { SectionKicker } from "@/components/section-kicker";
+import { AccessDeniedNotice } from "./access-denied-notice";
 import { LoginBrandPanel } from "./brand-panel";
 
+// AccessDenied is absent on purpose — AccessDeniedNotice renders it instead.
 const ERROR_MESSAGES: Record<string, string> = {
-  AccessDenied:
-    "That email isn't on the volunteer list yet. Ask a board member to add you, then try again.",
   Verification:
     "That sign-in link expired or was already used. Request a new one below.",
   Configuration:
@@ -37,11 +38,14 @@ export default async function LoginPage({
   }
 
   const { error } = await searchParams;
-  const errorMessage = error
-    ? (Object.hasOwn(ERROR_MESSAGES, error)
-        ? ERROR_MESSAGES[error]
-        : FALLBACK_ERROR_MESSAGE)
-    : null;
+  const accessDenied = error === "AccessDenied";
+  const contactEmail = accessDenied ? await getAccessRequestEmail() : null;
+  const errorMessage =
+    error && !accessDenied
+      ? (Object.hasOwn(ERROR_MESSAGES, error)
+          ? ERROR_MESSAGES[error]
+          : FALLBACK_ERROR_MESSAGE)
+      : null;
 
   return (
     <main className="flex flex-1 flex-col lg:flex-row">
@@ -57,6 +61,8 @@ export default async function LoginPage({
             No password to remember — enter your email and we&apos;ll send
             you a secure sign-in link.
           </p>
+
+          {accessDenied && <AccessDeniedNotice contactEmail={contactEmail} />}
 
           <form
             className="mt-8"
@@ -144,7 +150,7 @@ export default async function LoginPage({
                 三
               </span>
               <span className="text-sm leading-relaxed text-ink-soft">
-                Links expire after 15 minutes and work once
+                Links work once and expire after 24 hours
               </span>
             </li>
           </ol>

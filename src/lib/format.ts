@@ -72,10 +72,15 @@ export function normalizeWebsiteUrl(raw: string): string | null {
   return url.href;
 }
 
+const MAX_EMAIL_LENGTH = 254;
+
 export function normalizeContactEmail(raw: string): string | null {
   const trimmed = raw.trim();
   if (!trimmed) return null;
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+  if (
+    trimmed.length > MAX_EMAIL_LENGTH ||
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)
+  ) {
     throw new Error(
       "The contact email doesn’t look right. It should be something like name@example.org."
     );

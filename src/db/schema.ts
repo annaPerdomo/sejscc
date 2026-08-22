@@ -128,3 +128,14 @@ export const groups = pgTable("group", {
 
 export type GroupStatus = (typeof groups.$inferSelect)["status"];
 export type WeekDay = (typeof weekDays)[number];
+
+export const SITE_SETTINGS_ID = "site";
+
+export const siteSettings = pgTable("site_setting", {
+  id: text("id").primaryKey().default(SITE_SETTINGS_ID),
+  accessRequestEmail: text("access_request_email"),
+  updatedAt: timestamp("updated_at", { mode: "date" })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
