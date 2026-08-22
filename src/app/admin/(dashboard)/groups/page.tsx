@@ -19,8 +19,9 @@ export default async function AdminGroupsPage() {
         <div>
           <h1 className="font-display text-3xl text-ink">Groups</h1>
           <p className="mt-1 text-stone">
-            Add and edit the community groups shown on the website. The arrows
-            change the order they appear in.
+            Add and edit the community groups shown on the website.
+            {allGroups.length > 1 &&
+              " The arrows change the order they appear in."}
           </p>
         </div>
         <AdminButtonLink href="/admin/groups/new">
