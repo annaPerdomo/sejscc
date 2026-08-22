@@ -4,6 +4,7 @@ import { ExternalLink } from "@/components/external-link";
 import { LanguageToggle } from "@/components/language-toggle";
 import { MadeWithLove } from "@/components/made-with-love";
 import { MobileNav } from "@/components/mobile-nav";
+import { SiteNav } from "@/components/site-nav";
 import { ZEFFY_DONATION_URL } from "@/lib/donate";
 import { getUpcomingEvents } from "@/lib/events";
 import { formatEventDate } from "@/lib/format";
@@ -72,17 +73,7 @@ export default async function SiteLayout({
                 </span>
               </span>
             </Link>
-            <nav className="hidden flex-1 items-center justify-center gap-1 lg:flex xl:gap-3">
-              {nav.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="rounded-md px-3 py-2 font-display text-[13px] font-semibold tracking-[0.08em] text-ink-soft uppercase hover:text-indigo"
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
+            <SiteNav items={nav} />
             <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3 lg:ml-0">
               <LanguageToggle
                 current={lang}
