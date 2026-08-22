@@ -3,7 +3,7 @@
 import { del } from "@vercel/blob";
 import { asc, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { groups, type GroupStatus } from "@/db/schema";
+import { groups, weekDays, type GroupStatus, type WeekDay } from "@/db/schema";
 import { requireUser, revalidateSite } from "@/lib/admin";
 import {
   normalizeContactEmail,
@@ -13,11 +13,13 @@ import {
 
 export type GroupInput = {
   name: string;
+  nameJa: string;
   description: string;
   imageUrl: string | null;
   websiteUrl: string;
   contactEmail: string;
   meetingSchedule: string;
+  meetingDays: WeekDay[];
   active: boolean;
   status: GroupStatus;
 };
@@ -44,16 +46,25 @@ function trimmed(value: string, max: number) {
   return value.trim().slice(0, max) || null;
 }
 
+// Filter the canonical week, not the payload — inverting this silently loses
+// the de-duplication and the ordering.
+function checkedMeetingDays(raw: WeekDay[]) {
+  if (!Array.isArray(raw)) return [];
+  return weekDays.filter((day) => raw.includes(day));
+}
+
 function groupValues(input: GroupInput) {
   const name = trimmed(input.name, 100);
   if (!name) throw new Error("A group name is required.");
   return {
     name,
+    nameJa: trimmed(input.nameJa, 60),
     description: trimmed(input.description, 500),
     imageUrl: checkedImageUrl(input.imageUrl),
     websiteUrl: normalizeWebsiteUrl(input.websiteUrl),
     contactEmail: normalizeContactEmail(input.contactEmail),
     meetingSchedule: trimmed(input.meetingSchedule, 100),
+    meetingDays: checkedMeetingDays(input.meetingDays),
     active: input.active,
     status: input.status,
   };

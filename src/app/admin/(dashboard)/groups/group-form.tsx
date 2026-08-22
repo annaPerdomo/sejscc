@@ -12,36 +12,47 @@ import {
   AdminTextArea,
   AdminTextField,
 } from "@/components/admin/admin-field";
-import type { GroupStatus } from "@/db/schema";
+import { weekDays, type GroupStatus, type WeekDay } from "@/db/schema";
 import { normalizeContactEmail, normalizeWebsiteUrl } from "@/lib/format";
 import { createGroup, updateGroup, type GroupInput } from "./actions";
+import { GROUP_STATUS_OPTIONS } from "./status";
 
 type ExistingGroup = {
   id: string;
   name: string;
+  nameJa: string | null;
   description: string | null;
   imageUrl: string | null;
   websiteUrl: string | null;
   contactEmail: string | null;
   meetingSchedule: string | null;
+  meetingDays: WeekDay[];
   active: boolean;
   status: GroupStatus;
 };
 
-const STATUS_OPTIONS: { value: GroupStatus; label: string }[] = [
-  { value: "meeting", label: "Meeting normally" },
-  { value: "paused", label: "Paused — temporarily not meeting" },
-  { value: "cancelled", label: "Cancelled" },
-];
+const DAY_LABELS: Record<WeekDay, string> = {
+  mon: "Monday",
+  tue: "Tuesday",
+  wed: "Wednesday",
+  thu: "Thursday",
+  fri: "Friday",
+  sat: "Saturday",
+  sun: "Sunday",
+};
 
 export function GroupForm({ group }: { group?: ExistingGroup }) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [name, setName] = useState(group?.name ?? "");
+  const [nameJa, setNameJa] = useState(group?.nameJa ?? "");
   const [description, setDescription] = useState(group?.description ?? "");
   const [meetingSchedule, setMeetingSchedule] = useState(
     group?.meetingSchedule ?? ""
+  );
+  const [meetingDays, setMeetingDays] = useState<WeekDay[]>(
+    group?.meetingDays ?? []
   );
   const [websiteUrl, setWebsiteUrl] = useState(group?.websiteUrl ?? "");
   const [contactEmail, setContactEmail] = useState(group?.contactEmail ?? "");
@@ -56,6 +67,14 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  function toggleDay(day: WeekDay) {
+    setMeetingDays((current) =>
+      weekDays.filter((other) =>
+        other === day ? !current.includes(other) : current.includes(other)
+      )
+    );
+  }
 
   function onPickImage(file: File | undefined) {
     setError(null);
@@ -102,8 +121,10 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
       normalizeContactEmail(contactEmail);
       const input: GroupInput = {
         name,
+        nameJa,
         description,
         meetingSchedule,
+        meetingDays,
         websiteUrl,
         contactEmail,
         active,
@@ -127,6 +148,13 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
     }
   }
 
+  const daysReminder =
+    meetingDays.length > 0
+      ? `Check that it still matches the days above: ${meetingDays
+          .map((day) => DAY_LABELS[day])
+          .join(", ")}.`
+      : "Include the days the group meets, and check them above too.";
+
   return (
     <form onSubmit={save} className="max-w-2xl space-y-6">
       <AdminCard>
@@ -144,6 +172,18 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
           placeholder="Enter the group’s name…"
         />
         <AdminCharacterCount value={name} max={100} />
+        <div className="mt-5">
+          <AdminTextField
+            label="Japanese name (optional)"
+            value={nameJa}
+            onChange={(e) => setNameJa(e.target.value)}
+            maxLength={60}
+            placeholder="e.g. 柔道"
+          />
+        </div>
+        <p className="mt-2 text-xs text-stone">
+          Shown in small type beside the group’s name on the website.
+        </p>
       </AdminCard>
 
       <AdminCard>
@@ -189,7 +229,8 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
           />
         </div>
         <p className="mt-3 text-xs text-stone">
-          Shown as a small square next to the group’s name on the website.
+          Shown across the top of the group’s card on the website. A photo or
+          a logo both work — it is fitted inside the card, never cropped.
         </p>
       </AdminCard>
 
@@ -198,7 +239,32 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
           Details{" "}
           <span className="text-sm font-normal text-stone">(optional)</span>
         </h2>
-        <div className="mt-4">
+        <fieldset className="mt-4">
+          <legend className="text-sm font-medium text-stone">
+            Which days does this group meet?
+          </legend>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {weekDays.map((day) => (
+              <label
+                key={day}
+                className="flex cursor-pointer items-center gap-2 rounded-lg border border-line px-3 py-2.5 text-sm text-ink hover:border-indigo has-checked:border-indigo has-checked:bg-mist"
+              >
+                <input
+                  type="checkbox"
+                  checked={meetingDays.includes(day)}
+                  onChange={() => toggleDay(day)}
+                  className="h-4 w-4 accent-indigo"
+                />
+                {DAY_LABELS[day]}
+              </label>
+            ))}
+          </div>
+          <p className="mt-2 text-xs text-stone">
+            Builds the “A week at the center” schedule on the Groups page.
+            Leave every day unchecked if the group has no set meeting day.
+          </p>
+        </fieldset>
+        <div className="mt-5">
           <AdminTextField
             label="Meeting schedule"
             value={meetingSchedule}
@@ -207,7 +273,10 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
             placeholder="e.g. Tuesdays & Thursdays, 7:00–9:00 PM"
           />
         </div>
-        <div className="mt-4">
+        <p className="mt-2 text-xs text-stone">
+          Printed on the group’s card word for word. {daysReminder}
+        </p>
+        <div className="mt-5">
           <AdminTextArea
             label="Description"
             value={description}
@@ -272,14 +341,14 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
           value={status}
           onChange={(e) => setStatus(e.target.value as GroupStatus)}
         >
-          {STATUS_OPTIONS.map((option) => (
+          {GROUP_STATUS_OPTIONS.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}
             </option>
           ))}
         </AdminSelect>
         <p className="mt-3 text-sm text-stone">
-          Paused and cancelled groups stay on the website — with a label
+          Paused and discontinued groups stay on the website — with a label
           showing their status — but move to the bottom of the list instead
           of needing to be manually reordered.
         </p>

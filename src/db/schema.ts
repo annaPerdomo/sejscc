@@ -95,6 +95,16 @@ export const events = pgTable("event", {
     .$onUpdate(() => new Date()),
 });
 
+export const weekDays = [
+  "mon",
+  "tue",
+  "wed",
+  "thu",
+  "fri",
+  "sat",
+  "sun",
+] as const;
+
 // Community organizations that use the center (judo, basketball, the gakuen).
 export const groups = pgTable("group", {
   id: text("id")
@@ -102,11 +112,13 @@ export const groups = pgTable("group", {
     .$defaultFn(() => crypto.randomUUID()),
   slug: text("slug").unique().notNull(),
   name: text("name").notNull(),
+  nameJa: text("name_ja"),
   description: text("description"),
   imageUrl: text("image_url"),
   websiteUrl: text("website_url"),
   contactEmail: text("contact_email"),
   meetingSchedule: text("meeting_schedule"),
+  meetingDays: text("meeting_days", { enum: weekDays }).array().notNull().default([]),
   sortOrder: integer("sort_order").notNull().default(0),
   active: boolean("active").notNull().default(true),
   status: text("status", { enum: ["meeting", "paused", "cancelled"] })
@@ -115,3 +127,4 @@ export const groups = pgTable("group", {
 });
 
 export type GroupStatus = (typeof groups.$inferSelect)["status"];
+export type WeekDay = (typeof weekDays)[number];
