@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { KanjiWatermark } from "@/components/kanji-watermark";
+import { PageHero } from "@/components/page-hero";
+import { SectionKicker } from "@/components/section-kicker";
 import { getEventBySlug } from "@/lib/events";
 import { formatEventDate, formatEventTime } from "@/lib/format";
 import { getDictionary, getDictionaryFor, getLocale } from "@/lib/dictionaries";
@@ -42,86 +45,110 @@ export default async function EventPage({ params }: Props) {
 
   const date = formatEventDate(event.startAt, lang);
   const time = formatEventTime(event.startAt, event.endAt, lang);
+  const facts = [
+    { label: dict.eventDetail.date, value: date },
+    { label: dict.eventDetail.time, value: time },
+    { label: dict.eventDetail.where, value: event.location },
+  ].filter((fact) => fact.value);
+
+  const backLink = (
+    <Link
+      href={localePath(lang, "/events")}
+      className="font-display text-sm font-semibold text-indigo hover:text-indigo-deep"
+    >
+      {dict.eventDetail.back}
+    </Link>
+  );
 
   return (
-    <div className="page-shell mx-auto max-w-5xl px-4 py-14 sm:px-6">
-      <Link
-        href={localePath(lang, "/events")}
-        className="text-sm font-semibold text-indigo hover:text-indigo-deep"
-      >
-        {dict.eventDetail.back}
-      </Link>
-      <div className="mt-6 grid gap-10 md:grid-cols-[2fr_3fr]">
-        <div>
-          <div className="surface-card relative aspect-flyer overflow-hidden bg-mist p-3">
-            {event.flyerUrl ? (
-              <Image
-                src={event.flyerUrl}
-                alt={dict.eventDetail.flyerAlt.replace("{title}", event.title)}
-                fill
-                sizes="(max-width: 768px) 100vw, 40vw"
-                className="object-contain"
-                preload
+    <>
+      <PageHero
+        id="event-detail"
+        wash="section-wash-events-hero"
+        watermark="祭"
+        watermarkClassName="-right-14 -bottom-24 text-magenta/5"
+        accent={dict.eventDetail.kickerAccent}
+        caption={dict.eventDetail.kickerCaption}
+        titleLine1={event.title}
+        eyebrow={backLink}
+        facts={
+          facts.length > 0 && (
+            <dl className="flex flex-wrap gap-x-9 gap-y-4">
+              {facts.map((fact) => (
+                <div key={fact.label}>
+                  <dt className="font-display text-xs font-semibold tracking-[0.14em] text-stone uppercase">
+                    {fact.label}
+                  </dt>
+                  <dd className="mt-1.5 font-display text-base font-semibold text-ink">
+                    {fact.value}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          )
+        }
+        media={
+          <div className="reveal-rise w-full shrink-0 self-start sm:mx-auto sm:max-w-sm lg:mx-0 lg:w-88 xl:w-96">
+            <div className="relative">
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 -rotate-3 rounded-xl border border-line bg-cream shadow-sm"
               />
-            ) : (
-              <div className="flex h-full items-center justify-center">
-                <Image
-                  src="/logo-mark.png"
-                  alt=""
-                  width={72}
-                  height={72}
-                  className="opacity-10"
-                />
+              <div className="surface-card relative aspect-flyer overflow-clip bg-mist lg:rotate-1">
+                {event.flyerUrl ? (
+                  <div className="absolute inset-3">
+                    <Image
+                      src={event.flyerUrl}
+                      alt={dict.eventDetail.flyerAlt.replace("{title}", event.title)}
+                      fill
+                      sizes="(max-width: 639px) 100vw, 24rem"
+                      className="object-contain"
+                      preload
+                    />
+                  </div>
+                ) : (
+                  <div className="flex h-full items-center justify-center">
+                    <Image
+                      src="/logo-mark.png"
+                      alt=""
+                      width={72}
+                      height={72}
+                      className="opacity-10"
+                    />
+                  </div>
+                )}
               </div>
+            </div>
+            {event.flyerDownloadUrl && (
+              <a
+                href={event.flyerDownloadUrl}
+                download
+                className="mt-8 block rounded-lg border-2 border-ink/20 px-5 py-3 text-center font-display text-sm font-semibold text-ink hover:border-ink"
+              >
+                {dict.eventDetail.downloadFlyer}
+              </a>
             )}
           </div>
-          {event.flyerDownloadUrl && (
-            <a
-              href={event.flyerDownloadUrl}
-              download
-              className="mt-4 block rounded-md border border-ink/20 px-4 py-2.5 text-center text-sm font-semibold text-ink hover:bg-mist"
-            >
-              {dict.eventDetail.downloadFlyer}
-            </a>
-          )}
-        </div>
-        <div>
-          <h1 className="font-display text-3xl leading-tight text-ink sm:text-4xl">
-            {event.title}
-          </h1>
-          <dl className="surface-card mt-6 space-y-3 p-5 text-[15px]">
-            {date && (
-              <div className="flex gap-3">
-                <dt className="w-20 shrink-0 font-semibold text-stone">
-                  {dict.eventDetail.date}
-                </dt>
-                <dd className="text-ink">{date}</dd>
-              </div>
-            )}
-            {time && (
-              <div className="flex gap-3">
-                <dt className="w-20 shrink-0 font-semibold text-stone">
-                  {dict.eventDetail.time}
-                </dt>
-                <dd className="text-ink">{time}</dd>
-              </div>
-            )}
-            {event.location && (
-              <div className="flex gap-3">
-                <dt className="w-20 shrink-0 font-semibold text-stone">
-                  {dict.eventDetail.where}
-                </dt>
-                <dd className="text-ink">{event.location}</dd>
-              </div>
-            )}
-          </dl>
+        }
+      />
+
+      <section className="relative overflow-clip bg-white py-14 sm:py-16">
+        <KanjiWatermark char="縁" className="-right-14 -bottom-20 text-indigo/5" />
+        <div className="relative mx-auto flex max-w-6xl flex-col items-start gap-10 px-4 sm:px-6">
           {event.description && (
-            <div className="mt-6 leading-relaxed whitespace-pre-line text-ink-soft">
-              {event.description}
+            <div className="reveal-rise max-w-3xl">
+              <SectionKicker
+                accent={dict.eventDetail.aboutAccent}
+                caption={dict.eventDetail.aboutCaption}
+              />
+              <div className="mt-5 leading-relaxed whitespace-pre-line text-ink-soft">
+                {event.description}
+              </div>
             </div>
           )}
+          {backLink}
         </div>
-      </div>
-    </div>
+      </section>
+    </>
   );
 }

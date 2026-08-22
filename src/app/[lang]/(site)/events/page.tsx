@@ -1,11 +1,19 @@
 import type { Metadata } from "next";
 import { EventCard } from "@/components/event-card";
-import { PageHeader } from "@/components/page-header";
+import { HeroPhotos } from "@/components/hero-photos";
+import { PageHero } from "@/components/page-hero";
+import { PageSection } from "@/components/page-section";
 import { getPastEvents, getUpcomingEvents } from "@/lib/events";
 import { getDictionary, getDictionaryFor } from "@/lib/dictionaries";
 import { hasLocale, localePath } from "@/lib/i18n";
 
 export const revalidate = 300;
+
+const HERO_LAYOUT = [
+  "lg:col-start-1 lg:col-span-6 lg:row-start-1 lg:row-span-8",
+  "lg:col-start-7 lg:col-span-6 lg:row-start-3 lg:row-span-6",
+  "col-span-2 sm:aspect-band lg:col-start-1 lg:col-span-12 lg:row-start-9 lg:row-span-4",
+];
 
 type Props = { params: Promise<{ lang: string }> };
 
@@ -34,37 +42,91 @@ export default async function EventsPage() {
     getPastEvents(6),
   ]);
 
+  const hasEvents = upcoming.length > 0 || past.length > 0;
+
   return (
-    <div className="page-shell mx-auto max-w-6xl px-4 py-14 sm:px-6">
-      <PageHeader
+    <>
+      <PageHero
+        id="events"
+        wash="section-wash-events-hero"
+        watermark="祭"
+        watermarkClassName="-right-14 -bottom-24 text-magenta/5"
         accent={dict.events.kickerAccent}
         caption={dict.events.kickerCaption}
-        title={dict.events.title}
+        titleLine1={dict.events.titleLine1}
+        titleLine2={dict.events.titleLine2}
         lede={dict.events.lede}
+        actions={
+          hasEvents ? (
+            <>
+              {upcoming.length > 0 && (
+                <a
+                  href="#upcoming"
+                  className="button-primary rounded-lg px-6 py-3.5 font-display text-sm font-semibold text-white"
+                >
+                  {dict.events.upcomingCta}
+                </a>
+              )}
+              {past.length > 0 && (
+                <a
+                  href="#past"
+                  className="font-display text-sm font-semibold text-magenta hover:text-magenta-deep"
+                >
+                  {dict.events.pastCta}
+                </a>
+              )}
+            </>
+          ) : undefined
+        }
+        media={
+          <HeroPhotos
+            layout={HERO_LAYOUT}
+            tileClassName="aspect-photo w-full rounded-xl border border-line shadow-sm lg:aspect-auto"
+            placeholderLabel={dict.events.photoLabel}
+            className="grid w-full shrink-0 grid-cols-2 gap-3 lg:h-104 lg:w-112 lg:grid-cols-12 lg:grid-rows-12 lg:gap-4 xl:h-124 xl:w-132"
+          />
+        }
       />
 
-      {upcoming.length > 0 ? (
-        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {upcoming.map((event) => (
-            <EventCard key={event.id} event={event} className="reveal-rise" />
-          ))}
-        </div>
-      ) : (
-        <p className="surface-card mt-10 p-8 text-stone">{dict.events.empty}</p>
-      )}
+      <PageSection
+        id="upcoming"
+        surface="white"
+        watermark="暦"
+        watermarkClassName="top-64 -left-16 text-indigo/5"
+        accent={dict.events.upcomingAccent}
+        caption={dict.events.upcomingCaption}
+        title={dict.events.upcomingTitle}
+      >
+        {upcoming.length > 0 ? (
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {upcoming.map((event) => (
+              <EventCard key={event.id} event={event} className="reveal-rise" />
+            ))}
+          </div>
+        ) : (
+          <p className="rounded-2xl border border-line bg-mist p-8 text-ink-soft">
+            {dict.events.empty}
+          </p>
+        )}
+      </PageSection>
 
       {past.length > 0 && (
-        <section className="mt-16">
-          <h2 className="font-display text-2xl text-ink">
-            {dict.events.pastTitle}
-          </h2>
-          <div className="mt-6 grid gap-6 opacity-80 sm:grid-cols-2 lg:grid-cols-3">
+        <PageSection
+          id="past"
+          surface="mist"
+          watermark="昔"
+          watermarkClassName="-right-12 -bottom-20 text-indigo/5"
+          accent={dict.events.pastAccent}
+          caption={dict.events.pastCaption}
+          title={dict.events.pastTitle}
+        >
+          <div className="grid gap-5 opacity-80 sm:grid-cols-2 lg:grid-cols-3">
             {past.map((event) => (
               <EventCard key={event.id} event={event} className="reveal-rise" />
             ))}
           </div>
-        </section>
+        </PageSection>
       )}
-    </div>
+    </>
   );
 }

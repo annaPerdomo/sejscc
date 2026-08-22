@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import { BrushEdge } from "@/components/brush-edge";
 import { ExternalLink } from "@/components/external-link";
 import { GroupMedia } from "@/components/group-media";
+import { HeroPhotos } from "@/components/hero-photos";
 import { KanjiWatermark } from "@/components/kanji-watermark";
-import { PhotoPlaceholder } from "@/components/photo-placeholder";
+import { PageHero } from "@/components/page-hero";
+import { PageSection } from "@/components/page-section";
 import { SectionKicker } from "@/components/section-kicker";
 import { WaveDivider } from "@/components/wave-divider";
 import { weekDays } from "@/db/schema";
@@ -17,7 +18,7 @@ const CENTER_EMAIL = "info@sejscc.org";
 const CENTER_PHONE = "(562) 863-5996";
 const CENTER_PHONE_HREF = "tel:+15628635996";
 
-const HERO_TILES = [
+const HERO_LAYOUT = [
   "lg:col-start-1 lg:col-span-7 lg:row-start-1 lg:row-span-7",
   "lg:col-start-8 lg:col-span-5 lg:row-start-1 lg:row-span-5",
   "lg:col-start-8 lg:col-span-5 lg:row-start-6 lg:row-span-7",
@@ -45,48 +46,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-function TitleBrushRule() {
-  return (
-    <svg
-      viewBox="0 0 320 14"
-      preserveAspectRatio="none"
-      aria-hidden="true"
-      className="mt-5 block h-3.5 w-56 overflow-visible sm:w-80"
-    >
-      <defs>
-        <filter id="groups-title-brush" x="-4%" y="-300%" width="108%" height="700%">
-          <feTurbulence
-            type="fractalNoise"
-            baseFrequency="0.02 0.3"
-            numOctaves="3"
-            seed="9"
-            result="n"
-          />
-          <feDisplacementMap in="SourceGraphic" in2="n" scale="6" />
-        </filter>
-      </defs>
-      <path
-        d="M2,8 C70,4 180,10 318,6"
-        fill="none"
-        className="stroke-gold"
-        strokeWidth="4"
-        strokeLinecap="round"
-        opacity="0.85"
-        filter="url(#groups-title-brush)"
-      />
-      <path
-        d="M6,11 C90,7 200,12 300,8"
-        fill="none"
-        className="stroke-gold/40"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeDasharray="34 22 60 30"
-        filter="url(#groups-title-brush)"
-      />
-    </svg>
-  );
-}
-
 export default async function GroupsPage() {
   const [dict, groups] = await Promise.all([getDictionary(), getActiveGroups()]);
 
@@ -100,173 +59,157 @@ export default async function GroupsPage() {
 
   return (
     <>
-      <section className="section-wash-groups-hero relative overflow-clip">
-        <KanjiWatermark char="輪" className="-bottom-24 -left-12 text-indigo/5" />
-        <div className="relative mx-auto grid max-w-6xl gap-10 px-4 pt-12 pb-16 sm:px-6 sm:pt-14 lg:grid-cols-[1fr_auto] lg:items-center lg:gap-14 lg:pb-24">
-          <div className="reveal-rise">
-            <SectionKicker
-              accent={dict.groups.kickerAccent}
-              caption={dict.groups.kickerCaption}
-            />
-            <h1 className="mt-4 font-display text-4xl leading-tight font-normal tracking-[0.02em] sm:text-5xl">
-              <span className="block text-ink">{dict.groups.titleLine1}</span>
-              <span className="block text-indigo">{dict.groups.titleLine2}</span>
-            </h1>
-            <TitleBrushRule />
-            <p className="mt-6 max-w-xl leading-relaxed text-ink-soft">
-              {dict.groups.lede}
-            </p>
-            <div className="mt-8 flex flex-wrap items-center gap-x-7 gap-y-4">
-              {hasWeek && (
-                <a
-                  href="#week"
-                  className="button-primary rounded-lg px-6 py-3.5 font-display text-sm font-semibold text-white"
-                >
-                  {dict.groups.scheduleCta}
-                </a>
-              )}
+      <PageHero
+        id="groups"
+        wash="section-wash-groups-hero"
+        watermark="輪"
+        watermarkClassName="-bottom-24 -left-12 text-indigo/5"
+        accent={dict.groups.kickerAccent}
+        caption={dict.groups.kickerCaption}
+        titleLine1={dict.groups.titleLine1}
+        titleLine2={dict.groups.titleLine2}
+        lede={dict.groups.lede}
+        actions={
+          <>
+            {hasWeek && (
               <a
-                href="#start"
-                className="font-display text-sm font-semibold text-magenta hover:text-magenta-deep"
+                href="#week"
+                className="button-primary rounded-lg px-6 py-3.5 font-display text-sm font-semibold text-white"
               >
-                {dict.groups.startCta}
+                {dict.groups.scheduleCta}
               </a>
-            </div>
-          </div>
+            )}
+            <a
+              href="#start"
+              className="font-display text-sm font-semibold text-magenta hover:text-magenta-deep"
+            >
+              {dict.groups.startCta}
+            </a>
+          </>
+        }
+        media={
+          <HeroPhotos
+            layout={HERO_LAYOUT}
+            tileClassName="aspect-photo w-full border border-line lg:aspect-auto"
+            placeholderLabel={dict.groups.photoLabel}
+            className="grid w-full shrink-0 grid-cols-2 shadow-sm lg:h-104 lg:w-112 lg:grid-cols-12 lg:grid-rows-12 xl:h-124 xl:w-132"
+          />
+        }
+      />
 
-          <div className="reveal-rise grid w-full shrink-0 grid-cols-2 shadow-sm lg:h-104 lg:w-112 lg:grid-cols-12 lg:grid-rows-12 xl:h-124 xl:w-132">
-            {HERO_TILES.map((placement, i) => (
-              <PhotoPlaceholder
-                key={i}
-                label={dict.groups.photoLabel}
-                frame={false}
-                className={`aspect-photo w-full border border-line lg:aspect-auto ${placement}`}
-              />
-            ))}
-          </div>
-        </div>
-        <BrushEdge id="groups-hero" variant="paper" className="absolute inset-x-0 bottom-0" />
-      </section>
+      <PageSection
+        surface="white"
+        watermark="道"
+        watermarkClassName="top-64 -right-16 text-indigo/5"
+        accent={dict.groups.directoryAccent}
+        caption={dict.groups.directoryCaption}
+        title={dict.groups.directoryTitle}
+      >
+        {groups.length > 0 ? (
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {groups.map((group) => {
+              const muted = group.status !== "meeting";
+              const statusLabel =
+                group.status === "paused"
+                  ? dict.groups.pausedLabel
+                  : group.status === "cancelled"
+                    ? dict.groups.cancelledLabel
+                    : null;
 
-      <section className="relative overflow-clip bg-white pt-12 pb-16 sm:pt-14 sm:pb-20">
-        <KanjiWatermark char="道" className="top-64 -right-16 text-indigo/5" />
-        <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
-          <div className="reveal-rise mb-9">
-            <SectionKicker
-              accent={dict.groups.directoryAccent}
-              caption={dict.groups.directoryCaption}
-            />
-            <h2 className="mt-3 font-display text-3xl font-normal tracking-[0.02em] text-ink sm:text-4xl">
-              {dict.groups.directoryTitle}
-            </h2>
-          </div>
+              return (
+                <article
+                  key={group.id}
+                  className={`reveal-rise relative flex flex-col overflow-clip ${
+                    muted
+                      ? "rounded-xl border border-dashed border-line bg-cloud"
+                      : "surface-card surface-card-link"
+                  }`}
+                >
+                  <GroupMedia
+                    src={group.imageUrl}
+                    placeholderLabel={dict.groups.photoLabel}
+                    sizes={CARD_SIZES}
+                    muted={muted}
+                    className="border-b border-line"
+                  />
+                  {statusLabel && (
+                    <span className="absolute top-3 right-3 rounded-md border border-line bg-white/90 px-2.5 py-1 font-display text-[11px] font-semibold tracking-[0.14em] text-stone uppercase">
+                      {statusLabel}
+                    </span>
+                  )}
 
-          {groups.length > 0 ? (
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {groups.map((group) => {
-                const muted = group.status !== "meeting";
-                const statusLabel =
-                  group.status === "paused"
-                    ? dict.groups.pausedLabel
-                    : group.status === "cancelled"
-                      ? dict.groups.cancelledLabel
-                      : null;
-
-                return (
-                  <article
-                    key={group.id}
-                    className={`reveal-rise relative flex flex-col overflow-clip ${
-                      muted
-                        ? "rounded-xl border border-dashed border-line bg-cloud"
-                        : "surface-card surface-card-link"
-                    }`}
-                  >
-                    <GroupMedia
-                      src={group.imageUrl}
-                      placeholderLabel={dict.groups.photoLabel}
-                      sizes={CARD_SIZES}
-                      muted={muted}
-                      className="border-b border-line"
-                    />
-                    {statusLabel && (
-                      <span className="absolute top-3 right-3 rounded-md border border-line bg-white/90 px-2.5 py-1 font-display text-[11px] font-semibold tracking-[0.14em] text-stone uppercase">
-                        {statusLabel}
-                      </span>
-                    )}
-
-                    <div className="flex flex-1 flex-col gap-2 p-5">
-                      <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
-                        <h3
-                          className={`font-display text-lg font-semibold ${
-                            muted ? "text-ink-soft" : "text-ink"
+                  <div className="flex flex-1 flex-col gap-2 p-5">
+                    <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
+                      <h3
+                        className={`font-display text-lg font-semibold ${
+                          muted ? "text-ink-soft" : "text-ink"
+                        }`}
+                      >
+                        {group.name}
+                      </h3>
+                      {group.nameJa && (
+                        <span
+                          lang="ja"
+                          className={`font-accent text-sm font-bold tracking-[0.16em] ${
+                            muted ? "text-stone" : "text-indigo"
                           }`}
                         >
-                          {group.name}
-                        </h3>
-                        {group.nameJa && (
-                          <span
-                            lang="ja"
-                            className={`font-accent text-sm font-bold tracking-[0.16em] ${
-                              muted ? "text-stone" : "text-indigo"
-                            }`}
-                          >
-                            {group.nameJa}
-                          </span>
-                        )}
-                      </div>
-
-                      {group.meetingSchedule && (
-                        <p
-                          className={`font-display text-xs font-semibold tracking-[0.1em] uppercase ${
-                            muted ? "text-stone" : "text-magenta"
-                          }`}
-                        >
-                          {group.meetingSchedule}
-                        </p>
-                      )}
-
-                      {group.description && (
-                        <p
-                          className={`text-sm leading-relaxed ${
-                            muted ? "text-stone" : "text-ink-soft"
-                          }`}
-                        >
-                          {group.description}
-                        </p>
-                      )}
-
-                      {(group.websiteUrl || group.contactEmail) && (
-                        <div className="mt-auto flex flex-wrap gap-x-5 gap-y-2 border-t border-dashed border-indigo/25 pt-4 font-display text-sm font-semibold">
-                          {group.websiteUrl && (
-                            <ExternalLink
-                              href={group.websiteUrl}
-                              className="text-indigo hover:text-indigo-deep"
-                            >
-                              {dict.groups.website}
-                            </ExternalLink>
-                          )}
-                          {group.contactEmail && (
-                            <a
-                              href={`mailto:${group.contactEmail}`}
-                              className="break-all text-indigo hover:text-indigo-deep"
-                            >
-                              {group.contactEmail}
-                            </a>
-                          )}
-                        </div>
+                          {group.nameJa}
+                        </span>
                       )}
                     </div>
-                  </article>
-                );
-              })}
-            </div>
-          ) : (
-            <p className="rounded-2xl border border-line bg-mist p-8 text-ink-soft">
-              {dict.groups.empty}
-            </p>
-          )}
-        </div>
-      </section>
+
+                    {group.meetingSchedule && (
+                      <p
+                        className={`font-display text-xs font-semibold tracking-[0.1em] uppercase ${
+                          muted ? "text-stone" : "text-magenta"
+                        }`}
+                      >
+                        {group.meetingSchedule}
+                      </p>
+                    )}
+
+                    {group.description && (
+                      <p
+                        className={`text-sm leading-relaxed ${
+                          muted ? "text-stone" : "text-ink-soft"
+                        }`}
+                      >
+                        {group.description}
+                      </p>
+                    )}
+
+                    {(group.websiteUrl || group.contactEmail) && (
+                      <div className="mt-auto flex flex-wrap gap-x-5 gap-y-2 border-t border-dashed border-indigo/25 pt-4 font-display text-sm font-semibold">
+                        {group.websiteUrl && (
+                          <ExternalLink
+                            href={group.websiteUrl}
+                            className="text-indigo hover:text-indigo-deep"
+                          >
+                            {dict.groups.website}
+                          </ExternalLink>
+                        )}
+                        {group.contactEmail && (
+                          <a
+                            href={`mailto:${group.contactEmail}`}
+                            className="break-all text-indigo hover:text-indigo-deep"
+                          >
+                            {group.contactEmail}
+                          </a>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="rounded-2xl border border-line bg-mist p-8 text-ink-soft">
+            {dict.groups.empty}
+          </p>
+        )}
+      </PageSection>
 
       {hasWeek && (
         <section

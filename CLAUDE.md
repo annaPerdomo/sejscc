@@ -60,12 +60,12 @@ be built from these tokens via Tailwind utility classes.
 - Shared visual treatments that aren't components in their own right live as
   classes in `@layer components` in [globals.css](src/app/globals.css):
   `surface-card` (plus `surface-card-link` for a clickable card),
-  `button-primary`, `button-donate`, `page-shell`, `section-rule`,
-  `seigaiha-rings` (with `seigaiha-rings-sky`), `reveal-rise`, and the
-  `section-wash-*` / `section-navy-scene` backgrounds. Extend one of these rather than restyling a
-  card or button inline, and build them from tokens — use
-  `--alpha(var(--color-x) / 20%)` for a tint instead of writing the color
-  out again.
+  `button-primary`, `button-donate`, `seigaiha-rings` (with
+  `seigaiha-rings-sky`), `reveal-rise`, and the `section-wash-*` /
+  `section-wash-*-hero` / `section-navy-scene` backgrounds. Extend one of
+  these rather than restyling a card or button inline, and build them from
+  tokens — use `--alpha(var(--color-x) / 20%)` for a tint instead of writing
+  the color out again.
 
 ## Built for a non-technical admin
 
