@@ -26,7 +26,7 @@ export default function CheckEmailPage() {
           </h1>
           <p className="mt-3 text-sm leading-relaxed text-ink-soft">
             We sent you a sign-in link. Open it on this device to continue —
-            it works once and expires in 15 minutes.
+            it works once and expires after 24 hours.
           </p>
 
           <div className="mt-6 rounded-lg border border-line bg-mist px-5 py-4 text-left text-sm leading-relaxed text-ink-soft">

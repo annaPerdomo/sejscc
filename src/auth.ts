@@ -3,6 +3,7 @@ import Resend from "next-auth/providers/resend";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
+import { sendSignInEmail, signInSender } from "@/lib/sign-in-email";
 import {
   accounts,
   allowedEmails,
@@ -22,7 +23,8 @@ export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
   session: { strategy: "jwt" },
   providers: [
     Resend({
-      from: process.env.AUTH_EMAIL_FROM || "SEJSCC Admin <onboarding@resend.dev>",
+      from: signInSender(),
+      sendVerificationRequest: sendSignInEmail,
     }),
   ],
   pages: {
