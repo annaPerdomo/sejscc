@@ -33,6 +33,7 @@
   },
   "home": {
     "photoSoon": "写真は準備中です",
+    "campusPhotoAlt": "サウスイースト日本語学園・コミュニティセンターの施設",
     "heroTabs": [
       {
         "id": "center",

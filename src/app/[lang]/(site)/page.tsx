@@ -64,12 +64,8 @@ export default async function HomePage() {
         "secondaryCta" in tab && tab.secondaryCta && links.secondary
           ? { label: tab.secondaryCta, href: links.secondary(href) }
           : undefined,
-      photoSrc:
-        tab.id === "center"
-          ? "https://www.sejscc.org/wp-content/uploads/2021/06/VideoPage.jpg"
-          : undefined,
-      photoAlt:
-        tab.id === "center" ? "The Southeast Japanese School & Community Center campus" : undefined,
+      photoSrc: tab.id === "center" ? "/campus-hero.jpg" : undefined,
+      photoAlt: tab.id === "center" ? dict.home.campusPhotoAlt : undefined,
       placeholderLabel: dict.home.photoSoon,
     };
   });
