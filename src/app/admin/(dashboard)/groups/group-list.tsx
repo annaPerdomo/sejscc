@@ -10,6 +10,7 @@ import { AdminBadge } from "@/components/admin/admin-badge";
 import { AdminButton } from "@/components/admin/admin-button";
 import { adminPanel } from "@/components/admin/admin-card";
 import { AdminListRow } from "@/components/admin/admin-list-row";
+import { PhotoPlaceholder } from "@/components/photo-placeholder";
 import { reorderGroups, type ReorderResult } from "./actions";
 import { GROUP_STATUS_LABELS } from "./status";
 
@@ -235,8 +236,8 @@ export function GroupList({ groups }: { groups: Group[] }) {
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-mist font-display text-sm font-semibold text-ink-soft">
                   {index + 1}
                 </span>
-                <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-md border border-line bg-mist">
-                  <GroupThumbnail group={group} sizes="40px" />
+                <div className="relative aspect-photo w-24 shrink-0 overflow-clip rounded-md border border-line bg-mist">
+                  <GroupThumbnail group={group} sizes="96px" />
                 </div>
                 <p className="min-w-0 flex-1 truncate font-semibold text-ink">
                   {group.name}
@@ -278,14 +279,18 @@ export function GroupList({ groups }: { groups: Group[] }) {
 }
 
 function GroupThumbnail({ group, sizes }: { group: Group; sizes: string }) {
-  if (!group.imageUrl) return null;
+  if (!group.imageUrl) {
+    return (
+      <PhotoPlaceholder label="No image" frame={false} className="h-full w-full" />
+    );
+  }
   return (
     <Image
       src={group.imageUrl}
       alt=""
       fill
       sizes={sizes}
-      className="object-cover"
+      className="object-contain p-2"
     />
   );
 }
@@ -310,7 +315,13 @@ function GroupCard({ group }: { group: Group }) {
   return (
     <AdminListRow
       href={`/admin/groups/${group.id}`}
-      thumbnail={<GroupThumbnail group={group} sizes="64px" />}
+      thumbnail={
+        <GroupThumbnail
+          group={group}
+          sizes="(min-width: 640px) 160px, 128px"
+        />
+      }
+      thumbnailClassName="aspect-photo w-32 sm:w-40"
       title={group.name}
       subtitle={group.meetingSchedule}
       badge={<GroupBadges group={group} />}

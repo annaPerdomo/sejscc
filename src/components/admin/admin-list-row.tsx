@@ -4,12 +4,14 @@ import { AdminCardLink } from "./admin-card";
 export function AdminListRow({
   href,
   thumbnail,
+  thumbnailClassName = "h-16 w-16",
   title,
   subtitle,
   badge,
 }: {
   href: string;
   thumbnail: ReactNode;
+  thumbnailClassName?: string;
   title: string;
   subtitle?: ReactNode;
   badge: ReactNode;
@@ -17,7 +19,9 @@ export function AdminListRow({
   return (
     <AdminCardLink href={href}>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
-        <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md border border-line bg-mist">
+        <div
+          className={`relative shrink-0 overflow-clip rounded-md border border-line bg-mist ${thumbnailClassName}`}
+        >
           {thumbnail}
         </div>
         <div className="min-w-0 flex-1">
