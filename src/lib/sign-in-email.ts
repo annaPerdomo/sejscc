@@ -1,6 +1,6 @@
 import type { EmailProviderSendVerificationRequestParams } from "next-auth/providers/email";
 
-const SENDER_NAME = "SEJSCC Admin";
+const SENDER_NAME = "SEJSCC Volunteer Portal";
 const FALLBACK_SENDER = `${SENDER_NAME} <onboarding@resend.dev>`;
 const CENTER_TIME_ZONE = "America/Los_Angeles";
 const PORTFOLIO_URL = "https://www.variationsonastring.com";
@@ -22,9 +22,6 @@ const COLOR = {
   white: "#ffffff",
 };
 
-// Webfonts don't load in mail clients, so each stack names a system Japanese
-// face before the generic family — otherwise Japanese drops to whatever the OS
-// picks and stops matching the site.
 const BODY_FONT =
   "'Zen Maru Gothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', 'Yu Gothic', Helvetica, Arial, sans-serif";
 const DISPLAY_FONT = `'Jost', ${BODY_FONT}`;
@@ -87,8 +84,8 @@ function buildText(url: string, expiry: string) {
 function buildHtml(url: string, expiry: string) {
   const safeUrl = escapeHtml(url);
   const safeExpiry = escapeHtml(expiry);
-  // Mail clients need an absolute image URL, and the sign-in link is already
-  // built from the origin this deployment actually serves.
+  // Built from the sign-in link's origin, not SITE_URL — that one still points
+  // at the old WordPress host.
   const logoUrl = escapeHtml(`${new URL(url).origin}/logo-mark-white.png`);
 
   return `<!doctype html>
@@ -107,8 +104,7 @@ function buildHtml(url: string, expiry: string) {
     .kanji { font-size: 34px !important; line-height: 34px !important; }
     .kicker-en { font-size: 10px !important; letter-spacing: 1px !important; }
   }
-  /* On the narrowest phones the crest, wordmark and kanji can't share a row
-     without the name breaking to four lines, so the decoration goes. */
+  /* Any narrower and the crest, wordmark and kanji can't share a row without the center's name wrapping to four lines. */
   @media (max-width: 359px) {
     .kanji { display: none !important; }
   }
@@ -120,15 +116,15 @@ function buildHtml(url: string, expiry: string) {
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:${COLOR.mist};">
 <tr><td align="center" style="padding:36px 12px;">
 
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" class="wrap" style="width:600px;max-width:600px;border-collapse:collapse;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" class="wrap" style="width:100%;max-width:600px;border-collapse:collapse;">
 
     <tr>
       <td style="border-radius:12px 12px 0 0;overflow:hidden;">
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
           <tr>
-            <td width="45%" height="5" bgcolor="${COLOR.indigo}" style="font-size:0;line-height:0;border-radius:12px 0 0 0;">&nbsp;</td>
-            <td width="35%" height="5" bgcolor="${COLOR.sky}" style="font-size:0;line-height:0;">&nbsp;</td>
-            <td width="20%" height="5" bgcolor="${COLOR.magenta}" style="font-size:0;line-height:0;border-radius:0 12px 0 0;">&nbsp;</td>
+            <td width="45%" height="5" bgcolor="${COLOR.indigo}" style="font-size:0;mso-line-height-rule:exactly;line-height:0;border-radius:12px 0 0 0;">&nbsp;</td>
+            <td width="35%" height="5" bgcolor="${COLOR.sky}" style="font-size:0;mso-line-height-rule:exactly;line-height:0;">&nbsp;</td>
+            <td width="20%" height="5" bgcolor="${COLOR.magenta}" style="font-size:0;mso-line-height-rule:exactly;line-height:0;border-radius:0 12px 0 0;">&nbsp;</td>
           </tr>
         </table>
       </td>
@@ -161,8 +157,8 @@ function buildHtml(url: string, expiry: string) {
 
         <table role="presentation" cellpadding="0" cellspacing="0" border="0">
           <tr>
-            <td style="font-family:${ACCENT_FONT};font-size:13px;font-weight:700;letter-spacing:3px;color:${COLOR.indigo};padding-right:12px;">ログイン</td>
-            <td width="38" style="font-size:0;line-height:0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="38"><tr><td height="1" bgcolor="${COLOR.indigo}" style="font-size:0;line-height:0;">&nbsp;</td></tr></table></td>
+            <td aria-hidden="true" style="font-family:${ACCENT_FONT};font-size:13px;font-weight:700;letter-spacing:3px;color:${COLOR.indigo};padding-right:12px;">ボランティア</td>
+            <td width="38" style="font-size:0;mso-line-height-rule:exactly;line-height:0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="38"><tr><td height="1" bgcolor="${COLOR.indigo}" style="font-size:0;mso-line-height-rule:exactly;line-height:0;">&nbsp;</td></tr></table></td>
             <td class="kicker-en" style="font-family:${DISPLAY_FONT};font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:${COLOR.stone};padding-left:12px;">Volunteer Portal</td>
           </tr>
         </table>
@@ -172,13 +168,13 @@ function buildHtml(url: string, expiry: string) {
         <p style="margin:16px 0 0;font-family:${BODY_FONT};font-size:15px;line-height:26px;mso-line-height-rule:exactly;color:${COLOR.inkSoft};">Hello — you asked to sign in to the SEJSCC volunteer portal. Tap the button below and you're in. No password needed.</p>
 
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-          <tr><td height="30" style="font-size:0;line-height:0;">&nbsp;</td></tr>
+          <tr><td height="30" style="font-size:0;mso-line-height-rule:exactly;line-height:0;">&nbsp;</td></tr>
           <tr>
             <td align="center" bgcolor="${COLOR.indigo}" style="border-radius:8px;mso-padding-alt:16px 20px;">
               <a href="${safeUrl}" style="display:block;padding:16px 20px;font-family:${DISPLAY_FONT};font-size:16px;font-weight:700;letter-spacing:0.5px;color:${COLOR.white};text-decoration:none;border-radius:8px;">Sign in to the volunteer portal</a>
             </td>
           </tr>
-          <tr><td height="26" style="font-size:0;line-height:0;">&nbsp;</td></tr>
+          <tr><td height="26" style="font-size:0;mso-line-height-rule:exactly;line-height:0;">&nbsp;</td></tr>
         </table>
 
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" bgcolor="${COLOR.mist}" style="border:1px solid ${COLOR.line};border-radius:10px;">
@@ -194,9 +190,9 @@ function buildHtml(url: string, expiry: string) {
         </p>
 
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-          <tr><td height="28" style="font-size:0;line-height:0;">&nbsp;</td></tr>
-          <tr><td height="1" bgcolor="${COLOR.line}" style="font-size:0;line-height:0;">&nbsp;</td></tr>
-          <tr><td height="24" style="font-size:0;line-height:0;">&nbsp;</td></tr>
+          <tr><td height="28" style="font-size:0;mso-line-height-rule:exactly;line-height:0;">&nbsp;</td></tr>
+          <tr><td height="1" bgcolor="${COLOR.line}" style="font-size:0;mso-line-height-rule:exactly;line-height:0;">&nbsp;</td></tr>
+          <tr><td height="24" style="font-size:0;mso-line-height-rule:exactly;line-height:0;">&nbsp;</td></tr>
         </table>
 
         <p style="margin:0;font-family:${BODY_FONT};font-size:13px;line-height:22px;mso-line-height-rule:exactly;color:${COLOR.stone};">Didn't request this? You can safely ignore this email — the link only works for someone with access to your inbox.</p>
@@ -205,7 +201,7 @@ function buildHtml(url: string, expiry: string) {
 
     <tr>
       <td bgcolor="${COLOR.ink}" class="px" style="padding:26px 44px 30px;border-radius:0 0 12px 12px;">
-        <p style="margin:0 0 6px;font-family:${ACCENT_FONT};font-size:14px;line-height:22px;color:${COLOR.sky};"><strong style="color:${COLOR.white};">おかえりなさい</strong> <span style="font-family:${BODY_FONT};font-size:12.5px;">— welcome back</span></p>
+        <p style="margin:0 0 6px;font-family:${ACCENT_FONT};font-size:14px;line-height:22px;color:${COLOR.sky};"><strong lang="ja" style="color:${COLOR.white};">おかえりなさい</strong> <span style="font-family:${BODY_FONT};font-size:12.5px;">— welcome back</span></p>
         <p style="margin:0;font-family:${BODY_FONT};font-size:12px;line-height:20px;mso-line-height-rule:exactly;color:${COLOR.sky};">Southeast Japanese School &amp; Community Center · Est. 1925<br>${CENTER_ADDRESS}</p>
         <p style="margin:12px 0 0;font-family:${BODY_FONT};font-size:12px;line-height:20px;mso-line-height-rule:exactly;color:${COLOR.sky};">You received this because a sign-in link was requested for your volunteer account.</p>
         <p style="margin:8px 0 0;font-family:${BODY_FONT};font-size:12px;line-height:20px;mso-line-height-rule:exactly;color:${COLOR.sky};">Made with <span style="color:${COLOR.blossom};">&#10084;</span> by <a href="${PORTFOLIO_URL}" style="color:${COLOR.sky};font-weight:500;text-decoration:underline;">Variations on a String</a></p>
@@ -237,7 +233,7 @@ export async function sendSignInEmail({
     body: JSON.stringify({
       from: provider.from,
       to: identifier,
-      subject: "Your SEJSCC admin sign-in link",
+      subject: "Your SEJSCC volunteer portal sign-in link",
       html: buildHtml(url, expiry),
       text: buildText(url, expiry),
     }),
