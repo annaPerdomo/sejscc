@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { Analytics } from "@vercel/analytics/next";
 import { jost, shipporiMincho, zenMaruGothic } from "../fonts";
 import { hasLocale, localePath, locales } from "@/lib/i18n";
 import { getDictionaryFor } from "@/lib/dictionaries";
@@ -51,6 +52,7 @@ export default async function RootLayout({ children, params }: Props) {
         className={`${jost.variable} ${shipporiMincho.variable} ${zenMaruGothic.variable} font-sans antialiased`}
       >
         {children}
+        <Analytics />
       </body>
     </html>
   );
