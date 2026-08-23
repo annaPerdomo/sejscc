@@ -7,7 +7,6 @@ import { PhotoPlaceholder } from "@/components/photo-placeholder";
 import { SectionKicker } from "@/components/section-kicker";
 import { WaveDivider } from "@/components/wave-divider";
 
-// Must match --animate-hero-tab-fill's duration in globals.css.
 const ROTATE_MS = 6500;
 
 export type HeroTab = {
@@ -65,11 +64,8 @@ export function HeroCarousel({ tabs, tabsLabel }: { tabs: HeroTab[]; tabsLabel: 
                 fill
                 preload={i === 0}
                 sizes="100vw"
-                className="object-cover motion-safe:animate-hero-drift"
-                style={{
-                  objectPosition: "center 46%",
-                  animationPlayState: i === active ? "running" : "paused",
-                }}
+                className="object-cover"
+                style={{ objectPosition: "center 46%" }}
               />
             ) : (
               <PhotoPlaceholder
@@ -158,9 +154,7 @@ export function HeroCarousel({ tabs, tabsLabel }: { tabs: HeroTab[]; tabsLabel: 
               {i === active && (
                 <span
                   aria-hidden="true"
-                  className={`absolute inset-x-0 -top-0.5 h-0.5 origin-left bg-sky ${
-                    paused ? "" : "motion-safe:animate-hero-tab-fill"
-                  }`}
+                  className="absolute inset-x-0 -top-0.5 h-0.5 bg-sky"
                 />
               )}
               <span

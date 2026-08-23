@@ -29,21 +29,6 @@
 
   --text-watermark: clamp(12rem, 24vw, 25rem);
   --text-watermark--line-height: 1;
-
-  --animate-hero-drift: hero-drift 30s linear both;
-  --animate-hero-tab-fill: hero-tab-fill 6.5s linear both;
-
-  @keyframes hero-drift {
-    to {
-      transform: scale(1.1);
-    }
-  }
-
-  @keyframes hero-tab-fill {
-    from {
-      transform: scaleX(0);
-    }
-  }
 }
 
 @theme inline {
