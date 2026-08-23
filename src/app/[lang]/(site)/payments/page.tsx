@@ -164,6 +164,7 @@ export default async function PaymentsPage() {
             <iframe
               title={dict.payments.donateFrame}
               src={DONATION_EMBED_URL}
+              loading="lazy"
               className="h-160 w-full"
               allow="payment"
             />
