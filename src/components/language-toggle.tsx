@@ -13,7 +13,7 @@ import {
 
 const LABELS: Record<Locale, { text: string; typeClass: string }> = {
   en: { text: "EN", typeClass: "font-display text-xs font-bold tracking-[0.08em]" },
-  ja: { text: "日本語", typeClass: "font-accent text-xs font-semibold" },
+  ja: { text: "日本語", typeClass: "font-accent text-xs font-bold" },
 };
 
 // The proxy reads this cookie and stops auto-redirecting against the choice.
