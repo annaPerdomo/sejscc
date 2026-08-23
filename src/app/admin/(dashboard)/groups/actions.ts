@@ -1,7 +1,7 @@
 "use server";
 
 import { del } from "@vercel/blob";
-import { asc, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { groups, weekDays, type GroupStatus, type WeekDay } from "@/db/schema";
 import { requireUser, revalidateSite } from "@/lib/admin";
@@ -119,33 +119,40 @@ export async function deleteGroup(id: string) {
   revalidateSite();
 }
 
-export async function moveGroup(id: string, direction: "up" | "down") {
-  await requireUser();
-  const ordered = await db
-    .select()
-    .from(groups)
-    .orderBy(asc(groups.sortOrder), asc(groups.name));
-  const from = ordered.findIndex((group) => group.id === id);
-  const to = direction === "up" ? from - 1 : from + 1;
-  if (from === -1 || to < 0 || to >= ordered.length) return;
-  [ordered[from], ordered[to]] = [ordered[to], ordered[from]];
+export type ReorderResult = { ok: true } | { ok: false; reason: "stale" };
 
-  // Rewriting every position also repairs ties left by rows that predate sort
-  // ordering. It has to land as one batch: a half-applied renumbering leaves
-  // some rows sequenced and the rest tied at 0, which reshuffles the list.
-  const updates = ordered.flatMap((group, index) =>
-    group.sortOrder === index
-      ? []
-      : [
-          db
-            .update(groups)
-            .set({ sortOrder: index })
-            .where(eq(groups.id, group.id)),
-        ]
+export async function reorderGroups(
+  orderedIds: string[]
+): Promise<ReorderResult> {
+  await requireUser();
+  const existing = await db
+    .select({ id: groups.id, sortOrder: groups.sortOrder })
+    .from(groups);
+
+  // Returned, not thrown: React strips error messages in production. A partial
+  // payload would leave the unnamed rows tied at their old positions.
+  const ids = Array.isArray(orderedIds) ? orderedIds : [];
+  const unique = new Set(ids);
+  if (
+    unique.size !== ids.length ||
+    unique.size !== existing.length ||
+    existing.some((group) => !unique.has(group.id))
+  ) {
+    return { ok: false, reason: "stale" };
+  }
+
+  const current = new Map(existing.map((group) => [group.id, group.sortOrder]));
+  if (ids.every((id, index) => current.get(id) === index)) return { ok: true };
+
+  // Every row is rewritten, not just the moved ones: skipping the rest lets two
+  // concurrent saves interleave into an order neither admin chose. One batch —
+  // a partial renumbering leaves the others tied at 0.
+  const [firstUpdate, ...restUpdates] = ids.map((id, index) =>
+    db.update(groups).set({ sortOrder: index }).where(eq(groups.id, id))
   );
-  const [firstUpdate, ...restUpdates] = updates;
-  if (!firstUpdate) return;
+  if (!firstUpdate) return { ok: true };
   await db.batch([firstUpdate, ...restUpdates]);
 
   revalidateSite();
+  return { ok: true };
 }
