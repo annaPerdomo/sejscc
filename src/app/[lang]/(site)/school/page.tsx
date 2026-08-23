@@ -15,6 +15,10 @@ import { getDictionary, getDictionaryFor, getLocale } from "@/lib/dictionaries";
 import { hasLocale, localePath } from "@/lib/i18n";
 import { ADULT_REGISTRATION_URL, YOUTH_REGISTRATION_URL } from "@/lib/school";
 
+// The layout's announcement bar shows the next upcoming event; without this
+// revalidation a past event would linger there until the next deploy.
+export const revalidate = 300;
+
 const SCHOOL_EMAIL = "gakuen@sejscc.org";
 const SCHOOL_PHONE = "(562) 863-5996";
 const SCHOOL_PHONE_HREF = "tel:+15628635996";

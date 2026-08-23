@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { and, asc, desc, eq, gte, lt, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { events, groups } from "@/db/schema";
@@ -48,13 +49,23 @@ export function getPastEvents(limit = 12) {
   );
 }
 
-export async function getEventBySlug(slug: string) {
+export const getEventBySlug = cache(async (slug: string) => {
   const rows = await failSoft(
     db.select().from(events).where(eq(events.slug, slug)).limit(1),
     []
   );
   const event = rows[0];
   return event?.status === "published" ? event : null;
+});
+
+export function getUpcomingEventSlugs() {
+  return failSoft(
+    db
+      .select({ slug: events.slug })
+      .from(events)
+      .where(and(eq(events.status, "published"), gte(events.startAt, wallClockNow()))),
+    []
+  );
 }
 
 // Alphabetical order would sort "cancelled" before "meeting", so the

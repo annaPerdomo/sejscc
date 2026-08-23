@@ -5,12 +5,18 @@ import { notFound } from "next/navigation";
 import { KanjiWatermark } from "@/components/kanji-watermark";
 import { PageHero } from "@/components/page-hero";
 import { SectionKicker } from "@/components/section-kicker";
-import { getEventBySlug } from "@/lib/events";
+import { getEventBySlug, getUpcomingEventSlugs } from "@/lib/events";
 import { formatEventDate, formatEventTime } from "@/lib/format";
 import { getDictionary, getDictionaryFor, getLocale } from "@/lib/dictionaries";
 import { hasLocale, localePath } from "@/lib/i18n";
 
 export const revalidate = 300;
+
+// Prerendering only upcoming events keeps builds bounded; past ones render on demand.
+export async function generateStaticParams() {
+  const rows = await getUpcomingEventSlugs();
+  return rows.map(({ slug }) => ({ slug }));
+}
 
 type Props = { params: Promise<{ lang: string; slug: string }> };
 

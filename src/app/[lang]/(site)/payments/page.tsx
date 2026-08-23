@@ -7,6 +7,10 @@ import { getDictionary, getDictionaryFor } from "@/lib/dictionaries";
 import { ZEFFY_DONATION_EMBED_URL, ZEFFY_DONATION_URL } from "@/lib/donate";
 import { hasLocale, localePath } from "@/lib/i18n";
 
+// The layout's announcement bar shows the next upcoming event; without this
+// revalidation a past event would linger there until the next deploy.
+export const revalidate = 300;
+
 const HERO_LAYOUT = [
   "lg:col-start-1 lg:col-span-9 lg:row-start-1 lg:row-span-8",
   "lg:z-10 lg:col-start-5 lg:col-span-8 lg:row-start-6 lg:row-span-7 lg:shadow-lg",
