@@ -28,6 +28,16 @@ export type HeroTab = {
 export function HeroCarousel({ tabs, tabsLabel }: { tabs: HeroTab[]; tabsLabel: string }) {
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
+  // Mounting every photo up front would download them all on page load;
+  // unmounting one mid-rotation would blank a side of the crossfade.
+  const [mountedPhotos, setMountedPhotos] = useState<number[]>(() =>
+    Array.from(new Set([0, 1 % tabs.length])),
+  );
+
+  const upcoming = (active + 1) % tabs.length;
+  if (!mountedPhotos.includes(active) || !mountedPhotos.includes(upcoming)) {
+    setMountedPhotos(Array.from(new Set([...mountedPhotos, active, upcoming])));
+  }
 
   useEffect(() => {
     if (paused) return;
@@ -58,15 +68,17 @@ export function HeroCarousel({ tabs, tabsLabel }: { tabs: HeroTab[]; tabsLabel: 
             style={{ opacity: i === active ? 1 : 0 }}
           >
             {tab.photoSrc ? (
-              <Image
-                src={tab.photoSrc}
-                alt={tab.photoAlt ?? ""}
-                fill
-                preload={i === 0}
-                sizes="100vw"
-                className="object-cover"
-                style={{ objectPosition: "center 46%" }}
-              />
+              mountedPhotos.includes(i) ? (
+                <Image
+                  src={tab.photoSrc}
+                  alt={tab.photoAlt ?? ""}
+                  fill
+                  preload={i === 0}
+                  sizes="100vw"
+                  className="object-cover"
+                  style={{ objectPosition: "center 46%" }}
+                />
+              ) : null
             ) : (
               <PhotoPlaceholder
                 dark
