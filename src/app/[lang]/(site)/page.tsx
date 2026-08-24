@@ -1,18 +1,19 @@
-import Image from "next/image";
 import Link from "next/link";
 import { BambooGrove } from "@/components/bamboo-grove";
 import { BrushEdge } from "@/components/brush-edge";
 import { HeroCarousel, type HeroTab } from "@/components/hero-carousel";
 import { EventsCarousel, type CarouselEvent } from "@/components/events-carousel";
-import { PhotoPlaceholder } from "@/components/photo-placeholder";
+import { GroupMedia } from "@/components/group-media";
 import { SectionHeading } from "@/components/section-heading";
 import { SectionKicker } from "@/components/section-kicker";
+import { SitePhoto } from "@/components/site-photo";
 import { WaveDivider } from "@/components/wave-divider";
 import { KanjiWatermark } from "@/components/kanji-watermark";
 import { getActiveGroups, getUpcomingEvents } from "@/lib/events";
 import { formatEventDate, formatEventTime } from "@/lib/format";
 import { getDictionary, getLocale } from "@/lib/dictionaries";
 import { localePath } from "@/lib/i18n";
+import { homeHeroPhotos, homePhotos, photoFor } from "@/lib/photos";
 
 export const revalidate = 300;
 
@@ -64,8 +65,8 @@ export default async function HomePage() {
         "secondaryCta" in tab && tab.secondaryCta && links.secondary
           ? { label: tab.secondaryCta, href: links.secondary(href) }
           : undefined,
-      photoSrc: tab.id === "center" ? "/campus-hero.jpg" : undefined,
-      photoAlt: tab.id === "center" ? dict.home.campusPhotoAlt : undefined,
+      photoSrc: homeHeroPhotos[tab.id],
+      photoAlt: tab.photoAlt,
       placeholderLabel: dict.home.photoSoon,
     };
   });
@@ -142,11 +143,16 @@ export default async function HomePage() {
               {dict.home.japaneseSchool.body}
             </p>
           </div>
-          <div className="reveal-rise relative mx-auto aspect-square w-64 sm:w-80 lg:-mr-6 lg:w-120">
-            <PhotoPlaceholder
+          <div className="reveal-rise relative mx-auto aspect-square w-72 sm:w-96 lg:-mr-6 lg:w-120">
+            <SitePhoto
+              photo={photoFor(
+                homePhotos.japaneseSchool,
+                dict.home.japaneseSchool.photoAlt
+              )}
               dark
               shape="circle"
-              label={dict.home.japaneseSchool.photoLabel}
+              sizes="(max-width: 640px) 18rem, (max-width: 1024px) 24rem, 30rem"
+              placeholderLabel={dict.home.japaneseSchool.photoLabel}
               className="h-full w-full"
             />
             <svg
@@ -220,17 +226,19 @@ export default async function HomePage() {
             </svg>
           </div>
         </div>
-        <div className="relative mx-auto grid max-w-6xl grid-cols-2 gap-x-6 gap-y-10 px-4 pb-4 sm:grid-cols-4 sm:px-6">
+        <div className="relative mx-auto grid max-w-6xl grid-cols-2 gap-x-6 gap-y-10 px-4 pb-4 sm:px-6 lg:grid-cols-4">
           {dict.home.japaneseSchool.highlights.map((item, i) => (
             <div
               key={i}
-              className="reveal-rise flex flex-col items-start border-t border-white/15 pt-6 sm:border-t-0 sm:border-l sm:pt-0 sm:pl-8 sm:first:border-l-0 sm:first:pl-0"
+              className="reveal-rise flex flex-col items-start border-t border-white/15 pt-6 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8 lg:first:border-l-0 lg:first:pl-0"
             >
-              <PhotoPlaceholder
+              <SitePhoto
+                photo={photoFor(homePhotos.highlights[i], item.photoAlt)}
                 dark
                 shape="circle"
-                label={dict.home.photoSoon}
-                className="h-28 w-28"
+                sizes="10rem"
+                placeholderLabel={dict.home.photoSoon}
+                className="h-36 w-36 sm:h-40 sm:w-40"
               />
               <span className="mt-5 block h-0.5 w-8 bg-indigo" />
               <span className="mt-3.5 font-display text-lg leading-tight font-semibold text-white">
@@ -285,25 +293,14 @@ export default async function HomePage() {
               {groups.map((group) => (
                 <div
                   key={group.id}
-                  className="surface-card surface-card-link reveal-rise group flex flex-col overflow-hidden"
+                  className="surface-card surface-card-link reveal-rise flex flex-col overflow-hidden"
                 >
-                  {group.imageUrl ? (
-                    <div className="relative h-44 w-full overflow-hidden">
-                      <Image
-                        src={group.imageUrl}
-                        alt=""
-                        fill
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                        className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-                      />
-                    </div>
-                  ) : (
-                    <PhotoPlaceholder
-                      label={dict.home.sportsClubs.photoLabel}
-                      frame={false}
-                      className="h-44 w-full"
-                    />
-                  )}
+                  <GroupMedia
+                    src={group.imageUrl}
+                    placeholderLabel={dict.home.sportsClubs.photoLabel}
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                    className="border-b border-line"
+                  />
                   <div className="flex flex-1 flex-col gap-1.5 p-4">
                     <span className="font-display text-lg font-semibold text-ink">
                       {group.name}
@@ -373,9 +370,11 @@ export default async function HomePage() {
               ))}
             </div>
           </div>
-          <PhotoPlaceholder
-            label={dict.home.history.photoLabel}
-            className="reveal-rise aspect-[4/3] w-full lg:-rotate-2"
+          <SitePhoto
+            photo={photoFor(homePhotos.history, dict.home.history.photoAlt)}
+            sizes="(max-width: 1024px) 92vw, 34rem"
+            placeholderLabel={dict.home.history.photoLabel}
+            className="reveal-rise aspect-photo w-full lg:-rotate-2"
           />
         </div>
       </section>
@@ -388,10 +387,11 @@ export default async function HomePage() {
           seed={27}
           className="absolute inset-x-0 top-0 z-10 text-paper"
         />
-        <PhotoPlaceholder
-          label={dict.home.connectPhotoLabel}
-          frame={false}
-          className="min-h-64 w-full"
+        <SitePhoto
+          photo={photoFor(homePhotos.connect, dict.home.connectPhotoAlt)}
+          sizes="(max-width: 768px) 100vw, 50vw"
+          placeholderLabel={dict.home.connectPhotoLabel}
+          className="min-h-80 w-full"
         />
         <div className="reveal-rise relative flex flex-col justify-center overflow-clip px-6 py-14 sm:px-10 md:pt-32 md:pb-20 lg:px-14 lg:pt-44 lg:pb-28">
           <KanjiWatermark char="絆" className="-top-4 -right-6 text-indigo/5" />

@@ -5,14 +5,15 @@ import { HeroPhotos } from "@/components/hero-photos";
 import { KanjiWatermark } from "@/components/kanji-watermark";
 import { PageHero } from "@/components/page-hero";
 import { PageSection } from "@/components/page-section";
-import { PhotoPlaceholder } from "@/components/photo-placeholder";
 import { SchoolLevels } from "@/components/school-levels";
 import { SchoolYear } from "@/components/school-year";
 import { SectionHeading } from "@/components/section-heading";
 import { SectionKicker } from "@/components/section-kicker";
+import { SitePhoto } from "@/components/site-photo";
 import { WaveDivider } from "@/components/wave-divider";
 import { getDictionary, getDictionaryFor, getLocale } from "@/lib/dictionaries";
 import { hasLocale, localePath } from "@/lib/i18n";
+import { photoFor, schoolPhotos } from "@/lib/photos";
 import { ADULT_REGISTRATION_URL, YOUTH_REGISTRATION_URL } from "@/lib/school";
 
 // The layout's announcement bar shows the next upcoming event; without this
@@ -24,10 +25,16 @@ const SCHOOL_PHONE = "(562) 863-5996";
 const SCHOOL_PHONE_HREF = "tel:+15628635996";
 
 const HERO_LAYOUT = [
-  "lg:col-start-2 lg:col-span-6 lg:row-start-1 lg:row-span-5",
-  "lg:col-start-8 lg:col-span-5 lg:row-start-2 lg:row-span-6",
-  "lg:col-start-3 lg:col-span-6 lg:row-start-6 lg:row-span-5",
-  "lg:col-start-9 lg:col-span-4 lg:row-start-9 lg:row-span-4",
+  "col-span-2 aspect-photo sm:col-span-1 lg:col-start-2 lg:col-span-6 lg:row-start-1 lg:row-span-5",
+  "col-span-2 aspect-band sm:col-span-1 sm:aspect-photo lg:col-start-8 lg:col-span-5 lg:row-start-2 lg:row-span-6",
+  "aspect-square sm:aspect-photo lg:col-start-3 lg:col-span-6 lg:row-start-6 lg:row-span-5",
+  "aspect-square sm:aspect-photo lg:col-start-9 lg:col-span-4 lg:row-start-9 lg:row-span-4",
+];
+const HERO_SIZES = [
+  "(max-width: 640px) 92vw, (max-width: 1024px) 50vw, 18rem",
+  "(max-width: 640px) 92vw, (max-width: 1024px) 50vw, 15rem",
+  "(max-width: 640px) 46vw, (max-width: 1024px) 50vw, 18rem",
+  "(max-width: 640px) 46vw, (max-width: 1024px) 50vw, 12rem",
 ];
 
 type Props = { params: Promise<{ lang: string }> };
@@ -59,6 +66,20 @@ export default async function SchoolPage() {
     adult: { href: ADULT_REGISTRATION_URL, variant: "ink" },
     dues: { href: `${href("/payments")}#dues`, variant: "magenta" },
   };
+
+  const heroPhotos = schoolPhotos.hero.map((src, i) =>
+    photoFor(src, dict.school.heroPhotoAlts[i] ?? "")
+  );
+
+  const levels = dict.school.classes.levels.map((level, i) => ({
+    ...level,
+    photo: photoFor(schoolPhotos.levels[i], level.photoAlt),
+  }));
+
+  const months = dict.school.year.months.map((month, i) => ({
+    ...month,
+    photo: photoFor(schoolPhotos.months[i], month.photoAlt),
+  }));
 
   return (
     <>
@@ -108,9 +129,12 @@ export default async function SchoolPage() {
         media={
           <HeroPhotos
             layout={HERO_LAYOUT}
-            tileClassName="aspect-photo w-full rounded-sm border border-line shadow-sm lg:aspect-auto"
+            photos={heroPhotos}
+            sizes={HERO_SIZES}
+            tileClassName="w-full rounded-sm border border-line shadow-sm lg:aspect-auto"
             placeholderLabel={dict.school.photoLabel}
-            className="grid w-full shrink-0 grid-cols-2 gap-3 lg:h-104 lg:w-112 lg:grid-cols-12 lg:grid-rows-12 lg:gap-4 xl:h-124 xl:w-132"
+            preloadFirst
+            className="grid w-full shrink-0 grid-cols-2 gap-3 lg:h-112 lg:w-120 lg:grid-cols-12 lg:grid-rows-12 lg:gap-4 xl:h-132 xl:w-144"
           />
         }
       />
@@ -131,7 +155,7 @@ export default async function SchoolPage() {
         lede={dict.school.classes.lede}
       >
         <SchoolLevels
-          levels={dict.school.classes.levels}
+          levels={levels}
           tablistLabel={dict.school.classes.tablistLabel}
           photoLabel={dict.school.photoLabel}
         />
@@ -161,7 +185,7 @@ export default async function SchoolPage() {
           </div>
           <div className="reveal-rise">
             <SchoolYear
-              months={dict.school.year.months}
+              months={months}
               tablistLabel={dict.school.year.tablistLabel}
               photoLabel={dict.school.photoLabel}
             />
@@ -289,16 +313,29 @@ export default async function SchoolPage() {
           </div>
           <div className="reveal-rise flex flex-col items-center gap-6">
             {[
-              { label: dict.school.history.thenCaption, photo: dict.school.history.thenPhotoLabel },
-              { label: dict.school.history.nowCaption, photo: dict.school.photoLabel },
+              {
+                label: dict.school.history.thenCaption,
+                placeholder: dict.school.history.thenPhotoLabel,
+                photo: photoFor(schoolPhotos.then, dict.school.history.thenPhotoAlt),
+              },
+              {
+                label: dict.school.history.nowCaption,
+                placeholder: dict.school.photoLabel,
+                photo: photoFor(schoolPhotos.now, dict.school.history.nowPhotoAlt),
+              },
             ].map((frame, i) => (
               <figure
                 key={frame.label}
-                className={`w-full max-w-sm bg-white p-2.5 pb-4 shadow-lg ${
+                className={`w-full max-w-xl bg-white p-2.5 pb-4 shadow-lg ${
                   i === 0 ? "lg:-rotate-2" : "lg:rotate-2"
                 }`}
               >
-                <PhotoPlaceholder label={frame.photo} frame={false} className="aspect-photo w-full" />
+                <SitePhoto
+                  photo={frame.photo}
+                  sizes="(max-width: 1024px) 92vw, 36rem"
+                  placeholderLabel={frame.placeholder}
+                  className="aspect-band w-full"
+                />
                 <figcaption className="mt-2.5 text-center font-display text-[11px] font-semibold tracking-[0.14em] text-stone uppercase">
                   {frame.label}
                 </figcaption>

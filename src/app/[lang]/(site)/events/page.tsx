@@ -8,13 +8,19 @@ import { calendarSources } from "@/lib/calendars";
 import { getPastEvents, getUpcomingEvents } from "@/lib/events";
 import { getDictionary, getDictionaryFor, getLocale } from "@/lib/dictionaries";
 import { hasLocale, localePath } from "@/lib/i18n";
+import { photoFor, eventsHeroPhotos } from "@/lib/photos";
 
 export const revalidate = 300;
 
 const HERO_LAYOUT = [
-  "lg:col-start-1 lg:col-span-6 lg:row-start-1 lg:row-span-8",
-  "lg:col-start-7 lg:col-span-6 lg:row-start-3 lg:row-span-6",
-  "col-span-2 sm:aspect-band lg:col-start-1 lg:col-span-12 lg:row-start-9 lg:row-span-4",
+  "col-span-2 aspect-photo sm:col-span-1 lg:col-start-1 lg:col-span-6 lg:row-start-1 lg:row-span-8",
+  "aspect-square sm:aspect-photo lg:col-start-7 lg:col-span-6 lg:row-start-3 lg:row-span-6",
+  "aspect-square sm:col-span-2 sm:aspect-band lg:col-start-1 lg:col-span-12 lg:row-start-9 lg:row-span-4",
+];
+const HERO_SIZES = [
+  "(max-width: 640px) 92vw, (max-width: 1024px) 50vw, 18rem",
+  "(max-width: 640px) 46vw, (max-width: 1024px) 50vw, 18rem",
+  "(max-width: 640px) 46vw, (max-width: 1024px) 100vw, 36rem",
 ];
 
 type Props = { params: Promise<{ lang: string }> };
@@ -44,6 +50,10 @@ export default async function EventsPage() {
     getUpcomingEvents(),
     getPastEvents(6),
   ]);
+
+  const heroPhotos = eventsHeroPhotos.map((src, i) =>
+    photoFor(src, dict.events.heroPhotoAlts[i] ?? "")
+  );
 
   return (
     <>
@@ -86,9 +96,12 @@ export default async function EventsPage() {
         media={
           <HeroPhotos
             layout={HERO_LAYOUT}
-            tileClassName="aspect-photo w-full rounded-xl border border-line shadow-sm lg:aspect-auto"
+            photos={heroPhotos}
+            sizes={HERO_SIZES}
+            tileClassName="w-full rounded-xl border border-line shadow-sm lg:aspect-auto"
             placeholderLabel={dict.events.photoLabel}
-            className="grid w-full shrink-0 grid-cols-2 gap-3 lg:h-104 lg:w-112 lg:grid-cols-12 lg:grid-rows-12 lg:gap-4 xl:h-124 xl:w-132"
+            preloadFirst
+            className="grid w-full shrink-0 grid-cols-2 gap-3 lg:h-112 lg:w-120 lg:grid-cols-12 lg:grid-rows-12 lg:gap-4 xl:h-132 xl:w-144"
           />
         }
       />

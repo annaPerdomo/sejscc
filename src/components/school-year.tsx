@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { PhotoPlaceholder } from "@/components/photo-placeholder";
+import { SitePhoto, type SitePhotoSource } from "@/components/site-photo";
 
 const ROTATE_MS = 5200;
 
@@ -12,6 +12,7 @@ export type SchoolMonth = {
   when: string;
   title: string;
   description: string;
+  photo?: SitePhotoSource;
 };
 
 export function SchoolYear({
@@ -111,10 +112,12 @@ export function SchoolYear({
           </h3>
           <p className="mt-4 max-w-lg leading-relaxed text-white/75">{month.description}</p>
         </div>
-        <PhotoPlaceholder
+        <SitePhoto
+          photo={month.photo}
           dark
-          label={photoLabel}
-          className="h-56 w-full sm:h-72 lg:h-84"
+          sizes="(max-width: 1024px) 100vw, 32rem"
+          placeholderLabel={photoLabel}
+          className="h-64 w-full rounded-xl sm:h-72 lg:h-88"
         />
       </div>
     </div>

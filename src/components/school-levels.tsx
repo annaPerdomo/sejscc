@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PhotoPlaceholder } from "@/components/photo-placeholder";
+import { SitePhoto, type SitePhotoSource } from "@/components/site-photo";
 
 export type SchoolLevel = {
   name: string;
@@ -11,6 +11,7 @@ export type SchoolLevel = {
   status: string;
   description: string;
   points: string[];
+  photo?: SitePhotoSource;
 };
 
 export function SchoolLevels({
@@ -86,10 +87,11 @@ export function SchoolLevels({
         aria-labelledby={`school-level-tab-${active}`}
         className="surface-card overflow-clip"
       >
-        <PhotoPlaceholder
-          label={photoLabel}
-          frame={false}
-          className="h-48 w-full border-b border-line sm:h-64"
+        <SitePhoto
+          photo={level.photo}
+          sizes="(max-width: 1024px) 100vw, 48rem"
+          placeholderLabel={photoLabel}
+          className="aspect-photo w-full border-b border-line sm:aspect-auto sm:h-80 lg:h-96"
         />
         <div className="p-6 sm:p-7">
           <div className="flex flex-wrap items-baseline gap-x-3.5 gap-y-1">

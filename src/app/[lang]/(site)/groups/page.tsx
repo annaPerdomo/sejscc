@@ -11,6 +11,7 @@ import { weekDays } from "@/db/schema";
 import { getActiveGroups } from "@/lib/events";
 import { getDictionary, getDictionaryFor } from "@/lib/dictionaries";
 import { hasLocale, localePath } from "@/lib/i18n";
+import { photoFor, groupsHeroPhotos } from "@/lib/photos";
 
 export const revalidate = 300;
 
@@ -19,10 +20,16 @@ const CENTER_PHONE = "(562) 863-5996";
 const CENTER_PHONE_HREF = "tel:+15628635996";
 
 const HERO_LAYOUT = [
-  "lg:col-start-1 lg:col-span-7 lg:row-start-1 lg:row-span-7",
-  "lg:col-start-8 lg:col-span-5 lg:row-start-1 lg:row-span-5",
-  "lg:col-start-8 lg:col-span-5 lg:row-start-6 lg:row-span-7",
-  "lg:col-start-1 lg:col-span-7 lg:row-start-8 lg:row-span-5",
+  "col-span-2 aspect-photo sm:col-span-1 lg:col-start-1 lg:col-span-7 lg:row-start-1 lg:row-span-7",
+  "aspect-square sm:aspect-photo lg:col-start-8 lg:col-span-5 lg:row-start-1 lg:row-span-5",
+  "aspect-square sm:aspect-photo lg:col-start-8 lg:col-span-5 lg:row-start-6 lg:row-span-7",
+  "col-span-2 aspect-band sm:col-span-1 sm:aspect-photo lg:col-start-1 lg:col-span-7 lg:row-start-8 lg:row-span-5",
+];
+const HERO_SIZES = [
+  "(max-width: 640px) 92vw, (max-width: 1024px) 50vw, 21rem",
+  "(max-width: 640px) 46vw, (max-width: 1024px) 50vw, 15rem",
+  "(max-width: 640px) 46vw, (max-width: 1024px) 50vw, 15rem",
+  "(max-width: 640px) 92vw, (max-width: 1024px) 50vw, 21rem",
 ];
 const CARD_SIZES = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 22rem";
 
@@ -57,6 +64,10 @@ export default async function GroupsPage() {
   }));
   const hasWeek = week.some(({ entries }) => entries.length > 0);
 
+  const heroPhotos = groupsHeroPhotos.map((src, i) =>
+    photoFor(src, dict.groups.heroPhotoAlts[i] ?? "")
+  );
+
   return (
     <>
       <PageHero
@@ -90,9 +101,12 @@ export default async function GroupsPage() {
         media={
           <HeroPhotos
             layout={HERO_LAYOUT}
-            tileClassName="aspect-photo w-full border border-line lg:aspect-auto"
+            photos={heroPhotos}
+            sizes={HERO_SIZES}
+            tileClassName="w-full border border-line lg:aspect-auto"
             placeholderLabel={dict.groups.photoLabel}
-            className="grid w-full shrink-0 grid-cols-2 shadow-sm lg:h-104 lg:w-112 lg:grid-cols-12 lg:grid-rows-12 xl:h-124 xl:w-132"
+            preloadFirst
+            className="grid w-full shrink-0 grid-cols-2 shadow-sm lg:h-112 lg:w-120 lg:grid-cols-12 lg:grid-rows-12 xl:h-132 xl:w-144"
           />
         }
       />

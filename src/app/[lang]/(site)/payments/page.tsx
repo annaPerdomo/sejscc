@@ -1,20 +1,16 @@
 import type { Metadata } from "next";
 import { ExternalLink } from "@/components/external-link";
-import { HeroPhotos } from "@/components/hero-photos";
 import { PageHero } from "@/components/page-hero";
 import { PageSection } from "@/components/page-section";
+import { SitePhoto } from "@/components/site-photo";
 import { getDictionary, getDictionaryFor } from "@/lib/dictionaries";
 import { ZEFFY_DONATION_EMBED_URL, ZEFFY_DONATION_URL } from "@/lib/donate";
 import { hasLocale, localePath } from "@/lib/i18n";
+import { photoFor, paymentsHeroPhotos } from "@/lib/photos";
 
 // The layout's announcement bar shows the next upcoming event; without this
 // revalidation a past event would linger there until the next deploy.
 export const revalidate = 300;
-
-const HERO_LAYOUT = [
-  "lg:col-start-1 lg:col-span-9 lg:row-start-1 lg:row-span-8",
-  "lg:z-10 lg:col-start-5 lg:col-span-8 lg:row-start-6 lg:row-span-7 lg:shadow-lg",
-];
 
 type Props = { params: Promise<{ lang: string }> };
 
@@ -45,6 +41,11 @@ const ZELLE_RECIPIENT: string | null = null;
 export default async function PaymentsPage() {
   const dict = await getDictionary();
 
+  const heroPhoto = photoFor(
+    paymentsHeroPhotos[0],
+    dict.payments.heroPhotoAlts[0] ?? ""
+  );
+
   return (
     <>
       <PageHero
@@ -74,11 +75,12 @@ export default async function PaymentsPage() {
           </>
         }
         media={
-          <HeroPhotos
-            layout={HERO_LAYOUT}
-            tileClassName="aspect-photo w-full rounded-xl border-4 border-white shadow-sm lg:aspect-auto"
+          <SitePhoto
+            photo={heroPhoto}
+            preload
+            sizes="(max-width: 640px) 92vw, 28rem"
             placeholderLabel={dict.payments.photoLabel}
-            className="grid w-full shrink-0 grid-cols-2 gap-4 lg:h-96 lg:w-104 lg:grid-cols-12 lg:grid-rows-12 lg:gap-0 xl:h-112 xl:w-116"
+            className="reveal-rise aspect-flyer w-full max-w-md rounded-xl border-4 border-white shadow-lg lg:w-96 lg:max-w-none xl:w-112"
           />
         }
       />
