@@ -1,4 +1,14 @@
+import type { StaticImageData } from "next/image";
 import type { SitePhotoSource } from "@/components/site-photo";
+
+import history1925 from "../../public/photos/history-1925-nawa-ranch.jpg";
+import history1930 from "../../public/photos/history-1930-dedication.jpg";
+import history1936 from "../../public/photos/history-1936-agriculture-union.jpg";
+import history1942 from "../../public/photos/history-1942-manzanar.jpg";
+import history1965 from "../../public/photos/history-1965-kendo.jpg";
+import history1977 from "../../public/photos/history-1977-dedication.jpg";
+import history1994 from "../../public/photos/history-1994-groundbreaking.jpg";
+import history2025 from "../../public/photos/history-2025-centennial.jpg";
 
 export function photoFor(
   src: string | undefined,
@@ -20,14 +30,26 @@ export const homePhotos = {
   japaneseSchool: "/photos/home-school.jpg",
   /** Matches `home.japaneseSchool.highlights`. */
   highlights: [
-    "/photos/home-highlight-saturday.jpg",
-    "/photos/home-highlight-levels.jpg",
+    "/photos/school-hero-3.jpg",
+    "/photos/school-hero-4.jpg",
     "/photos/home-highlight-adult.jpg",
-    "/photos/home-highlight-events.jpg",
+    "/photos/month-toshikoshi.jpg",
   ],
-  history: "/photos/home-history.jpg",
-  connect: "/photos/home-connect.jpg",
+  centennial: "/photos/home-centennial.jpg",
 } as const;
+
+// Keyed by `home.history.milestones[].id`, not by position: inserting a
+// milestone would otherwise shift every later photo onto the wrong caption.
+export const historyMilestonePhotos: Record<string, StaticImageData> = {
+  "1925": history1925,
+  "1930": history1930,
+  "1936": history1936,
+  "1942": history1942,
+  "1962": history1965,
+  "1977": history1977,
+  "1994": history1994,
+  "2025": history2025,
+};
 
 export const schoolPhotos = {
   hero: [
@@ -64,17 +86,16 @@ export const schoolPhotos = {
   ],
 } as const;
 
+export const eventsHeroPhoto = "/photos/events-hero-1.jpg";
+
+export const groupsHeroPhoto = "/photos/groups-hero-2.jpg";
+
+// Replaced by groupsHeroPhoto; drops with the groups page rewrite.
 export const groupsHeroPhotos = [
   "/photos/groups-hero-1.jpg",
   "/photos/groups-hero-2.jpg",
   "/photos/groups-hero-3.jpg",
   "/photos/groups-hero-4.jpg",
-];
-
-export const eventsHeroPhotos = [
-  "/photos/events-hero-1.jpg",
-  "/photos/events-hero-2.jpg",
-  "/photos/events-hero-3.jpg",
 ];
 
 export const paymentsHeroPhotos = ["/photos/payments-hero-1.jpg"];

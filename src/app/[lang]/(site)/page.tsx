@@ -1,19 +1,25 @@
+import Image from "next/image";
 import Link from "next/link";
 import { BambooGrove } from "@/components/bamboo-grove";
 import { BrushEdge } from "@/components/brush-edge";
 import { HeroCarousel, type HeroTab } from "@/components/hero-carousel";
-import { EventsCarousel, type CarouselEvent } from "@/components/events-carousel";
 import { GroupMedia } from "@/components/group-media";
+import { HistoryTimeline, type Milestone } from "@/components/history-timeline";
 import { SectionHeading } from "@/components/section-heading";
 import { SectionKicker } from "@/components/section-kicker";
 import { SitePhoto } from "@/components/site-photo";
+import { UpcomingEvents } from "@/components/upcoming-events";
 import { WaveDivider } from "@/components/wave-divider";
 import { KanjiWatermark } from "@/components/kanji-watermark";
 import { getActiveGroups, getUpcomingEvents } from "@/lib/events";
-import { formatEventDate, formatEventTime } from "@/lib/format";
 import { getDictionary, getLocale } from "@/lib/dictionaries";
 import { localePath } from "@/lib/i18n";
-import { homeHeroPhotos, homePhotos, photoFor } from "@/lib/photos";
+import {
+  historyMilestonePhotos,
+  homeHeroPhotos,
+  homePhotos,
+  photoFor,
+} from "@/lib/photos";
 
 export const revalidate = 300;
 
@@ -71,32 +77,34 @@ export default async function HomePage() {
     };
   });
 
-  const carouselEvents: CarouselEvent[] = upcoming.map((event) => ({
-    id: event.id,
-    href: href(`/events/${event.slug}`),
-    title: event.title,
-    date: formatEventDate(event.startAt, lang),
-    time: formatEventTime(event.startAt, event.endAt, lang),
-    location: event.location,
-    description: event.description,
-    flyerUrl: event.flyerUrl,
-    flyerAlt: dict.eventDetail.flyerAlt.replace("{title}", event.title),
-  }));
+  const milestones: Milestone[] = dict.home.history.milestones.map((step) => {
+    const image = historyMilestonePhotos[step.id];
+    return {
+      year: step.year,
+      text: step.text,
+      photo: image ? { image, alt: step.photoAlt } : undefined,
+    };
+  });
 
   return (
     <>
-      <HeroCarousel tabs={heroTabs} tabsLabel={dict.home.heroTabsLabel} />
+      <HeroCarousel
+        tabs={heroTabs}
+        tabsLabel={dict.home.heroTabsLabel}
+        pauseLabel={dict.home.heroPause}
+        playLabel={dict.home.heroPlay}
+      />
 
-      <section className="section-wash-events relative overflow-clip pt-14 pb-16 sm:pt-16">
+      <section className="section-wash-events relative z-10 pt-2 pb-12">
         <BambooGrove />
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
-          <div className="reveal-rise mb-8 flex flex-wrap items-end justify-between gap-4">
+          <div className="reveal-rise mb-4 flex flex-wrap items-end justify-between gap-4">
             <div>
               <SectionKicker
                 accent={dict.home.upcomingKickerAccent}
                 caption={dict.home.upcomingKickerCaption}
               />
-              <SectionHeading className="mt-3">
+              <SectionHeading className="mt-2">
                 {dict.home.upcomingTitle}
               </SectionHeading>
             </div>
@@ -107,14 +115,8 @@ export default async function HomePage() {
               {dict.home.viewAll}
             </Link>
           </div>
-          {carouselEvents.length > 0 ? (
-            <EventsCarousel
-              events={carouselEvents}
-              nextUpLabel={dict.home.upcomingNextUp}
-              prevLabel={dict.home.upcomingPrev}
-              nextLabel={dict.home.upcomingNext}
-              detailsLabel={dict.home.upcomingDetails}
-            />
+          {upcoming.length > 0 ? (
+            <UpcomingEvents events={upcoming} />
           ) : (
             <p className="rounded-2xl border border-line bg-mist p-8 text-ink-soft">
               {dict.home.noEvents}
@@ -228,17 +230,13 @@ export default async function HomePage() {
         </div>
         <div className="relative mx-auto grid max-w-6xl grid-cols-2 gap-x-6 gap-y-10 px-4 pb-4 sm:px-6 lg:grid-cols-4">
           {dict.home.japaneseSchool.highlights.map((item, i) => (
-            <div
-              key={i}
-              className="reveal-rise flex flex-col items-start border-t border-white/15 pt-6 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8 lg:first:border-l-0 lg:first:pl-0"
-            >
+            <div key={i} className="reveal-rise flex flex-col items-start">
               <SitePhoto
                 photo={photoFor(homePhotos.highlights[i], item.photoAlt)}
                 dark
-                shape="circle"
-                sizes="10rem"
+                sizes="(max-width: 1024px) 45vw, 17rem"
                 placeholderLabel={dict.home.photoSoon}
-                className="h-36 w-36 sm:h-40 sm:w-40"
+                className="aspect-photo w-full rounded-xl"
               />
               <span className="mt-5 block h-0.5 w-8 bg-indigo" />
               <span className="mt-3.5 font-display text-lg leading-tight font-semibold text-white">
@@ -341,45 +339,34 @@ export default async function HomePage() {
 
       <section className="section-wash-history relative overflow-clip">
         <KanjiWatermark char="和" className="-bottom-10 left-4 text-ink/5" />
-        <div className="relative mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-2 lg:items-center">
-          <div className="reveal-rise">
+        <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20">
+          <HistoryTimeline
+            milestones={milestones}
+            photoLabel={dict.home.history.photoLabel}
+          >
             <SectionKicker
               accent={dict.home.history.kickerAccent}
               caption={dict.home.history.kickerCaption}
               tone="magenta"
               order="caption-first"
+              className="justify-center"
             />
             <h2 className="mt-5 font-display text-3xl leading-snug font-normal tracking-[0.02em]">
               <span className="text-ink">{dict.home.history.headingLine1}</span>
               <br />
               <span className="text-magenta">{dict.home.history.headingLine2}</span>
             </h2>
-            <p className="mt-5 max-w-md leading-relaxed text-ink-soft">{dict.home.history.body}</p>
-            <div className="relative mt-9 flex flex-col gap-6">
-              <span className="absolute top-1.5 bottom-1.5 left-1.5 w-px bg-line" />
-              {dict.home.history.milestones.map((step) => (
-                <div key={step.year} className="relative flex items-start gap-4 pl-0">
-                  <span className="mt-1 h-3 w-3 shrink-0 rounded-full bg-magenta ring-4 ring-magenta/15" />
-                  <div>
-                    <p className="font-display text-sm font-bold tracking-[0.05em] text-ink">
-                      {step.year}
-                    </p>
-                    <p className="mt-1 text-sm leading-relaxed text-ink-soft">{step.text}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <SitePhoto
-            photo={photoFor(homePhotos.history, dict.home.history.photoAlt)}
-            sizes="(max-width: 1024px) 92vw, 34rem"
-            placeholderLabel={dict.home.history.photoLabel}
-            className="reveal-rise aspect-photo w-full lg:-rotate-2"
-          />
+            <p className="mt-5 leading-relaxed text-ink-soft">
+              {dict.home.history.body}
+            </p>
+          </HistoryTimeline>
         </div>
       </section>
 
-      <section id="connect" className="section-wash-connect relative grid scroll-mt-16 md:grid-cols-2">
+      <section
+        id="connect"
+        className="section-wash-connect relative scroll-mt-16 overflow-clip"
+      >
         <WaveDivider
           id="connect-top"
           position="top"
@@ -387,27 +374,22 @@ export default async function HomePage() {
           seed={27}
           className="absolute inset-x-0 top-0 z-10 text-paper"
         />
-        <SitePhoto
-          photo={photoFor(homePhotos.connect, dict.home.connectPhotoAlt)}
-          sizes="(max-width: 768px) 100vw, 50vw"
-          placeholderLabel={dict.home.connectPhotoLabel}
-          className="min-h-80 w-full"
-        />
-        <div className="reveal-rise relative flex flex-col justify-center overflow-clip px-6 py-14 sm:px-10 md:pt-32 md:pb-20 lg:px-14 lg:pt-44 lg:pb-28">
-          <KanjiWatermark char="絆" className="-top-4 -right-6 text-indigo/5" />
+        <KanjiWatermark char="絆" className="-top-4 -right-6 text-indigo/5" />
+        <div className="reveal-rise relative mx-auto max-w-3xl px-6 pt-20 pb-14 text-center sm:pt-24 sm:pb-16 lg:pt-28">
           <SectionKicker
             accent={dict.home.connectKickerAccent}
             caption={dict.home.connectKickerCaption}
             tone="magenta"
             order="caption-first"
+            className="justify-center"
           />
           <h2 className="mt-4 font-display text-2xl leading-snug font-normal tracking-[0.02em] text-ink sm:text-3xl">
             {dict.home.connectTitle}
           </h2>
-          <p className="mt-4 max-w-lg leading-relaxed text-ink-soft">
+          <p className="mx-auto mt-4 leading-relaxed text-ink-soft">
             {dict.home.connectText}
           </p>
-          <div className="mt-7 flex flex-wrap gap-3">
+          <div className="mt-7 flex flex-wrap justify-center gap-3">
             <a
               href="tel:+15628635996"
               className="button-primary rounded-lg px-5 py-2.5 font-display text-sm font-semibold text-white"
@@ -423,6 +405,15 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      <Image
+        src={homePhotos.centennial}
+        alt={dict.home.centennialPhotoAlt}
+        width={2000}
+        height={405}
+        sizes="100vw"
+        className="block h-auto w-full"
+      />
     </>
   );
 }

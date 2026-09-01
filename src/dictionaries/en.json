@@ -106,6 +106,8 @@
     "upcomingNextUp": "Next Up",
     "upcomingPrev": "Previous events",
     "upcomingNext": "Next events",
+    "upcomingPause": "Stop rotating events",
+    "upcomingPlay": "Rotate events automatically",
     "upcomingDetails": "Details",
     "japaneseSchool": {
       "kicker": "Japanese School",
@@ -119,12 +121,12 @@
         {
           "title": "Saturday Mornings",
           "text": "Classes meet every Saturday, 8:45–12:15",
-          "photoAlt": "Students arranging flowers in a Saturday morning class"
+          "photoAlt": "Students with the flower arrangements they made in class"
         },
         {
           "title": "Kindergarten–Level 12",
           "text": "Japanese language for all ages",
-          "photoAlt": "Kindergarten students with their teachers"
+          "photoAlt": "Students playing a team game at the undokai"
         },
         {
           "title": "Adult Classes Online",
@@ -134,7 +136,7 @@
         {
           "title": "Cultural Events Year-Round",
           "text": "Bringing our community together",
-          "photoAlt": "Students wearing oni masks they made for Setsubun"
+          "photoAlt": "Students and families shaping mochi at the year-end mochitsuki"
         }
       ],
       "primaryCta": "Tuition & registration",
@@ -157,23 +159,54 @@
       "headingLine2": "still growing.",
       "body": "From a small group of Japanese immigrant families in 1925 to a vibrant community today. We honor our heritage while building connections for the future.",
       "photoLabel": "Historic photo coming soon",
-      "photoAlt": "Members of the Gakuen Agriculture Union gathered for a banquet in 1936",
       "milestones": [
         {
+          "id": "1925",
           "year": "1925",
-          "text": "Founded as Norwalk Gakuen, a Japanese language school for the local community."
+          "text": "Reverend Tsunesuke Hayashi had been teaching Japanese at the Friends Japanese Church since 1923. In 1925 the community broke ground on a school of its own on the Nawa Ranch, beside the land the center stands on today, and he became its first principal.",
+          "photoAlt": "The Nawa Ranch outside Norwalk, where the first Japanese language school was built in 1925"
         },
         {
+          "id": "1930",
+          "year": "1930",
+          "text": "Parents and community members paid for a new school building, raised under Takuichi Nakatani on the site the center still occupies. Judo classes began in 1931, kendo in 1934.",
+          "photoAlt": "The community gathered outside the new Norwalk Gakuen school building at its 1930 dedication"
+        },
+        {
+          "id": "1936",
+          "year": "1936",
+          "text": "The Gakuen had become the heart of Japanese immigrant life in Norwalk — Saturday classes for the children, and the community's own gatherings the rest of the year. Enrollment reached 250 before the war.",
+          "photoAlt": "Members of the Gakuen Agriculture Union gathered for a banquet in 1936"
+        },
+        {
+          "id": "1942",
+          "year": "1942",
+          "text": "Every Japanese American family in Norwalk was incarcerated, and the school building was rented to an American church. Families returned to the area in 1946, and Norwalk Gakuen reopened on June 22, 1957 under Principal Shuyu Kurai.",
+          "photoAlt": "Two archival photographs from the war years — the flag over the Manzanar incarceration camp, and a judoka seated in seiza"
+        },
+        {
+          "id": "1962",
           "year": "1962",
-          "text": "Renamed Southeast Gakuen as the community grew."
+          "text": "On April 11 the school was granted nonprofit status and took the name it carries today. The Youth Activities Group — now Norwalk Youth Sports — was established the same year, parents hosted the first Summer Festival in 1963, and a kendo class formed in 1964.",
+          "photoAlt": "The kendo class in 1965, in bogu, with their instructors"
         },
         {
-          "year": "1970s–2000s",
-          "text": "Programs expand — cultural classes, sports, and activities for all ages."
+          "id": "1977",
+          "year": "1977",
+          "text": "Years of fundraising opened a new building with a gymnasium, kitchen and three classrooms. Bonsai, ballroom dance and tea ceremony classes followed, and Hikari Taiko formed in 1978.",
+          "photoAlt": "The hall full of guests at the 1977 new building dedication, hung with koinobori"
         },
         {
-          "year": "2025–2026",
-          "text": "Celebrating 101 years of learning, community, and belonging."
+          "id": "1994",
+          "year": "1994",
+          "text": "After four years of fundraising, an annex was dedicated in July with ten more classrooms, a multipurpose room and two bathrooms.",
+          "photoAlt": "Members gathered for the 1994 groundbreaking outside the new annex"
+        },
+        {
+          "id": "2025",
+          "year": "2025",
+          "text": "The center celebrated its 100th anniversary on July 26, with 132 students enrolled at the Gakuen and four generations together in the hall.",
+          "photoAlt": "Visitors looking through the group history displays at the 100th anniversary celebration"
         }
       ]
     },
@@ -183,10 +216,9 @@
     "connectText": "Everyone is welcome at SEJSCC. We are a nonprofit organization and all of our activities are open to anyone, regardless of race or religion. Together we learn, celebrate, volunteer, and create memories that last a lifetime.",
     "connectCall": "Call (562) 863-5996",
     "connectEmail": "Email the Center",
-    "connectPhotoLabel": "Photo coming soon",
-    "connectPhotoAlt": "Three generations of one family together at the 100th anniversary celebration",
-    "upcomingPause": "Stop rotating events",
-    "upcomingPlay": "Rotate events automatically"
+    "centennialPhotoAlt": "The whole community gathered outside the center for its 100th anniversary in 2025",
+    "heroPause": "Pause the slideshow",
+    "heroPlay": "Play the slideshow"
   },
   "events": {
     "metaTitle": "Events",

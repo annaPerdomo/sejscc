@@ -21,7 +21,8 @@ All design tokens live in `@theme` in [globals.css](src/app/globals.css)
 (text and line colors: `ink`, `ink-deep`, `ink-soft`, `stone`, `line`, `navy`,
 `indigo`, `indigo-deep`, `sky`, `magenta`, `magenta-deep`, `blossom`, `gold`,
 `sand`; surface colors, for backgrounds only: `paper`, `mist`, `cloud`,
-`cream`, `celadon`, `peach`, `lilac`; aspect ratios: `aspect-flyer`; fonts: `font-sans` (Zen Maru
+`cream`, `celadon`, `peach`, `lilac`; aspect ratios: `aspect-flyer` (flyers),
+`aspect-card` (card media), `aspect-photo`, `aspect-band`; fonts: `font-sans` (Zen Maru
 Gothic, body copy), `font-display` (Jost, headings and UI labels),
 `font-accent` (Shippori Mincho, Japanese kicker text)). Every component must
 be built from these tokens via Tailwind utility classes.
@@ -61,11 +62,30 @@ be built from these tokens via Tailwind utility classes.
   classes in `@layer components` in [globals.css](src/app/globals.css):
   `surface-card` (plus `surface-card-link` for a clickable card),
   `button-primary`, `button-donate`, `seigaiha-rings` (with
-  `seigaiha-rings-sky`), `reveal-rise`, and the `section-wash-*` /
+  `seigaiha-rings-sky`), `reveal-rise`, `reveal-swing-left` /
+  `reveal-swing-right`, `ken-burns-in` / `ken-burns-out`, `between-waves`,
+  `event-track`, `card-stretch`, and the `section-wash-*` /
   `section-wash-*-hero` / `section-navy-scene` backgrounds. Extend one of
   these rather than restyling a card or button inline, and build them from
   tokens — use `--alpha(var(--color-x) / 20%)` for a tint instead of writing
   the color out again.
+- A card whose whole surface should be clickable puts `card-stretch` on its
+  primary link inside a `relative surface-card`, rather than wrapping the
+  card in an anchor — that keeps a second link (a sign-up button) legal,
+  since anchors can't nest. Its `::after` sits at `z-index: 1`, so anything
+  that must stay clickable or paint above the overlay needs a higher stacking
+  position; the card's focus ring is drawn by `surface-card-link:has(...)`,
+  so a stretched link must live inside a `surface-card-link` to be visibly
+  focusable.
+- `event-track` lays out a horizontally scrolling row of equal-width cards
+  (1 / 2 / 3 across, set by `--event-cards`). `between-waves` masks a texture
+  to the wave lines above and below it — its `--wave-cap` / `--wave-tail`
+  must stay in step with `wave-divider.tsx`.
+- Anything that auto-advances on a timer (carousel, spotlight) needs a
+  visible pause control, not just hover and focus pausing — WCAG 2.2.2 is a
+  Level A criterion. Use the shared
+  [carousel-play-toggle](src/components/carousel-play-toggle.tsx), and keep
+  honoring `prefers-reduced-motion`.
 
 ## Built for a non-technical admin
 

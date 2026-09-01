@@ -1,16 +1,21 @@
 /**
- * Brush-painted bamboo backdrop for the pale events section: large culm and
- * leaf silhouettes along both edges from the md breakpoint up, a single
- * corner cluster below it. The parent section must be relative and
- * overflow-clip (not overflow-hidden — that would break .reveal-rise on any
- * descendant), and the section's content must sit in a relative wrapper
- * so it paints above the artwork. Tune presence via the opacity-* and w-*
- * classes on each svg.
+ * Brush-painted bamboo backdrop that reaches into the wave dividers on either
+ * side of its section. The parent section must be relative, must NOT clip its
+ * overflow (this wrapper clips itself), and needs a z-index — the divider below
+ * belongs to the next section and would otherwise paint over the artwork. The
+ * section's content needs its own relative wrapper to paint above it.
  */
 export function BambooGrove() {
   return (
-    <div aria-hidden="true" className="pointer-events-none absolute inset-0 text-gold">
-      <svg viewBox="0 0 480 1500" className="absolute top-0 left-0 hidden w-36 md:block lg:w-48 xl:w-64 2xl:w-72 opacity-10">
+    <div
+      aria-hidden="true"
+      className="between-waves pointer-events-none absolute inset-x-0 -top-12 -bottom-10 overflow-clip text-gold sm:-top-20 sm:-bottom-16 lg:-top-30 lg:-bottom-28"
+    >
+      <svg
+        viewBox="0 0 480 1500"
+        preserveAspectRatio="xMinYMin slice"
+        className="absolute top-0 left-0 hidden h-full w-36 md:block lg:w-48 xl:w-64 2xl:w-72 opacity-10"
+      >
         <defs>
           <path id="bamboo-left-leaf-a" d="M0 1 C40 -8 118 -16 172 -14 C210 -12 236 -6 252 4 C204 16 118 17 58 11 C34 8 12 5 0 1 Z"/>
           <path id="bamboo-left-leaf-b" d="M0 0 C36 -10 96 -12 138 -4 C158 0 172 8 180 18 C144 16 84 12 40 7 C24 5 10 3 0 0 Z"/>
@@ -19,17 +24,8 @@ export function BambooGrove() {
             <feTurbulence type="fractalNoise" baseFrequency="0.012 0.004" numOctaves="3" seed="7" result="n" />
             <feDisplacementMap in="SourceGraphic" in2="n" scale="9" />
           </filter>
-          <linearGradient id="bamboo-left-fade" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="black" />
-            <stop offset="0.08" stopColor="white" />
-            <stop offset="0.86" stopColor="white" />
-            <stop offset="1" stopColor="black" />
-          </linearGradient>
-          <mask id="bamboo-left-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="480" height="1500">
-            <rect width="480" height="1500" fill="url(#bamboo-left-fade)" />
-          </mask>
         </defs>
-        <g fill="currentColor" filter="url(#bamboo-left-brush)" mask="url(#bamboo-left-mask)">
+        <g fill="currentColor" filter="url(#bamboo-left-brush)">
           <path d="M-13.3 -39.5L25.3 -40.5C27.6 48.6 30.2 137.2 33 223.9L-6.1 227.7C-9.3 137.2 -11.7 48.6 -13.3 -39.5Z" opacity="0.6"/>
           <path d="M-13.8 231.1 Q13.6 229.1 41 231.1 Q13.6 232.7 -13.8 231.1 Z" opacity="0.3"/>
           <path d="M-6.7 237.4L34.1 235.6C35.1 324.3 35.8 412.2 36.1 499.1L-1.7 501C-2.6 412.2 -4.2 324.3 -6.7 237.4Z" opacity="0.5"/>
@@ -95,7 +91,11 @@ export function BambooGrove() {
           <use href="#bamboo-left-leaf-c" transform="translate(268 1270) rotate(96) scale(0.5)" opacity="0.35"/>
         </g>
       </svg>
-      <svg viewBox="0 0 480 1500" className="absolute top-0 right-0 hidden w-36 md:block lg:w-48 xl:w-64 2xl:w-72 opacity-10">
+      <svg
+        viewBox="0 0 480 1500"
+        preserveAspectRatio="xMaxYMin slice"
+        className="absolute top-0 right-0 hidden h-full w-36 md:block lg:w-48 xl:w-64 2xl:w-72 opacity-10"
+      >
         <defs>
           <path id="bamboo-right-leaf-a" d="M0 1 C40 -8 118 -16 172 -14 C210 -12 236 -6 252 4 C204 16 118 17 58 11 C34 8 12 5 0 1 Z"/>
           <path id="bamboo-right-leaf-b" d="M0 0 C36 -10 96 -12 138 -4 C158 0 172 8 180 18 C144 16 84 12 40 7 C24 5 10 3 0 0 Z"/>
@@ -104,17 +104,8 @@ export function BambooGrove() {
             <feTurbulence type="fractalNoise" baseFrequency="0.012 0.004" numOctaves="3" seed="19" result="n" />
             <feDisplacementMap in="SourceGraphic" in2="n" scale="9" />
           </filter>
-          <linearGradient id="bamboo-right-fade" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="black" />
-            <stop offset="0.08" stopColor="white" />
-            <stop offset="0.86" stopColor="white" />
-            <stop offset="1" stopColor="black" />
-          </linearGradient>
-          <mask id="bamboo-right-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="480" height="1500">
-            <rect width="480" height="1500" fill="url(#bamboo-right-fade)" />
-          </mask>
         </defs>
-        <g fill="currentColor" filter="url(#bamboo-right-brush)" mask="url(#bamboo-right-mask)">
+        <g fill="currentColor" filter="url(#bamboo-right-brush)">
           <path d="M413.4 -49.4L510.6 -50.6C514.4 72.7 515.7 195.4 514.1 313.4L414.8 322.8C413.9 195.4 413.4 72.7 413.4 -49.4Z" opacity="0.9"/>
           <path d="M394.9 321.8 Q464.4 319.8 533.9 321.8 Q464.4 323.4 394.9 321.8 Z" opacity="0.5"/>
           <path d="M417.4 331.6L511.5 319.3C511.2 447.6 510 569.8 508 693.2L413.8 690.7C415.8 569.8 417 447.6 417.4 331.6Z" opacity="1"/>
@@ -185,8 +176,7 @@ export function BambooGrove() {
             <feDisplacementMap in="SourceGraphic" in2="n" scale="9" />
           </filter>
           <linearGradient id="bamboo-corner-fade" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="black" />
-            <stop offset="0.08" stopColor="white" />
+            <stop offset="0" stopColor="white" />
             <stop offset="0.86" stopColor="white" />
             <stop offset="1" stopColor="black" />
           </linearGradient>
