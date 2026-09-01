@@ -2,15 +2,28 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ExternalLink } from "@/components/external-link";
 import { KanjiWatermark } from "@/components/kanji-watermark";
 import { PageHero } from "@/components/page-hero";
 import { SectionKicker } from "@/components/section-kicker";
 import { getEventBySlug, getUpcomingEventSlugs } from "@/lib/events";
-import { formatEventDate, formatEventTime } from "@/lib/format";
+import {
+  formatEventDate,
+  formatEventTime,
+  wallClockNow,
+} from "@/lib/format";
+import {
+  describeRepeat,
+  latestOccurrence,
+  occurrenceEnd,
+  upcomingOccurrences,
+} from "@/lib/recurrence";
 import { getDictionary, getDictionaryFor, getLocale } from "@/lib/dictionaries";
 import { hasLocale, localePath } from "@/lib/i18n";
 
 export const revalidate = 300;
+
+const DATES_SHOWN = 5;
 
 // Prerendering only upcoming events keeps builds bounded; past ones render on demand.
 export async function generateStaticParams() {
@@ -49,13 +62,36 @@ export default async function EventPage({ params }: Props) {
   ]);
   if (!event) notFound();
 
-  const date = formatEventDate(event.startAt, lang);
-  const time = formatEventTime(event.startAt, event.endAt, lang);
+  const now = wallClockNow();
+  const nextDates = upcomingOccurrences(event, now, DATES_SHOWN);
+  // Lists file a finished series under its last date, so this page has to agree.
+  const start = nextDates[0] ?? latestOccurrence(event, now) ?? event.startAt;
+  const repeat = describeRepeat(event, dict.events.repeat, lang);
   const facts = [
-    { label: dict.eventDetail.date, value: date },
-    { label: dict.eventDetail.time, value: time },
+    {
+      label:
+        repeat && nextDates.length > 0
+          ? dict.eventDetail.nextDate
+          : dict.eventDetail.date,
+      value: formatEventDate(start, lang),
+    },
+    {
+      label: dict.eventDetail.time,
+      value: formatEventTime(
+        start,
+        start ? occurrenceEnd(event, start) : null,
+        lang
+      ),
+    },
+    { label: dict.eventDetail.repeats, value: repeat },
     { label: dict.eventDetail.where, value: event.location },
   ].filter((fact) => fact.value);
+
+  // A sign-up link on a finished event points at a closed form.
+  const signupUrl =
+    event.signupUrl && (nextDates.length > 0 || !event.startAt)
+      ? event.signupUrl
+      : null;
 
   const backLink = (
     <Link
@@ -77,7 +113,22 @@ export default async function EventPage({ params }: Props) {
         caption={dict.eventDetail.kickerCaption}
         titleLine1={event.title}
         eyebrow={backLink}
-        facts={
+        actions={
+          signupUrl ? (
+            <div>
+              <ExternalLink
+                href={signupUrl}
+                className="button-primary inline-block rounded-lg px-6 py-3.5 font-display text-sm font-semibold text-white"
+              >
+                {dict.eventDetail.signUp}
+              </ExternalLink>
+              <p className="mt-2 text-sm text-stone">
+                {dict.eventDetail.signUpNote}
+              </p>
+            </div>
+          ) : undefined
+        }
+        below={
           facts.length > 0 && (
             <dl className="flex flex-wrap gap-x-9 gap-y-4">
               {facts.map((fact) => (
@@ -141,6 +192,23 @@ export default async function EventPage({ params }: Props) {
       <section className="relative overflow-clip bg-white py-14 sm:py-16">
         <KanjiWatermark char="縁" className="-right-14 -bottom-20 text-indigo/5" />
         <div className="relative mx-auto flex max-w-6xl flex-col items-start gap-10 px-4 sm:px-6">
+          {nextDates.length > 1 && (
+            <div className="reveal-rise">
+              <h2 className="font-display text-xs font-semibold tracking-[0.14em] text-stone uppercase">
+                {dict.eventDetail.upcomingDates}
+              </h2>
+              <ul className="mt-3 flex flex-wrap gap-2">
+                {nextDates.slice(1).map((occurrence) => (
+                  <li
+                    key={occurrence.toISOString()}
+                    className="rounded-lg border border-line bg-mist px-3.5 py-2 font-display text-sm font-semibold text-ink"
+                  >
+                    {formatEventDate(occurrence, lang)}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           {event.description && (
             <div className="reveal-rise max-w-3xl">
               <SectionKicker

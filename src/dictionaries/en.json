@@ -184,7 +184,9 @@
     "connectCall": "Call (562) 863-5996",
     "connectEmail": "Email the Center",
     "connectPhotoLabel": "Photo coming soon",
-    "connectPhotoAlt": "Three generations of one family together at the 100th anniversary celebration"
+    "connectPhotoAlt": "Three generations of one family together at the 100th anniversary celebration",
+    "upcomingPause": "Stop rotating events",
+    "upcomingPlay": "Rotate events automatically"
   },
   "events": {
     "metaTitle": "Events",
@@ -194,20 +196,31 @@
     "titleLine1": "Events &",
     "titleLine2": "Festivals",
     "lede": "Festivals, fundraisers, bingo nights, and more — hosted by the center and the groups that call it home.",
-    "upcomingCta": "See what's coming up",
     "pastCta": "Look back at past events",
     "photoLabel": "Photo coming soon",
-    "heroPhotoAlts": [
-      "Taiko drummers performing beneath paper lanterns at the summer festival",
-      "A dancer in an orange kimono leading the ondo at the festival",
-      "Community members dancing ondo together at the summer festival"
-    ],
+    "heroPhotoAlt": "Taiko drummers performing beneath paper lanterns at the summer festival",
     "upcomingAccent": "開催予定",
     "upcomingCaption": "On the Calendar",
     "upcomingTitle": "Coming up at the center",
     "pastAccent": "これまで",
     "pastCaption": "Looking Back",
     "empty": "No upcoming events are posted right now. Check back soon, or call the center at (562) 863-5996.",
+    "atCenter": "At the center",
+    "signupCta": "Sign up",
+    "signupAria": "Sign up for {title}",
+    "repeat": {
+      "weekly": "Every {weekday}",
+      "biweekly": "Every other {weekday}",
+      "monthly": "{ordinal} {weekday} of the month",
+      "ordinals": [
+        "First",
+        "Second",
+        "Third",
+        "Fourth",
+        "Fifth"
+      ],
+      "until": "{schedule}, through {date}"
+    },
     "calendars": {
       "accent": "スケジュール",
       "caption": "Room Bookings",
@@ -227,20 +240,18 @@
       }
     },
     "pastTitle": "Past Events",
-    "repeat": {
-      "weekly": "Every {weekday}",
-      "biweekly": "Every other {weekday}",
-      "monthly": "{ordinal} {weekday} of the month",
-      "ordinals": [
-        "First",
-        "Second",
-        "Third",
-        "Fourth",
-        "Fifth"
-      ],
-      "until": "{schedule}, through {date}"
-    },
-    "atCenter": "At the center"
+    "pastArchiveCta": "See all past events",
+    "pastShowMore": "Show more past events",
+    "pastShowLess": "Show fewer",
+    "archive": {
+      "metaTitle": "Past Events",
+      "metaDescription": "A look back at the festivals, fundraisers, and gatherings held at the Southeast Japanese School & Community Center in Norwalk, CA.",
+      "titleLine1": "Past",
+      "titleLine2": "Events",
+      "lede": "Everything the center has hosted, newest first.",
+      "yearLabel": "{year}",
+      "empty": "No past events have been posted yet."
+    }
   },
   "eventDetail": {
     "notFound": "Event not found",
@@ -252,8 +263,13 @@
     "flyerAlt": "{title} flyer",
     "downloadFlyer": "Download printable flyer",
     "date": "Date",
+    "nextDate": "Next date",
     "time": "Time",
-    "where": "Where"
+    "where": "Where",
+    "repeats": "Repeats",
+    "upcomingDates": "Upcoming dates",
+    "signUp": "Sign up for this event",
+    "signUpNote": "Sign-ups open in a new tab."
   },
   "groups": {
     "metaTitle": "Groups & Programs",

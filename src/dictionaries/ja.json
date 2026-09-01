@@ -184,7 +184,9 @@
     "connectCall": "(562) 863-5996 に電話する",
     "connectEmail": "メールで問い合わせる",
     "connectPhotoLabel": "写真は準備中です",
-    "connectPhotoAlt": "創立百周年の祝賀会に集まった三世代の家族"
+    "connectPhotoAlt": "創立百周年の祝賀会に集まった三世代の家族",
+    "upcomingPause": "イベントの自動切り替えを停止",
+    "upcomingPlay": "イベントを自動で切り替える"
   },
   "events": {
     "metaTitle": "イベント",
@@ -194,20 +196,31 @@
     "titleLine1": "イベント・",
     "titleLine2": "お祭り",
     "lede": "お祭り、ファンドレイザー、ビンゴナイトなど、センターと各グループが主催するイベントをご紹介します。",
-    "upcomingCta": "開催予定のイベント",
     "pastCta": "過去のイベントを見る",
     "photoLabel": "写真は準備中です",
-    "heroPhotoAlts": [
-      "夏祭りの提灯の下で演奏する太鼓のメンバー",
-      "祭りで音頭の輪を先導する着物姿の踊り手",
-      "夏祭りで一緒に音頭を踊る地域の人々"
-    ],
+    "heroPhotoAlt": "夏祭りの提灯の下で演奏する太鼓のメンバー",
     "upcomingAccent": "開催予定",
     "upcomingCaption": "On the Calendar",
     "upcomingTitle": "これからのイベント",
     "pastAccent": "これまで",
     "pastCaption": "Looking Back",
     "empty": "現在、予定されているイベントはありません。またご確認いただくか、センター（(562) 863-5996）までお電話ください。",
+    "atCenter": "センターにて",
+    "signupCta": "申し込む",
+    "signupAria": "{title}に申し込む",
+    "repeat": {
+      "weekly": "毎週{weekday}",
+      "biweekly": "隔週{weekday}",
+      "monthly": "毎月第{ordinal}{weekday}",
+      "ordinals": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "until": "{schedule}（{date}まで）"
+    },
     "calendars": {
       "accent": "スケジュール",
       "caption": "Room Bookings",
@@ -227,20 +240,18 @@
       }
     },
     "pastTitle": "過去のイベント",
-    "repeat": {
-      "weekly": "毎週{weekday}",
-      "biweekly": "隔週{weekday}",
-      "monthly": "毎月第{ordinal}{weekday}",
-      "ordinals": [
-        "1",
-        "2",
-        "3",
-        "4",
-        "5"
-      ],
-      "until": "{schedule}（{date}まで）"
-    },
-    "atCenter": "センターにて"
+    "pastArchiveCta": "過去のイベントをすべて見る",
+    "pastShowMore": "過去のイベントをもっと見る",
+    "pastShowLess": "表示を減らす",
+    "archive": {
+      "metaTitle": "過去のイベント",
+      "metaDescription": "カリフォルニア州ノーウォークのサウスイースト日本語学園・コミュニティセンターで開催されたお祭り、ファンドレイザー、集いの記録です。",
+      "titleLine1": "過去の",
+      "titleLine2": "イベント",
+      "lede": "センターでこれまでに開催したイベントの記録です。新しい順に並んでいます。",
+      "yearLabel": "{year}年",
+      "empty": "過去のイベントはまだ掲載されていません。"
+    }
   },
   "eventDetail": {
     "notFound": "イベントが見つかりません",
@@ -252,8 +263,13 @@
     "flyerAlt": "{title}のチラシ",
     "downloadFlyer": "チラシをダウンロード（印刷用）",
     "date": "日付",
+    "nextDate": "次回の開催日",
     "time": "時間",
-    "where": "場所"
+    "where": "場所",
+    "repeats": "開催頻度",
+    "upcomingDates": "今後の開催日",
+    "signUp": "このイベントに申し込む",
+    "signUpNote": "申し込みページは新しいタブで開きます。"
   },
   "groups": {
     "metaTitle": "グループ・プログラム",
