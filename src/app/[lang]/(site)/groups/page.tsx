@@ -9,16 +9,17 @@ import { SectionKicker } from "@/components/section-kicker";
 import { SitePhoto } from "@/components/site-photo";
 import { WaveDivider } from "@/components/wave-divider";
 import { weekDays } from "@/db/schema";
+import {
+  CENTER_EMAIL,
+  CENTER_PHONE,
+  CENTER_PHONE_HREF,
+} from "@/lib/center";
 import { getActiveGroups } from "@/lib/events";
 import { getDictionary, getDictionaryFor } from "@/lib/dictionaries";
 import { hasLocale, localePath } from "@/lib/i18n";
 import { groupsHeroPhoto, photoFor } from "@/lib/photos";
 
 export const revalidate = 300;
-
-const CENTER_EMAIL = "info@sejscc.org";
-const CENTER_PHONE = "(562) 863-5996";
-const CENTER_PHONE_HREF = "tel:+15628635996";
 
 const CARD_SIZES = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 17rem";
 
