@@ -7,6 +7,7 @@ import { AdminBadge, type AdminBadgeTone } from "@/components/admin/admin-badge"
 import { AdminButtonLink } from "@/components/admin/admin-button";
 import { AdminEmptyState } from "@/components/admin/admin-card";
 import { AdminListRow } from "@/components/admin/admin-list-row";
+import { repeatSummary } from "./repeat";
 
 export const dynamic = "force-dynamic";
 
@@ -61,7 +62,13 @@ export default async function AdminEventsPage() {
                     ) : null
                   }
                   title={event.title}
-                  subtitle={formatEventDate(event.startAt) ?? "No date set"}
+                  subtitle={[
+                    formatEventDate(event.startAt) ?? "No date set",
+                    repeatSummary(event),
+                    event.signupUrl ? "Sign-ups open" : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
                   badge={
                     <AdminBadge tone={badge.tone}>{badge.label}</AdminBadge>
                   }
