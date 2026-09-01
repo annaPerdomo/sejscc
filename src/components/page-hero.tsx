@@ -15,7 +15,7 @@ export function PageHero({
   titleLine2,
   lede,
   eyebrow,
-  facts,
+  below,
   actions,
   media,
 }: {
@@ -34,17 +34,17 @@ export function PageHero({
   titleLine2?: string;
   lede?: string;
   eyebrow?: ReactNode;
-  facts?: ReactNode;
+  below?: ReactNode;
   actions?: ReactNode;
-  media: ReactNode;
+  media?: ReactNode;
 }) {
   return (
     <section className={`relative overflow-clip ${wash}`}>
       <KanjiWatermark char={watermark} className={watermarkClassName} />
       <div
-        className={`relative mx-auto grid max-w-6xl gap-10 px-4 pt-12 sm:px-6 sm:pt-14 lg:grid-cols-[1fr_auto] lg:items-center lg:gap-14 ${
-          facts ? "pb-10" : "pb-16 lg:pb-24"
-        }`}
+        className={`relative mx-auto grid max-w-6xl gap-8 px-4 pt-9 sm:px-6 sm:pt-11 lg:items-center lg:gap-14 ${
+          media ? "lg:grid-cols-[1fr_auto]" : ""
+        } ${below ? "pb-8" : "pb-12 lg:pb-18"}`}
       >
         <div className="reveal-rise">
           {eyebrow && <div className="mb-5">{eyebrow}</div>}
@@ -53,21 +53,21 @@ export function PageHero({
             <span className="block text-ink">{titleLine1}</span>
             {titleLine2 && <span className="block text-indigo">{titleLine2}</span>}
           </h1>
-          <BrushRule id={id} className="mt-5" />
+          <BrushRule id={id} className="mt-4" />
           {lede && (
-            <p className="mt-6 max-w-xl leading-relaxed text-ink-soft">{lede}</p>
+            <p className="mt-5 max-w-xl leading-relaxed text-ink-soft">{lede}</p>
           )}
           {actions && (
-            <div className="mt-8 flex flex-wrap items-center gap-x-7 gap-y-4">
+            <div className="mt-7 flex flex-wrap items-center gap-x-7 gap-y-4">
               {actions}
             </div>
           )}
         </div>
         {media}
       </div>
-      {facts && (
-        <div className="reveal-rise relative mx-auto max-w-6xl px-4 pb-16 sm:px-6 lg:pb-20">
-          {facts}
+      {below && (
+        <div className="reveal-rise relative mx-auto max-w-6xl px-4 pb-10 sm:px-6 lg:pb-12">
+          {below}
         </div>
       )}
       <BrushEdge id={`${id}-hero`} variant="paper" className="absolute inset-x-0 bottom-0" />

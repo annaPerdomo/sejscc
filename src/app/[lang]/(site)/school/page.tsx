@@ -109,7 +109,7 @@ export default async function SchoolPage() {
             </a>
           </>
         }
-        facts={
+        below={
           <dl className="surface-card grid gap-px overflow-clip bg-line sm:grid-cols-2 lg:grid-cols-4">
             {dict.school.facts.map((fact) => (
               <div key={fact.label} className="bg-white px-5 py-4">
@@ -134,7 +134,7 @@ export default async function SchoolPage() {
             tileClassName="w-full rounded-sm border border-line shadow-sm lg:aspect-auto"
             placeholderLabel={dict.school.photoLabel}
             preloadFirst
-            className="grid w-full shrink-0 grid-cols-2 gap-3 lg:h-112 lg:w-120 lg:grid-cols-12 lg:grid-rows-12 lg:gap-4 xl:h-132 xl:w-144"
+            className="grid w-full shrink-0 grid-cols-2 gap-3 lg:h-96 lg:w-104 lg:grid-cols-12 lg:grid-rows-12 lg:gap-4 xl:h-112 xl:w-120"
           />
         }
       />

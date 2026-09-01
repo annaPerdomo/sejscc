@@ -9,6 +9,16 @@ const INTL_LOCALES: Record<Locale, string> = {
   ja: "ja-JP",
 };
 
+export function wallClockNow(): Date {
+  const la = new Date().toLocaleString("en-US", {
+    timeZone: "America/Los_Angeles",
+    hour12: false,
+  });
+  const [date, time] = la.split(", ");
+  const [m, d, y] = date.split("/");
+  return new Date(`${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}T${time}Z`);
+}
+
 export function formatEventDate(date: Date | null, locale: Locale = "en") {
   if (!date) return null;
   return date.toLocaleDateString(INTL_LOCALES[locale], {
@@ -35,6 +45,23 @@ export function formatEventTime(
   return end ? `${fmt(start)} – ${fmt(end)}` : fmt(start);
 }
 
+export function formatCalendarDate(date: Date | null, locale: Locale = "en") {
+  if (!date) return null;
+  return date.toLocaleDateString(INTL_LOCALES[locale], {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+export function formatWeekday(date: Date, locale: Locale = "en") {
+  return date.toLocaleDateString(INTL_LOCALES[locale], {
+    weekday: "long",
+    timeZone: "UTC",
+  });
+}
+
 export function slugify(title: string) {
   return title
     .toLowerCase()
@@ -45,17 +72,27 @@ export function slugify(title: string) {
     .slice(0, 60);
 }
 
-const WEBSITE_ERROR =
-  "The website doesn’t look like a web address. Try something like example.org.";
+// The columns are unbounded text and a server action can be called directly,
+// so the ceiling is enforced here rather than by the form's maxLength.
+const MAX_URL_LENGTH = 2048;
+
+const websiteError = (label: string) =>
+  new Error(
+    `The ${label} doesn’t look like a web address. Try something like example.org.`
+  );
 
 // The public site renders this value as a link href, so only real web
 // addresses may pass. Prefixing a bare value with https:// is what rejects a
 // javascript: URL, but it quietly rescues two others: "mailto:name@site.org"
 // survives as embedded credentials, and a bare word like "TBD" as a hostname —
 // hence the userinfo and dotted-hostname checks below.
-export function normalizeWebsiteUrl(raw: string): string | null {
+export function normalizeWebsiteUrl(
+  raw: string,
+  label = "website"
+): string | null {
   const trimmed = raw.trim();
   if (!trimmed) return null;
+  if (trimmed.length > MAX_URL_LENGTH) throw websiteError(label);
   const withScheme = /^https?:\/\//i.test(trimmed)
     ? trimmed
     : `https://${trimmed}`;
@@ -64,10 +101,10 @@ export function normalizeWebsiteUrl(raw: string): string | null {
   try {
     url = new URL(withScheme);
   } catch {
-    throw new Error(WEBSITE_ERROR);
+    throw websiteError(label);
   }
   if (url.username || url.password || !url.hostname.includes(".")) {
-    throw new Error(WEBSITE_ERROR);
+    throw websiteError(label);
   }
   return url.href;
 }

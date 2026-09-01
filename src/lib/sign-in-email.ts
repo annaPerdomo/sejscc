@@ -1,10 +1,10 @@
 import type { EmailProviderSendVerificationRequestParams } from "next-auth/providers/email";
+import { CENTER_ADDRESS } from "@/lib/center";
 
 const SENDER_NAME = "SEJSCC Volunteer Portal";
 const FALLBACK_SENDER = `${SENDER_NAME} <onboarding@resend.dev>`;
 const CENTER_TIME_ZONE = "America/Los_Angeles";
 const PORTFOLIO_URL = "https://www.variationsonastring.com";
-const CENTER_ADDRESS = "14615 S. Gridley Rd., Norwalk, CA 90650";
 
 // Mail clients can't read the @theme tokens in globals.css, so the palette is
 // repeated here as literal hex. Keep these in sync with globals.css.

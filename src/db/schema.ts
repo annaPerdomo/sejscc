@@ -7,6 +7,8 @@ import {
   timestamp,
 } from "drizzle-orm/pg-core";
 import type { AdapterAccountType } from "next-auth/adapters";
+// Relative, not "@/": drizzle-kit loads this file outside Next's path aliases.
+import { CENTER_ADDRESS } from "../lib/center";
 
 // The four tables below are shaped by @auth/drizzle-adapter, not by us.
 export const users = pgTable("user", {
@@ -70,6 +72,8 @@ export const allowedEmails = pgTable("allowed_email", {
   addedAt: timestamp("added_at", { mode: "date" }).notNull().defaultNow(),
 });
 
+export const eventRepeats = ["none", "weekly", "biweekly", "monthly"] as const;
+
 export const events = pgTable("event", {
   id: text("id")
     .primaryKey()
@@ -79,11 +83,14 @@ export const events = pgTable("event", {
   description: text("description"),
   flyerUrl: text("flyer_url"), // image rendered on the site
   flyerDownloadUrl: text("flyer_download_url"), // original printable PDF/image
+  signupUrl: text("signup_url"),
   startAt: timestamp("start_at", { mode: "date", withTimezone: true }),
   endAt: timestamp("end_at", { mode: "date", withTimezone: true }),
-  location: text("location").default(
-    "14615 S. Gridley Rd., Norwalk, CA 90650"
-  ),
+  // startAt is the first date of the series; monthly repeats keep its weekday
+  // and its position in the month. See src/lib/recurrence.ts.
+  repeat: text("repeat", { enum: eventRepeats }).notNull().default("none"),
+  repeatUntil: timestamp("repeat_until", { mode: "date", withTimezone: true }),
+  location: text("location").default(CENTER_ADDRESS),
   status: text("status", { enum: ["draft", "published", "archived"] })
     .notNull()
     .default("draft"),
@@ -94,6 +101,8 @@ export const events = pgTable("event", {
     .defaultNow()
     .$onUpdate(() => new Date()),
 });
+
+export type EventRepeat = (typeof events.$inferSelect)["repeat"];
 
 export const weekDays = [
   "mon",
