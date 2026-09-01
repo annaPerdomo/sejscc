@@ -208,6 +208,7 @@ export const DEMO_EVENTS = [
     date: "2026-09-19",
     start: "09:00",
     end: "12:15",
+    signup: SCHOOL_REGISTRATION,
     description:
       "Parents sit in on their child's classroom to see the curriculum and meet the sensei. A short PTA meeting follows in the hall.",
   },
