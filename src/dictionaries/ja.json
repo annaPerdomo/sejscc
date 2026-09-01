@@ -12,7 +12,8 @@
     "closeMenu": "メニューを閉じる",
     "announcementAccent": "次回",
     "announcementLabel": "Next Up",
-    "announcementCta": "申し込む"
+    "announcementCta": "詳しく見る",
+    "announcementSignup": "申し込む"
   },
   "nav": {
     "japaneseSchool": "日本語学校",
@@ -704,7 +705,7 @@
     "duesAccent": "会費・授業料",
     "duesCaption": "Pay Fee-Free",
     "donateTitle": "寄付",
-    "donateText": "寄付は施設の維持、プログラム運営、奨学金に活用されます。",
+    "donateText": "会費と授業料は授業の運営に充てられます。建物を維持し、センターの扉を開き続けるために必要なのが皆さまからのご寄付です。当センターは501(c)(3)認定の非営利団体のため、ご寄付は税控除の対象となります。",
     "donateFrame": "サウスイースト日本語学園への寄付",
     "donateTroubleBefore": "フォームが表示されない場合は ",
     "donateTroubleLink": "Zeffyのページを開く",
@@ -723,7 +724,25 @@
     "checkAfter": " とし、下記までご郵送ください。",
     "checkMemo": "生徒名（または会員名）とお支払いの内容を記載したメモを同封してください。",
     "questionsBefore": "授業料の金額やお支払い内容についてのご質問は、",
-    "questionsAfter": " までメールでお問い合わせください。"
+    "questionsAfter": " までメールでお問い合わせください。",
+    "donateReasons": [
+      {
+        "title": "施設の近代化",
+        "text": "教室、ホール、道場は前世紀に建てられたものです。改修することで、次の世代もすべてのプログラムを利用できます。"
+      },
+      {
+        "title": "維持と修繕",
+        "text": "屋根、配管、床、厨房の修繕は、ボランティアの週末作業だけでは賄いきれません。"
+      },
+      {
+        "title": "太陽光発電と光熱費",
+        "text": "太陽光発電への切り替えは年々増える電気代を抑え、集まった資金をより多く活動に充てられるようにします。"
+      },
+      {
+        "title": "物価の上昇",
+        "text": "保険料、水道代、備品費は会費の伸びを上回って上昇しています。ご寄付は授業料を家庭が負担できる水準に保ちます。"
+      }
+    ]
   },
   "languageToggle": {
     "label": "言語"

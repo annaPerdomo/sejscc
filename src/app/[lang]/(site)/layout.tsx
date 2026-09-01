@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { ExternalLink } from "@/components/external-link";
 import { LanguageToggle } from "@/components/language-toggle";
 import { MadeWithLove } from "@/components/made-with-love";
 import { MobileNav } from "@/components/mobile-nav";
@@ -44,17 +45,44 @@ export default async function SiteLayout({
                   <span className="hidden shrink-0 font-display text-[11px] font-bold tracking-[0.18em] text-sky uppercase sm:inline">
                     {dict.header.announcementLabel}
                   </span>
-                  <span className="min-w-0 truncate text-xs text-white/85">
-                    {nextEvent.title}
-                    {formatEventDate(nextEvent.startAt, lang) &&
-                      ` · ${formatEventDate(nextEvent.startAt, lang)}`}
-                  </span>
-                  <Link
-                    href={href(`/events/${nextEvent.slug}`)}
-                    className="shrink-0 font-display text-xs font-bold text-blossom underline-offset-4 hover:text-white hover:underline"
-                  >
-                    {dict.header.announcementCta}
-                  </Link>
+                  {nextEvent.signupUrl ? (
+                    <>
+                      {/* The sign-up link leaves the site, so the title keeps a
+                          route to the flyer, time and place. */}
+                      <Link
+                        href={href(`/events/${nextEvent.slug}`)}
+                        className="min-w-0 truncate text-xs text-white/85 underline-offset-4 hover:text-white hover:underline"
+                      >
+                        {nextEvent.title}
+                        {formatEventDate(nextEvent.startAt, lang) &&
+                          ` · ${formatEventDate(nextEvent.startAt, lang)}`}
+                      </Link>
+                      <ExternalLink
+                        href={nextEvent.signupUrl}
+                        aria-label={dict.events.signupAria.replace(
+                          "{title}",
+                          nextEvent.title
+                        )}
+                        className="shrink-0 font-display text-xs font-bold text-blossom underline-offset-4 hover:text-white hover:underline"
+                      >
+                        {dict.header.announcementSignup}
+                      </ExternalLink>
+                    </>
+                  ) : (
+                    <>
+                      <span className="min-w-0 truncate text-xs text-white/85">
+                        {nextEvent.title}
+                        {formatEventDate(nextEvent.startAt, lang) &&
+                          ` · ${formatEventDate(nextEvent.startAt, lang)}`}
+                      </span>
+                      <Link
+                        href={href(`/events/${nextEvent.slug}`)}
+                        className="shrink-0 font-display text-xs font-bold text-blossom underline-offset-4 hover:text-white hover:underline"
+                      >
+                        {dict.header.announcementCta}
+                      </Link>
+                    </>
+                  )}
                 </>
               )}
             </div>
@@ -112,7 +140,7 @@ export default async function SiteLayout({
           <div className="col-span-2 sm:col-span-1">
             <div className="flex items-center gap-3">
               <Image src="/logo-mark-white.png" alt="" width={40} height={40} />
-              <p className="font-display text-lg leading-snug font-normal">
+              <p className="font-display text-sm leading-snug font-semibold tracking-[0.06em] uppercase">
                 {dict.footer.orgName}
               </p>
             </div>

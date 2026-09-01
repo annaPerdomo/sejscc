@@ -80,7 +80,7 @@ export default async function PaymentsPage() {
             preload
             sizes="(max-width: 640px) 92vw, 28rem"
             placeholderLabel={dict.payments.photoLabel}
-            className="reveal-rise aspect-flyer w-full max-w-md rounded-xl border-4 border-white shadow-lg lg:w-96 lg:max-w-none xl:w-112"
+            className="reveal-rise aspect-flyer w-full max-w-sm rounded-xl border-4 border-white shadow-lg lg:w-80 lg:max-w-none xl:w-96"
           />
         }
       />
@@ -161,6 +161,20 @@ export default async function PaymentsPage() {
         title={dict.payments.donateTitle}
         lede={dict.payments.donateText}
       >
+        <div className="reveal-rise mb-9 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {dict.payments.donateReasons.map((reason) => (
+            <div key={reason.title} className="surface-card flex flex-col p-5">
+              <span aria-hidden="true" className="block h-0.5 w-8 bg-magenta" />
+              <h3 className="mt-3 font-display text-lg leading-snug font-semibold text-ink">
+                {reason.title}
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+                {reason.text}
+              </p>
+            </div>
+          ))}
+        </div>
+
         <div className="surface-card reveal-rise max-w-3xl overflow-clip">
           {DONATION_EMBED_URL ? (
             <iframe

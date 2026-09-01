@@ -12,7 +12,8 @@
     "closeMenu": "Close menu",
     "announcementAccent": "次回",
     "announcementLabel": "Next Up",
-    "announcementCta": "Sign up"
+    "announcementCta": "See details",
+    "announcementSignup": "Sign up"
   },
   "nav": {
     "japaneseSchool": "Japanese School",
@@ -704,7 +705,7 @@
     "duesAccent": "会費・授業料",
     "duesCaption": "Pay Fee-Free",
     "donateTitle": "Donate",
-    "donateText": "Donations fund building upkeep, programs, and scholarships.",
+    "donateText": "Dues and tuition cover the teaching. Donations are what keep the buildings standing and the doors open — and SEJSCC is a 501(c)(3), so your gift is tax-deductible.",
     "donateFrame": "Donate to SEJSCC",
     "donateTroubleBefore": "Having trouble with the form? ",
     "donateTroubleLink": "Open it on Zeffy",
@@ -723,7 +724,25 @@
     "checkAfter": " and mail to:",
     "checkMemo": "Include a note with the student or member name and what the payment covers.",
     "questionsBefore": "Questions about tuition amounts or what you owe? Email ",
-    "questionsAfter": "."
+    "questionsAfter": ".",
+    "donateReasons": [
+      {
+        "title": "Modernizing the campus",
+        "text": "Classrooms, the hall, and the dojo were built for a different century. Updating them keeps every program usable for the next generation."
+      },
+      {
+        "title": "Maintenance & repairs",
+        "text": "Roofing, plumbing, flooring, and the kitchen all need work that a volunteer Saturday can't cover on its own."
+      },
+      {
+        "title": "Solar & utilities",
+        "text": "Moving the campus to solar cuts the power bills that grow every year, so more of what we raise goes to programs instead of overhead."
+      },
+      {
+        "title": "Rising costs",
+        "text": "Insurance, water, and supplies climb faster than dues do. Giving keeps tuition affordable for families who need it."
+      }
+    ]
   },
   "languageToggle": {
     "label": "Language"

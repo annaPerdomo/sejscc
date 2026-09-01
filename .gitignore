@@ -43,3 +43,6 @@ next-env.d.ts
 
 # pre-redesign survey of the legacy site — kept locally for reference, not shipped
 /docs/legacy-site/
+
+# source flyers and centennial artwork — kept locally, uploaded to Blob when used
+/materials/

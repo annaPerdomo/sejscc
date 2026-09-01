@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "backfill-allowed-emails": "node --env-file-if-exists=.env.local scripts/backfill-allowed-emails.mjs"
+    "backfill-allowed-emails": "node --env-file-if-exists=.env.local scripts/backfill-allowed-emails.mjs",
+    "seed-demo-events": "node --env-file-if-exists=.env.local scripts/seed-demo-events.mjs"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.3",
