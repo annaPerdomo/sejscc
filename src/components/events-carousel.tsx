@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { CarouselArrow } from "@/components/carousel-arrow";
 import { CarouselPlayToggle } from "@/components/carousel-play-toggle";
 import { EventMedia } from "@/components/event-media";
 import { EventMeta } from "@/components/event-meta";
@@ -22,20 +23,6 @@ export type CarouselEvent = {
   flyerUrl: string | null;
   flyerAlt: string;
 };
-
-function Chevron({ direction }: { direction: 1 | -1 }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
-      <path
-        d={direction === 1 ? "M9 5l7 7-7 7" : "M15 5l-7 7 7 7"}
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
 
 export function EventsCarousel({
   events,
@@ -118,43 +105,35 @@ export function EventsCarousel({
             pauseLabel={pauseLabel}
             playLabel={playLabel}
           />
-          <button
-            type="button"
-            aria-label={prevLabel}
+          <CarouselArrow
+            direction={-1}
+            label={prevLabel}
             onClick={() => scrollByCard(-1)}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-line bg-white text-indigo sm:hidden"
-          >
-            <Chevron direction={-1} />
-          </button>
-          <button
-            type="button"
-            aria-label={nextLabel}
+            className="sm:hidden"
+          />
+          <CarouselArrow
+            direction={1}
+            label={nextLabel}
             onClick={() => scrollByCard(1)}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-line bg-white text-indigo sm:hidden"
-          >
-            <Chevron direction={1} />
-          </button>
+            className="sm:hidden"
+          />
         </div>
       )}
       <div className="relative">
         {events.length > 1 && (
           <>
-            <button
-              type="button"
-              aria-label={prevLabel}
+            <CarouselArrow
+              direction={-1}
+              label={prevLabel}
               onClick={() => scrollByCard(-1)}
-              className="absolute top-1/2 -left-5 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-white text-indigo shadow-lg hover:bg-indigo hover:text-white sm:flex lg:-left-6"
-            >
-              <Chevron direction={-1} />
-            </button>
-            <button
-              type="button"
-              aria-label={nextLabel}
+              className="absolute top-1/2 -left-5 z-10 hidden h-11 w-11 -translate-y-1/2 shadow-lg sm:flex lg:-left-6"
+            />
+            <CarouselArrow
+              direction={1}
+              label={nextLabel}
               onClick={() => scrollByCard(1)}
-              className="absolute top-1/2 -right-5 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-white text-indigo shadow-lg hover:bg-indigo hover:text-white sm:flex lg:-right-6"
-            >
-              <Chevron direction={1} />
-            </button>
+              className="absolute top-1/2 -right-5 z-10 hidden h-11 w-11 -translate-y-1/2 shadow-lg sm:flex lg:-right-6"
+            />
           </>
         )}
         <div

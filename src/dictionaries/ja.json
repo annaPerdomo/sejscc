@@ -314,12 +314,12 @@
     "scheduleCta": "週間スケジュール",
     "startCta": "新しいクラブを始めませんか？",
     "photoLabel": "写真は準備中です",
-    "heroPhotoAlts": [
-      "太鼓を囲むひかり太鼓のメンバー",
-      "ウリウリを手にフラを踊るメンバー",
-      "ノーウォーク道場に集まった柔道の有段者",
-      "着物姿で舞台に立つ踊りのメンバー"
-    ],
+    "heroPhotoAlt": "ウリウリを手にフラを踊るメンバー",
+    "spotlightLabel": "センターで活動するグループ",
+    "spotlightPrev": "前のグループ",
+    "spotlightNext": "次のグループ",
+    "spotlightPause": "グループの自動切り替えを停止",
+    "spotlightPlay": "グループを自動で切り替える",
     "directoryAccent": "全団体",
     "directoryCaption": "Who Meets Here",
     "directoryTitle": "センターで活動する全グループ",
@@ -350,7 +350,9 @@
     "useBetween": " または ",
     "useAfter": " までお問い合わせください。",
     "useEmailCta": "センターにメールする",
-    "useCallCta": "センターに電話する"
+    "useCallCta": "センターに電話する",
+    "useFit": "センターの目的に沿った活動を歓迎しています。日本語・日本文化、武道、音楽や舞踊、スポーツ、そして世代を越えて地域の皆さんが集まれる活動です。お申し込みは理事会で検討し、施設の空き状況、スケジュール、保険についてご相談のうえ決定いたします。",
+    "spotlightSlide": "{total}件中{n}件目"
   },
   "school": {
     "metaTitle": "日本語学校",

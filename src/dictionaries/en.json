@@ -314,12 +314,12 @@
     "scheduleCta": "Weekly schedule",
     "startCta": "Have an idea? Start a new club",
     "photoLabel": "Photo coming soon",
-    "heroPhotoAlts": [
-      "Hikari Taiko gathered around their drums",
-      "Hula dancers performing with ʻulīʻulī gourd rattles",
-      "Judo black belts gathered at the Norwalk dojo",
-      "Odori dancers in kimono performing on stage"
-    ],
+    "heroPhotoAlt": "Hula dancers performing with ʻulīʻulī gourd rattles",
+    "spotlightLabel": "Groups at the center",
+    "spotlightPrev": "Previous group",
+    "spotlightNext": "Next group",
+    "spotlightPause": "Stop rotating groups",
+    "spotlightPlay": "Rotate groups automatically",
     "directoryAccent": "全団体",
     "directoryCaption": "Who Meets Here",
     "directoryTitle": "Every group at the center",
@@ -350,7 +350,9 @@
     "useBetween": " or ",
     "useAfter": " to ask about facilities and scheduling.",
     "useEmailCta": "Email the center",
-    "useCallCta": "Call the center"
+    "useCallCta": "Call the center",
+    "useFit": "We're looking for groups that fit what the center is for — Japanese language and culture, martial arts, music and dance, sports, and activities that bring neighbors of every age together. The board reviews each proposal and will talk through space, scheduling, and insurance with you before anything is confirmed.",
+    "spotlightSlide": "{n} of {total}"
   },
   "school": {
     "metaTitle": "Japanese School",

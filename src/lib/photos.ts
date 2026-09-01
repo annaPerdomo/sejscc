@@ -90,12 +90,4 @@ export const eventsHeroPhoto = "/photos/events-hero-1.jpg";
 
 export const groupsHeroPhoto = "/photos/groups-hero-2.jpg";
 
-// Replaced by groupsHeroPhoto; drops with the groups page rewrite.
-export const groupsHeroPhotos = [
-  "/photos/groups-hero-1.jpg",
-  "/photos/groups-hero-2.jpg",
-  "/photos/groups-hero-3.jpg",
-  "/photos/groups-hero-4.jpg",
-];
-
 export const paymentsHeroPhotos = ["/photos/payments-hero-1.jpg"];

@@ -1,17 +1,18 @@
 import type { Metadata } from "next";
 import { ExternalLink } from "@/components/external-link";
 import { GroupMedia } from "@/components/group-media";
-import { HeroPhotos } from "@/components/hero-photos";
+import { GroupSpotlight } from "@/components/group-spotlight";
 import { KanjiWatermark } from "@/components/kanji-watermark";
 import { PageHero } from "@/components/page-hero";
 import { PageSection } from "@/components/page-section";
 import { SectionKicker } from "@/components/section-kicker";
+import { SitePhoto } from "@/components/site-photo";
 import { WaveDivider } from "@/components/wave-divider";
 import { weekDays } from "@/db/schema";
 import { getActiveGroups } from "@/lib/events";
 import { getDictionary, getDictionaryFor } from "@/lib/dictionaries";
 import { hasLocale, localePath } from "@/lib/i18n";
-import { photoFor, groupsHeroPhotos } from "@/lib/photos";
+import { groupsHeroPhoto, photoFor } from "@/lib/photos";
 
 export const revalidate = 300;
 
@@ -19,19 +20,7 @@ const CENTER_EMAIL = "info@sejscc.org";
 const CENTER_PHONE = "(562) 863-5996";
 const CENTER_PHONE_HREF = "tel:+15628635996";
 
-const HERO_LAYOUT = [
-  "col-span-2 aspect-photo sm:col-span-1 lg:col-start-1 lg:col-span-7 lg:row-start-1 lg:row-span-7",
-  "aspect-square sm:aspect-photo lg:col-start-8 lg:col-span-5 lg:row-start-1 lg:row-span-5",
-  "aspect-square sm:aspect-photo lg:col-start-8 lg:col-span-5 lg:row-start-6 lg:row-span-7",
-  "col-span-2 aspect-band sm:col-span-1 sm:aspect-photo lg:col-start-1 lg:col-span-7 lg:row-start-8 lg:row-span-5",
-];
-const HERO_SIZES = [
-  "(max-width: 640px) 92vw, (max-width: 1024px) 50vw, 21rem",
-  "(max-width: 640px) 46vw, (max-width: 1024px) 50vw, 15rem",
-  "(max-width: 640px) 46vw, (max-width: 1024px) 50vw, 15rem",
-  "(max-width: 640px) 92vw, (max-width: 1024px) 50vw, 21rem",
-];
-const CARD_SIZES = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 22rem";
+const CARD_SIZES = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 17rem";
 
 type Props = { params: Promise<{ lang: string }> };
 
@@ -64,9 +53,7 @@ export default async function GroupsPage() {
   }));
   const hasWeek = week.some(({ entries }) => entries.length > 0);
 
-  const heroPhotos = groupsHeroPhotos.map((src, i) =>
-    photoFor(src, dict.groups.heroPhotoAlts[i] ?? "")
-  );
+  const spotlight = groups.filter((group) => group.status === "meeting");
 
   return (
     <>
@@ -99,15 +86,28 @@ export default async function GroupsPage() {
           </>
         }
         media={
-          <HeroPhotos
-            layout={HERO_LAYOUT}
-            photos={heroPhotos}
-            sizes={HERO_SIZES}
-            tileClassName="w-full border border-line lg:aspect-auto"
+          <SitePhoto
+            photo={photoFor(groupsHeroPhoto, dict.groups.heroPhotoAlt)}
+            preload
+            sizes="(max-width: 640px) 92vw, (max-width: 1024px) 60vw, 26rem"
             placeholderLabel={dict.groups.photoLabel}
-            preloadFirst
-            className="grid w-full shrink-0 grid-cols-2 shadow-sm lg:h-112 lg:w-120 lg:grid-cols-12 lg:grid-rows-12 xl:h-132 xl:w-144"
+            className="reveal-rise aspect-photo w-full rounded-xl border border-line shadow-sm lg:w-96 xl:w-104"
           />
+        }
+        below={
+          spotlight.length > 0 && (
+            <GroupSpotlight
+              groups={spotlight}
+              label={dict.groups.spotlightLabel}
+              websiteLabel={dict.groups.website}
+              prevLabel={dict.groups.spotlightPrev}
+              nextLabel={dict.groups.spotlightNext}
+              pauseLabel={dict.groups.spotlightPause}
+              playLabel={dict.groups.spotlightPlay}
+              photoLabel={dict.groups.photoLabel}
+              slideLabel={dict.groups.spotlightSlide}
+            />
+          )
         }
       />
 
@@ -120,7 +120,7 @@ export default async function GroupsPage() {
         title={dict.groups.directoryTitle}
       >
         {groups.length > 0 ? (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {groups.map((group) => {
               const muted = group.status !== "meeting";
               const statusLabel =
@@ -206,7 +206,7 @@ export default async function GroupsPage() {
                         {group.contactEmail && (
                           <a
                             href={`mailto:${group.contactEmail}`}
-                            className="break-all text-indigo hover:text-indigo-deep"
+                            className="break-words text-indigo hover:text-indigo-deep"
                           >
                             {group.contactEmail}
                           </a>
@@ -312,6 +312,9 @@ export default async function GroupsPage() {
                 {CENTER_PHONE}
               </a>
               {dict.groups.useAfter}
+            </p>
+            <p className="mt-4 leading-relaxed text-ink-soft">
+              {dict.groups.useFit}
             </p>
           </div>
           <div className="reveal-rise flex shrink-0 flex-col gap-3 sm:flex-row lg:flex-col">

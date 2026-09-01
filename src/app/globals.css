@@ -252,6 +252,24 @@ body {
     transform: translateY(-1px);
   }
 
+  .carousel-button {
+    display: flex;
+    height: --spacing(10);
+    width: --spacing(10);
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--color-line);
+    border-radius: calc(infinity * 1px);
+    background: #fff;
+    color: var(--color-indigo);
+  }
+
+  .carousel-button:hover {
+    background: var(--color-indigo);
+    color: #fff;
+  }
+
   .button-donate {
     background: var(--color-magenta);
     box-shadow: 0 8px 18px --alpha(var(--color-magenta) / 24%);
