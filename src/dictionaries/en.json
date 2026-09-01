@@ -302,7 +302,13 @@
     "repeats": "Repeats",
     "upcomingDates": "Upcoming dates",
     "signUp": "Sign up for this event",
-    "signUpNote": "Sign-ups open in a new tab."
+    "addToCalendar": "Add to calendar",
+    "calendarGoogle": "Google Calendar",
+    "calendarDownload": "Apple or Outlook",
+    "questions": "Questions",
+    "parking": "Parking & entry",
+    "parkingBody": "Free parking on site. Enter through the main hall doors on Gridley Rd.",
+    "directions": "Open in Google Maps"
   },
   "groups": {
     "metaTitle": "Groups & Programs",

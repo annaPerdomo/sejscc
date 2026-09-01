@@ -109,6 +109,33 @@ export function normalizeWebsiteUrl(
   return url.href;
 }
 
+// The server fetches stored file URLs (see getImageSize), so anything off Blob
+// is a request an attacker got the site to make.
+const BLOB_HOST_SUFFIX = ".public.blob.vercel-storage.com";
+
+export function isUploadedFileUrl(raw: string): boolean {
+  try {
+    const url = new URL(raw);
+    return url.protocol === "https:" && url.hostname.endsWith(BLOB_HOST_SUFFIX);
+  } catch {
+    return false;
+  }
+}
+
+export function normalizeUploadedFileUrl(
+  raw: string | null,
+  label = "file"
+): string | null {
+  const trimmed = raw?.trim();
+  if (!trimmed) return null;
+  if (!isUploadedFileUrl(trimmed)) {
+    throw new Error(
+      `The ${label} didn’t upload correctly. Try adding it again.`
+    );
+  }
+  return trimmed;
+}
+
 const MAX_EMAIL_LENGTH = 254;
 
 export function normalizeContactEmail(raw: string): string | null {

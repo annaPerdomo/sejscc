@@ -302,7 +302,13 @@
     "repeats": "開催頻度",
     "upcomingDates": "今後の開催日",
     "signUp": "このイベントに申し込む",
-    "signUpNote": "申し込みページは新しいタブで開きます。"
+    "addToCalendar": "カレンダーに追加",
+    "calendarGoogle": "Googleカレンダー",
+    "calendarDownload": "Apple・Outlook",
+    "questions": "お問い合わせ",
+    "parking": "駐車場・入口",
+    "parkingBody": "駐車場は無料です。グリッドリー通り側のメインホール入口からお入りください。",
+    "directions": "Googleマップで開く"
   },
   "groups": {
     "metaTitle": "グループ・プログラム",

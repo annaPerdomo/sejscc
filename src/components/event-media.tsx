@@ -29,7 +29,8 @@ export function EventMedia({
           alt={flyerAlt}
           fill
           sizes={sizes}
-          className="object-contain transition-transform duration-500 ease-out group-hover:scale-105"
+          // Rests inset and grows into the frame; past 100% the clip crops it.
+          className="scale-95 object-contain transition-transform duration-500 ease-out group-hover:scale-100"
         />
       </div>
     );
