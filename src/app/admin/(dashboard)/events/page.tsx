@@ -2,12 +2,13 @@ import Image from "next/image";
 import { desc } from "drizzle-orm";
 import { db } from "@/db";
 import { events } from "@/db/schema";
+import { getDictionaryFor } from "@/lib/dictionaries";
 import { formatEventDate } from "@/lib/format";
+import { describeRepeat } from "@/lib/recurrence";
 import { AdminBadge, type AdminBadgeTone } from "@/components/admin/admin-badge";
 import { AdminButtonLink } from "@/components/admin/admin-button";
 import { AdminEmptyState } from "@/components/admin/admin-card";
 import { AdminListRow } from "@/components/admin/admin-list-row";
-import { repeatSummary } from "./repeat";
 
 export const dynamic = "force-dynamic";
 
@@ -18,10 +19,10 @@ const STATUS_BADGES: Record<string, { tone: AdminBadgeTone; label: string }> = {
 };
 
 export default async function AdminEventsPage() {
-  const allEvents = await db
-    .select()
-    .from(events)
-    .orderBy(desc(events.createdAt));
+  const [allEvents, dict] = await Promise.all([
+    db.select().from(events).orderBy(desc(events.createdAt)),
+    getDictionaryFor("en"),
+  ]);
 
   return (
     <div>
@@ -64,7 +65,7 @@ export default async function AdminEventsPage() {
                   title={event.title}
                   subtitle={[
                     formatEventDate(event.startAt) ?? "No date set",
-                    repeatSummary(event),
+                    describeRepeat(event, dict.events.repeat),
                     event.signupUrl ? "Sign-ups open" : null,
                   ]
                     .filter(Boolean)

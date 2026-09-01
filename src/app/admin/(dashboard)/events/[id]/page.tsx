@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { events } from "@/db/schema";
+import { getDictionaryFor } from "@/lib/dictionaries";
 import { ConfirmDeleteButton } from "@/components/admin/confirm-delete-button";
 import { EventForm } from "../event-form";
 import { deleteEvent } from "../actions";
@@ -16,6 +17,7 @@ export default async function EditEventPage({
   const { id } = await params;
   const [event] = await db.select().from(events).where(eq(events.id, id));
   if (!event) notFound();
+  const dict = await getDictionaryFor("en");
 
   return (
     <div>
@@ -35,7 +37,7 @@ export default async function EditEventPage({
           redirectTo="/admin/events"
         />
       </div>
-      <EventForm event={event} />
+      <EventForm event={event} repeatPhrases={dict.events.repeat} />
     </div>
   );
 }

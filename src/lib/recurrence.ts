@@ -122,12 +122,18 @@ export function describeRepeat(
   if (!startAt || repeat === "none") return null;
 
   const weekday = formatWeekday(startAt, locale);
-  const schedule =
-    repeat === "monthly"
-      ? dict.monthly
-          .replace("{ordinal}", dict.ordinals[weekdayPosition(startAt) - 1])
-          .replace("{weekday}", weekday)
-      : dict[repeat].replace("{weekday}", weekday);
+  let schedule: string;
+  if (repeat === "monthly") {
+    // ordinals is translator-edited JSON typed as string[], so a missing entry
+    // is a runtime "undefined" here rather than a compile error.
+    const ordinal = dict.ordinals[weekdayPosition(startAt) - 1];
+    if (!ordinal) return null;
+    schedule = dict.monthly
+      .replace("{ordinal}", ordinal)
+      .replace("{weekday}", weekday);
+  } else {
+    schedule = dict[repeat].replace("{weekday}", weekday);
+  }
 
   const until = formatCalendarDate(event.repeatUntil, locale);
   return until

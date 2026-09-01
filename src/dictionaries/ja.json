@@ -226,7 +226,20 @@
         "frameTitle": "サウスイースト日本語学園・コミュニティセンターの今後の予定"
       }
     },
-    "pastTitle": "過去のイベント"
+    "pastTitle": "過去のイベント",
+    "repeat": {
+      "weekly": "毎週{weekday}",
+      "biweekly": "隔週{weekday}",
+      "monthly": "毎月第{ordinal}{weekday}",
+      "ordinals": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "until": "{schedule}（{date}まで）"
+    }
   },
   "eventDetail": {
     "notFound": "イベントが見つかりません",

@@ -1,6 +1,9 @@
+import { getDictionaryFor } from "@/lib/dictionaries";
 import { EventForm } from "../event-form";
 
-export default function NewEventPage() {
+export default async function NewEventPage() {
+  const dict = await getDictionaryFor("en");
+
   return (
     <div>
       <h1 className="font-display text-3xl text-ink">Add New Event</h1>
@@ -8,7 +11,7 @@ export default function NewEventPage() {
         Upload a flyer, give the event a title, and hit Publish — that&apos;s
         it.
       </p>
-      <EventForm />
+      <EventForm repeatPhrases={dict.events.repeat} />
     </div>
   );
 }

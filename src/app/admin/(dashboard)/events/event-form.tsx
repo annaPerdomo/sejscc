@@ -7,7 +7,12 @@ import type { EventRepeat } from "@/db/schema";
 import { CENTER_ADDRESS } from "@/lib/center";
 import { normalizeWebsiteUrl } from "@/lib/format";
 import { pdfFirstPageToPng } from "@/lib/pdf-preview";
-import { upcomingOccurrences, type RepeatingEvent } from "@/lib/recurrence";
+import {
+  describeRepeat,
+  upcomingOccurrences,
+  type RepeatingEvent,
+  type RepeatPhrases,
+} from "@/lib/recurrence";
 import { AdminAlert } from "@/components/admin/admin-alert";
 import { AdminButton, AdminFormActions } from "@/components/admin/admin-button";
 import { AdminCard } from "@/components/admin/admin-card";
@@ -18,7 +23,13 @@ import {
   AdminTextField,
 } from "@/components/admin/admin-field";
 import { createEvent, updateEvent, type EventInput } from "./actions";
-import { REPEAT_OPTIONS, repeatSummary } from "./repeat";
+
+const REPEAT_OPTIONS: { value: EventRepeat; label: string }[] = [
+  { value: "none", label: "Does not repeat" },
+  { value: "weekly", label: "Every week" },
+  { value: "biweekly", label: "Every other week" },
+  { value: "monthly", label: "Every month" },
+];
 
 type ExistingEvent = {
   id: string;
@@ -66,7 +77,13 @@ function shortDate(d: Date) {
   });
 }
 
-export function EventForm({ event }: { event?: ExistingEvent }) {
+export function EventForm({
+  event,
+  repeatPhrases,
+}: {
+  event?: ExistingEvent;
+  repeatPhrases: RepeatPhrases;
+}) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -188,7 +205,7 @@ export function EventForm({ event }: { event?: ExistingEvent }) {
     repeat,
     repeatUntil: fromInputs(repeatUntil),
   };
-  const schedule = repeatSummary(series);
+  const schedule = describeRepeat(series, repeatPhrases);
   const seriesDates = series.startAt
     ? upcomingOccurrences(series, series.startAt, DATES_PREVIEWED)
     : [];

@@ -226,7 +226,20 @@
         "frameTitle": "Coming events at the Southeast Japanese School & Community Center"
       }
     },
-    "pastTitle": "Past Events"
+    "pastTitle": "Past Events",
+    "repeat": {
+      "weekly": "Every {weekday}",
+      "biweekly": "Every other {weekday}",
+      "monthly": "{ordinal} {weekday} of the month",
+      "ordinals": [
+        "First",
+        "Second",
+        "Third",
+        "Fourth",
+        "Fifth"
+      ],
+      "until": "{schedule}, through {date}"
+    }
   },
   "eventDetail": {
     "notFound": "Event not found",
