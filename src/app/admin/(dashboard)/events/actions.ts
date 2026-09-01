@@ -5,7 +5,11 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { eventRepeats, events, type EventRepeat } from "@/db/schema";
 import { requireUser, revalidateSite } from "@/lib/admin";
-import { normalizeWebsiteUrl, slugify } from "@/lib/format";
+import {
+  normalizeUploadedFileUrl,
+  normalizeWebsiteUrl,
+  slugify,
+} from "@/lib/format";
 
 export type EventInput = {
   title: string;
@@ -53,8 +57,8 @@ function eventValues(input: EventInput, userId?: string) {
   return {
     title,
     description: input.description.trim() || null,
-    flyerUrl: input.flyerUrl,
-    flyerDownloadUrl: input.flyerDownloadUrl,
+    flyerUrl: normalizeUploadedFileUrl(input.flyerUrl, "flyer"),
+    flyerDownloadUrl: normalizeUploadedFileUrl(input.flyerDownloadUrl, "flyer"),
     signupUrl: normalizeWebsiteUrl(input.signupUrl, "sign-up link"),
     startAt: toWallClock(input.date, input.startTime),
     endAt: input.endTime ? toWallClock(input.date, input.endTime) : null,
