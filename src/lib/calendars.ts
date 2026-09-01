@@ -10,7 +10,7 @@ export type CalendarSource = {
   frameHeight: string;
 };
 
-const TIME_ZONE = "America/Los_Angeles";
+export const TIME_ZONE = "America/Los_Angeles";
 
 // Both are individuals' primary Google calendars, so anything on their own
 // calendar shows up here. Org-owned secondary calendars would end that.
@@ -53,4 +53,39 @@ export function calendarEmbedUrl(
 export function calendarSubscribeUrl(calendarId: string) {
   const params = new URLSearchParams({ cid: calendarId });
   return `https://calendar.google.com/calendar/u/0/r?${params}`;
+}
+
+const HOUR_MS = 60 * 60 * 1000;
+const MAX_DETAILS_LENGTH = 1000;
+
+// Times are stored as LA wall clock behind a fake UTC marker, so the "Z" is
+// dropped: Google reads a floating time plus `ctz` as local.
+function calendarStamp(date: Date) {
+  return date.toISOString().replace(/[-:]/g, "").slice(0, 15);
+}
+
+export function eventCalendarUrl({
+  title,
+  start,
+  end,
+  details,
+  location,
+}: {
+  title: string;
+  start: Date;
+  end: Date | null;
+  details?: string | null;
+  location?: string | null;
+}) {
+  const params = new URLSearchParams({
+    action: "TEMPLATE",
+    text: title,
+    dates: `${calendarStamp(start)}/${calendarStamp(
+      end ?? new Date(start.getTime() + HOUR_MS)
+    )}`,
+    ctz: TIME_ZONE,
+  });
+  if (details) params.set("details", details.slice(0, MAX_DETAILS_LENGTH));
+  if (location) params.set("location", location);
+  return `https://calendar.google.com/calendar/render?${params}`;
 }
