@@ -24,6 +24,8 @@
   --color-stone: #4f6d8f;
 
   --aspect-flyer: 4 / 5;
+  /* Landscape flyers fill this box; portrait ones letterbox inside it. */
+  --aspect-card: 5 / 4;
   --aspect-photo: 3 / 2;
   --aspect-band: 5 / 2;
 
@@ -156,6 +158,46 @@ body {
     transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
   }
 
+  .event-track {
+    --event-cards: 1;
+    --event-gap: 1.75rem;
+    display: flex;
+    gap: var(--event-gap);
+  }
+
+  .event-track > * {
+    flex: 0 0
+      calc(
+        (100% - (var(--event-cards) - 1) * var(--event-gap)) / var(--event-cards)
+      );
+  }
+
+  @media (min-width: 40rem) {
+    .event-track {
+      --event-cards: 2;
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .event-track {
+      --event-cards: 3;
+    }
+  }
+
+  /* A card's main link, spread over the whole card. The z-index is load-bearing:
+     the flyer image is positioned too and would otherwise paint over this and
+     swallow clicks. Anything meant to stay clickable sits above it. */
+  .card-stretch::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+
+  .card-stretch:focus-visible {
+    outline: none;
+  }
+
   .surface-card-link:hover {
     border-color: --alpha(var(--color-sky) / 90%);
     box-shadow:
@@ -234,7 +276,8 @@ body {
 
   .button-primary:focus-visible,
   .button-donate:focus-visible,
-  .surface-card-link:focus-visible {
+  .surface-card-link:focus-visible,
+  .surface-card-link:has(.card-stretch:focus-visible) {
     outline: 2px solid transparent;
     outline-offset: 2px;
     box-shadow:

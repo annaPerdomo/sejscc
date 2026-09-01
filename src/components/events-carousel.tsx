@@ -1,8 +1,13 @@
 "use client";
 
-import { useRef } from "react";
-import Image from "next/image";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { CarouselPlayToggle } from "@/components/carousel-play-toggle";
+import { EventMedia } from "@/components/event-media";
+import { EventMeta } from "@/components/event-meta";
+import { EventSignupLink } from "@/components/event-signup-link";
+
+const ADVANCE_MS = 7000;
 
 export type CarouselEvent = {
   id: string;
@@ -10,54 +15,124 @@ export type CarouselEvent = {
   title: string;
   date: string | null;
   time: string | null;
+  repeat: string | null;
+  signupUrl: string | null;
   location: string | null;
   description: string | null;
   flyerUrl: string | null;
   flyerAlt: string;
 };
 
+function Chevron({ direction }: { direction: 1 | -1 }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
+      <path
+        d={direction === 1 ? "M9 5l7 7-7 7" : "M15 5l-7 7 7 7"}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function EventsCarousel({
   events,
   nextUpLabel,
+  signupLabel,
+  signupAriaLabel,
   prevLabel,
   nextLabel,
+  pauseLabel,
+  playLabel,
   detailsLabel,
 }: {
   events: CarouselEvent[];
   nextUpLabel: string;
+  signupLabel: string;
+  signupAriaLabel: string;
   prevLabel: string;
   nextLabel: string;
+  pauseLabel: string;
+  playLabel: string;
   detailsLabel: string;
 }) {
   const trackRef = useRef<HTMLDivElement>(null);
+  const [stopped, setStopped] = useState(false);
+  const [hoverPaused, setHoverPaused] = useState(false);
+  const [focusPaused, setFocusPaused] = useState(false);
+  const [reduceMotion, setReduceMotion] = useState(false);
 
-  function scrollByCard(direction: 1 | -1) {
+  const scrollByCard = useCallback((direction: 1 | -1) => {
     const track = trackRef.current;
     if (!track) return;
     const card = track.querySelector<HTMLElement>("[data-card]");
-    const amount = (card?.offsetWidth ?? 340) + 22;
+    const gap = parseFloat(getComputedStyle(track).columnGap) || 20;
+    const amount = (card?.offsetWidth ?? 340) + gap;
     track.scrollBy({ left: direction * amount, behavior: "smooth" });
-  }
+  }, []);
+
+  useEffect(() => {
+    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setReduceMotion(query.matches);
+    sync();
+    query.addEventListener("change", sync);
+    return () => query.removeEventListener("change", sync);
+  }, []);
+
+  useEffect(() => {
+    if (stopped || hoverPaused || focusPaused || reduceMotion) return;
+    if (events.length < 2) return;
+    const id = setInterval(() => {
+      const track = trackRef.current;
+      if (!track) return;
+      const atEnd =
+        track.scrollLeft + track.clientWidth >= track.scrollWidth - 1;
+      if (atEnd) track.scrollTo({ left: 0, behavior: "smooth" });
+      else scrollByCard(1);
+    }, ADVANCE_MS);
+    return () => clearInterval(id);
+  }, [
+    stopped,
+    hoverPaused,
+    focusPaused,
+    reduceMotion,
+    events.length,
+    scrollByCard,
+  ]);
 
   return (
-    <div className="relative">
+    <div
+      className="relative"
+      onMouseEnter={() => setHoverPaused(true)}
+      onMouseLeave={() => setHoverPaused(false)}
+      onFocus={() => setFocusPaused(true)}
+      onBlur={() => setFocusPaused(false)}
+    >
       {events.length > 1 && (
-        <div className="mb-4 flex justify-end gap-2 sm:hidden">
+        <div className="mb-4 flex justify-end gap-2">
+          <CarouselPlayToggle
+            stopped={stopped}
+            onToggle={() => setStopped((value) => !value)}
+            pauseLabel={pauseLabel}
+            playLabel={playLabel}
+          />
           <button
             type="button"
             aria-label={prevLabel}
             onClick={() => scrollByCard(-1)}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-line bg-white text-indigo"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-line bg-white text-indigo sm:hidden"
           >
-            ‹
+            <Chevron direction={-1} />
           </button>
           <button
             type="button"
             aria-label={nextLabel}
             onClick={() => scrollByCard(1)}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-line bg-white text-indigo"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-line bg-white text-indigo sm:hidden"
           >
-            ›
+            <Chevron direction={1} />
           </button>
         </div>
       )}
@@ -68,79 +143,91 @@ export function EventsCarousel({
               type="button"
               aria-label={prevLabel}
               onClick={() => scrollByCard(-1)}
-              className="absolute top-1/2 -left-5 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-white text-xl text-indigo shadow-lg hover:bg-indigo hover:text-white sm:flex lg:-left-6"
+              className="absolute top-1/2 -left-5 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-white text-indigo shadow-lg hover:bg-indigo hover:text-white sm:flex lg:-left-6"
             >
-              ‹
+              <Chevron direction={-1} />
             </button>
             <button
               type="button"
               aria-label={nextLabel}
               onClick={() => scrollByCard(1)}
-              className="absolute top-1/2 -right-5 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-white text-xl text-indigo shadow-lg hover:bg-indigo hover:text-white sm:flex lg:-right-6"
+              className="absolute top-1/2 -right-5 z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-white text-indigo shadow-lg hover:bg-indigo hover:text-white sm:flex lg:-right-6"
             >
-              ›
+              <Chevron direction={1} />
             </button>
           </>
         )}
         <div
           ref={trackRef}
-          className="flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth pb-4"
+          // `overflow-x: auto` clips vertically too: the padding is the hover
+          // lift's room, -mx undoes it, scroll-px keeps it across a snap.
+          className="event-track -mx-3 snap-x snap-mandatory scroll-px-3 overflow-x-auto scroll-smooth px-3 py-6"
+          // Touch has no "leave" event to resume on, so it stops the carousel
+          // outright rather than pausing invisibly.
+          onTouchStart={() => setStopped(true)}
         >
           {events.map((event, i) => (
-            <Link
+            <div
               key={event.id}
               data-card
-              href={event.href}
-              className={`surface-card surface-card-link group flex w-72 shrink-0 snap-start flex-col overflow-hidden p-3.5 sm:w-80 ${
+              className={`surface-card surface-card-link group relative flex snap-start flex-col overflow-clip rounded-none p-3.5 ${
                 i === 0 ? "border-2 border-indigo" : ""
               }`}
             >
               {i === 0 && (
-                <span className="mb-2 inline-block w-fit rounded-md bg-magenta px-2.5 py-1 font-display text-[11px] font-semibold tracking-[0.1em] text-white uppercase">
+                <span className="mb-2 w-fit rounded-md bg-magenta px-2.5 py-1 font-display text-[11px] font-semibold tracking-[0.1em] text-white uppercase">
                   {nextUpLabel}
                 </span>
               )}
-              <div className="relative aspect-flyer w-full overflow-hidden rounded-lg bg-mist p-1.5">
-                {event.flyerUrl ? (
-                  <Image
-                    src={event.flyerUrl}
-                    alt={event.flyerAlt}
-                    fill
-                    sizes="(max-width: 640px) 300px, 340px"
-                    className="object-contain transition-transform duration-500 ease-out group-hover:scale-105"
-                  />
-                ) : (
-                  <Image
-                    src="/logo-mark.png"
-                    alt=""
-                    width={56}
-                    height={56}
-                    className="absolute inset-0 m-auto opacity-10"
-                  />
-                )}
-              </div>
-              <div className="mt-3.5 flex flex-1 flex-col">
-                <h3 className="font-display text-lg font-semibold text-ink group-hover:text-indigo">
+              <h3 className="line-clamp-2 font-display text-lg font-semibold text-ink group-hover:text-indigo">
+                <Link
+                  href={event.href}
+                  className="card-stretch"
+                >
                   {event.title}
-                </h3>
-                {event.date && (
-                  <p className="mt-1.5 text-sm text-ink-soft">
-                    {event.date}
-                    {event.time ? ` · ${event.time}` : ""}
-                    {event.location ? <br /> : null}
-                    {event.location}
+                </Link>
+              </h3>
+              {(event.date || event.time) && (
+                <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-soft">
+                  {event.date && <EventMeta icon="calendar">{event.date}</EventMeta>}
+                  {event.time && <EventMeta icon="clock">{event.time}</EventMeta>}
+                </p>
+              )}
+              {event.repeat && (
+                <p className="mt-1 text-sm text-stone">
+                  <EventMeta icon="repeat">{event.repeat}</EventMeta>
+                </p>
+              )}
+              <EventMedia
+                flyerUrl={event.flyerUrl}
+                flyerAlt={event.flyerAlt}
+                description={event.description}
+                index={i}
+                sizes="(max-width: 640px) 92vw, (max-width: 1024px) 46vw, 31vw"
+                className="mt-3 grow"
+              />
+              <div className="mt-3.5 flex flex-col">
+                {event.location && (
+                  <p className="text-sm text-ink-soft">
+                    <EventMeta icon="pin">{event.location}</EventMeta>
                   </p>
                 )}
-                {event.description && (
-                  <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-ink-soft">
-                    {event.description}
-                  </p>
-                )}
-                <span className="mt-auto pt-3 font-display text-sm font-semibold text-indigo">
-                  {detailsLabel}
-                </span>
+                {/* min-h aligns "Details" across cards with and without sign-up. */}
+                <div className="mt-auto flex min-h-9 flex-wrap items-center justify-between gap-3 pt-3">
+                  <span className="font-display text-sm font-semibold text-indigo">
+                    {detailsLabel}
+                  </span>
+                  {event.signupUrl && (
+                    <EventSignupLink
+                      href={event.signupUrl}
+                      label={signupLabel}
+                      title={event.title}
+                      ariaTemplate={signupAriaLabel}
+                    />
+                  )}
+                </div>
               </div>
-            </Link>
+            </div>
           ))}
         </div>
       </div>

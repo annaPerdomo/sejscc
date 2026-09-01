@@ -239,7 +239,8 @@
         "Fifth"
       ],
       "until": "{schedule}, through {date}"
-    }
+    },
+    "atCenter": "At the center"
   },
   "eventDetail": {
     "notFound": "Event not found",

@@ -239,7 +239,8 @@
         "5"
       ],
       "until": "{schedule}（{date}まで）"
-    }
+    },
+    "atCenter": "センターにて"
   },
   "eventDetail": {
     "notFound": "イベントが見つかりません",
