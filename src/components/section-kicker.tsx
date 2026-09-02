@@ -2,6 +2,8 @@ const TONES = {
   indigo: { accent: "text-indigo", rule: "h-px bg-indigo", caption: "text-stone" },
   sky: { accent: "text-sky", rule: "h-px bg-sky", caption: "text-sky" },
   magenta: { accent: "text-indigo", rule: "h-0.5 bg-magenta", caption: "text-indigo" },
+  // `stone` drops under 4.5:1 on the tinted surfaces, so the caption darkens.
+  tinted: { accent: "text-indigo", rule: "h-px bg-indigo", caption: "text-ink-soft" },
 };
 
 export function SectionKicker({

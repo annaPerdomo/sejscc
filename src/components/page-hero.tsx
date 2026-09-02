@@ -18,6 +18,8 @@ export function PageHero({
   below,
   actions,
   media,
+  settlesInto,
+  tight = false,
 }: {
   /** Unique per page — namespaces the hero's SVG brush filters. */
   id: string;
@@ -37,14 +39,20 @@ export function PageHero({
   below?: ReactNode;
   actions?: ReactNode;
   media?: ReactNode;
+  settlesInto?: "white" | "mist" | "azure";
+  tight?: boolean;
 }) {
+  const padding = tight
+    ? "pt-6 pb-8 sm:pt-7 lg:pb-10"
+    : `pt-9 sm:pt-11 ${below ? "pb-8" : "pb-12 lg:pb-18"}`;
+
   return (
     <section className={`relative overflow-clip ${wash}`}>
       <KanjiWatermark char={watermark} className={watermarkClassName} />
       <div
-        className={`relative mx-auto grid max-w-6xl gap-8 px-4 pt-9 sm:px-6 sm:pt-11 lg:items-center lg:gap-14 ${
-          media ? "lg:grid-cols-[1fr_auto]" : ""
-        } ${below ? "pb-8" : "pb-12 lg:pb-18"}`}
+        className={`relative mx-auto grid max-w-6xl gap-8 px-4 sm:px-6 lg:items-center ${
+          tight ? "lg:gap-10" : "lg:gap-14"
+        } ${media ? "lg:grid-cols-[1fr_auto]" : ""} ${padding}`}
       >
         <div className="reveal-rise">
           {eyebrow && <div className="mb-5">{eyebrow}</div>}
@@ -70,7 +78,12 @@ export function PageHero({
           {below}
         </div>
       )}
-      <BrushEdge id={`${id}-hero`} variant="paper" className="absolute inset-x-0 bottom-0" />
+      <BrushEdge
+        id={`${id}-hero`}
+        variant="paper"
+        settlesInto={settlesInto}
+        className="absolute inset-x-0 bottom-0"
+      />
     </section>
   );
 }

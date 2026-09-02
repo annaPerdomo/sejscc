@@ -6,8 +6,16 @@ type BrushEdgeProps = {
    * "paper" ends a pale section with white arriving below its painted edge.
    */
   variant: "ink" | "paper";
+  /** Must match the surface of the section below — the edge fills with it. */
+  settlesInto?: "white" | "mist" | "azure";
   /** Position the edge (e.g. "absolute inset-x-0 bottom-0") — it never affects flow. */
   className?: string;
+};
+
+const FILLS = {
+  white: "fill-white",
+  mist: "fill-mist",
+  azure: "fill-azure",
 };
 
 const EDGES = {
@@ -15,7 +23,12 @@ const EDGES = {
   paper: "M-30,23 C200,29 380,14 590,18 C800,22 950,30 1130,23 C1280,17 1390,15 1470,18",
 };
 
-export function BrushEdge({ id, variant, className = "" }: BrushEdgeProps) {
+export function BrushEdge({
+  id,
+  variant,
+  settlesInto = variant === "ink" ? "mist" : "white",
+  className = "",
+}: BrushEdgeProps) {
   const filterId = `brush-edge-${id}`;
   const filterUrl = `url(#${filterId})`;
   const edge = EDGES[variant];
@@ -41,7 +54,7 @@ export function BrushEdge({ id, variant, className = "" }: BrushEdgeProps) {
         </defs>
         <path
           d={`${edge} L1470,80 L-30,80 Z`}
-          className={variant === "ink" ? "fill-mist" : "fill-white"}
+          className={FILLS[settlesInto]}
           filter={filterUrl}
         />
         {variant === "ink" ? (
