@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { EventCard } from "@/components/event-card";
+import { EventCard, FOUR_UP_SIZES } from "@/components/event-card";
 import { KanjiWatermark } from "@/components/kanji-watermark";
 import { PageHero } from "@/components/page-hero";
 import { getPastEvents, type Event } from "@/lib/events";
@@ -95,6 +95,7 @@ export default async function PastEventsPage() {
                         key={event.id}
                         event={event}
                         index={i}
+                        sizes={FOUR_UP_SIZES}
                         className="reveal-rise"
                       />
                     ))}

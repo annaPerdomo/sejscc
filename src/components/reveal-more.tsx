@@ -2,8 +2,8 @@
 
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 
-/** `children` renders unconditionally — what a visitor without JavaScript gets. */
-export function PastEventsReveal({
+/** `children` renders unconditionally: it is what a visitor without JavaScript gets. */
+export function RevealMore({
   more,
   moreLabel,
   lessLabel,
@@ -18,8 +18,8 @@ export function PastEventsReveal({
   const revealed = useRef<HTMLDivElement>(null);
   const revealedId = useId();
 
-  // The revealed cards sit above the button, so opening has to send focus back
-  // up to them — tabbing forward would skip past everything just added.
+  // The revealed cards sit above the button, so opening moves focus up to them —
+  // tabbing forward would skip everything just added.
   useEffect(() => {
     if (open) revealed.current?.focus();
   }, [open]);

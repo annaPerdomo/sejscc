@@ -1,50 +1,32 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import {
+  Children,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { CarouselArrow } from "@/components/carousel-arrow";
 import { CarouselPlayToggle } from "@/components/carousel-play-toggle";
-import { EventMedia } from "@/components/event-media";
-import { EventMeta } from "@/components/event-meta";
-import { EventSignupLink } from "@/components/event-signup-link";
 
 const ADVANCE_MS = 7000;
 
-export type CarouselEvent = {
-  id: string;
-  href: string;
-  title: string;
-  date: string | null;
-  time: string | null;
-  repeat: string | null;
-  signupUrl: string | null;
-  location: string | null;
-  description: string | null;
-  flyerUrl: string | null;
-  flyerAlt: string;
-};
-
 export function EventsCarousel({
-  events,
-  nextUpLabel,
-  signupLabel,
-  signupAriaLabel,
+  children,
   prevLabel,
   nextLabel,
   pauseLabel,
   playLabel,
-  detailsLabel,
 }: {
-  events: CarouselEvent[];
-  nextUpLabel: string;
-  signupLabel: string;
-  signupAriaLabel: string;
+  children: ReactNode;
   prevLabel: string;
   nextLabel: string;
   pauseLabel: string;
   playLabel: string;
-  detailsLabel: string;
 }) {
+  const count = Children.count(children);
   const trackRef = useRef<HTMLDivElement>(null);
   const [stopped, setStopped] = useState(false);
   const [hoverPaused, setHoverPaused] = useState(false);
@@ -70,7 +52,7 @@ export function EventsCarousel({
 
   useEffect(() => {
     if (stopped || hoverPaused || focusPaused || reduceMotion) return;
-    if (events.length < 2) return;
+    if (count < 2) return;
     const id = setInterval(() => {
       const track = trackRef.current;
       if (!track) return;
@@ -80,14 +62,7 @@ export function EventsCarousel({
       else scrollByCard(1);
     }, ADVANCE_MS);
     return () => clearInterval(id);
-  }, [
-    stopped,
-    hoverPaused,
-    focusPaused,
-    reduceMotion,
-    events.length,
-    scrollByCard,
-  ]);
+  }, [stopped, hoverPaused, focusPaused, reduceMotion, count, scrollByCard]);
 
   return (
     <div
@@ -97,30 +72,8 @@ export function EventsCarousel({
       onFocus={() => setFocusPaused(true)}
       onBlur={() => setFocusPaused(false)}
     >
-      {events.length > 1 && (
-        <div className="mb-4 flex justify-end gap-2">
-          <CarouselPlayToggle
-            stopped={stopped}
-            onToggle={() => setStopped((value) => !value)}
-            pauseLabel={pauseLabel}
-            playLabel={playLabel}
-          />
-          <CarouselArrow
-            direction={-1}
-            label={prevLabel}
-            onClick={() => scrollByCard(-1)}
-            className="sm:hidden"
-          />
-          <CarouselArrow
-            direction={1}
-            label={nextLabel}
-            onClick={() => scrollByCard(1)}
-            className="sm:hidden"
-          />
-        </div>
-      )}
       <div className="relative">
-        {events.length > 1 && (
+        {count > 1 && (
           <>
             <CarouselArrow
               direction={-1}
@@ -145,71 +98,31 @@ export function EventsCarousel({
           // outright rather than pausing invisibly.
           onTouchStart={() => setStopped(true)}
         >
-          {events.map((event, i) => (
-            <div
-              key={event.id}
-              data-card
-              className={`surface-card surface-card-link group relative flex snap-start flex-col overflow-clip rounded-none p-3.5 ${
-                i === 0 ? "border-2 border-indigo" : ""
-              }`}
-            >
-              {i === 0 && (
-                <span className="mb-2 w-fit rounded-md bg-magenta px-2.5 py-1 font-display text-[11px] font-semibold tracking-[0.1em] text-white uppercase">
-                  {nextUpLabel}
-                </span>
-              )}
-              <h3 className="line-clamp-2 font-display text-lg font-semibold text-ink group-hover:text-indigo">
-                <Link
-                  href={event.href}
-                  className="card-stretch"
-                >
-                  {event.title}
-                </Link>
-              </h3>
-              {(event.date || event.time) && (
-                <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-soft">
-                  {event.date && <EventMeta icon="calendar">{event.date}</EventMeta>}
-                  {event.time && <EventMeta icon="clock">{event.time}</EventMeta>}
-                </p>
-              )}
-              {event.repeat && (
-                <p className="mt-1 text-sm text-stone">
-                  <EventMeta icon="repeat">{event.repeat}</EventMeta>
-                </p>
-              )}
-              <EventMedia
-                flyerUrl={event.flyerUrl}
-                flyerAlt={event.flyerAlt}
-                description={event.description}
-                index={i}
-                sizes="(max-width: 640px) 92vw, (max-width: 1024px) 46vw, 31vw"
-                className="mt-3 grow"
-              />
-              <div className="mt-3.5 flex flex-col">
-                {event.location && (
-                  <p className="text-sm text-ink-soft">
-                    <EventMeta icon="pin">{event.location}</EventMeta>
-                  </p>
-                )}
-                {/* min-h aligns "Details" across cards with and without sign-up. */}
-                <div className="mt-auto flex min-h-9 flex-wrap items-center justify-between gap-3 pt-3">
-                  <span className="font-display text-sm font-semibold text-indigo">
-                    {detailsLabel}
-                  </span>
-                  {event.signupUrl && (
-                    <EventSignupLink
-                      href={event.signupUrl}
-                      label={signupLabel}
-                      title={event.title}
-                      ariaTemplate={signupAriaLabel}
-                    />
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
+          {children}
         </div>
       </div>
+      {count > 1 && (
+        <div className="flex justify-end gap-2">
+          <CarouselPlayToggle
+            stopped={stopped}
+            onToggle={() => setStopped((value) => !value)}
+            pauseLabel={pauseLabel}
+            playLabel={playLabel}
+          />
+          <CarouselArrow
+            direction={-1}
+            label={prevLabel}
+            onClick={() => scrollByCard(-1)}
+            className="sm:hidden"
+          />
+          <CarouselArrow
+            direction={1}
+            label={nextLabel}
+            onClick={() => scrollByCard(1)}
+            className="sm:hidden"
+          />
+        </div>
+      )}
     </div>
   );
 }

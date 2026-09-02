@@ -86,7 +86,15 @@ export const schoolPhotos = {
   ],
 } as const;
 
-export const eventsHeroPhoto = "/photos/events-hero-1.jpg";
+/** Matches `events.heroPhotoAlts`. */
+export const eventsHeroPhotos = [
+  "/photos/events-hero-1.jpg",
+  "/photos/events-ondo-dancing.jpg",
+  "/photos/events-bingo-night.jpg",
+  "/photos/events-boutique.jpg",
+  "/photos/events-odori-ondo.jpg",
+  "/photos/events-festival-food.jpg",
+] as const;
 
 export const groupsHeroPhoto = "/photos/groups-hero-2.jpg";
 

@@ -1,23 +1,40 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { EventCard } from "@/components/event-card";
+import { EventCard, FOUR_UP_SIZES } from "@/components/event-card";
 import { GoogleCalendar } from "@/components/google-calendar";
+import { HeroPhotos } from "@/components/hero-photos";
 import { PageHero } from "@/components/page-hero";
 import { PageSection } from "@/components/page-section";
-import { PastEventsReveal } from "@/components/past-events-reveal";
-import { SectionHeading } from "@/components/section-heading";
-import { SectionKicker } from "@/components/section-kicker";
-import { SitePhoto } from "@/components/site-photo";
-import { UpcomingEvents } from "@/components/upcoming-events";
+import { RevealMore } from "@/components/reveal-more";
 import { calendarSources } from "@/lib/calendars";
 import { getPastEvents, getUpcomingEvents } from "@/lib/events";
 import { getDictionary, getDictionaryFor, getLocale } from "@/lib/dictionaries";
 import { hasLocale, localePath } from "@/lib/i18n";
-import { eventsHeroPhoto, photoFor } from "@/lib/photos";
+import { eventsHeroPhotos, photoFor } from "@/lib/photos";
 
 export const revalidate = 300;
 
+const UPCOMING_PREVIEW = 6;
 const PAST_PREVIEW = 4;
+
+// Tiles drop from the end on narrow screens: the two-column grid only fills
+// whole rows at three tiles and at five.
+const HERO_LAYOUT = [
+  "col-span-2 aspect-photo lg:col-span-6 lg:row-span-7",
+  "aspect-square lg:col-span-6 lg:row-span-7",
+  "aspect-square lg:col-span-3 lg:row-span-5",
+  "hidden aspect-square sm:block lg:col-span-3 lg:row-span-5",
+  "hidden aspect-square sm:block lg:col-span-3 lg:row-span-5",
+  "hidden lg:col-span-3 lg:row-span-5 lg:block",
+];
+const HERO_SIZES = [
+  "(max-width: 1024px) 92vw, 17rem",
+  "(max-width: 1024px) 46vw, 17rem",
+  "(max-width: 1024px) 46vw, 8rem",
+  "(max-width: 1024px) 46vw, 8rem",
+  "(max-width: 1024px) 46vw, 8rem",
+  "8rem",
+];
 
 type Props = { params: Promise<{ lang: string }> };
 
@@ -47,6 +64,10 @@ export default async function EventsPage() {
     getPastEvents(),
   ]);
 
+  const heroPhotos = eventsHeroPhotos.map((src, i) =>
+    photoFor(src, dict.events.heroPhotoAlts[i])
+  );
+
   return (
     <>
       <PageHero
@@ -57,60 +78,91 @@ export default async function EventsPage() {
         accent={dict.events.kickerAccent}
         caption={dict.events.kickerCaption}
         titleLine1={dict.events.titleLine1}
-        titleLine2={dict.events.titleLine2}
         lede={dict.events.lede}
+        settlesInto="azure"
+        tight
         actions={
-          <>
-            <a
-              href="#calendars"
-              className="button-primary rounded-lg px-6 py-3.5 font-display text-sm font-semibold text-white"
-            >
-              {dict.events.calendars.heroCta}
-            </a>
-            {past.length > 0 && (
-              <a
-                href="#past"
-                className="font-display text-sm font-semibold text-magenta hover:text-magenta-deep"
-              >
-                {dict.events.pastCta}
-              </a>
-            )}
-          </>
+          <a
+            href="#calendars"
+            className="button-primary rounded-lg px-6 py-3.5 font-display text-sm font-semibold text-white"
+          >
+            {dict.events.calendars.heroCta}
+          </a>
         }
         media={
-          <SitePhoto
-            photo={photoFor(eventsHeroPhoto, dict.events.heroPhotoAlt)}
-            preload
-            sizes="(max-width: 640px) 92vw, (max-width: 1024px) 60vw, 26rem"
+          <HeroPhotos
+            layout={HERO_LAYOUT}
+            photos={heroPhotos}
+            sizes={HERO_SIZES}
+            tileClassName="w-full rounded-md border border-line shadow-sm lg:aspect-auto"
             placeholderLabel={dict.events.photoLabel}
-            className="reveal-rise aspect-photo w-full rounded-xl border border-line shadow-sm lg:w-96 xl:w-104"
+            preloadFirst
+            className="grid w-full shrink-0 grid-cols-2 gap-3 lg:h-88 lg:w-136 lg:grid-cols-12 lg:grid-rows-12 lg:gap-3"
           />
-        }
-        below={
-          <>
-            <div className="mb-7">
-              <SectionKicker
-                accent={dict.events.upcomingAccent}
-                caption={dict.events.upcomingCaption}
-              />
-              <SectionHeading className="mt-3">
-                {dict.events.upcomingTitle}
-              </SectionHeading>
-            </div>
-            {upcoming.length > 0 ? (
-              <UpcomingEvents events={upcoming} />
-            ) : (
-              <p className="rounded-2xl border border-line bg-white p-8 text-ink-soft">
-                {dict.events.empty}
-              </p>
-            )}
-          </>
         }
       />
 
       <PageSection
+        id="upcoming"
+        surface="azure"
+        tight
+        watermark="催"
+        watermarkClassName="-top-20 -left-12 text-magenta/5"
+        accent={dict.events.upcomingAccent}
+        caption={dict.events.upcomingCaption}
+        title={dict.events.upcomingTitle}
+      >
+        {upcoming.length > 0 ? (
+          <>
+            <div className="grid gap-7 sm:grid-cols-2 lg:grid-cols-3">
+              {upcoming.slice(0, UPCOMING_PREVIEW).map((event, i) => (
+                <EventCard
+                  key={event.id}
+                  event={event}
+                  index={i}
+                  badge={i === 0 ? dict.events.nextUpBadge : undefined}
+                  withSignup
+                  className="reveal-rise"
+                />
+              ))}
+            </div>
+            <RevealMore
+              moreLabel={dict.events.upcomingShowMore}
+              lessLabel={dict.events.upcomingShowLess}
+              more={
+                upcoming.length > UPCOMING_PREVIEW ? (
+                  <div className="mt-7 grid gap-7 sm:grid-cols-2 lg:grid-cols-3">
+                    {upcoming.slice(UPCOMING_PREVIEW).map((event, i) => (
+                      <EventCard
+                        key={event.id}
+                        event={event}
+                        index={UPCOMING_PREVIEW + i}
+                        withSignup
+                        className="reveal-rise"
+                      />
+                    ))}
+                  </div>
+                ) : undefined
+              }
+            >
+              <a
+                href="#calendars"
+                className="font-display text-sm font-semibold text-indigo hover:text-indigo-deep"
+              >
+                {dict.events.calendars.sectionCta}
+              </a>
+            </RevealMore>
+          </>
+        ) : (
+          <p className="rounded-2xl border border-line bg-white p-8 text-ink-soft">
+            {dict.events.empty}
+          </p>
+        )}
+      </PageSection>
+
+      <PageSection
         id="calendars"
-        surface="mist"
+        surface="white"
         watermark="週"
         watermarkClassName="top-48 -right-16 text-indigo/5"
         accent={dict.events.calendars.accent}
@@ -136,7 +188,7 @@ export default async function EventsPage() {
       {past.length > 0 && (
         <PageSection
           id="past"
-          surface="white"
+          surface="mist"
           watermark="昔"
           watermarkClassName="-right-12 -bottom-20 text-indigo/5"
           accent={dict.events.pastAccent}
@@ -149,11 +201,12 @@ export default async function EventsPage() {
                 key={event.id}
                 event={event}
                 index={i}
+                sizes={FOUR_UP_SIZES}
                 className="reveal-rise"
               />
             ))}
           </div>
-          <PastEventsReveal
+          <RevealMore
             moreLabel={dict.events.pastShowMore}
             lessLabel={dict.events.pastShowLess}
             more={
@@ -164,6 +217,7 @@ export default async function EventsPage() {
                       key={event.id}
                       event={event}
                       index={PAST_PREVIEW + i}
+                      sizes={FOUR_UP_SIZES}
                       className="reveal-rise"
                     />
                   ))}
@@ -177,7 +231,7 @@ export default async function EventsPage() {
             >
               {dict.events.pastArchiveCta}
             </Link>
-          </PastEventsReveal>
+          </RevealMore>
         </PageSection>
       )}
     </>
