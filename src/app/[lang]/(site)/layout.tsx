@@ -4,8 +4,10 @@ import { ExternalLink } from "@/components/external-link";
 import { LanguageToggle } from "@/components/language-toggle";
 import { MadeWithLove } from "@/components/made-with-love";
 import { MobileNav } from "@/components/mobile-nav";
+import { ScrollReset } from "@/components/scroll-reset";
 import { SiteNav } from "@/components/site-nav";
 import { VolunteerSignInLink } from "@/components/volunteer-sign-in-link";
+import { CENTER_ADDRESS, CENTER_EMAIL, CENTER_PHONE, CENTER_PHONE_HREF } from "@/lib/center";
 import { getUpcomingEvents } from "@/lib/events";
 import { formatEventDate } from "@/lib/format";
 import { getDictionary, getLocale } from "@/lib/dictionaries";
@@ -24,14 +26,17 @@ export default async function SiteLayout({
   const href = (path: string) => localePath(lang, path);
 
   const nav = [
+    { href: `${href("/")}#about`, label: dict.nav.about },
     { href: href("/school"), label: dict.nav.japaneseSchool },
     { href: href("/events"), label: dict.nav.events },
     { href: href("/groups"), label: dict.nav.groups },
     { href: href("/payments"), label: dict.nav.payments },
+    { href: `${href("/")}#contact`, label: dict.nav.contact },
   ];
 
   return (
     <div className="flex min-h-screen flex-col">
+      <ScrollReset />
       <div className="sticky top-0 z-40">
         <div className="h-1 bg-gradient-to-r from-indigo via-sky via-60% to-magenta" />
         <div className="bg-navy">
@@ -145,9 +150,12 @@ export default async function SiteLayout({
               </p>
             </div>
             <p className="mt-4 text-sm leading-relaxed text-white/70">
-              14615 S. Gridley Rd.
-              <br />
-              Norwalk, CA 90650
+              {CENTER_ADDRESS.split(", ").map((line, i) => (
+                <span key={line}>
+                  {i > 0 && <br />}
+                  {line}
+                </span>
+              ))}
             </p>
           </div>
           <div className="text-sm">
@@ -155,12 +163,12 @@ export default async function SiteLayout({
               {dict.footer.contact}
             </p>
             <p className="mt-4 text-white/80">
-              <a href="tel:+15628635996" className="hover:text-white">
-                (562) 863-5996
+              <a href={CENTER_PHONE_HREF} className="hover:text-white">
+                {CENTER_PHONE}
               </a>
               <br />
-              <a href="mailto:info@sejscc.org" className="hover:text-white">
-                info@sejscc.org
+              <a href={`mailto:${CENTER_EMAIL}`} className="hover:text-white">
+                {CENTER_EMAIL}
               </a>
             </p>
           </div>
