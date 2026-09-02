@@ -3,11 +3,17 @@
 import { useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { upload } from "@vercel/blob/client";
-import { AdminAlert } from "@/components/admin/admin-alert";
+import { AdminAlert, AdminRequirements } from "@/components/admin/admin-alert";
 import { AdminButton, AdminFormActions } from "@/components/admin/admin-button";
-import { AdminCard } from "@/components/admin/admin-card";
+import {
+  AdminCard,
+  AdminCardHeading,
+  AdminStep,
+} from "@/components/admin/admin-card";
 import {
   AdminCharacterCount,
+  AdminOptional,
+  AdminRequired,
   AdminSelect,
   AdminTextArea,
   AdminTextField,
@@ -67,6 +73,8 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const missing = name.trim() ? [] : ["a group name"];
 
   function toggleDay(day: WeekDay) {
     setMeetingDays((current) =>
@@ -160,10 +168,10 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
       <AdminCard>
         <AdminTextField
           size="lg"
+          badge={<AdminStep n={1} />}
           label={
             <>
-              Group Name{" "}
-              <span className="text-sm font-normal text-stone">(required)</span>
+              Group Name <AdminRequired />
             </>
           }
           value={name}
@@ -187,10 +195,9 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
       </AdminCard>
 
       <AdminCard>
-        <h2 className="font-semibold text-ink">
-          Photo or Logo{" "}
-          <span className="text-sm font-normal text-stone">(optional)</span>
-        </h2>
+        <AdminCardHeading step={2} tag={<AdminOptional />}>
+          Photo or Logo
+        </AdminCardHeading>
         <div className="mt-4 flex flex-wrap items-start gap-5">
           {previewUrl && (
             // eslint-disable-next-line @next/next/no-img-element
@@ -229,16 +236,15 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
           />
         </div>
         <p className="mt-3 text-xs text-stone">
-          Shown across the top of the group’s card on the website. A photo or
-          a logo both work — it is fitted inside the card, never cropped.
+          Shown across the top of the group’s card on the website. A photo or a
+          logo both work — it is fitted inside the card, never cropped.
         </p>
       </AdminCard>
 
       <AdminCard>
-        <h2 className="font-semibold text-ink">
-          Details{" "}
-          <span className="text-sm font-normal text-stone">(optional)</span>
-        </h2>
+        <AdminCardHeading step={3} tag={<AdminOptional />}>
+          Details
+        </AdminCardHeading>
         <fieldset className="mt-4">
           <legend className="text-sm font-medium text-stone">
             Which days does this group meet?
@@ -260,8 +266,8 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
             ))}
           </div>
           <p className="mt-2 text-xs text-stone">
-            Builds the “A week at the center” schedule on the Groups page.
-            Leave every day unchecked if the group has no set meeting day.
+            Builds the “A week at the center” schedule on the Groups page. Leave
+            every day unchecked if the group has no set meeting day.
           </p>
         </fieldset>
         <div className="mt-5">
@@ -290,10 +296,9 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
       </AdminCard>
 
       <AdminCard>
-        <h2 className="font-semibold text-ink">
-          Website &amp; Contact{" "}
-          <span className="text-sm font-normal text-stone">(optional)</span>
-        </h2>
+        <AdminCardHeading step={4} tag={<AdminOptional />}>
+          Website &amp; Contact
+        </AdminCardHeading>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <AdminTextField
             label="Website"
@@ -317,7 +322,8 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
       </AdminCard>
 
       <AdminCard>
-        <label className="flex items-start gap-3">
+        <AdminCardHeading step={5}>On the Website</AdminCardHeading>
+        <label className="mt-4 flex items-start gap-3">
           <input
             type="checkbox"
             checked={active}
@@ -333,29 +339,31 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
             </span>
           </span>
         </label>
-      </AdminCard>
-
-      <AdminCard>
-        <AdminSelect
-          label="Meeting status"
-          value={status}
-          onChange={(e) => setStatus(e.target.value as GroupStatus)}
-        >
-          {GROUP_STATUS_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </AdminSelect>
+        <div className="mt-5">
+          <AdminSelect
+            label="Meeting status"
+            value={status}
+            onChange={(e) => setStatus(e.target.value as GroupStatus)}
+          >
+            {GROUP_STATUS_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </AdminSelect>
+        </div>
         <p className="mt-3 text-sm text-stone">
           Paused and discontinued groups stay on the website — with a label
-          showing their status — but move to the bottom of the list instead
-          of needing to be manually reordered.
+          showing their status — but move to the bottom of the list instead of
+          needing to be manually reordered.
         </p>
       </AdminCard>
 
       <div className="space-y-4">
         {error && <AdminAlert>{error}</AdminAlert>}
+        {missing.length > 0 && (
+          <AdminRequirements missing={missing} action="save this group" />
+        )}
         <AdminFormActions>
           <AdminButton onClick={() => router.push("/admin/groups")}>
             Cancel
