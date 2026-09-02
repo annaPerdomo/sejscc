@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/admin";
 import { getSiteSettings } from "@/lib/site-settings";
-import { AccessRequestEmailForm } from "./settings-form";
+import { AboutVideoForm, AccessRequestEmailForm } from "./settings-form";
 
 export const dynamic = "force-dynamic";
 
@@ -18,10 +18,11 @@ export default async function SettingsPage() {
         Site-wide details that don&apos;t belong to a single page.
       </p>
 
-      <div className="max-w-2xl">
+      <div className="flex max-w-2xl flex-col gap-6">
         <AccessRequestEmailForm
           initialEmail={settings?.accessRequestEmail ?? ""}
         />
+        <AboutVideoForm initialUrls={settings?.aboutVideoUrls ?? []} />
       </div>
     </div>
   );

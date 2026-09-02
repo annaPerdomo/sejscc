@@ -143,6 +143,7 @@ export const SITE_SETTINGS_ID = "site";
 export const siteSettings = pgTable("site_setting", {
   id: text("id").primaryKey().default(SITE_SETTINGS_ID),
   accessRequestEmail: text("access_request_email"),
+  aboutVideoUrls: text("about_video_urls").array().notNull().default([]),
   updatedAt: timestamp("updated_at", { mode: "date" })
     .notNull()
     .defaultNow()

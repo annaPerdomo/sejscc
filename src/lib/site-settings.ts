@@ -10,6 +10,15 @@ export async function getSiteSettings() {
   return row ?? null;
 }
 
+export async function getAboutVideoUrls() {
+  try {
+    const settings = await getSiteSettings();
+    return settings?.aboutVideoUrls ?? [];
+  } catch {
+    return [];
+  }
+}
+
 // A database hiccup must drop the contact line, not break the login page.
 export async function getAccessRequestEmail() {
   try {
