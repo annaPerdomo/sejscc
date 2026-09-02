@@ -17,7 +17,7 @@ export default async function AdminGroupsPage() {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl text-ink">Groups</h1>
+          <h1 className="font-display text-3xl text-ink">Sports &amp; Classes</h1>
           <p className="mt-1 text-stone">
             Add and edit the community groups shown on the website.
           </p>

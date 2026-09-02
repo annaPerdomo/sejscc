@@ -266,7 +266,7 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
             ))}
           </div>
           <p className="mt-2 text-xs text-stone">
-            Builds the “A week at the center” schedule on the Groups page. Leave
+            Builds the “A week at the center” schedule on the Sports &amp; Classes page. Leave
             every day unchecked if the group has no set meeting day.
           </p>
         </fieldset>

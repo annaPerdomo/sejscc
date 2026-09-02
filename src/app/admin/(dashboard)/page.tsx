@@ -116,7 +116,7 @@ export default async function AdminDashboard() {
         </SummaryCard>
         <SummaryCard
           kanji="部"
-          title="Groups"
+          title="Sports & Classes"
           addHref="/admin/groups/new"
           addLabel="+ Add a new group"
           viewHref="/admin/groups"
