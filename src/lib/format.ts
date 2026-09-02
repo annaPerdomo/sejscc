@@ -62,6 +62,31 @@ export function formatWeekday(date: Date, locale: Locale = "en") {
   });
 }
 
+// Full-width Japanese glyphs take about two Latin characters' worth of room, so
+// a plain character count would let a Japanese excerpt overrun its box.
+const FULL_WIDTH =
+  /[\u1100-\u115f\u2e80-\ua4cf\uac00-\ud7a3\uf900-\ufaff\ufe30-\ufe4f\uff00-\uff60\uffe0-\uffe6]/;
+
+// Japanese has no word spaces, so it falls back to cutting at the limit — which
+// is how Japanese text wraps anyway.
+export function excerpt(text: string, maxCells: number) {
+  const collapsed = text.replace(/\s+/g, " ").trim();
+  let width = 0;
+  let end = 0;
+  for (const char of collapsed) {
+    width += FULL_WIDTH.test(char) ? 2 : 1;
+    if (width > maxCells) break;
+    end += char.length;
+  }
+  if (end === collapsed.length) return collapsed;
+
+  const cut = collapsed.slice(0, end);
+  const lastSpace = cut.lastIndexOf(" ");
+  const atWord = lastSpace > end / 2 ? cut.slice(0, lastSpace) : cut;
+  const trimmed = atWord.replace(/[\s、。,.;:!?—–-]+$/u, "");
+  return `${trimmed || atWord}…`;
+}
+
 export function slugify(title: string) {
   return title
     .toLowerCase()
