@@ -41,9 +41,9 @@ export function LoginBrandPanel() {
           <span className="text-sky">showing up.</span>
         </p>
         <p className="mt-4 max-w-sm text-sm leading-relaxed text-sky">
-          The center runs on volunteers — Saturday classrooms, festival
-          booths, bingo callers, and everything in between. Thank you for
-          all you do to keep it moving.
+          Behind every class, festival, event, and announcement are people who
+          give their time to make it happen. Thank you for helping tell our
+          community’s story and keeping everyone connected.
         </p>
       </div>
 
@@ -51,7 +51,9 @@ export function LoginBrandPanel() {
         <div className="flex items-center justify-between gap-4 text-xs">
           <span className="text-sky">Est. 1925 · Norwalk, California</span>
           <span className="text-sky">
-            <span className="font-accent font-bold text-white">おかえりなさい</span>{" "}
+            <span className="font-accent font-bold text-white">
+              おかえりなさい
+            </span>{" "}
             — welcome back
           </span>
         </div>

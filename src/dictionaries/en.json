@@ -46,7 +46,7 @@
         "kickerCaption": "Welcome · Norwalk, California · Since 1925",
         "headingLine1": "Southeast Japanese School",
         "headingLine2": "and Community Center",
-        "body": "For 101 years, Saturdays here have meant Japanese school. The rest of the week: judo, hula, ukulele, and bingo — everyone is welcome.",
+        "body": "For 101 years, Saturdays here have meant Japanese school. Throughout the week, the center is also home to dance, martial arts, music, sports, and more — a community for everyone.",
         "primaryCta": "See upcoming events",
         "secondaryCta": "Explore sports & classes"
       },
@@ -72,7 +72,7 @@
         "kickerCaption": "20+ groups call the center home",
         "headingLine1": "One roof,",
         "headingLine2": "many circles",
-        "body": "Judo, kendo, basketball, hula, ukulele — the dojo, the gym, and the craft tables. Most groups welcome beginners year-round.",
+        "body": "Judo, kendo, basketball, hula, ukulele, ikebana — in the dojo, the gym and the classrooms. Our community is a home for everyone.",
         "primaryCta": "Browse sports & clubs"
       },
       {
@@ -96,7 +96,7 @@
         "kickerCaption": "SEJSCC is a 501(c)(3) nonprofit",
         "headingLine1": "Support",
         "headingLine2": "the center",
-        "body": "Every gift sustains the school, the hall, and the festivals four generations call home.",
+        "body": "Every gift helps sustain the school, the center, and the festivals that have brought generations together for over a century.",
         "primaryCta": "Donate now"
       }
     ],
@@ -148,7 +148,7 @@
       "kickerCaption": "Sports, Clubs & Classes",
       "headingLine1": "One roof,",
       "headingLine2": "many circles",
-      "body": "20+ groups call the center home — the dojo, the gym, and the craft tables. Most welcome beginners year-round.",
+      "body": "Over a dozen groups call the center home — the dojo, the gym, and the craft tables. Most welcome beginners year-round.",
       "photoLabel": "Photo coming soon",
       "cta": "See all sports & classes",
       "empty": "Group listings are coming soon. Call the center at (562) 863-5996 to learn about Japanese school, judo, basketball, and other programs."
@@ -235,7 +235,7 @@
         "Karrie Takeuchi",
         "Rich Tamaki"
       ],
-      "volunteersNote": "They're only part of the picture — dozens more volunteers teach classes, coach teams, run the kitchen, and keep the center open every week.",
+      "volunteersNote": "They're only part of the picture — dozens of volunteers teach classes, coach teams, run the kitchen, and keep the center open every week.",
       "note": "To reach a board member, leave a message with",
       "noteLink": "the center."
     },
@@ -287,13 +287,7 @@
       "weekly": "Every {weekday}",
       "biweekly": "Every other {weekday}",
       "monthly": "{ordinal} {weekday} of the month",
-      "ordinals": [
-        "First",
-        "Second",
-        "Third",
-        "Fourth",
-        "Fifth"
-      ],
+      "ordinals": ["First", "Second", "Third", "Fourth", "Fifth"],
       "until": "{schedule}, through {date}"
     },
     "calendars": {
@@ -479,10 +473,7 @@
           "summary": "Age 5",
           "status": "",
           "description": "Children who are five years old learn the Japanese culture through organized activities involving crafts, songs, and the Japanese language.",
-          "points": [
-            "Age 5",
-            "Crafts, songs, and the Japanese language"
-          ],
+          "points": ["Age 5", "Crafts, songs, and the Japanese language"],
           "photoAlt": "Kindergarten students with their teachers"
         },
         {
@@ -806,7 +797,7 @@
     "donateReasons": [
       {
         "title": "Modernizing the campus",
-        "text": "Classrooms, the hall, and the dojo were built for a different century. Updating them keeps every program usable for the next generation.",
+        "text": "Classrooms, the center, and the dojo were built for a different century. Updating them keeps every program usable for the next generation.",
         "photoAlt": "Judo instructors kneeling in a line on the dojo's mats"
       },
       {
