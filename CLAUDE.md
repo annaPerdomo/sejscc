@@ -65,13 +65,40 @@ be built from these tokens via Tailwind utility classes.
   classes in `@layer components` in [globals.css](src/app/globals.css):
   `surface-card` (plus `surface-card-link` for a clickable card),
   `button-primary`, `button-donate`, `seigaiha-rings` (with
-  `seigaiha-rings-sky`), `reveal-rise`, `reveal-swing-left` /
-  `reveal-swing-right`, `ken-burns-in` / `ken-burns-out`, `between-waves`,
-  `event-track`, `card-stretch`, and the `section-wash-*` /
-  `section-wash-*-hero` / `section-navy-scene` backgrounds. Extend one of
-  these rather than restyling a card or button inline, and build them from
-  tokens — use `--alpha(var(--color-x) / 20%)` for a tint instead of writing
-  the color out again.
+  `seigaiha-rings-sky` and the slow-moving `seigaiha-rings-drift`),
+  `reveal-rise` / `reveal-bloom` / `reveal-swing-left` / `reveal-swing-right`
+  (plus `reveal-stagger` on a grid to cascade its columns — the cascade
+  repeats with the column count, so a grid that isn't two-then-four across
+  takes the variant naming its own columns: `reveal-stagger-2`,
+  `reveal-stagger-3`, `reveal-stagger-2-3`, `reveal-stagger-3-5`,
+  `reveal-stagger-4-7`), `reveal-rule`,
+  `reveal-rail`, `reveal-pop`, `reveal-turn`, `watermark-drift`,
+  `ken-burns-in` / `ken-burns-out`, `enter-rise` / `enter-stagger` /
+  `enter-fade` / `enter-rule` / `brush-draw` / `menu-drop`, `hero-drift`, `link-arrow`,
+  `bamboo-sway` (with `bamboo-sway-late` to offset a neighbour),
+  `tab-progress` (with a per-strip duration
+  class, `hero-progress` or `month-progress`, and `tab-progress-paused` to
+  hold the strip while the reader is hovering or focused inside it; the
+  strip advances on the bar's `animationend`, so the CSS duration is the
+  rotation interval),
+  `between-waves`, `event-track`, `card-stretch`, and the
+  `section-wash-*` / `section-wash-*-hero` / `section-navy-scene`
+  backgrounds. Extend one of these rather than restyling a card or button
+  inline, and build them from tokens — use `--alpha(var(--color-x) / 20%)`
+  for a tint instead of writing the color out again.
+- Motion comes in two families. The `reveal-*` classes are scroll-driven
+  (`animation-timeline: view()`) and do nothing for content that is already
+  on screen when the page opens, so heroes, menus and tab panels use the
+  time-based `enter-rise` / `enter-stagger` / `enter-fade` / `brush-draw`
+  entrances instead. Every animation sits behind
+  `prefers-reduced-motion: no-preference`; keep new ones there too. Hover
+  transforms (a card that lifts, tilts or zooms) are motion as well, and a
+  blanket `prefers-reduced-motion: reduce` rule at the end of the file cuts
+  every transition to an instant state change — don't reach for a
+  transition duration that has to survive that.
+- Never nest one `enter-stagger` inside another. The inner grid is itself a
+  delayed child, so its own children animate while the parent still sits at
+  `opacity: 0` and the cascade is over before anyone sees it.
 - A card whose whole surface should be clickable puts `card-stretch` on its
   primary link inside a `relative surface-card`, rather than wrapping the
   card in an anchor — that keeps a second link (a sign-up button) legal,

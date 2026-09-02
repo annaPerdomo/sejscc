@@ -277,10 +277,41 @@ body {
     transition: transform 180ms ease, background-color 180ms ease, box-shadow 180ms ease;
   }
 
+  /* `isolation` keeps the hover sheen under the label. */
+  .button-primary,
+  .button-donate {
+    position: relative;
+    isolation: isolate;
+    overflow: clip;
+  }
+
+  .button-primary::after,
+  .button-donate::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: linear-gradient(
+      100deg,
+      transparent 30%,
+      --alpha(var(--color-white) / 22%) 50%,
+      transparent 70%
+    );
+    transform: translateX(130%) skewX(-18deg);
+  }
+
   .button-primary:hover {
     background: var(--color-indigo-deep);
     box-shadow: 0 13px 28px --alpha(var(--color-indigo) / 34%);
     transform: translateY(-1px);
+  }
+
+  .button-primary:active,
+  .button-donate:active,
+  .button-outline:active {
+    transform: translateY(0) scale(0.97);
+    transition-duration: 80ms;
   }
 
   .button-outline {
@@ -306,11 +337,17 @@ body {
     border-radius: calc(infinity * 1px);
     background: #fff;
     color: var(--color-indigo);
+    transition: background-color 180ms ease, color 180ms ease, transform 180ms ease;
   }
 
   .carousel-button:hover {
     background: var(--color-indigo);
     color: #fff;
+  }
+
+  .carousel-button:active {
+    transform: scale(0.9);
+    transition-duration: 80ms;
   }
 
   .button-donate {
@@ -387,24 +424,24 @@ body {
      needs to clip decoration must use `overflow: clip`, never `hidden`. */
   @supports (animation-timeline: view()) {
     @media (prefers-reduced-motion: no-preference) {
-      .reveal-rise {
-        animation: reveal-rise ease-out both;
-        animation-timeline: view();
-        animation-range: entry 0% entry 50%;
-      }
-    }
-  }
-
-  @supports (animation-timeline: view()) {
-    @media (prefers-reduced-motion: no-preference) {
+      /* Measured in `cover`, not `entry`: an `entry` range on a one-line
+         paragraph is over within a few pixels of scrolling. */
+      .reveal-rise,
+      .reveal-bloom,
       .reveal-swing-left,
       .reveal-swing-right {
-        animation-timing-function: linear;
+        animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
         animation-fill-mode: both;
         animation-timeline: view();
-        /* `cover`, not `entry`: the scans differ in height by a factor of four,
-           and an entry range flicks the short ones in before they are on screen. */
-        animation-range: cover 0% cover 45%;
+        animation-range: cover var(--reveal-shift, 0%) cover calc(42% + var(--reveal-shift, 0%));
+      }
+
+      .reveal-rise {
+        animation-name: reveal-rise;
+      }
+
+      .reveal-bloom {
+        animation-name: reveal-bloom;
       }
 
       .reveal-swing-left {
@@ -414,6 +451,278 @@ body {
       .reveal-swing-right {
         animation-name: reveal-swing-right;
       }
+
+      /* The cycle has to repeat with the grid's own column count or the
+         cascade restarts mid-row, so a grid that isn't two-then-four
+         across takes the variant naming its columns. */
+      @media (40rem <= width < 64rem) {
+        .reveal-stagger > :nth-child(2n),
+        .reveal-stagger-2 > :nth-child(2n),
+        .reveal-stagger-2-3 > :nth-child(2n) {
+          --reveal-shift: 6%;
+        }
+
+        .reveal-stagger-3-5 > :nth-child(3n + 2) {
+          --reveal-shift: 6%;
+        }
+
+        .reveal-stagger-3-5 > :nth-child(3n) {
+          --reveal-shift: 12%;
+        }
+
+        .reveal-stagger-4-7 > :nth-child(4n + 2) {
+          --reveal-shift: 6%;
+        }
+
+        .reveal-stagger-4-7 > :nth-child(4n + 3) {
+          --reveal-shift: 12%;
+        }
+
+        .reveal-stagger-4-7 > :nth-child(4n) {
+          --reveal-shift: 18%;
+        }
+      }
+
+      @media (width >= 64rem) {
+        .reveal-stagger > :nth-child(4n + 2),
+        .reveal-stagger-2 > :nth-child(2n) {
+          --reveal-shift: 6%;
+        }
+
+        .reveal-stagger > :nth-child(4n + 3) {
+          --reveal-shift: 12%;
+        }
+
+        .reveal-stagger > :nth-child(4n) {
+          --reveal-shift: 18%;
+        }
+
+        .reveal-stagger-2-3 > :nth-child(3n + 1),
+        .reveal-stagger-3-5 > :nth-child(5n + 1),
+        .reveal-stagger-4-7 > :nth-child(7n + 1) {
+          --reveal-shift: 0%;
+        }
+
+        .reveal-stagger-2-3 > :nth-child(3n + 2),
+        .reveal-stagger-3 > :nth-child(3n + 2) {
+          --reveal-shift: 6%;
+        }
+
+        .reveal-stagger-2-3 > :nth-child(3n),
+        .reveal-stagger-3 > :nth-child(3n) {
+          --reveal-shift: 12%;
+        }
+
+        .reveal-stagger-3-5 > :nth-child(5n + 2) {
+          --reveal-shift: 4.5%;
+        }
+
+        .reveal-stagger-3-5 > :nth-child(5n + 3) {
+          --reveal-shift: 9%;
+        }
+
+        .reveal-stagger-3-5 > :nth-child(5n + 4) {
+          --reveal-shift: 13.5%;
+        }
+
+        .reveal-stagger-3-5 > :nth-child(5n) {
+          --reveal-shift: 18%;
+        }
+
+        .reveal-stagger-4-7 > :nth-child(7n + 2) {
+          --reveal-shift: 3%;
+        }
+
+        .reveal-stagger-4-7 > :nth-child(7n + 3) {
+          --reveal-shift: 6%;
+        }
+
+        .reveal-stagger-4-7 > :nth-child(7n + 4) {
+          --reveal-shift: 9%;
+        }
+
+        .reveal-stagger-4-7 > :nth-child(7n + 5) {
+          --reveal-shift: 12%;
+        }
+
+        .reveal-stagger-4-7 > :nth-child(7n + 6) {
+          --reveal-shift: 15%;
+        }
+
+        .reveal-stagger-4-7 > :nth-child(7n) {
+          --reveal-shift: 18%;
+        }
+      }
+
+      @media (width >= 96rem) {
+        .reveal-stagger-2-3 > :nth-child(4n + 1) {
+          --reveal-shift: 0%;
+        }
+
+        .reveal-stagger-2-3 > :nth-child(4n + 2) {
+          --reveal-shift: 6%;
+        }
+
+        .reveal-stagger-2-3 > :nth-child(4n + 3) {
+          --reveal-shift: 12%;
+        }
+
+        .reveal-stagger-2-3 > :nth-child(4n) {
+          --reveal-shift: 18%;
+        }
+      }
+
+      .reveal-rule {
+        transform-origin: left;
+        animation: reveal-rule ease-out both;
+        animation-timeline: view();
+        animation-range: cover 0% cover 40%;
+      }
+
+      .reveal-rail {
+        transform-origin: top;
+        animation: reveal-rail linear both;
+        animation-timeline: view();
+        animation-range: cover 0% cover 45%;
+      }
+
+      .reveal-pop {
+        animation: reveal-pop cubic-bezier(0.34, 1.56, 0.64, 1) both;
+        animation-timeline: view();
+        animation-range: cover 0% cover 40%;
+      }
+
+      .watermark-drift {
+        animation: watermark-drift linear both;
+        animation-timeline: view();
+        animation-range: cover 0% cover 100%;
+      }
+
+      .reveal-turn {
+        animation: reveal-turn linear both;
+        animation-timeline: view();
+        animation-range: cover 0% cover 100%;
+      }
+    }
+  }
+
+  /* The `/ ""` alt text keeps the arrow glyph out of screen readers. */
+  .link-arrow::after {
+    content: "→" / "";
+    display: inline-block;
+    margin-left: 0.35em;
+    opacity: 0;
+    translate: -0.3em 0;
+    transition: opacity 200ms ease, translate 200ms ease;
+  }
+
+  .link-arrow:hover::after,
+  .link-arrow:focus-visible::after,
+  .surface-card-link:hover .link-arrow::after,
+  .surface-card-link:has(.card-stretch:focus-visible) .link-arrow::after {
+    opacity: 1;
+    translate: 0 0;
+  }
+
+  /* Time-based entrances for content already on screen at load, where a
+     view() timeline would have nothing to drive. */
+  @media (prefers-reduced-motion: no-preference) {
+    .enter-rise,
+    .enter-stagger > * {
+      animation: reveal-rise 950ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .enter-stagger > :nth-child(2) {
+      animation-delay: 120ms;
+    }
+
+    .enter-stagger > :nth-child(3) {
+      animation-delay: 240ms;
+    }
+
+    .enter-stagger > :nth-child(4) {
+      animation-delay: 360ms;
+    }
+
+    .enter-stagger > :nth-child(5) {
+      animation-delay: 480ms;
+    }
+
+    .enter-stagger > :nth-child(6) {
+      animation-delay: 600ms;
+    }
+
+    .enter-stagger > :nth-child(n + 7) {
+      animation-delay: 720ms;
+    }
+
+    .enter-fade {
+      animation: enter-fade 550ms ease-out both;
+    }
+
+    .enter-rule {
+      transform-origin: left;
+      animation: reveal-rule 800ms cubic-bezier(0.22, 1, 0.36, 1) 300ms both;
+    }
+
+    .brush-draw {
+      stroke-dasharray: 1;
+      animation: brush-draw 1200ms cubic-bezier(0.65, 0, 0.35, 1) 250ms both;
+    }
+
+    .hero-drift {
+      animation: hero-drift 14s ease-in-out infinite alternate;
+    }
+
+    /* The strip advances on this animation's `animationend`, so the
+       duration is the rotation interval and pausing the bar holds the strip. */
+    .tab-progress {
+      transform-origin: left;
+      animation: tab-progress var(--tab-progress) linear both;
+    }
+
+    .tab-progress-paused {
+      animation-play-state: paused;
+    }
+
+    .hero-progress {
+      --tab-progress: 6.5s;
+    }
+
+    .month-progress {
+      --tab-progress: 5.2s;
+    }
+
+    .bamboo-sway {
+      transform-origin: bottom center;
+      animation: bamboo-sway 7s ease-in-out infinite alternate;
+    }
+
+    .bamboo-sway-late {
+      animation-delay: -3s;
+    }
+
+    .button-primary::after,
+    .button-donate::after {
+      transform: translateX(-130%) skewX(-18deg);
+      transition: transform 0s 600ms;
+    }
+
+    .button-primary:hover::after,
+    .button-donate:hover::after {
+      transform: translateX(130%) skewX(-18deg);
+      transition: transform 650ms ease;
+    }
+
+    .menu-drop {
+      animation: menu-drop 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    /* Drifts the texture one tile period (80 × 40px), so the loop is seamless;
+       the extra inset is the room it drifts out of. */
+    .seigaiha-rings-drift::before {
+      inset: -40px -80px 0 0;
+      animation: seigaiha-drift 30s linear infinite;
     }
   }
 
@@ -450,21 +759,28 @@ body {
 @keyframes reveal-rise {
   from {
     opacity: 0;
-    transform: translateY(1.25rem);
+    transform: translateY(2.75rem);
+  }
+}
+
+@keyframes reveal-bloom {
+  from {
+    opacity: 0;
+    transform: translateY(1.5rem) scale(0.86);
   }
 }
 
 @keyframes reveal-swing-left {
   from {
     opacity: 0;
-    transform: translateX(-2.5rem) rotate(-2deg) scale(0.96);
+    transform: translateX(-4rem) rotate(-3deg) scale(0.94);
   }
 }
 
 @keyframes reveal-swing-right {
   from {
     opacity: 0;
-    transform: translateX(2.5rem) rotate(2deg) scale(0.96);
+    transform: translateX(4rem) rotate(3deg) scale(0.94);
   }
 }
 
@@ -486,6 +802,95 @@ body {
   }
 }
 
+@keyframes reveal-rule {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes reveal-rail {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+@keyframes tab-progress {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes reveal-pop {
+  from {
+    transform: scale(0);
+  }
+}
+
+@keyframes watermark-drift {
+  from {
+    translate: 0 5rem;
+  }
+  to {
+    translate: 0 -5rem;
+  }
+}
+
+@keyframes enter-fade {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+}
+
+@keyframes brush-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes hero-drift {
+  from {
+    transform: scale(1) translate(0, 0);
+  }
+  to {
+    transform: scale(1.12) translate(-2%, 1.5%);
+  }
+}
+
+@keyframes menu-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5rem);
+  }
+}
+
+@keyframes seigaiha-drift {
+  to {
+    translate: -80px 40px;
+  }
+}
+
+@keyframes reveal-turn {
+  from {
+    rotate: -32deg;
+  }
+  to {
+    rotate: 8deg;
+  }
+}
+
+@keyframes bamboo-sway {
+  from {
+    rotate: -1.6deg;
+  }
+  to {
+    rotate: 1.6deg;
+  }
+}
+
 @keyframes beating-heart {
   0%,
   28%,
@@ -504,5 +909,14 @@ body {
   button:not(:disabled),
   [role="button"]:not(:disabled) {
     cursor: pointer;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
