@@ -570,6 +570,8 @@
       "titleRest": "every month",
       "lede": "Our program provides a rich variety of cultural activities, including monthly cultural events to enhance cultural experience and understanding.",
       "tablistLabel": "Cultural events by month",
+      "pauseLabel": "Stop rotating months",
+      "playLabel": "Rotate months automatically",
       "months": [
         {
           "abbr": "Jan",

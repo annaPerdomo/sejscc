@@ -1,14 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type AnimationEvent } from "react";
 import Image from "next/image";
 import { CarouselPlayToggle } from "@/components/carousel-play-toggle";
 import { ExternalLink } from "@/components/external-link";
 import { PhotoPlaceholder } from "@/components/photo-placeholder";
 import { SectionKicker } from "@/components/section-kicker";
 import { WaveDivider } from "@/components/wave-divider";
-
-const ROTATE_MS = 6500;
 
 export type HeroTab = {
   id: string;
@@ -49,6 +47,8 @@ export function HeroCarousel({
   );
 
   const upcoming = (active + 1) % tabs.length;
+  const rotating = !stopped && !reduceMotion;
+  const paused = hoverPaused || focusPaused;
   if (!mountedPhotos.includes(active) || !mountedPhotos.includes(upcoming)) {
     setMountedPhotos(Array.from(new Set([...mountedPhotos, active, upcoming])));
   }
@@ -61,13 +61,20 @@ export function HeroCarousel({
     return () => query.removeEventListener("change", sync);
   }, []);
 
-  useEffect(() => {
-    if (stopped || hoverPaused || focusPaused || reduceMotion) return;
-    const id = setInterval(() => {
-      setActive((i) => (i + 1) % tabs.length);
-    }, ROTATE_MS);
-    return () => clearInterval(id);
-  }, [stopped, hoverPaused, focusPaused, reduceMotion, tabs.length]);
+  const advance = (event: AnimationEvent<HTMLSpanElement>) => {
+    if (event.animationName !== "tab-progress") return;
+    setActive((i) => (i + 1) % tabs.length);
+  };
+
+  // Play clears the hover and focus holds too: the pointer is still inside,
+  // and no mouseleave is coming to release them.
+  const resume = () => {
+    if (stopped) {
+      setHoverPaused(false);
+      setFocusPaused(false);
+    }
+    setStopped(!stopped);
+  };
 
   return (
     <section
@@ -92,7 +99,7 @@ export function HeroCarousel({
                 fill
                 preload={i === 0}
                 sizes="100vw"
-                className="object-cover"
+                className={`object-cover ${i === active ? "hero-drift" : ""}`}
                 style={{ objectPosition: "center 46%" }}
               />
             ) : null
@@ -126,92 +133,102 @@ export function HeroCarousel({
                 pointerEvents: i === active ? "auto" : "none",
               }}
             >
-              <SectionKicker
-                accent={tab.kickerAccent}
-                caption={tab.kickerCaption}
-                tone="sky"
-              />
-              <h1 className="mt-4 font-display text-xl leading-tight font-semibold tracking-[0.06em] uppercase sm:text-3xl lg:text-4xl">
-                <span className="block text-white">{tab.headingLine1}</span>
-                <span className="block text-sky">{tab.headingLine2}</span>
-              </h1>
-              <p className="mt-4 max-w-md text-base leading-relaxed text-white/80 lg:text-lg">
-                {tab.body}
-              </p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                <ExternalLink
-                  href={tab.primaryCta.href}
-                  tabIndex={i === active ? 0 : -1}
-                  className="button-primary rounded-lg px-7 py-3.5 font-display text-sm font-semibold tracking-[0.03em] text-white"
-                >
-                  {tab.primaryCta.label}
-                </ExternalLink>
-                {tab.secondaryCta && (
+              {/* Adding the class on activation replays the staggered entrance;
+                  a key would remount the outgoing panel too and replay it mid-fade. */}
+              <div className={i === active ? "enter-stagger" : ""}>
+                <SectionKicker
+                  accent={tab.kickerAccent}
+                  caption={tab.kickerCaption}
+                  tone="sky"
+                  entrance="load"
+                />
+                <h1 className="mt-4 font-display text-xl leading-tight font-semibold tracking-[0.06em] uppercase sm:text-3xl lg:text-4xl">
+                  <span className="block text-white">{tab.headingLine1}</span>
+                  <span className="block text-sky">{tab.headingLine2}</span>
+                </h1>
+                <p className="mt-4 max-w-md text-base leading-relaxed text-white/80 lg:text-lg">
+                  {tab.body}
+                </p>
+                <div className="mt-6 flex flex-wrap gap-3">
                   <ExternalLink
-                    href={tab.secondaryCta.href}
+                    href={tab.primaryCta.href}
                     tabIndex={i === active ? 0 : -1}
-                    className="rounded-lg border-2 border-white/55 px-7 py-3 font-display text-sm font-semibold tracking-[0.03em] text-white hover:border-white hover:bg-white hover:text-ink"
+                    className="button-primary rounded-lg px-7 py-3.5 font-display text-sm font-semibold tracking-[0.03em] text-white"
                   >
-                    {tab.secondaryCta.label}
+                    {tab.primaryCta.label}
                   </ExternalLink>
-                )}
+                  {tab.secondaryCta && (
+                    <ExternalLink
+                      href={tab.secondaryCta.href}
+                      tabIndex={i === active ? 0 : -1}
+                      className="rounded-lg border-2 border-white/55 px-7 py-3 font-display text-sm font-semibold tracking-[0.03em] text-white hover:border-white hover:bg-white hover:text-ink"
+                    >
+                      {tab.secondaryCta.label}
+                    </ExternalLink>
+                  )}
+                </div>
               </div>
             </div>
           ))}
         </div>
 
         <div className="mt-9 flex items-start gap-4 border-t border-white/20">
-        <div
-          role="tablist"
-          aria-label={tabsLabel}
-          className="flex flex-1 gap-4 overflow-x-auto sm:gap-0"
-        >
-          {tabs.map((tab, i) => (
-            <button
-              key={tab.id}
-              id={`hero-tab-${tab.id}`}
-              type="button"
-              role="tab"
-              aria-selected={i === active}
-              aria-controls={`hero-panel-${tab.id}`}
-              onClick={() => {
-                setActive(i);
-                setStopped(true);
-              }}
-              className={`relative -mt-px flex shrink-0 flex-col gap-1 border-t-2 border-transparent px-1 pt-3 text-left whitespace-nowrap transition sm:flex-1 ${
-                i === active ? "" : "hover:border-white/50"
-              }`}
-            >
-              {i === active && (
+          <div
+            role="tablist"
+            aria-label={tabsLabel}
+            className="flex flex-1 gap-4 overflow-x-auto sm:gap-0"
+          >
+            {tabs.map((tab, i) => (
+              <button
+                key={tab.id}
+                id={`hero-tab-${tab.id}`}
+                type="button"
+                role="tab"
+                aria-selected={i === active}
+                aria-controls={`hero-panel-${tab.id}`}
+                onClick={() => {
+                  setActive(i);
+                  setStopped(true);
+                }}
+                className={`relative -mt-px flex shrink-0 flex-col gap-1 border-t-2 border-transparent px-1 pt-3 text-left whitespace-nowrap transition sm:flex-1 ${
+                  i === active ? "" : "hover:border-white/50"
+                }`}
+              >
+                {i === active && (
+                  <span
+                    aria-hidden="true"
+                    onAnimationEnd={advance}
+                    className={`absolute inset-x-0 -top-0.5 h-0.5 bg-sky ${
+                      rotating ? "tab-progress hero-progress" : ""
+                    } ${rotating && paused ? "tab-progress-paused" : ""}`}
+                  />
+                )}
                 <span
-                  aria-hidden="true"
-                  className="absolute inset-x-0 -top-0.5 h-0.5 bg-sky"
-                />
-              )}
-              <span
-                className={`hidden font-display text-xs font-semibold tracking-[0.05em] sm:block ${
-                  i === active ? "text-white" : "text-white/60"
-                }`}
-              >
-                {tab.tabLabel}
-              </span>
-              <span
-                className={`font-accent text-[11px] font-bold tracking-[0.15em] ${
-                  i === active ? "text-white" : "text-white/70"
-                }`}
-              >
-                {tab.tabLabelAccent}
-              </span>
-            </button>
-          ))}
-        </div>
-          <CarouselPlayToggle
-            stopped={stopped}
-            onToggle={() => setStopped((value) => !value)}
-            pauseLabel={pauseLabel}
-            playLabel={playLabel}
-            className="mt-3 shrink-0 border-white/40 bg-transparent text-white hover:bg-white hover:text-indigo"
-          />
+                  className={`hidden font-display text-xs font-semibold tracking-[0.05em] sm:block ${
+                    i === active ? "text-white" : "text-white/60"
+                  }`}
+                >
+                  {tab.tabLabel}
+                </span>
+                <span
+                  className={`font-accent text-[11px] font-bold tracking-[0.15em] ${
+                    i === active ? "text-white" : "text-white/70"
+                  }`}
+                >
+                  {tab.tabLabelAccent}
+                </span>
+              </button>
+            ))}
+          </div>
+          {!reduceMotion && (
+            <CarouselPlayToggle
+              stopped={stopped}
+              onToggle={resume}
+              pauseLabel={pauseLabel}
+              playLabel={playLabel}
+              className="mt-3 shrink-0 border-white/40 bg-transparent text-white hover:bg-white hover:text-indigo"
+            />
+          )}
         </div>
       </div>
 
