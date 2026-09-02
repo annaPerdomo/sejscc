@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type AnimationEvent } from "react";
+import { useEffect, useRef, useState, type AnimationEvent } from "react";
 import Image from "next/image";
 import { CarouselPlayToggle } from "@/components/carousel-play-toggle";
 import { ExternalLink } from "@/components/external-link";
@@ -52,6 +52,15 @@ export function HeroCarousel({
   if (!mountedPhotos.includes(active) || !mountedPhotos.includes(upcoming)) {
     setMountedPhotos(Array.from(new Set([...mountedPhotos, active, upcoming])));
   }
+
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  useEffect(() => {
+    tabRefs.current[active]?.scrollIntoView({
+      block: "nearest",
+      inline: "nearest",
+      behavior: reduceMotion ? "auto" : "smooth",
+    });
+  }, [active, reduceMotion]);
 
   useEffect(() => {
     const query = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -182,6 +191,9 @@ export function HeroCarousel({
               <button
                 key={tab.id}
                 id={`hero-tab-${tab.id}`}
+                ref={(node) => {
+                  tabRefs.current[i] = node;
+                }}
                 type="button"
                 role="tab"
                 aria-selected={i === active}
@@ -204,7 +216,7 @@ export function HeroCarousel({
                   />
                 )}
                 <span
-                  className={`hidden font-display text-xs font-semibold tracking-[0.05em] sm:block ${
+                  className={`font-display text-xs font-semibold tracking-[0.05em] ${
                     i === active ? "text-white" : "text-white/60"
                   }`}
                 >
