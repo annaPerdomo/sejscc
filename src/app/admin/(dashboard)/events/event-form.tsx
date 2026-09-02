@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { upload } from "@vercel/blob/client";
 import type { EventRepeat } from "@/db/schema";
-import { CENTER_ADDRESS } from "@/lib/center";
+import { CENTER_ADDRESS, venueLabel } from "@/lib/center";
 import { normalizeWebsiteUrl } from "@/lib/format";
 import { pdfFirstPageToPng } from "@/lib/pdf-preview";
 import {
@@ -13,15 +13,23 @@ import {
   type RepeatingEvent,
   type RepeatPhrases,
 } from "@/lib/recurrence";
-import { AdminAlert } from "@/components/admin/admin-alert";
+import { AdminAlert, AdminRequirements } from "@/components/admin/admin-alert";
 import { AdminButton, AdminFormActions } from "@/components/admin/admin-button";
-import { AdminCard } from "@/components/admin/admin-card";
+import {
+  AdminCard,
+  AdminCardHeading,
+  AdminStep,
+} from "@/components/admin/admin-card";
 import {
   AdminCharacterCount,
+  AdminOptional,
+  AdminRequired,
   AdminSelect,
   AdminTextArea,
   AdminTextField,
 } from "@/components/admin/admin-field";
+import { EventDescriptionMedia } from "@/components/event-media";
+import { EventMeta } from "@/components/event-meta";
 import { createEvent, updateEvent, type EventInput } from "./actions";
 
 const REPEAT_OPTIONS: { value: EventRepeat; label: string }[] = [
@@ -48,14 +56,6 @@ type ExistingEvent = {
 
 const DATES_PREVIEWED = 4;
 
-function StepBadge({ n }: { n: number }) {
-  return (
-    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-ink text-sm font-semibold text-white">
-      {n}
-    </span>
-  );
-}
-
 // UTC getters, not local ones — see the storage convention in src/lib/format.ts.
 function toDateInput(d: Date | null) {
   return d ? d.toISOString().slice(0, 10) : "";
@@ -80,9 +80,11 @@ function shortDate(d: Date) {
 export function EventForm({
   event,
   repeatPhrases,
+  atCenterLabel,
 }: {
   event?: ExistingEvent;
   repeatPhrases: RepeatPhrases;
+  atCenterLabel: string;
 }) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -90,7 +92,9 @@ export function EventForm({
   const [title, setTitle] = useState(event?.title ?? "");
   const [description, setDescription] = useState(event?.description ?? "");
   const [date, setDate] = useState(toDateInput(event?.startAt ?? null));
-  const [startTime, setStartTime] = useState(toTimeInput(event?.startAt ?? null));
+  const [startTime, setStartTime] = useState(
+    toTimeInput(event?.startAt ?? null),
+  );
   const [endTime, setEndTime] = useState(toTimeInput(event?.endAt ?? null));
   const [repeat, setRepeat] = useState<EventRepeat>(event?.repeat ?? "none");
   const [repeatUntil, setRepeatUntil] = useState(
@@ -103,9 +107,12 @@ export function EventForm({
   const [previewUrl, setPreviewUrl] = useState<string | null>(
     event?.flyerUrl ?? null
   );
+  const [flyerRemoved, setFlyerRemoved] = useState(false);
 
   const [busy, setBusy] = useState<"draft" | "published" | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const missing = title.trim() ? [] : ["an event title"];
 
   async function onPickFlyer(file: File | undefined) {
     setError(null);
@@ -122,6 +129,7 @@ export function EventForm({
       } else {
         setPreviewUrl(URL.createObjectURL(file));
       }
+      setFlyerRemoved(false);
     } catch {
       setError(
         "We couldn't read that file. Please try a PDF, JPG, or PNG flyer."
@@ -130,11 +138,19 @@ export function EventForm({
     }
   }
 
+  function removeFlyer() {
+    setFlyerFile(null);
+    setPreviewUrl(null);
+    setFlyerRemoved(true);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
   async function uploadFlyer(): Promise<{
     flyerUrl: string | null;
     flyerDownloadUrl: string | null;
   }> {
     if (!flyerFile) {
+      if (flyerRemoved) return { flyerUrl: null, flyerDownloadUrl: null };
       return {
         flyerUrl: event?.flyerUrl ?? null,
         flyerDownloadUrl: event?.flyerDownloadUrl ?? null,
@@ -159,10 +175,6 @@ export function EventForm({
     setError(null);
     if (!title.trim()) {
       setError("Please enter an event title.");
-      return;
-    }
-    if (status === "published" && !previewUrl) {
-      setError("Please upload a flyer before publishing.");
       return;
     }
     setBusy(status);
@@ -210,6 +222,7 @@ export function EventForm({
     ? upcomingOccurrences(series, series.startAt, DATES_PREVIEWED)
     : [];
 
+  const venue = venueLabel(location.trim() || null, atCenterLabel);
   const dateLabel = date
     ? new Date(`${date}T00:00:00`).toLocaleDateString("en-US", {
         weekday: "short",
@@ -234,53 +247,12 @@ export function EventForm({
     <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
       <div className="space-y-6">
         <AdminCard>
-          <div className="flex items-center gap-3">
-            <StepBadge n={1} />
-            <h2 className="font-semibold text-ink">
-              Flyer{" "}
-              <span className="text-sm font-normal text-stone">
-                (required to publish)
-              </span>
-            </h2>
-          </div>
-          <div className="mt-4 flex flex-wrap items-start gap-5">
-            {previewUrl && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={previewUrl}
-                alt="Flyer preview"
-                className="w-40 rounded-lg border border-line bg-mist object-contain shadow-sm"
-              />
-            )}
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="flex min-h-40 w-40 flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-line p-4 text-center text-sm text-stone hover:border-indigo hover:text-indigo"
-            >
-              <span className="text-2xl">↑</span>
-              {previewUrl ? "Replace flyer" : "Upload flyer"}
-              <span className="text-xs">PDF, JPG, or PNG · up to 10MB</span>
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="application/pdf,image/jpeg,image/png,image/webp"
-              className="hidden"
-              onChange={(e) => onPickFlyer(e.target.files?.[0])}
-            />
-          </div>
-        </AdminCard>
-
-        <AdminCard>
           <AdminTextField
             size="lg"
-            badge={<StepBadge n={2} />}
+            badge={<AdminStep n={1} />}
             label={
               <>
-                Event Title{" "}
-                <span className="text-sm font-normal text-stone">
-                  (required)
-                </span>
+                Event Title <AdminRequired />
               </>
             }
             value={title}
@@ -292,13 +264,9 @@ export function EventForm({
         </AdminCard>
 
         <AdminCard>
-          <div className="flex items-center gap-3">
-            <StepBadge n={3} />
-            <h2 className="font-semibold text-ink">
-              Date &amp; Location{" "}
-              <span className="text-sm font-normal text-stone">(optional)</span>
-            </h2>
-          </div>
+          <AdminCardHeading step={2} tag={<AdminOptional />}>
+            Date &amp; Location
+          </AdminCardHeading>
           <div className="mt-4 grid gap-4 sm:grid-cols-3">
             <AdminTextField
               label="Date"
@@ -386,15 +354,60 @@ export function EventForm({
         </AdminCard>
 
         <AdminCard>
+          <AdminCardHeading step={3} tag={<AdminOptional />}>
+            Flyer
+          </AdminCardHeading>
+          <div className="mt-4 flex flex-wrap items-start gap-5">
+            {previewUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={previewUrl}
+                alt="Flyer preview"
+                className="w-40 rounded-lg border border-line bg-mist object-contain shadow-sm"
+              />
+            )}
+            <div className="flex flex-col items-start gap-2">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex min-h-40 w-40 flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-line p-4 text-center text-sm text-stone hover:border-indigo hover:text-indigo"
+              >
+                <span className="text-2xl">↑</span>
+                {previewUrl ? "Replace flyer" : "Upload flyer"}
+                <span className="text-xs">PDF, JPG, or PNG · up to 10MB</span>
+              </button>
+              {previewUrl && (
+                <button
+                  type="button"
+                  onClick={removeFlyer}
+                  className="text-sm font-medium text-indigo-deep hover:underline"
+                >
+                  Remove flyer
+                </button>
+              )}
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="application/pdf,image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={(e) => onPickFlyer(e.target.files?.[0])}
+            />
+          </div>
+          <p className="mt-3 text-xs text-stone">
+            No flyer is fine. Without one, the event’s card shows the start of
+            the description instead — the preview beside this form shows exactly
+            how it will look.
+          </p>
+        </AdminCard>
+
+        <AdminCard>
           <AdminTextArea
             size="lg"
-            badge={<StepBadge n={4} />}
+            badge={<AdminStep n={4} />}
             label={
               <>
-                Description{" "}
-                <span className="text-sm font-normal text-stone">
-                  (optional)
-                </span>
+                Description <AdminOptional />
               </>
             }
             value={description}
@@ -409,13 +422,10 @@ export function EventForm({
         <AdminCard>
           <AdminTextField
             size="lg"
-            badge={<StepBadge n={5} />}
+            badge={<AdminStep n={5} />}
             label={
               <>
-                Sign-up Link{" "}
-                <span className="text-sm font-normal text-stone">
-                  (optional)
-                </span>
+                Sign-up Link <AdminOptional />
               </>
             }
             value={signupUrl}
@@ -432,55 +442,64 @@ export function EventForm({
         </AdminCard>
       </div>
 
-      <aside className="lg:sticky lg:top-28 lg:self-start">
+      <aside className="lg:sticky lg:top-8 lg:self-start">
         <p className="text-sm font-semibold text-ink">Live Preview</p>
         <p className="mt-1 text-xs text-stone">
           This is how your event will appear on the website.
         </p>
-        <div className="mt-3 overflow-hidden rounded-xl bg-ink shadow-lg">
-          <div className="aspect-flyer bg-mist p-2">
-            {previewUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
+        <div className="surface-card mt-3 flex flex-col rounded-none p-3.5">
+          <h3 className="line-clamp-2 font-display text-lg font-semibold text-ink">
+            {title || "Your event title"}
+          </h3>
+          {(dateLabel || timeLabel) && (
+            <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-soft">
+              {dateLabel && <EventMeta icon="calendar">{dateLabel}</EventMeta>}
+              {timeLabel && <EventMeta icon="clock">{timeLabel}</EventMeta>}
+            </p>
+          )}
+          {schedule && (
+            <p className="mt-1 text-sm text-stone">
+              <EventMeta icon="repeat">{schedule}</EventMeta>
+            </p>
+          )}
+          {previewUrl ? (
+            <div className="mt-3 aspect-card w-full overflow-clip bg-white">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={previewUrl}
                 alt=""
-                className="h-full w-full object-contain"
+                className="h-full w-full scale-95 object-contain"
               />
-            ) : (
-              <div
-                aria-hidden="true"
-                className="flex h-full items-center justify-center font-accent text-4xl text-line"
-              >
-                桜
-              </div>
-            )}
-          </div>
-          <div className="p-5 text-white">
-            <p className="font-display text-xl leading-snug">
-              {title || "Your event title"}
+            </div>
+          ) : (
+            <EventDescriptionMedia
+              description={description.trim() || null}
+              className="mt-3"
+            />
+          )}
+          {venue && (
+            <p className="mt-3.5 text-sm text-ink-soft">
+              <EventMeta icon="pin">{venue}</EventMeta>
             </p>
-            <div className="mt-3 space-y-1 text-sm text-white/80">
-              {dateLabel && <p>{dateLabel}</p>}
-              {timeLabel && <p>{timeLabel}</p>}
-              {schedule && <p>{schedule}</p>}
-              {location && <p>{location}</p>}
-            </div>
-            <div className="mt-4 flex items-center gap-2">
-              <div className="flex-1 rounded-md bg-white/15 py-2.5 text-center text-sm font-semibold">
-                Learn More
-              </div>
-              {signupUrl.trim() && (
-                <div className="rounded-md bg-indigo px-3.5 py-2.5 text-center text-xs font-semibold tracking-[0.08em] uppercase">
-                  Sign Up
-                </div>
-              )}
-            </div>
+          )}
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-3 pt-3">
+            <span className="font-display text-sm font-semibold text-indigo">
+              Details
+            </span>
+            {signupUrl.trim() && (
+              <span className="rounded-md bg-indigo px-3.5 py-2 font-display text-xs font-semibold tracking-[0.08em] text-white uppercase">
+                Sign Up
+              </span>
+            )}
           </div>
         </div>
       </aside>
 
       <div className="space-y-4 lg:col-span-2">
         {error && <AdminAlert>{error}</AdminAlert>}
+        {missing.length > 0 && (
+          <AdminRequirements missing={missing} action="save this event" />
+        )}
         <AdminFormActions>
           <AdminButton onClick={() => router.push("/admin/events")}>
             Cancel

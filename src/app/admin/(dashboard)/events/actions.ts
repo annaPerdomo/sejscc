@@ -82,7 +82,22 @@ export async function updateEvent(id: string, input: EventInput) {
   await requireUser();
   const [existing] = await db.select().from(events).where(eq(events.id, id));
   if (!existing) throw new Error("Event not found.");
-  await db.update(events).set(eventValues(input)).where(eq(events.id, id));
+  const values = eventValues(input);
+  await db.update(events).set(values).where(eq(events.id, id));
+
+  // Best-effort cleanup of flyers this update dropped or replaced.
+  const kept = new Set([values.flyerUrl, values.flyerDownloadUrl]);
+  const orphans = [existing.flyerUrl, existing.flyerDownloadUrl].filter(
+    (url): url is string => Boolean(url) && !kept.has(url)
+  );
+  if (orphans.length) {
+    try {
+      await del(orphans);
+    } catch (error) {
+      console.error("Failed to delete flyer blobs:", error);
+    }
+  }
+
   revalidateSite();
 }
 

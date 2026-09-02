@@ -41,7 +41,7 @@ export default async function AdminEventsPage() {
       {allEvents.length === 0 ? (
         <AdminEmptyState title="No events yet">
           Click “Add New Event” to post your first event — all you need is a
-          flyer and a title.
+          title.
         </AdminEmptyState>
       ) : (
         <ul className="mt-8 space-y-3">

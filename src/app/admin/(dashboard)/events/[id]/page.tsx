@@ -37,7 +37,11 @@ export default async function EditEventPage({
           redirectTo="/admin/events"
         />
       </div>
-      <EventForm event={event} repeatPhrases={dict.events.repeat} />
+      <EventForm
+        event={event}
+        repeatPhrases={dict.events.repeat}
+        atCenterLabel={dict.events.atCenter}
+      />
     </div>
   );
 }
