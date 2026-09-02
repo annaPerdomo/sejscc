@@ -115,6 +115,12 @@ export default async function HomePage() {
               {dict.home.viewAll}
             </Link>
           </div>
+        </div>
+        <div
+          className={`relative mx-auto px-4 sm:px-6 ${
+            upcoming.length > 0 ? "max-w-6xl 2xl:max-w-wide" : "max-w-6xl"
+          }`}
+        >
           {upcoming.length > 0 ? (
             <UpcomingEvents events={upcoming} />
           ) : (

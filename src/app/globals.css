@@ -30,6 +30,9 @@
   --aspect-photo: 3 / 2;
   --aspect-band: 5 / 2;
 
+  /* Four across at this width keeps the card width three across has in max-w-6xl. */
+  --container-wide: 96rem;
+
   --text-watermark: clamp(12rem, 24vw, 25rem);
   --text-watermark--line-height: 1;
 }
@@ -216,6 +219,12 @@ body {
   @media (min-width: 64rem) {
     .event-track {
       --event-cards: 3;
+    }
+  }
+
+  @media (min-width: 96rem) {
+    .event-track {
+      --event-cards: 4;
     }
   }
 

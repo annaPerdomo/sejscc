@@ -14,7 +14,7 @@ import { eventsHeroPhotos, photoFor } from "@/lib/photos";
 
 export const revalidate = 300;
 
-const UPCOMING_PREVIEW = 6;
+const UPCOMING_PREVIEW = 12;
 const PAST_PREVIEW = 4;
 
 // Tiles drop from the end on narrow screens: the two-column grid only fills
@@ -106,6 +106,7 @@ export default async function EventsPage() {
         id="upcoming"
         surface="azure"
         tight
+        wide
         watermark="催"
         watermarkClassName="-top-20 -left-12 text-magenta/5"
         accent={dict.events.upcomingAccent}
@@ -114,7 +115,7 @@ export default async function EventsPage() {
       >
         {upcoming.length > 0 ? (
           <>
-            <div className="grid gap-7 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-7 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
               {upcoming.slice(0, UPCOMING_PREVIEW).map((event, i) => (
                 <EventCard
                   key={event.id}
@@ -131,7 +132,7 @@ export default async function EventsPage() {
               lessLabel={dict.events.upcomingShowLess}
               more={
                 upcoming.length > UPCOMING_PREVIEW ? (
-                  <div className="mt-7 grid gap-7 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="mt-7 grid gap-7 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
                     {upcoming.slice(UPCOMING_PREVIEW).map((event, i) => (
                       <EventCard
                         key={event.id}
@@ -189,6 +190,7 @@ export default async function EventsPage() {
         <PageSection
           id="past"
           surface="mist"
+          wide
           watermark="昔"
           watermarkClassName="-right-12 -bottom-20 text-indigo/5"
           accent={dict.events.pastAccent}

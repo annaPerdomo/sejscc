@@ -25,6 +25,7 @@ export function PageSection({
   id,
   surface,
   tight = false,
+  wide = false,
   watermark,
   watermarkClassName,
   accent,
@@ -36,6 +37,7 @@ export function PageSection({
   id?: string;
   surface: keyof typeof surfaces;
   tight?: boolean;
+  wide?: boolean;
   watermark: string;
   watermarkClassName: string;
   accent: string;
@@ -64,6 +66,12 @@ export function PageSection({
             <p className="mt-3 max-w-2xl leading-relaxed text-ink-soft">{lede}</p>
           )}
         </div>
+      </div>
+      <div
+        className={`relative mx-auto px-4 sm:px-6 ${
+          wide ? "max-w-6xl 2xl:max-w-wide" : "max-w-6xl"
+        }`}
+      >
         {children}
       </div>
     </section>

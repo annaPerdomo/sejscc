@@ -9,7 +9,8 @@ import { describeRepeat } from "@/lib/recurrence";
 import { getDictionary, getLocale } from "@/lib/dictionaries";
 import { localePath } from "@/lib/i18n";
 
-const DEFAULT_SIZES = "(max-width: 640px) 92vw, (max-width: 1024px) 46vw, 31vw";
+const DEFAULT_SIZES =
+  "(max-width: 640px) 92vw, (max-width: 1024px) 46vw, (max-width: 1536px) 31vw, 360px";
 export const FOUR_UP_SIZES =
   "(max-width: 640px) 92vw, (max-width: 1024px) 46vw, 23vw";
 

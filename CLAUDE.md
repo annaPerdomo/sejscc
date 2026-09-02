@@ -22,8 +22,10 @@ All design tokens live in `@theme` in [globals.css](src/app/globals.css)
 `indigo`, `indigo-deep`, `sky`, `magenta`, `magenta-deep`, `blossom`, `gold`,
 `sand`; surface colors, for backgrounds only: `paper`, `mist`, `cloud`,
 `cream`, `azure`, `celadon`, `peach`, `lilac`; aspect ratios: `aspect-flyer` (flyers),
-`aspect-card` (card media), `aspect-photo`, `aspect-band`; fonts: `font-sans` (Zen Maru
-Gothic, body copy), `font-display` (Jost, headings and UI labels),
+`aspect-card` (card media), `aspect-photo`, `aspect-band`; widths: `max-w-wide`
+(the event rows, wider than the `max-w-6xl` the rest of a section sits in);
+fonts: `font-sans` (Zen Maru Gothic, body copy), `font-display` (Jost,
+headings and UI labels),
 `font-accent` (Shippori Mincho, Japanese kicker text)). Every component must
 be built from these tokens via Tailwind utility classes.
 

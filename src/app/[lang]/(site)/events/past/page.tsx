@@ -77,19 +77,23 @@ export default async function PastEventsPage() {
 
       <section className="relative overflow-clip bg-white py-14 sm:py-16">
         <KanjiWatermark char="縁" className="-right-12 -bottom-20 text-indigo/5" />
-        <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
-          {years.length === 0 ? (
+        {years.length === 0 ? (
+          <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
             <p className="rounded-2xl border border-line bg-mist p-8 text-ink-soft">
               {archive.empty}
             </p>
-          ) : (
-            <div className="space-y-14">
-              {years.map(([year, yearEvents]) => (
-                <div key={year}>
+          </div>
+        ) : (
+          <div className="space-y-14">
+            {years.map(([year, yearEvents]) => (
+              <div key={year}>
+                <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
                   <h2 className="reveal-rise border-b border-line pb-3 font-display text-2xl text-ink">
                     {archive.yearLabel.replace("{year}", String(year))}
                   </h2>
-                  <div className="mt-6 grid gap-7 sm:grid-cols-2 lg:grid-cols-4">
+                </div>
+                <div className="relative mx-auto mt-6 max-w-6xl px-4 sm:px-6 lg:max-w-wide">
+                  <div className="grid gap-7 sm:grid-cols-2 lg:grid-cols-4">
                     {yearEvents.map((event, i) => (
                       <EventCard
                         key={event.id}
@@ -101,10 +105,10 @@ export default async function PastEventsPage() {
                     ))}
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
     </>
   );
