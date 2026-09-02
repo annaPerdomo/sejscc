@@ -98,4 +98,21 @@ export const eventsHeroPhotos = [
 
 export const groupsHeroPhoto = "/photos/groups-hero-2.jpg";
 
-export const paymentsHeroPhotos = ["/photos/payments-hero-1.jpg"];
+export const donatePhotos = {
+  /** Matches `payments.donateReasons`. */
+  reasons: [
+    "/photos/donate-dojo.jpg",
+    "/photos/donate-cleanup.jpg",
+    "/photos/donate-campus.jpg",
+    "/photos/donate-classroom.jpg",
+  ],
+  /** Matches `payments.mosaicPhotoAlts`. */
+  mosaic: [
+    "/photos/donate-kendo.jpg",
+    "/photos/donate-mochitsuki.jpg",
+    "/photos/donate-kitchen.jpg",
+    "/photos/donate-festival.jpg",
+    "/photos/donate-kindergarten.jpg",
+    "/photos/donate-community.jpg",
+  ],
+} as const;

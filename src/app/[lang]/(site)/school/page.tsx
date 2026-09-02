@@ -11,7 +11,7 @@ import { SectionHeading } from "@/components/section-heading";
 import { SectionKicker } from "@/components/section-kicker";
 import { SitePhoto } from "@/components/site-photo";
 import { WaveDivider } from "@/components/wave-divider";
-import { getDictionary, getDictionaryFor, getLocale } from "@/lib/dictionaries";
+import { getDictionary, getDictionaryFor } from "@/lib/dictionaries";
 import { hasLocale, localePath } from "@/lib/i18n";
 import { photoFor, schoolPhotos } from "@/lib/photos";
 import { ADULT_REGISTRATION_URL, YOUTH_REGISTRATION_URL } from "@/lib/school";
@@ -58,13 +58,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function SchoolPage() {
-  const [dict, lang] = await Promise.all([getDictionary(), getLocale()]);
-  const href = (path: string) => localePath(lang, path);
+  const dict = await getDictionary();
 
   const planLinks: Record<string, { href: string; variant: "primary" | "ink" | "magenta" }> = {
     youth: { href: YOUTH_REGISTRATION_URL, variant: "primary" },
     adult: { href: ADULT_REGISTRATION_URL, variant: "ink" },
-    dues: { href: `${href("/payments")}#dues`, variant: "magenta" },
+    dues: { href: `mailto:${SCHOOL_EMAIL}`, variant: "magenta" },
   };
 
   const heroPhotos = schoolPhotos.hero.map((src, i) =>

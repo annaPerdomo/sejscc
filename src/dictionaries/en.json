@@ -19,7 +19,7 @@
     "japaneseSchool": "Japanese School",
     "events": "Events",
     "groups": "Groups & Programs",
-    "payments": "Payments",
+    "payments": "Support Us",
     "volunteerSignIn": "Volunteer sign-in"
   },
   "footer": {
@@ -665,7 +665,7 @@
             "Membership entitles all family members to participate in any organization",
             "Participation is open to anyone regardless of race or religion"
           ],
-          "cta": "Dues & payments"
+          "cta": "Email about dues"
         }
       ]
     },
@@ -701,60 +701,69 @@
     }
   },
   "payments": {
-    "metaTitle": "Payments & Donations",
-    "metaDescription": "Donate to the Southeast Japanese School & Community Center or pay dues and tuition.",
+    "metaTitle": "Donate",
+    "metaDescription": "Donate to the Southeast Japanese School & Community Center and help keep the campus, the classrooms and the programs going.",
     "kickerAccent": "ご支援",
-    "kickerCaption": "Tuition, Dues & Giving",
-    "titleLine1": "Payments &",
-    "titleLine2": "Donations",
-    "lede": "Every payment method below sends 100% of your money to the center — we've chosen options with no processing fees wherever we can.",
-    "donateCta": "Donate now",
-    "duesCta": "Dues & tuition",
+    "kickerCaption": "Support the Center",
+    "titleLine1": "Keep the doors",
+    "titleLine2": "open.",
+    "lede": "SEJSCC is a 501(c)(3), so every gift is tax-deductible.",
     "photoLabel": "Photo coming soon",
-    "heroPhotoAlts": [
-      "Volunteers cooking at the annual pancake breakfast"
-    ],
-    "donateAccent": "ご寄付",
-    "donateCaption": "Give to the Center",
-    "duesAccent": "会費・授業料",
-    "duesCaption": "Pay Fee-Free",
-    "donateTitle": "Donate",
-    "donateText": "Dues and tuition cover the teaching. Donations are what keep the buildings standing and the doors open — and SEJSCC is a 501(c)(3), so your gift is tax-deductible.",
     "donateFrame": "Donate to SEJSCC",
     "donateTroubleBefore": "Having trouble with the form? ",
     "donateTroubleLink": "Open it on Zeffy",
     "donateSoon": "Online donations are coming soon.",
     "donateSoonBefore": "Until then, donations are gratefully accepted by Zelle or by check (see below), or contact the center at ",
     "donateSoonAfter": ".",
-    "duesTitle": "Dues, Tuition & Fees",
-    "duesText": "Participant dues, Japanese school tuition, registration, and textbooks can be paid two ways — both fee-free, so the center receives your full payment.",
+    "donateIntro": "Your generosity supports Japanese language classes, martial arts, ikebana, Japanese dance, and koto — activities that open the rich culture and traditions of Japan to the whole community. The center also runs youth sports, social dancing, hula, ukulele, and senior activities. We are a volunteer-based organization, and 100% of your support goes toward SEJSCC's goals.",
+    "impactTitle": "What donations pay for",
+    "mosaicAccent": "この場所を守る",
+    "mosaicCaption": "A Century of Gathering",
+    "mosaicTitle": "This is what your gift protects",
+    "mosaicText": "Kendo in the gym, mochitsuki in the hall, udon out of the kitchen, kindergarten in the classroom — every one of them happens under a roof this community has to keep up.",
+    "mosaicPhotoAlts": [
+      "Kendo students and instructors in armor, gathered in the center's gym",
+      "Volunteers around the mochitsuki mortar after a morning of pounding rice",
+      "Volunteers plating pies and dinners in the center's kitchen",
+      "The summer festival cooking crew under the food booth canopy",
+      "Kindergarten students with their two teachers in the hall",
+      "Community members seated together at the centennial celebration"
+    ],
+    "otherAccent": "その他の方法",
+    "otherCaption": "More Ways to Give",
+    "otherTitle": "Other ways to give",
+    "otherText": "Prefer not to use the form? Both of these reach the center fee-free, so it receives your full gift.",
     "zelleTitle": "Zelle",
-    "zelleText": "Send payments through your bank's app with Zelle — instant and no fees.",
+    "zelleText": "Send your gift through your bank's app with Zelle — instant and no fees.",
     "zelleBefore": "Contact ",
     "zelleAfter": " for the center's Zelle details.",
-    "zelleMemo": "Please include the student or member name and what the payment is for in the memo.",
+    "zelleMemo": "Please put your name and “donation” in the memo so we can send a receipt for your taxes.",
     "checkTitle": "Check by Mail",
     "checkBefore": "Make checks payable to ",
     "checkAfter": " and mail to:",
-    "checkMemo": "Include a note with the student or member name and what the payment covers.",
-    "questionsBefore": "Questions about tuition amounts or what you owe? Email ",
+    "checkMemo": "Write “donation” in the memo line, and include your address so we can mail a receipt.",
+    "questionsBefore": "Questions about giving, employer matching, or a gift in someone's memory? Email ",
     "questionsAfter": ".",
     "donateReasons": [
       {
         "title": "Modernizing the campus",
-        "text": "Classrooms, the hall, and the dojo were built for a different century. Updating them keeps every program usable for the next generation."
+        "text": "Classrooms, the hall, and the dojo were built for a different century. Updating them keeps every program usable for the next generation.",
+        "photoAlt": "Judo instructors kneeling in a line on the dojo's mats"
       },
       {
         "title": "Maintenance & repairs",
-        "text": "Roofing, plumbing, flooring, and the kitchen all need work that a volunteer Saturday can't cover on its own."
+        "text": "Roofing, plumbing, flooring, and the kitchen all need work beyond what a volunteer work day can cover.",
+        "photoAlt": "A father and his son scrubbing a classroom wall on community clean-up day"
       },
       {
         "title": "Solar & utilities",
-        "text": "Moving the campus to solar cuts the power bills that grow every year, so more of what we raise goes to programs instead of overhead."
+        "text": "Moving the campus to solar cuts the power bills that grow every year, so more of what we raise goes to programs instead of overhead.",
+        "photoAlt": "The community gathered outside the center's buildings on a clear afternoon"
       },
       {
         "title": "Rising costs",
-        "text": "Insurance, water, and supplies climb faster than dues do. Giving keeps tuition affordable for families who need it."
+        "text": "Insurance, water, and supplies climb faster than dues do. Giving keeps tuition affordable for families who need it.",
+        "photoAlt": "A classroom of students at their desks with the flower arrangements they made"
       }
     ]
   },
