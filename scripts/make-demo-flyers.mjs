@@ -370,7 +370,11 @@ function flyerHtml(event) {
 
 const only = process.argv.slice(2).filter((a) => !a.startsWith("-"));
 const events = DEMO_EVENTS.filter(
-  (event) => !event.flyer && event.date && (!only.length || only.includes(event.slug))
+  (event) =>
+    !event.flyer &&
+    !event.noFlyer &&
+    event.date &&
+    (!only.length || only.includes(event.slug))
 );
 
 mkdirSync(OUT_DIR, { recursive: true });

@@ -133,6 +133,7 @@ async function uploadFlyer(name) {
 }
 
 function flyerFor(event) {
+  if (event.noFlyer) return null;
   // The real flyers live in the gitignored materials/, so a fresh clone won't
   // have them — fall through to the stand-in rather than dying on a bad path.
   if (event.flyer && existsSync(path.join(flyerDir, event.flyer))) {

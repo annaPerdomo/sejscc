@@ -28,7 +28,8 @@ export const RETIRED_SLUGS = [
 ];
 
 // `flyer` names a file in the flyers directory (--flyers=..., default
-// ./materials); without one the card renders the logo placeholder. `repeat` +
+// ./materials); without one, make-demo-flyers.mjs draws a stand-in. `noFlyer`
+// opts out of both, so the board can see a card with no flyer at all. `repeat` +
 // `until` post a single row that moves itself forward.
 export const DEMO_EVENTS = [
   {
@@ -193,6 +194,7 @@ export const DEMO_EVENTS = [
   {
     slug: "monthly-bingo-2026-09-12",
     kind: "bingo",
+    noFlyer: true,
     title: "Monthly Bingo Games — Hosted by Gakuen",
     date: "2026-09-12",
     start: "17:00",
