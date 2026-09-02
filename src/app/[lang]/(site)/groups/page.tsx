@@ -129,7 +129,7 @@ export default async function GroupsPage() {
       {hasWeek && (
         <section
           id="week"
-          className="section-navy-scene relative scroll-mt-28 overflow-clip text-white"
+          className="section-navy-scene edge-flush relative scroll-mt-28 overflow-clip text-white"
         >
           <KanjiWatermark char="週" className="-right-12 -bottom-20 text-white/5" />
           <WaveDivider id="week-top" position="top" seed={19} className="relative text-white" />

@@ -47,7 +47,7 @@ export function PageHero({
     : `pt-9 sm:pt-11 ${below ? "pb-8" : "pb-12 lg:pb-18"}`;
 
   return (
-    <section className={`relative overflow-clip ${wash}`}>
+    <section className={`edge-flush relative overflow-clip ${wash}`}>
       <KanjiWatermark char={watermark} className={watermarkClassName} />
       <div
         className={`relative mx-auto grid max-w-6xl gap-8 px-4 sm:px-6 lg:items-center ${

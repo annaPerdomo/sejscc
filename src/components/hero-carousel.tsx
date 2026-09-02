@@ -78,7 +78,7 @@ export function HeroCarousel({
 
   return (
     <section
-      className="relative overflow-clip bg-navy"
+      className="edge-flush relative overflow-clip bg-navy"
       onMouseEnter={() => setHoverPaused(true)}
       onMouseLeave={() => setHoverPaused(false)}
       onFocus={() => setFocusPaused(true)}

@@ -162,7 +162,7 @@ export default async function SchoolPage() {
 
       <section
         id="year"
-        className="section-navy-scene relative scroll-mt-28 overflow-clip text-white"
+        className="section-navy-scene edge-flush relative scroll-mt-28 overflow-clip text-white"
       >
         <KanjiWatermark char="祭" className="-bottom-24 -left-14 text-white/5" />
         <WaveDivider id="school-year-top" position="top" seed={12} className="relative text-white" />
@@ -197,7 +197,7 @@ export default async function SchoolPage() {
 
       <section
         id="tuition"
-        className="seigaiha-rings relative scroll-mt-28 bg-mist pt-14 pb-20 sm:pt-16 sm:pb-24"
+        className="seigaiha-rings seigaiha-rings-fade edge-flush relative scroll-mt-28 bg-mist pt-14 pb-20 sm:pt-16 sm:pb-24"
       >
         <BrushEdge id="school-tuition" variant="paper" className="absolute inset-x-0 bottom-0" />
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6">

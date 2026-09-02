@@ -65,7 +65,13 @@ be built from these tokens via Tailwind utility classes.
   classes in `@layer components` in [globals.css](src/app/globals.css):
   `surface-card` (plus `surface-card-link` for a clickable card),
   `button-primary`, `button-donate`, `seigaiha-rings` (with
-  `seigaiha-rings-sky` and the slow-moving `seigaiha-rings-drift`),
+  `seigaiha-rings-sky`, the slow-moving `seigaiha-rings-drift`, and
+  `seigaiha-rings-fade` for a section whose texture would otherwise start as a
+  hard line under the divider above it), `edge-flush` (on a section that ends
+  in a wave or brush edge, so the next one covers the hairline the two
+  antialiased edges leave at the join — the next section has to be positioned
+  and opaque at its top edge, or the overlap paints over the section it is
+  meant to hide behind),
   `reveal-rise` / `reveal-bloom` / `reveal-swing-left` / `reveal-swing-right`
   (plus `reveal-stagger` on a grid to cascade its columns — the cascade
   repeats with the column count, so a grid that isn't two-then-four across

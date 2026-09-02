@@ -86,6 +86,8 @@ body {
     mask-repeat: no-repeat;
   }
 
+  /* The layers overlap by a pixel where they meet: butted edge to edge, the
+     two partial coverages add to less than 1 and leave a pale hairline. */
   .between-waves {
     mask-image:
       var(--wave-cap-mask),
@@ -93,11 +95,11 @@ body {
       url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 110' preserveAspectRatio='none'%3E%3Cpath fill='%23fff' d='M0,0 L1440,0 L1440,26 C1200,58 950,10 710,28 C470,46 220,6 0,38 Z'/%3E%3C/svg%3E");
     mask-size:
       100% var(--wave-cap),
-      100% calc(100% - var(--wave-cap) - var(--wave-tail)),
+      100% calc(100% - var(--wave-cap) - var(--wave-tail) + 2px),
       100% var(--wave-tail);
     mask-position:
       0 0,
-      0 var(--wave-cap),
+      0 calc(var(--wave-cap) - 1px),
       0 100%;
   }
 
@@ -105,7 +107,7 @@ body {
     mask-image: var(--wave-cap-mask), linear-gradient(#fff, #fff);
     mask-size:
       100% var(--wave-cap),
-      100% calc(100% - var(--wave-cap));
+      100% calc(100% - var(--wave-cap) + 1px);
     mask-position:
       0 0,
       0 100%;
@@ -125,6 +127,12 @@ body {
       --wave-cap: 7.5rem;
       --wave-tail: 7rem;
     }
+  }
+
+  /* Two butted antialiased edges let the darker background show through the
+     join as a hairline; a pixel of overlap covers it. */
+  .edge-flush {
+    margin-bottom: -1px;
   }
 
   .section-wash-groups {
@@ -384,12 +392,23 @@ body {
     inset: 0;
     z-index: -1;
     pointer-events: none;
-    background: var(--seigaiha-ring-color, var(--color-line));
+    background: var(
+      --seigaiha-ring-paint,
+      var(--seigaiha-ring-color, var(--color-line))
+    );
     mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='80' viewBox='0 0 160 80'%3E%3Cdefs%3E%3Cg id='s'%3E%3Ccircle r='40' fill='black'/%3E%3Cg fill='none' stroke='white' stroke-width='2.0'%3E%3Ccircle r='40'/%3E%3Ccircle r='30'/%3E%3Ccircle r='20'/%3E%3Ccircle r='10'/%3E%3C/g%3E%3C/g%3E%3C/defs%3E%3Cuse href='%23s'/%3E%3Cuse href='%23s' x='80'/%3E%3Cuse href='%23s' x='160'/%3E%3Cuse href='%23s' x='-40' y='20'/%3E%3Cuse href='%23s' x='40' y='20'/%3E%3Cuse href='%23s' x='120' y='20'/%3E%3Cuse href='%23s' x='200' y='20'/%3E%3Cuse href='%23s' y='40'/%3E%3Cuse href='%23s' x='80' y='40'/%3E%3Cuse href='%23s' x='160' y='40'/%3E%3Cuse href='%23s' x='-40' y='60'/%3E%3Cuse href='%23s' x='40' y='60'/%3E%3Cuse href='%23s' x='120' y='60'/%3E%3Cuse href='%23s' x='200' y='60'/%3E%3Cuse href='%23s' y='80'/%3E%3Cuse href='%23s' x='80' y='80'/%3E%3Cuse href='%23s' x='160' y='80'/%3E%3Cuse href='%23s' x='-40' y='100'/%3E%3Cuse href='%23s' x='40' y='100'/%3E%3Cuse href='%23s' x='120' y='100'/%3E%3Cuse href='%23s' x='200' y='100'/%3E%3C/svg%3E");
     mask-mode: luminance;
     mask-repeat: repeat;
     mask-size: 160px 80px;
     opacity: var(--seigaiha-ring-opacity, 50%);
+  }
+
+  .seigaiha-rings-fade {
+    --seigaiha-ring-paint: linear-gradient(
+      to bottom,
+      transparent,
+      var(--seigaiha-ring-color, var(--color-line)) 8rem
+    );
   }
 
   .seigaiha-rings-sky {

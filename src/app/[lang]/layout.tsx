@@ -46,8 +46,10 @@ export default async function RootLayout({ children, params }: Props) {
   const { lang } = await params;
   if (!hasLocale(lang)) notFound();
 
+  // iOS Safari paints the html background behind the toolbar and in the
+  // overscroll bounce, where body's near-white would band against the footer.
   return (
-    <html lang={lang}>
+    <html lang={lang} className="bg-navy">
       <body
         className={`${jost.variable} ${shipporiMincho.variable} ${zenMaruGothic.variable} font-sans antialiased`}
       >

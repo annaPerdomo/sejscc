@@ -182,7 +182,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section id="school" className="section-navy-scene relative scroll-mt-28 overflow-clip text-white">
+      <section id="school" className="section-navy-scene edge-flush relative scroll-mt-28 overflow-clip text-white">
         <KanjiWatermark char="学" className="-top-14 -left-10 text-white/5" />
         <WaveDivider id="school-top" position="top" seed={12} className="relative text-white" />
         <div className="relative mx-auto grid max-w-6xl gap-10 px-4 pt-6 pb-8 sm:px-6 sm:pb-10 lg:grid-cols-[1fr_auto] lg:items-center">
@@ -320,7 +320,7 @@ export default async function HomePage() {
         <BrushEdge id="school-bottom" variant="ink" className="absolute inset-x-0 bottom-0" />
       </section>
 
-      <section className="section-wash-groups seigaiha-rings">
+      <section className="section-wash-groups seigaiha-rings seigaiha-rings-fade edge-flush">
         <KanjiWatermark
           char="輪"
           className="-right-10 -bottom-16 text-indigo/5"

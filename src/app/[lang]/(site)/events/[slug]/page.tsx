@@ -134,7 +134,7 @@ export default async function EventPage({ params }: Props) {
 
   return (
     <>
-      <section className="section-navy-scene relative overflow-clip text-white">
+      <section className="section-navy-scene edge-flush relative overflow-clip text-white">
         <KanjiWatermark char="祭" className="-right-12 -bottom-10 text-white/5" />
         <div className="enter-stagger relative mx-auto max-w-6xl px-4 pt-6 pb-12 sm:px-6 sm:pt-7 sm:pb-14">
           <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-3">
