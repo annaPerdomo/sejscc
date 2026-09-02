@@ -36,7 +36,7 @@ export function AdminSidebar({
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="section-navy-scene relative isolate overflow-clip text-white lg:flex lg:w-72 lg:shrink-0 lg:flex-col">
+    <header className="section-navy-scene relative isolate overflow-clip text-white lg:sticky lg:top-0 lg:flex lg:h-dvh lg:w-72 lg:shrink-0 lg:flex-col lg:self-start">
       <KanjiWatermark char="絆" className="-bottom-16 -left-14 text-white/5" />
       <span
         aria-hidden="true"
@@ -88,7 +88,7 @@ export function AdminSidebar({
 
       <div
         id="admin-sidebar-panel"
-        className={`relative px-5 pb-5 lg:flex lg:flex-1 lg:flex-col lg:px-8 lg:pb-9 ${
+        className={`relative px-5 pb-5 lg:flex lg:min-h-0 lg:flex-1 lg:flex-col lg:overflow-y-auto lg:px-8 lg:pb-9 ${
           open ? "block" : "hidden lg:flex"
         }`}
       >
