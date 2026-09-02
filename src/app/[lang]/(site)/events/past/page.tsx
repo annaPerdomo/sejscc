@@ -93,14 +93,14 @@ export default async function PastEventsPage() {
                   </h2>
                 </div>
                 <div className="relative mx-auto mt-6 max-w-6xl px-4 sm:px-6 lg:max-w-wide">
-                  <div className="grid gap-7 sm:grid-cols-2 lg:grid-cols-4">
+                  <div className="reveal-stagger grid gap-7 sm:grid-cols-2 lg:grid-cols-4">
                     {yearEvents.map((event, i) => (
                       <EventCard
                         key={event.id}
                         event={event}
                         index={i}
                         sizes={FOUR_UP_SIZES}
-                        className="reveal-rise"
+                        className="reveal-bloom"
                       />
                     ))}
                   </div>

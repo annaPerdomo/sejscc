@@ -7,6 +7,7 @@ export function HeroPhotos({
   tileClassName = "",
   placeholderLabel,
   preloadFirst = false,
+  revealOnScroll = false,
   className = "",
 }: {
   layout: readonly string[];
@@ -17,10 +18,14 @@ export function HeroPhotos({
   tileClassName?: string;
   placeholderLabel: string;
   preloadFirst?: boolean;
+  revealOnScroll?: boolean;
   className?: string;
 }) {
+  const tileEntrance = revealOnScroll ? "reveal-bloom" : "";
   return (
-    <div className={`reveal-rise ${className}`}>
+    <div
+      className={`${revealOnScroll ? "reveal-stagger" : "enter-stagger"} ${className}`}
+    >
       {layout.map((placement, i) => (
         <SitePhoto
           key={i}
@@ -28,7 +33,7 @@ export function HeroPhotos({
           sizes={sizes[i]}
           placeholderLabel={placeholderLabel}
           preload={preloadFirst && i === 0}
-          className={`${tileClassName} ${placement}`}
+          className={`${tileEntrance} transition-transform duration-300 ease-out hover:-translate-y-1 ${tileClassName} ${placement}`}
         />
       ))}
     </div>

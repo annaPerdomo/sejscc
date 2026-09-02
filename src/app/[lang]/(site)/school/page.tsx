@@ -109,7 +109,7 @@ export default async function SchoolPage() {
           </>
         }
         below={
-          <dl className="surface-card grid gap-px overflow-clip bg-line sm:grid-cols-2 lg:grid-cols-4">
+          <dl className="enter-stagger surface-card grid gap-px overflow-clip bg-line sm:grid-cols-2 lg:grid-cols-4">
             {dict.school.facts.map((fact) => (
               <div key={fact.label} className="bg-white px-5 py-4">
                 <dt className="font-display text-[11px] font-semibold tracking-[0.18em] text-stone uppercase">
@@ -186,6 +186,8 @@ export default async function SchoolPage() {
             <SchoolYear
               months={months}
               tablistLabel={dict.school.year.tablistLabel}
+              pauseLabel={dict.school.year.pauseLabel}
+              playLabel={dict.school.year.playLabel}
               photoLabel={dict.school.photoLabel}
             />
           </div>
@@ -214,7 +216,7 @@ export default async function SchoolPage() {
             </p>
           </div>
 
-          <div className="grid items-stretch gap-5 lg:grid-cols-3">
+          <div className="reveal-stagger-3 grid items-stretch gap-5 lg:grid-cols-3">
             {dict.school.tuition.plans.map((plan) => {
               // Plan ids come from the dictionary, so a locale can carry one this map lacks.
               const link = planLinks[plan.id];
@@ -224,7 +226,7 @@ export default async function SchoolPage() {
               return (
                 <div
                   key={plan.id}
-                  className={`surface-card reveal-rise relative flex flex-col p-6 sm:p-7 ${
+                  className={`surface-card reveal-bloom relative flex flex-col p-6 sm:p-7 ${
                     featured ? "border-2 border-indigo" : ""
                   }`}
                 >
@@ -310,7 +312,7 @@ export default async function SchoolPage() {
               </blockquote>
             </div>
           </div>
-          <div className="reveal-rise flex flex-col items-center gap-6">
+          <div className="reveal-bloom flex flex-col items-center gap-6">
             {[
               {
                 label: dict.school.history.thenCaption,
@@ -325,7 +327,7 @@ export default async function SchoolPage() {
             ].map((frame, i) => (
               <figure
                 key={frame.label}
-                className={`w-full max-w-xl bg-white p-2.5 pb-4 shadow-lg ${
+                className={`w-full max-w-xl bg-white p-2.5 pb-4 shadow-lg transition-transform duration-300 ease-out hover:-translate-y-1 hover:rotate-0 ${
                   i === 0 ? "lg:-rotate-2" : "lg:rotate-2"
                 }`}
               >
@@ -344,7 +346,7 @@ export default async function SchoolPage() {
         </div>
       </section>
 
-      <section className="seigaiha-rings seigaiha-rings-sky relative bg-navy text-white">
+      <section className="seigaiha-rings seigaiha-rings-sky seigaiha-rings-drift relative bg-navy text-white">
         <WaveDivider
           id="school-join-top"
           position="top"

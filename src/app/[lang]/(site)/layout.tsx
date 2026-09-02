@@ -56,7 +56,7 @@ export default async function SiteLayout({
                           route to the flyer, time and place. */}
                       <Link
                         href={href(`/events/${nextEvent.slug}`)}
-                        className="min-w-0 truncate text-xs text-white/85 underline-offset-4 hover:text-white hover:underline"
+                        className="min-w-0 truncate text-xs text-white/85 underline-offset-4 transition-colors hover:text-white hover:underline"
                       >
                         {nextEvent.title}
                         {formatEventDate(nextEvent.startAt, lang) &&
@@ -100,13 +100,13 @@ export default async function SiteLayout({
         </div>
         <header className="border-b border-line bg-paper/95 backdrop-blur">
           <div className="relative flex items-center justify-between gap-4 px-5 py-3 sm:px-10 lg:px-11">
-            <Link href={href("/")} className="flex min-w-0 items-center gap-2.5 sm:gap-3">
+            <Link href={href("/")} className="group flex min-w-0 items-center gap-2.5 sm:gap-3">
               <Image
                 src="/logo-mark.png"
                 alt=""
                 width={48}
                 height={48}
-                className="h-10 w-10 shrink-0 sm:h-12 sm:w-12"
+                className="h-10 w-10 shrink-0 transition-transform duration-500 ease-out group-hover:rotate-12 sm:h-12 sm:w-12"
               />
               <span className="min-w-0 font-display text-[11px] leading-snug font-semibold tracking-[0.06em] text-ink uppercase sm:text-sm">
                 <span className="block truncate">{dict.header.orgTop}</span>
@@ -140,7 +140,7 @@ export default async function SiteLayout({
 
       <main className="flex-1">{children}</main>
 
-      <footer className="seigaiha-rings seigaiha-rings-sky bg-navy text-white">
+      <footer className="seigaiha-rings seigaiha-rings-sky seigaiha-rings-drift bg-navy text-white">
         <div className="mx-auto grid max-w-6xl grid-cols-2 gap-x-4 gap-y-8 px-4 py-10 sm:grid-cols-3 sm:gap-10 sm:px-6 sm:py-14">
           <div className="col-span-2 sm:col-span-1">
             <div className="flex items-center gap-3">
@@ -179,13 +179,19 @@ export default async function SiteLayout({
             <ul className="mt-4 space-y-2 text-white/80">
               {nav.map((item) => (
                 <li key={item.href}>
-                  <Link href={item.href} className="hover:text-white">
+                  <Link
+                    href={item.href}
+                    className="inline-block transition duration-200 hover:translate-x-1 hover:text-white"
+                  >
                     {item.label}
                   </Link>
                 </li>
               ))}
               <li>
-                <Link href="/admin" className="hover:text-white">
+                <Link
+                  href="/admin"
+                  className="inline-block transition duration-200 hover:translate-x-1 hover:text-white"
+                >
                   {dict.nav.volunteerSignIn}
                 </Link>
               </li>

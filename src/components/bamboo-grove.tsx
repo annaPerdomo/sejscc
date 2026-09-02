@@ -14,7 +14,7 @@ export function BambooGrove() {
       <svg
         viewBox="0 0 480 1500"
         preserveAspectRatio="xMinYMin slice"
-        className="absolute top-0 left-0 hidden h-full w-36 md:block lg:w-48 xl:w-64 2xl:w-72 opacity-10"
+        className="bamboo-sway absolute top-0 left-0 hidden h-full w-36 md:block lg:w-48 xl:w-64 2xl:w-72 opacity-10"
       >
         <defs>
           <path id="bamboo-left-leaf-a" d="M0 1 C40 -8 118 -16 172 -14 C210 -12 236 -6 252 4 C204 16 118 17 58 11 C34 8 12 5 0 1 Z"/>
@@ -94,7 +94,7 @@ export function BambooGrove() {
       <svg
         viewBox="0 0 480 1500"
         preserveAspectRatio="xMaxYMin slice"
-        className="absolute top-0 right-0 hidden h-full w-36 md:block lg:w-48 xl:w-64 2xl:w-72 opacity-10"
+        className="bamboo-sway bamboo-sway-late absolute top-0 right-0 hidden h-full w-36 md:block lg:w-48 xl:w-64 2xl:w-72 opacity-10"
       >
         <defs>
           <path id="bamboo-right-leaf-a" d="M0 1 C40 -8 118 -16 172 -14 C210 -12 236 -6 252 4 C204 16 118 17 58 11 C34 8 12 5 0 1 Z"/>
@@ -166,7 +166,7 @@ export function BambooGrove() {
           <use href="#bamboo-right-leaf-b" transform="translate(130 706) rotate(64) scale(0.52)" opacity="0.38"/>
         </g>
       </svg>
-      <svg viewBox="0 0 260 560" className="absolute top-0 right-0 w-32 opacity-10 md:hidden">
+      <svg viewBox="0 0 260 560" className="bamboo-sway absolute top-0 right-0 w-32 opacity-10 md:hidden">
         <defs>
           <path id="bamboo-corner-leaf-a" d="M0 1 C40 -8 118 -16 172 -14 C210 -12 236 -6 252 4 C204 16 118 17 58 11 C34 8 12 5 0 1 Z"/>
           <path id="bamboo-corner-leaf-b" d="M0 0 C36 -10 96 -12 138 -4 C158 0 172 8 180 18 C144 16 84 12 40 7 C24 5 10 3 0 0 Z"/>

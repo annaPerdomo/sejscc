@@ -137,7 +137,7 @@ export default async function PaymentsPage() {
               </h2>
               <ul className="mt-6 flex flex-col gap-6">
                 {reasons.map((reason) => (
-                  <li key={reason.title} className="flex items-center gap-5">
+                  <li key={reason.title} className="group reveal-swing-left flex items-center gap-5">
                     <SitePhoto
                       photo={reason.photo}
                       sizes="(max-width: 640px) 7rem, (max-width: 1024px) 9rem, 10rem"
@@ -175,6 +175,7 @@ export default async function PaymentsPage() {
           sizes={MOSAIC_SIZES}
           tileClassName="w-full rounded-md border border-line shadow-sm"
           placeholderLabel={dict.payments.photoLabel}
+          revealOnScroll
           className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-5"
         />
       </PageSection>
@@ -189,8 +190,8 @@ export default async function PaymentsPage() {
         title={dict.payments.otherTitle}
         lede={dict.payments.otherText}
       >
-        <div className="grid max-w-4xl gap-5 sm:grid-cols-2">
-          <div className="surface-card reveal-rise p-6">
+        <div className="reveal-stagger-2 grid max-w-4xl gap-5 sm:grid-cols-2">
+          <div className="surface-card reveal-bloom p-6">
             <h3 className="font-display text-xl font-semibold text-ink">
               {dict.payments.zelleTitle}
             </h3>
@@ -215,7 +216,7 @@ export default async function PaymentsPage() {
               {dict.payments.zelleMemo}
             </p>
           </div>
-          <div className="surface-card reveal-rise p-6">
+          <div className="surface-card reveal-bloom p-6">
             <h3 className="font-display text-xl font-semibold text-ink">
               {dict.payments.checkTitle}
             </h3>

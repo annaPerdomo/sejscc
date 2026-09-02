@@ -115,7 +115,7 @@ export default async function EventsPage() {
       >
         {upcoming.length > 0 ? (
           <>
-            <div className="grid gap-7 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+            <div className="reveal-stagger-2-3 grid gap-7 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
               {upcoming.slice(0, UPCOMING_PREVIEW).map((event, i) => (
                 <EventCard
                   key={event.id}
@@ -123,7 +123,7 @@ export default async function EventsPage() {
                   index={i}
                   badge={i === 0 ? dict.events.nextUpBadge : undefined}
                   withSignup
-                  className="reveal-rise"
+                  className="reveal-bloom"
                 />
               ))}
             </div>
@@ -132,14 +132,14 @@ export default async function EventsPage() {
               lessLabel={dict.events.upcomingShowLess}
               more={
                 upcoming.length > UPCOMING_PREVIEW ? (
-                  <div className="mt-7 grid gap-7 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+                  <div className="reveal-stagger-2-3 mt-7 grid gap-7 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
                     {upcoming.slice(UPCOMING_PREVIEW).map((event, i) => (
                       <EventCard
                         key={event.id}
                         event={event}
                         index={UPCOMING_PREVIEW + i}
                         withSignup
-                        className="reveal-rise"
+                        className="reveal-bloom"
                       />
                     ))}
                   </div>
@@ -148,7 +148,7 @@ export default async function EventsPage() {
             >
               <a
                 href="#calendars"
-                className="font-display text-sm font-semibold text-indigo hover:text-indigo-deep"
+                className="link-arrow font-display text-sm font-semibold text-indigo hover:text-indigo-deep"
               >
                 {dict.events.calendars.sectionCta}
               </a>
@@ -197,14 +197,14 @@ export default async function EventsPage() {
           caption={dict.events.pastCaption}
           title={dict.events.pastTitle}
         >
-          <div className="grid gap-7 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="reveal-stagger grid gap-7 sm:grid-cols-2 lg:grid-cols-4">
             {past.slice(0, PAST_PREVIEW).map((event, i) => (
               <EventCard
                 key={event.id}
                 event={event}
                 index={i}
                 sizes={FOUR_UP_SIZES}
-                className="reveal-rise"
+                className="reveal-bloom"
               />
             ))}
           </div>
@@ -213,14 +213,14 @@ export default async function EventsPage() {
             lessLabel={dict.events.pastShowLess}
             more={
               past.length > PAST_PREVIEW ? (
-                <div className="mt-5 grid gap-7 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="reveal-stagger mt-5 grid gap-7 sm:grid-cols-2 lg:grid-cols-4">
                   {past.slice(PAST_PREVIEW).map((event, i) => (
                     <EventCard
                       key={event.id}
                       event={event}
                       index={PAST_PREVIEW + i}
                       sizes={FOUR_UP_SIZES}
-                      className="reveal-rise"
+                      className="reveal-bloom"
                     />
                   ))}
                 </div>
@@ -229,7 +229,7 @@ export default async function EventsPage() {
           >
             <Link
               href={localePath(locale, "/events/past")}
-              className="font-display text-sm font-semibold text-indigo hover:text-indigo-deep"
+              className="link-arrow font-display text-sm font-semibold text-indigo hover:text-indigo-deep"
             >
               {dict.events.pastArchiveCta}
             </Link>

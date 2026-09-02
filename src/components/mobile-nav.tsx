@@ -53,8 +53,8 @@ export function MobileNav({
         </svg>
       </button>
       {open && (
-        <nav className="absolute inset-x-0 top-full border-b border-line bg-paper shadow-lg">
-          <ul className="px-4 py-2">
+        <nav className="menu-drop absolute inset-x-0 top-full border-b border-line bg-paper shadow-lg">
+          <ul className="enter-stagger px-4 py-2">
             {items.map((item) => {
               const current = isCurrentPage(item.href);
               return (
@@ -63,7 +63,7 @@ export function MobileNav({
                     href={item.href}
                     onClick={close}
                     aria-current={current ? "page" : undefined}
-                    className={`block rounded-md px-3 py-3 font-medium hover:bg-mist ${
+                    className={`block rounded-md px-3 py-3 font-medium transition-colors hover:bg-mist ${
                       current ? "bg-mist text-indigo" : "text-ink"
                     }`}
                   >

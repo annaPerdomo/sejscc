@@ -30,8 +30,9 @@ export function BrushRule({
       </defs>
       <path
         d="M2,8 C70,4 180,10 318,6"
+        pathLength={1}
         fill="none"
-        className="stroke-gold"
+        className="brush-draw stroke-gold"
         strokeWidth="4"
         strokeLinecap="round"
         opacity="0.85"

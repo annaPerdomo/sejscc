@@ -58,7 +58,7 @@ function ContactIcon({ name }: { name: keyof typeof CONTACT_ICONS }) {
       viewBox="0 0 24 24"
       fill="none"
       aria-hidden="true"
-      className="h-6 w-6 shrink-0 text-magenta"
+      className="h-6 w-6 shrink-0 text-magenta transition-transform duration-300 ease-out group-hover:-translate-y-0.5 group-hover:scale-110"
       stroke="currentColor"
       strokeWidth={1.6}
       strokeLinecap="round"
@@ -148,11 +148,12 @@ export default async function HomePage() {
       <section className="section-wash-events relative z-10 pt-2 pb-12">
         <BambooGrove />
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
-          <div className="reveal-rise mb-4 flex flex-wrap items-end justify-between gap-4">
+          <div className="enter-rise mb-4 flex flex-wrap items-end justify-between gap-4">
             <div>
               <SectionKicker
                 accent={dict.home.upcomingKickerAccent}
                 caption={dict.home.upcomingKickerCaption}
+                entrance="load"
               />
               <SectionHeading className="mt-2">
                 {dict.home.upcomingTitle}
@@ -160,7 +161,7 @@ export default async function HomePage() {
             </div>
             <Link
               href={href("/events")}
-              className="font-display text-sm font-semibold text-indigo hover:text-indigo-deep"
+              className="link-arrow font-display text-sm font-semibold text-indigo hover:text-indigo-deep"
             >
               {dict.home.viewAll}
             </Link>
@@ -201,7 +202,7 @@ export default async function HomePage() {
               {dict.home.japaneseSchool.body}
             </p>
           </div>
-          <div className="reveal-rise relative mx-auto aspect-square w-72 sm:w-96 lg:-mr-6 lg:w-120">
+          <div className="reveal-bloom relative mx-auto aspect-square w-72 sm:w-96 lg:-mr-6 lg:w-120">
             <SitePhoto
               photo={photoFor(
                 homePhotos.japaneseSchool,
@@ -216,7 +217,7 @@ export default async function HomePage() {
             <svg
               viewBox="0 0 640 640"
               aria-hidden="true"
-              className="pointer-events-none absolute -inset-4 overflow-visible sm:-inset-6"
+              className="reveal-turn pointer-events-none absolute -inset-4 overflow-visible sm:-inset-6"
             >
               <defs>
                 <filter id="enso-a" x="-30%" y="-30%" width="160%" height="160%">
@@ -284,15 +285,15 @@ export default async function HomePage() {
             </svg>
           </div>
         </div>
-        <div className="relative mx-auto grid max-w-6xl grid-cols-2 gap-x-6 gap-y-10 px-4 pb-4 sm:px-6 lg:grid-cols-4">
+        <div className="reveal-stagger relative mx-auto grid max-w-6xl grid-cols-2 gap-x-6 gap-y-10 px-4 pb-4 sm:px-6 lg:grid-cols-4">
           {dict.home.japaneseSchool.highlights.map((item, i) => (
-            <div key={i} className="reveal-rise flex flex-col items-start">
+            <div key={i} className="reveal-bloom flex flex-col items-start">
               <SitePhoto
                 photo={photoFor(homePhotos.highlights[i], item.photoAlt)}
                 dark
                 sizes="(max-width: 1024px) 45vw, 17rem"
                 placeholderLabel={dict.home.photoSoon}
-                className="aspect-photo w-full rounded-xl"
+                className="aspect-photo w-full rounded-xl transition-transform duration-300 ease-out hover:-rotate-1 hover:scale-105"
               />
               <span className="mt-5 block h-0.5 w-8 bg-indigo" />
               <span className="mt-3.5 font-display text-lg leading-tight font-semibold text-white">
@@ -343,7 +344,7 @@ export default async function HomePage() {
             </p>
           </div>
           {groups.length > 0 ? (
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="reveal-stagger grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {groups.map((group) => (
                 <GroupCard
                   key={group.id}
@@ -413,10 +414,10 @@ export default async function HomePage() {
           <p className="mx-auto mt-3 max-w-xl leading-relaxed text-ink-soft">
             {dict.home.board.intro}
           </p>
-          <ul className="seigaiha-rings mt-8 grid grid-cols-2 gap-x-6 gap-y-3 rounded-2xl border border-line bg-mist px-6 py-6 text-left sm:grid-cols-3 sm:px-8 lg:-mx-12 lg:grid-cols-5">
+          <ul className="seigaiha-rings reveal-stagger-3-5 mt-8 grid grid-cols-2 gap-x-6 gap-y-3 rounded-2xl border border-line bg-mist px-6 py-6 text-left sm:grid-cols-3 sm:px-8 lg:-mx-12 lg:grid-cols-5">
             {dict.home.board.members.map((name) => (
-              <li key={name} className="flex items-center gap-2.5">
-                <span aria-hidden="true" className="h-1.5 w-1.5 shrink-0 rounded-full bg-magenta" />
+              <li key={name} className="reveal-rise flex items-center gap-2.5">
+                <span aria-hidden="true" className="reveal-pop h-1.5 w-1.5 shrink-0 rounded-full bg-magenta" />
                 <span className="font-display text-sm font-medium text-ink">{name}</span>
               </li>
             ))}
@@ -464,9 +465,9 @@ export default async function HomePage() {
             <div
               className={`mx-auto mt-10 grid gap-6 ${
                 aboutVideoIds.length > 2
-                  ? "sm:grid-cols-2 lg:grid-cols-3"
+                  ? "reveal-stagger-2-3 sm:grid-cols-2 lg:grid-cols-3"
                   : aboutVideoIds.length > 1
-                    ? "max-w-4xl sm:grid-cols-2"
+                    ? "reveal-stagger-2 max-w-4xl sm:grid-cols-2"
                     : "max-w-3xl"
               }`}
             >
@@ -491,8 +492,8 @@ export default async function HomePage() {
       <div
         className={
           aboutVideoIds.length > 0
-            ? "under-wave relative -mt-12 sm:-mt-20 lg:-mt-30"
-            : "relative"
+            ? "under-wave relative -mt-12 overflow-clip sm:-mt-20 lg:-mt-30"
+            : "relative overflow-clip"
         }
       >
         <Image
@@ -501,7 +502,7 @@ export default async function HomePage() {
           width={2000}
           height={405}
           sizes="100vw"
-          className="block h-auto min-h-64 w-full object-cover object-bottom sm:min-h-80 lg:min-h-0"
+          className="ken-burns-in block h-auto min-h-64 w-full object-cover object-bottom sm:min-h-80 lg:min-h-0"
         />
         {aboutVideoIds.length > 0 && (
           <WaveDivider
@@ -541,7 +542,7 @@ export default async function HomePage() {
                 target="_blank"
                 rel="noreferrer"
                 aria-label={dict.home.contact.addressAria}
-                className="flex flex-1 items-center gap-4 px-5 py-5 hover:bg-mist"
+                className="group flex flex-1 items-center gap-4 px-5 py-5 transition-colors hover:bg-mist"
               >
                 <ContactIcon name="pin" />
                 <span>
@@ -555,7 +556,7 @@ export default async function HomePage() {
               </a>
               <a
                 href={CENTER_PHONE_HREF}
-                className="flex flex-1 items-center gap-4 px-5 py-5 hover:bg-mist"
+                className="group flex flex-1 items-center gap-4 px-5 py-5 transition-colors hover:bg-mist"
               >
                 <ContactIcon name="phone" />
                 <span>
@@ -569,7 +570,7 @@ export default async function HomePage() {
               </a>
               <a
                 href={`mailto:${CENTER_EMAIL}`}
-                className="flex flex-1 items-center gap-4 px-5 py-5 hover:bg-mist"
+                className="group flex flex-1 items-center gap-4 px-5 py-5 transition-colors hover:bg-mist"
               >
                 <ContactIcon name="mail" />
                 <span>

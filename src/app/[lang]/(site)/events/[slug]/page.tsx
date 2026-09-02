@@ -136,25 +136,26 @@ export default async function EventPage({ params }: Props) {
     <>
       <section className="section-navy-scene relative overflow-clip text-white">
         <KanjiWatermark char="祭" className="-right-12 -bottom-10 text-white/5" />
-        <div className="relative mx-auto max-w-6xl px-4 pt-6 pb-12 sm:px-6 sm:pt-7 sm:pb-14">
-          <div className="reveal-rise flex flex-wrap items-center justify-between gap-x-8 gap-y-3">
+        <div className="enter-stagger relative mx-auto max-w-6xl px-4 pt-6 pb-12 sm:px-6 sm:pt-7 sm:pb-14">
+          <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-3">
             {backLink("text-sky hover:text-white")}
             <SectionKicker
               accent={dict.eventDetail.kickerAccent}
               caption={dict.eventDetail.kickerCaption}
               tone="sky"
               order="caption-first"
+              entrance="load"
             />
           </div>
-          <h1 className="reveal-rise mt-4 font-display text-4xl leading-tight font-normal tracking-[0.02em] text-white sm:text-5xl">
+          <h1 className="mt-4 font-display text-4xl leading-tight font-normal tracking-[0.02em] text-white sm:text-5xl">
             {event.title}
           </h1>
           <span
             aria-hidden="true"
-            className="reveal-rise mt-4 block h-0.5 w-9 bg-indigo"
+            className="mt-4 block h-0.5 w-9 bg-indigo"
           />
           {facts.length > 0 && (
-            <dl className="reveal-rise mt-6 flex flex-wrap gap-x-10 gap-y-5">
+            <dl className="mt-6 flex flex-wrap gap-x-10 gap-y-5">
               {facts.map((fact) => (
                 <div key={fact.label}>
                   <dt className="font-display text-xs font-semibold tracking-[0.16em] text-sky uppercase">
@@ -166,7 +167,7 @@ export default async function EventPage({ params }: Props) {
             </dl>
           )}
           {nextDates.length > 1 && (
-            <div className="reveal-rise mt-7">
+            <div className="mt-7">
               <h2 className="font-display text-xs font-semibold tracking-[0.16em] text-sky uppercase">
                 {dict.eventDetail.upcomingDates}
               </h2>
@@ -201,7 +202,7 @@ export default async function EventPage({ params }: Props) {
         >
           <div className="lg:col-start-1 lg:row-start-1">
             {event.description && (
-              <div className="reveal-rise max-w-2xl">
+              <div className="reveal-swing-left max-w-2xl">
                 <SectionKicker
                   accent={dict.eventDetail.aboutAccent}
                   caption={dict.eventDetail.aboutCaption}
@@ -248,7 +249,7 @@ export default async function EventPage({ params }: Props) {
 
           {/* In source order between the copy blocks so it sits mid-page on a phone. */}
           {event.flyerUrl && (
-            <div className="reveal-rise lg:col-start-2 lg:row-span-2 lg:row-start-1">
+            <div className="reveal-swing-right lg:col-start-2 lg:row-span-2 lg:row-start-1">
               {/* Flyers arrive portrait and landscape, so no fixed aspect box:
                   measured dimensions let a height and a width cap apply at once,
                   and an unmeasured flyer fills the width rather than squashing. */}

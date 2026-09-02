@@ -27,10 +27,10 @@ export function SiteNav({ items }: { items: NavItem[] }) {
             key={item.href}
             href={item.href}
             aria-current={current ? "page" : undefined}
-            className={`relative rounded-sm px-1 py-2 font-display text-sm after:absolute after:inset-x-1 after:bottom-0.5 after:h-0.5 after:rounded-full ${
+            className={`relative rounded-sm px-1 py-2 font-display text-sm transition-colors after:absolute after:inset-x-1 after:bottom-0.5 after:h-0.5 after:origin-left after:rounded-full after:transition-transform after:duration-300 after:ease-out ${
               current
                 ? "font-semibold text-indigo after:bg-indigo"
-                : "font-medium text-ink hover:text-indigo hover:after:bg-line"
+                : "font-medium text-ink after:scale-x-0 after:bg-sky hover:text-indigo hover:after:scale-x-100"
             }`}
           >
             {item.label}

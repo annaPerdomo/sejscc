@@ -54,9 +54,9 @@ export function PageHero({
           tight ? "lg:gap-10" : "lg:gap-14"
         } ${media ? "lg:grid-cols-[1fr_auto]" : ""} ${padding}`}
       >
-        <div className="reveal-rise">
+        <div className="enter-stagger">
           {eyebrow && <div className="mb-5">{eyebrow}</div>}
-          <SectionKicker accent={accent} caption={caption} />
+          <SectionKicker accent={accent} caption={caption} entrance="load" />
           <h1 className="mt-4 font-display text-4xl leading-tight font-normal tracking-[0.02em] sm:text-5xl">
             <span className="block text-ink">{titleLine1}</span>
             {titleLine2 && <span className="block text-indigo">{titleLine2}</span>}
@@ -74,7 +74,7 @@ export function PageHero({
         {media}
       </div>
       {below && (
-        <div className="reveal-rise relative mx-auto max-w-6xl px-4 pb-10 sm:px-6 lg:pb-12">
+        <div className="enter-rise relative mx-auto max-w-6xl px-4 pb-10 sm:px-6 lg:pb-12">
           {below}
         </div>
       )}

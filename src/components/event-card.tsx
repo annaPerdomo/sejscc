@@ -45,7 +45,7 @@ export async function EventCard({
           {badge}
         </span>
       )}
-      <h3 className="line-clamp-2 font-display text-lg font-semibold text-ink group-hover:text-indigo">
+      <h3 className="line-clamp-2 font-display text-lg font-semibold text-ink transition-colors group-hover:text-indigo">
         <Link href={localePath(lang, `/events/${event.slug}`)} className="card-stretch">
           {event.title}
         </Link>
@@ -79,7 +79,7 @@ export async function EventCard({
         )}
         {/* min-h aligns "Details" across cards with and without sign-up. */}
         <div className="mt-auto flex min-h-9 flex-wrap items-center justify-between gap-3 pt-3">
-          <span className="font-display text-sm font-semibold text-indigo">
+          <span className="link-arrow font-display text-sm font-semibold text-indigo">
             {dict.events.detailsCta}
           </span>
           {withSignup && event.signupUrl && (

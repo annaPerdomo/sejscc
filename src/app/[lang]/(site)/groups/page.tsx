@@ -100,7 +100,7 @@ export default async function GroupsPage() {
             preload
             sizes="(max-width: 640px) 92vw, (max-width: 1024px) 60vw, 26rem"
             placeholderLabel={dict.groups.photoLabel}
-            className="reveal-rise aspect-photo w-full rounded-xl border border-line shadow-sm lg:w-96 xl:w-104"
+            className="reveal-bloom aspect-photo w-full rounded-xl border border-line shadow-sm lg:w-96 xl:w-104"
           />
         }
       />
@@ -114,7 +114,7 @@ export default async function GroupsPage() {
         title={dict.groups.directoryTitle}
       >
         {groups.length > 0 ? (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="reveal-stagger grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {groups.map((group) => (
               <GroupCard key={group.id} group={group} sizes={CARD_SIZES} />
             ))}
@@ -149,11 +149,11 @@ export default async function GroupsPage() {
               </p>
             </div>
 
-            <div className="reveal-rise grid grid-cols-2 gap-x-5 gap-y-7 sm:grid-cols-4 lg:grid-cols-7">
+            <div className="reveal-stagger-4-7 grid grid-cols-2 gap-x-5 gap-y-7 sm:grid-cols-4 lg:grid-cols-7">
               {week.map(({ day, entries }) => (
                 <div
                   key={day}
-                  className="lg:border-l lg:border-white/15 lg:pl-5 lg:first:border-l-0 lg:first:pl-0"
+                  className="reveal-rise lg:border-l lg:border-white/15 lg:pl-5 lg:first:border-l-0 lg:first:pl-0"
                 >
                   <h3
                     className={`border-b-2 pb-2 font-display text-sm font-semibold tracking-[0.14em] uppercase ${
@@ -210,7 +210,7 @@ export default async function GroupsPage() {
         <p className="reveal-rise mb-7 max-w-2xl leading-relaxed text-ink-soft">
           {dict.groups.room.eligibility}
         </p>
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="reveal-stagger-2 grid gap-5 sm:grid-cols-2">
           <DocumentLink
             href={FACILITY_USE_FORM_URL}
             format={dict.groups.formatPdf}
@@ -239,7 +239,7 @@ export default async function GroupsPage() {
         <p className="reveal-rise mb-7 max-w-2xl leading-relaxed text-ink-soft">
           {dict.groups.club.mission}
         </p>
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="reveal-stagger-2 grid gap-5 sm:grid-cols-2">
           <DocumentLink
             href={NEW_CLUB_PROCEDURE_URL}
             format={dict.groups.formatDoc}

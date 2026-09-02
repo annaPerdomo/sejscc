@@ -36,7 +36,9 @@ export function GroupMedia({
           alt=""
           fill
           sizes={sizes}
-          className={`object-contain ${muted ? "opacity-55 grayscale" : ""}`}
+          className={`object-contain transition-transform duration-500 ease-out ${
+            muted ? "opacity-55 grayscale" : "group-hover:scale-105"
+          }`}
         />
       </div>
     </div>

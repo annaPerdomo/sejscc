@@ -45,7 +45,7 @@ export function SchoolLevels({
               aria-selected={current}
               aria-controls="school-level-panel"
               onClick={() => setActive(i)}
-              className={`flex items-center justify-between gap-3 rounded-xl border px-4 py-3 text-left transition-colors ${
+              className={`flex items-center justify-between gap-3 rounded-xl border px-4 py-3 text-left transition duration-200 hover:-translate-y-0.5 ${
                 current
                   ? "border-navy bg-navy"
                   : "border-line bg-white hover:border-indigo"
@@ -81,11 +81,13 @@ export function SchoolLevels({
         })}
       </div>
 
+      {/* Keyed on the choice so a new level fades in rather than snapping. */}
       <div
+        key={active}
         role="tabpanel"
         id="school-level-panel"
         aria-labelledby={`school-level-tab-${active}`}
-        className="surface-card overflow-clip"
+        className="enter-fade surface-card overflow-clip"
       >
         <SitePhoto
           photo={level.photo}

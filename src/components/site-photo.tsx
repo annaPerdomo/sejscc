@@ -44,7 +44,7 @@ export function SitePhoto({
         fill
         preload={preload}
         sizes={sizes}
-        className="object-cover"
+        className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
       />
     </div>
   );

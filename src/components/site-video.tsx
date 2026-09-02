@@ -14,7 +14,7 @@ export function SiteVideo({
   className?: string;
 }) {
   return (
-    <figure className={`reveal-rise ${className}`}>
+    <figure className={`reveal-bloom ${className}`}>
       <div
         className={
           dark

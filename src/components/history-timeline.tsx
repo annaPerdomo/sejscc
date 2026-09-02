@@ -36,7 +36,7 @@ export function HistoryTimeline({
                   at lg, so the rail is drawn a segment at a time. */}
               <span
                 aria-hidden="true"
-                className={`absolute left-1.5 w-px bg-blossom/70 lg:left-1/2 ${
+                className={`reveal-rail absolute left-1.5 w-px bg-blossom/70 lg:left-1/2 ${
                   i === 0 ? "top-2.5 lg:top-1/2" : "top-0"
                 } ${
                   i === milestones.length - 1
@@ -46,7 +46,7 @@ export function HistoryTimeline({
               />
               <span
                 aria-hidden="true"
-                className="absolute top-2.5 left-1.5 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-magenta ring-4 ring-magenta/15 lg:top-1/2 lg:left-1/2 lg:-translate-y-1/2"
+                className="reveal-pop absolute top-2.5 left-1.5 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-magenta ring-4 ring-magenta/15 lg:top-1/2 lg:left-1/2 lg:-translate-y-1/2"
               />
               <div
                 className={

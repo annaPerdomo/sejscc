@@ -28,7 +28,7 @@ export async function GroupCard({
 
   return (
     <article
-      className={`reveal-rise relative flex flex-col overflow-clip rounded-none ${
+      className={`group reveal-bloom relative flex flex-col overflow-clip rounded-none ${
         muted
           ? "border border-dashed border-line bg-cloud"
           : "surface-card surface-card-link"
@@ -103,7 +103,7 @@ export async function GroupCard({
           {group.websiteUrl && (
             <ExternalLink
               href={group.websiteUrl}
-              className="text-indigo hover:text-indigo-deep"
+              className="link-arrow text-indigo hover:text-indigo-deep"
             >
               {dict.groups.website}
             </ExternalLink>
@@ -119,7 +119,7 @@ export async function GroupCard({
             !group.websiteUrl && (
               <a
                 href={`mailto:${CENTER_EMAIL}`}
-                className="text-indigo hover:text-indigo-deep"
+                className="link-arrow text-indigo hover:text-indigo-deep"
               >
                 {dict.groups.askCta}
               </a>

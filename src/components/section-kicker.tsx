@@ -11,15 +11,18 @@ export function SectionKicker({
   caption,
   tone = "indigo",
   order = "accent-first",
+  entrance = "scroll",
   className = "",
 }: {
   accent: string;
   caption: string;
   tone?: keyof typeof TONES;
   order?: "accent-first" | "caption-first";
+  entrance?: "scroll" | "load";
   className?: string;
 }) {
   const styles = TONES[tone];
+  const ruleEntrance = entrance === "load" ? "enter-rule" : "reveal-rule";
 
   const accentText = (
     <span
@@ -29,11 +32,11 @@ export function SectionKicker({
       {accent}
     </span>
   );
-  const rule = <span key="rule" className={`w-9 shrink-0 ${styles.rule}`} />;
+  const rule = <span key="rule" className={`${ruleEntrance} w-9 shrink-0 ${styles.rule}`} />;
   const captionText = (
     <span
       key="caption"
-      className={`font-display text-xs font-semibold tracking-[0.2em] uppercase ${styles.caption}`}
+      className={`font-display text-xs font-semibold tracking-[0.2em] text-balance uppercase ${styles.caption}`}
     >
       {caption}
     </span>
