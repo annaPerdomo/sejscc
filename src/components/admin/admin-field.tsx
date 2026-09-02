@@ -95,6 +95,16 @@ export function AdminSelect({
   );
 }
 
+export function AdminRequired() {
+  return (
+    <span className="text-sm font-semibold text-magenta-deep">Required</span>
+  );
+}
+
+export function AdminOptional() {
+  return <span className="text-sm font-normal text-stone">Optional</span>;
+}
+
 export function AdminCharacterCount({
   value,
   max,

@@ -42,6 +42,24 @@ export function EventMedia({
   }
 
   return (
+    <EventDescriptionMedia
+      description={description}
+      index={index}
+      className={className}
+    />
+  );
+}
+
+export function EventDescriptionMedia({
+  description,
+  index = 0,
+  className = "",
+}: {
+  description: string | null;
+  index?: number;
+  className?: string;
+}) {
+  return (
     <div
       className={`seigaiha-rings relative flex aspect-card w-full items-center justify-center overflow-clip bg-cream px-5 py-6 ${className}`}
     >
