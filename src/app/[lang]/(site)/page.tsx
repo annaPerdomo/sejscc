@@ -202,7 +202,7 @@ export default async function HomePage() {
               {dict.home.japaneseSchool.body}
             </p>
           </div>
-          <div className="reveal-bloom relative mx-auto aspect-square w-72 sm:w-96 lg:-mr-6 lg:w-120">
+          <div className="reveal-bloom relative mx-auto aspect-square w-72 sm:w-96 lg:w-120">
             <SitePhoto
               photo={photoFor(
                 homePhotos.japaneseSchool,
@@ -214,10 +214,12 @@ export default async function HomePage() {
               placeholderLabel={dict.home.japaneseSchool.photoLabel}
               className="h-full w-full"
             />
+            {/* Sharing the photo's box makes 320 the photo's own radius, so the
+                ring's clearance holds at every width; an inset would scale it. */}
             <svg
               viewBox="0 0 640 640"
               aria-hidden="true"
-              className="reveal-turn pointer-events-none absolute -inset-4 overflow-visible sm:-inset-6"
+              className="reveal-turn pointer-events-none absolute inset-0 overflow-visible"
             >
               <defs>
                 <filter id="enso-a" x="-30%" y="-30%" width="160%" height="160%">
@@ -228,7 +230,7 @@ export default async function HomePage() {
                     seed="11"
                     result="n"
                   />
-                  <feDisplacementMap in="SourceGraphic" in2="n" scale="10" />
+                  <feDisplacementMap in="SourceGraphic" in2="n" scale="7" />
                 </filter>
                 <filter id="enso-b" x="-30%" y="-30%" width="160%" height="160%">
                   <feTurbulence
@@ -238,32 +240,32 @@ export default async function HomePage() {
                     seed="4"
                     result="n"
                   />
-                  <feDisplacementMap in="SourceGraphic" in2="n" scale="8" />
+                  <feDisplacementMap in="SourceGraphic" in2="n" scale="5" />
                 </filter>
               </defs>
               <g transform="rotate(118 320 320)">
                 <circle
                   cx="320"
                   cy="320"
-                  r="311"
+                  r="344"
                   fill="none"
                   className="stroke-sand/70"
-                  strokeWidth="16"
+                  strokeWidth="13"
                   strokeLinecap="round"
-                  strokeDasharray="794 1161"
+                  strokeDasharray="878 1284"
                   opacity="0.9"
                   filter="url(#enso-a)"
                 />
                 <circle
                   cx="320"
                   cy="320"
-                  r="319"
+                  r="349"
                   fill="none"
                   className="stroke-sand/50"
-                  strokeWidth="6"
+                  strokeWidth="5"
                   strokeLinecap="round"
-                  strokeDasharray="56 20 166 28 460 1223"
-                  strokeDashoffset="77"
+                  strokeDasharray="61 22 182 31 503 1338"
+                  strokeDashoffset="84"
                   opacity="0.55"
                   filter="url(#enso-b)"
                 />
@@ -272,12 +274,12 @@ export default async function HomePage() {
                 <circle
                   cx="320"
                   cy="320"
-                  r="314"
+                  r="346"
                   fill="none"
                   className="stroke-sand/40"
-                  strokeWidth="8"
+                  strokeWidth="7"
                   strokeLinecap="round"
-                  strokeDasharray="294 1660"
+                  strokeDasharray="324 1830"
                   opacity="0.6"
                   filter="url(#enso-b)"
                 />
