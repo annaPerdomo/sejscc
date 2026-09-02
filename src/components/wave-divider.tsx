@@ -3,8 +3,7 @@ type WaveDividerProps = {
   id: string;
   /** "bottom" caps a section's end; "top" caps its start with the previous section's color. */
   position?: "top" | "bottom";
-  /** Tint family for the translucent wave layers behind the solid cap. */
-  accent?: "sky" | "magenta";
+  accent?: "sky" | "magenta" | "none";
   /** Turbulence seed, so each divider's brush stroke frays differently. */
   seed?: number;
   /** Set the text color to the adjacent section's background. */
@@ -32,11 +31,13 @@ export function WaveDivider({
     </filter>
   );
   const [tintA, tintB] =
-    accent === "magenta"
-      ? ["fill-magenta/15", "fill-sky/25"]
-      : position === "bottom"
-        ? ["fill-sky/30", "fill-mist/60"]
-        : ["fill-sky/20", "fill-mist/40"];
+    accent === "none"
+      ? ["hidden", "hidden"]
+      : accent === "magenta"
+        ? ["fill-magenta/15", "fill-sky/25"]
+        : position === "bottom"
+          ? ["fill-sky/30", "fill-mist/60"]
+          : ["fill-sky/20", "fill-mist/40"];
 
   return (
     <div aria-hidden="true" className={`pointer-events-none ${className}`}>

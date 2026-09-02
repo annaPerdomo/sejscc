@@ -7,18 +7,21 @@ const surfaces = {
   white: "bg-white pt-12 pb-16 sm:pt-14 sm:pb-20",
   mist: "bg-mist py-14 sm:py-16",
   azure: "bg-azure py-14 sm:py-16",
+  cream: "bg-cream py-14 sm:py-16",
 };
 
 const tightSurfaces = {
   white: "bg-white pt-7 pb-16 sm:pt-8 sm:pb-20",
   mist: "bg-mist pt-7 pb-14 sm:pt-8 sm:pb-16",
   azure: "bg-azure pt-7 pb-14 sm:pt-8 sm:pb-16",
+  cream: "bg-cream pt-7 pb-14 sm:pt-8 sm:pb-16",
 };
 
 const kickerTones = {
   white: "indigo",
   mist: "indigo",
   azure: "tinted",
+  cream: "tinted",
 } as const;
 
 export function PageSection({

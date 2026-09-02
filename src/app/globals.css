@@ -76,13 +76,19 @@ body {
       var(--color-white);
   }
 
-  /* Masks a texture to the wave lines above and below it. The paths and the
-     --wave-cap / --wave-tail heights must match wave-divider.tsx. */
-  .between-waves {
+  /* The paths and the --wave-cap / --wave-tail heights must match
+     wave-divider.tsx. */
+  .between-waves,
+  .under-wave {
     --wave-cap: 3rem;
     --wave-tail: 2.5rem;
+    --wave-cap-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 120' preserveAspectRatio='none'%3E%3Cpath fill='%23fff' d='M0,96 C250,64 540,60 790,80 C1040,100 1260,108 1440,82 L1440,120 L0,120 Z'/%3E%3C/svg%3E");
+    mask-repeat: no-repeat;
+  }
+
+  .between-waves {
     mask-image:
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 120' preserveAspectRatio='none'%3E%3Cpath fill='%23fff' d='M0,96 C250,64 540,60 790,80 C1040,100 1260,108 1440,82 L1440,120 L0,120 Z'/%3E%3C/svg%3E"),
+      var(--wave-cap-mask),
       linear-gradient(#fff, #fff),
       url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 110' preserveAspectRatio='none'%3E%3Cpath fill='%23fff' d='M0,0 L1440,0 L1440,26 C1200,58 950,10 710,28 C470,46 220,6 0,38 Z'/%3E%3C/svg%3E");
     mask-size:
@@ -93,18 +99,29 @@ body {
       0 0,
       0 var(--wave-cap),
       0 100%;
-    mask-repeat: no-repeat;
+  }
+
+  .under-wave {
+    mask-image: var(--wave-cap-mask), linear-gradient(#fff, #fff);
+    mask-size:
+      100% var(--wave-cap),
+      100% calc(100% - var(--wave-cap));
+    mask-position:
+      0 0,
+      0 100%;
   }
 
   @media (width >= 40rem) {
-    .between-waves {
+    .between-waves,
+    .under-wave {
       --wave-cap: 5rem;
       --wave-tail: 4rem;
     }
   }
 
   @media (width >= 64rem) {
-    .between-waves {
+    .between-waves,
+    .under-wave {
       --wave-cap: 7.5rem;
       --wave-tail: 7rem;
     }
@@ -114,11 +131,11 @@ body {
     background: var(--color-mist);
   }
 
-  /* Capped at 14% sky: `stone` caption text clears 4.5:1 on mist by a thin
-     margin, and a brighter wash drops the top-right corner under AA. */
+  /* Capped at 55% lilac: `stone` caption text clears 4.5:1 over the glow at
+     that strength, and a brighter wash drops the top-right corner under AA. */
   .section-wash-groups-hero {
     background:
-      radial-gradient(46rem 30rem at 88% 14%, --alpha(var(--color-sky) / 14%), transparent 60%),
+      radial-gradient(46rem 30rem at 88% 14%, --alpha(var(--color-lilac) / 55%), transparent 62%),
       linear-gradient(165deg, var(--color-paper), var(--color-mist) 62%);
   }
 
@@ -158,8 +175,8 @@ body {
 
   .section-wash-connect {
     background: linear-gradient(
-      135deg,
-      var(--color-mist),
+      180deg,
+      var(--color-mist) 8rem,
       color-mix(in srgb, var(--color-sky) 18%, var(--color-mist))
     );
   }
