@@ -19,3 +19,9 @@ export function mapsUrl(location: string): string {
   const params = new URLSearchParams({ api: "1", query: location });
   return `https://www.google.com/maps/search/?${params}`;
 }
+
+// No API key required — Google serves this embed format for any query string.
+export function mapsEmbedUrl(location: string): string {
+  const params = new URLSearchParams({ q: location, output: "embed" });
+  return `https://www.google.com/maps?${params}`;
+}

@@ -16,10 +16,12 @@
     "announcementSignup": "申し込む"
   },
   "nav": {
+    "about": "私たちについて",
     "japaneseSchool": "日本語学校",
     "events": "イベント",
-    "groups": "グループ・プログラム",
+    "groups": "スポーツ・教室",
     "payments": "ご支援",
+    "contact": "お問い合わせ",
     "volunteerSignIn": "ボランティアログイン"
   },
   "footer": {
@@ -46,7 +48,7 @@
         "headingLine2": "コミュニティセンター",
         "body": "この地で101年、土曜日といえば日本語学校です。平日は柔道、フラ、ウクレレ、ビンゴなど――どなたでも歓迎します。",
         "primaryCta": "今後のイベントを見る",
-        "secondaryCta": "グループ・プログラムを見る"
+        "secondaryCta": "スポーツ・教室を見る"
       },
       {
         "id": "school",
@@ -59,7 +61,7 @@
         "headingLine2": "日本語学校",
         "body": "幼稚園からレベル12まで、日本語・読解・書道を学べます。大人向けのオンライン講座もあります。日本語の経験は問いません。",
         "primaryCta": "授業料・登録案内",
-        "secondaryCta": "活動グループを見る"
+        "secondaryCta": "スポーツ・教室を見る"
       },
       {
         "id": "clubs",
@@ -83,7 +85,7 @@
         "headingLine1": "私たちについて、",
         "headingLine2": "活動のご紹介",
         "body": "1925年の創立以来、ノーウォークの日系家族と地域の皆さまに寄り添うボランティア運営の非営利団体です。",
-        "primaryCta": "お問い合わせ"
+        "primaryCta": "私たちの歩みを見る"
       },
       {
         "id": "donate",
@@ -139,7 +141,7 @@
         }
       ],
       "primaryCta": "授業料・登録案内",
-      "secondaryCta": "活動グループを見る"
+      "secondaryCta": "スポーツ・教室を見る"
     },
     "sportsClubs": {
       "kickerAccent": "クラブ活動",
@@ -157,6 +159,10 @@
       "headingLine1": "101年の歩み、",
       "headingLine2": "今なお続く成長。",
       "body": "1925年、日本からの移民家族の小さな集まりとして始まり、今では活気あるコミュニティへと育ちました。伝統を大切にしながら、次の世代へとつながりを築いています。",
+      "missionLabel": "私たちの使命",
+      "missionText": "文化・教育・社会活動を通じて、日本の伝統と文化を地域の皆さんと共に守り、伝えていくこと。",
+      "videoTitle": "サウスイースト日本語学園・コミュニティセンターの紹介動画",
+      "videoCaption": "センターの様子や、歴史・伝統をご紹介します。",
       "photoLabel": "歴史的写真は準備中です",
       "milestones": [
         {
@@ -207,15 +213,44 @@
           "text": "7月26日、センターは創立100周年を迎えました。学園には132名の生徒が在籍し、4世代が会場に集いました。",
           "photoAlt": "100周年記念式典で各グループの歩みの展示を見る来場者"
         }
-      ]
+      ],
+      "videosKickerAccent": "紹介動画",
+      "videosKickerCaption": "Featured Videos",
+      "videosTitle": "動画で見るセンター"
+    },
+    "board": {
+      "kickerAccent": "運営委員会",
+      "kickerCaption": "Our Volunteers",
+      "title": "運営理事会",
+      "intro": "SEJSCCはすべてボランティアで運営されています。理事会が地域の皆さんに代わって方針を定めています。",
+      "members": [
+        "Dean Wada",
+        "Simon Yao",
+        "Carrie Nakatani",
+        "Tye Masaki",
+        "Ernie Nishii",
+        "Masa Lau",
+        "Colleen Sonoda",
+        "Miki Suzuki",
+        "Karrie Takeuchi",
+        "Rich Tamaki"
+      ],
+      "volunteersNote": "理事会はほんの一部です。このほかにも数多くのボランティアが、授業を教え、チームを指導し、厨房を担い、毎週センターを開き続けています。",
+      "note": "理事会のメンバーへご連絡の際は、",
+      "noteLink": "センターまで伝言をお残しください。"
     },
     "connectKickerAccent": "コミュニティ",
     "connectKickerCaption": "Our Community",
     "connectTitle": "すべての世代が、ひとつのコミュニティに。",
     "connectText": "サウスイースト日本語学園・コミュニティセンターは、どなたでも歓迎する非営利団体です。人種や信仰に関わらず、すべての活動にご参加いただけます。共に学び、祝い、力を尽くし、一生の思い出を作りましょう。",
-    "connectCall": "(562) 863-5996 に電話する",
-    "connectEmail": "メールで問い合わせる",
     "centennialPhotoAlt": "2025年、創立100周年でセンター前に集まった地域の皆さん",
+    "contact": {
+      "addressLabel": "住所",
+      "addressAria": "センターまでの道順を見る（Googleマップが開きます）",
+      "phoneLabel": "電話",
+      "emailLabel": "メール",
+      "mapTitle": "カリフォルニア州ノーウォークにあるセンターの地図"
+    },
     "heroPause": "スライドショーを一時停止",
     "heroPlay": "スライドショーを再生"
   },
@@ -271,7 +306,7 @@
       "openLabel": "Google カレンダーで開く",
       "facilities": {
         "label": "施設カレンダー",
-        "description": "日々の施設予約状況です。各グループの定例活動日はグループのページをご覧ください。",
+        "description": "日々の施設予約状況です。各グループの定例活動日はスポーツ・教室のページをご覧ください。",
         "frameTitle": "SEJSCC 施設カレンダー（クラブ・クラスの施設予約）"
       },
       "comingEvents": {
@@ -319,26 +354,23 @@
     "directions": "Googleマップで開く"
   },
   "groups": {
-    "metaTitle": "グループ・プログラム",
+    "metaTitle": "スポーツ・教室",
     "metaDescription": "サウスイースト日本語学園・コミュニティセンターで活動する日本語学校、柔道、バスケットボール、文化団体のご紹介。",
     "kickerAccent": "活動の輪",
     "kickerCaption": "Find Your Circle",
-    "titleLine1": "グループ・",
-    "titleLine2": "プログラム",
+    "titleLine1": "スポーツ・",
+    "titleLine2": "教室",
     "lede": "センターは、日本語学校から柔道、バスケットボールまで、独立した各グループ・プログラムの活動拠点です。参加をご希望の方は各グループへ直接、新しいグループの立ち上げについてはセンターまでお問い合わせください。",
     "scheduleCta": "週間スケジュール",
     "startCta": "新しいクラブを始めませんか？",
     "photoLabel": "写真は準備中です",
     "heroPhotoAlt": "ウリウリを手にフラを踊るメンバー",
-    "spotlightLabel": "センターで活動するグループ",
-    "spotlightPrev": "前のグループ",
-    "spotlightNext": "次のグループ",
-    "spotlightPause": "グループの自動切り替えを停止",
-    "spotlightPlay": "グループを自動で切り替える",
     "directoryAccent": "全団体",
     "directoryCaption": "Who Meets Here",
     "directoryTitle": "センターで活動する全グループ",
     "website": "ウェブサイト",
+    "meetsAtCenter": "センターにて",
+    "askCta": "センターに問い合わせる",
     "pausedLabel": "休止中",
     "cancelledLabel": "終了",
     "empty": "グループの一覧は準備中です。日本語学校、柔道、バスケットボールなどのプログラムについては、センター（(562) 863-5996）までお問い合わせください。",
@@ -347,6 +379,8 @@
     "weekTitleLine1": "センターの",
     "weekTitleLine2": "一週間",
     "weekNote": "スケジュールは変更される場合があります。お越しの前に各グループへご確認ください。",
+    "weekCalendarCta": "施設カレンダーを見る",
+    "weekCalendarNote": "日ごとの部屋の予約状況です。上の週間スケジュールに載らない一度限りの行事もこちらでご確認いただけます。",
     "weekDays": {
       "mon": "月",
       "tue": "火",
@@ -367,7 +401,30 @@
     "useEmailCta": "センターにメールする",
     "useCallCta": "センターに電話する",
     "useFit": "センターの目的に沿った活動を歓迎しています。日本語・日本文化、武道、音楽や舞踊、スポーツ、そして世代を越えて地域の皆さんが集まれる活動です。お申し込みは理事会で検討し、施設の空き状況、スケジュール、保険についてご相談のうえ決定いたします。",
-    "spotlightSlide": "{total}件中{n}件目"
+    "formatPdf": "PDF",
+    "formatDoc": "Word文書",
+    "room": {
+      "accent": "施設利用",
+      "caption": "Facility Use",
+      "title": "施設のご利用",
+      "lede": "大会や発表会、ご家族の集まりなど、センターで一度限りの行事を開かれる場合は、施設利用申込書でお部屋をご予約ください。",
+      "eligibility": "ご予約は、現在のセンター参加者およびSEJSCCのクラブに所属する会員の方が対象です。申込書には行事の内容、予定人数、必要なお部屋と設備をご記入いただきます。署名の前に、準備・後片付け・保険・料金について定めた利用規約を必ずお読みください。",
+      "formLabel": "施設利用申込書（一回限り）",
+      "formDescription": "予約用の申込書です。ご記入・ご署名のうえ、事務局までご提出ください。",
+      "termsLabel": "利用規約",
+      "termsDescription": "利用時間、後片付け、破損、保険、お支払いについての取り決めです。"
+    },
+    "club": {
+      "accent": "新規クラブ",
+      "caption": "New Clubs",
+      "title": "新しいクラブを始める",
+      "lede": "センターで教室や活動を始めてみませんか。理事会はご提案をお待ちしています。まずは下記の二つの書類からお進みください。",
+      "mission": "当センターは、日本語教育と、日本の芸術・歴史・文化・科学・体育の学びを使命とする非営利団体です。あわせて、あらゆる年齢の会員・参加者にスポーツや交流、健康的な暮らしのための活動を提供しています。この使命に沿ったご提案を歓迎いたします。",
+      "procedureLabel": "申請の手順",
+      "procedureDescription": "申請の流れと、理事会がお伺いする内容をまとめた手引きです。",
+      "formLabel": "新規クラブ申請書",
+      "formDescription": "活動内容、対象となる方、必要な場所と日程をご記入いただく申請書です。"
+    }
   },
   "school": {
     "metaTitle": "日本語学校",

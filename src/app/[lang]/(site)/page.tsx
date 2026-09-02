@@ -3,17 +3,28 @@ import Link from "next/link";
 import { BambooGrove } from "@/components/bamboo-grove";
 import { BrushEdge } from "@/components/brush-edge";
 import { HeroCarousel, type HeroTab } from "@/components/hero-carousel";
-import { GroupMedia } from "@/components/group-media";
+import { GroupCard } from "@/components/group-card";
 import { HistoryTimeline, type Milestone } from "@/components/history-timeline";
 import { SectionHeading } from "@/components/section-heading";
 import { SectionKicker } from "@/components/section-kicker";
 import { SitePhoto } from "@/components/site-photo";
+import { SiteVideo } from "@/components/site-video";
 import { UpcomingEvents } from "@/components/upcoming-events";
 import { WaveDivider } from "@/components/wave-divider";
 import { KanjiWatermark } from "@/components/kanji-watermark";
+import {
+  CENTER_ADDRESS,
+  CENTER_EMAIL,
+  CENTER_PHONE,
+  CENTER_PHONE_HREF,
+  mapsEmbedUrl,
+  mapsUrl,
+} from "@/lib/center";
 import { getActiveGroups, getUpcomingEvents } from "@/lib/events";
 import { getDictionary, getLocale } from "@/lib/dictionaries";
 import { localePath } from "@/lib/i18n";
+import { getAboutVideoUrls } from "@/lib/site-settings";
+import { youtubeVideoId } from "@/lib/video";
 import {
   historyMilestonePhotos,
   homeHeroPhotos,
@@ -22,6 +33,41 @@ import {
 } from "@/lib/photos";
 
 export const revalidate = 300;
+
+const CONTACT_ICONS = {
+  pin: (
+    <>
+      <path d="M12 21c4.2-4 6.3-7.2 6.3-9.8a6.3 6.3 0 1 0-12.6 0C5.7 13.8 7.8 17 12 21Z" />
+      <circle cx="12" cy="11" r="2.4" />
+    </>
+  ),
+  phone: (
+    <path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1.1-.3 1.2.4 2.5.6 3.8.6.6 0 1 .4 1 1v3.4c0 .6-.4 1-1 1C10.5 21 3 13.5 3 4.3c0-.6.4-1 1-1h3.4c.6 0 1 .4 1 1 0 1.3.2 2.6.6 3.8.1.4 0 .8-.3 1.1L6.6 10.8Z" />
+  ),
+  mail: (
+    <>
+      <rect x="3.25" y="5.5" width="17.5" height="13" rx="2.5" />
+      <path d="M4 7.25 12 13l8-5.75" />
+    </>
+  ),
+} as const;
+
+function ContactIcon({ name }: { name: keyof typeof CONTACT_ICONS }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+      className="h-6 w-6 shrink-0 text-magenta"
+      stroke="currentColor"
+      strokeWidth={1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {CONTACT_ICONS[name]}
+    </svg>
+  );
+}
 
 const HERO_LINKS: Record<
   string,
@@ -39,7 +85,7 @@ const HERO_LINKS: Record<
     primary: (href) => href("/groups"),
   },
   about: {
-    primary: (href) => href("/") + "#connect",
+    primary: (href) => href("/") + "#about",
   },
   donate: {
     primary: (href) => href("/payments") + "#donate",
@@ -47,13 +93,17 @@ const HERO_LINKS: Record<
 };
 
 export default async function HomePage() {
-  const [lang, dict, upcoming, groups] = await Promise.all([
+  const [lang, dict, upcoming, groups, aboutVideoUrls] = await Promise.all([
     getLocale(),
     getDictionary(),
     getUpcomingEvents(8),
     getActiveGroups(),
+    getAboutVideoUrls(),
   ]);
   const href = (path: string) => localePath(lang, path);
+  const aboutVideoIds = aboutVideoUrls
+    .map((url) => youtubeVideoId(url))
+    .filter((id): id is string => id !== null);
 
   const heroTabs: HeroTab[] = dict.home.heroTabs.map((tab) => {
     const links = HERO_LINKS[tab.id];
@@ -295,36 +345,11 @@ export default async function HomePage() {
           {groups.length > 0 ? (
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {groups.map((group) => (
-                <div
+                <GroupCard
                   key={group.id}
-                  className="surface-card surface-card-link reveal-rise flex flex-col overflow-hidden"
-                >
-                  <GroupMedia
-                    src={group.imageUrl}
-                    placeholderLabel={dict.home.sportsClubs.photoLabel}
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                    className="border-b border-line"
-                  />
-                  <div className="flex flex-1 flex-col gap-1.5 p-4">
-                    <span className="font-display text-lg font-semibold text-ink">
-                      {group.name}
-                    </span>
-                    {group.meetingSchedule && (
-                      <span className="text-sm text-ink-soft">{group.meetingSchedule}</span>
-                    )}
-                    {group.description && (
-                      <p className="mt-0.5 line-clamp-2 text-sm leading-relaxed text-ink-soft">
-                        {group.description}
-                      </p>
-                    )}
-                    <Link
-                      href={group.websiteUrl ?? href("/groups")}
-                      className="mt-auto pt-3 font-display text-sm font-semibold text-indigo hover:text-indigo-deep"
-                    >
-                      {dict.groups.website}
-                    </Link>
-                  </div>
-                </div>
+                  group={group}
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                />
               ))}
             </div>
           ) : (
@@ -343,9 +368,9 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="section-wash-history relative overflow-clip">
+      <section id="about" className="section-wash-history relative scroll-mt-28 overflow-clip">
         <KanjiWatermark char="和" className="-bottom-10 left-4 text-ink/5" />
-        <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20">
+        <div className="relative mx-auto max-w-7xl px-4 pt-16 pb-4 sm:px-6 sm:pt-20 sm:pb-6">
           <HistoryTimeline
             milestones={milestones}
             photoLabel={dict.home.history.photoLabel}
@@ -365,61 +390,211 @@ export default async function HomePage() {
             <p className="mt-5 leading-relaxed text-ink-soft">
               {dict.home.history.body}
             </p>
+            <p className="mt-6 border-l-2 border-magenta py-1 pl-5 text-left font-display leading-relaxed text-ink italic">
+              <span className="block font-display text-xs font-semibold tracking-[0.14em] text-magenta uppercase not-italic">
+                {dict.home.history.missionLabel}
+              </span>
+              <span className="mt-1.5 block">{dict.home.history.missionText}</span>
+            </p>
           </HistoryTimeline>
         </div>
-      </section>
 
-      <section
-        id="connect"
-        className="section-wash-connect relative scroll-mt-16 overflow-clip"
-      >
-        <WaveDivider
-          id="connect-top"
-          position="top"
-          accent="magenta"
-          seed={27}
-          className="absolute inset-x-0 top-0 z-10 text-paper"
-        />
-        <KanjiWatermark char="絆" className="-top-4 -right-6 text-indigo/5" />
-        <div className="reveal-rise relative mx-auto max-w-3xl px-6 pt-20 pb-14 text-center sm:pt-24 sm:pb-16 lg:pt-28">
+        <div className="reveal-rise relative mx-auto max-w-3xl px-4 pt-10 pb-20 text-center sm:px-6 sm:pb-24">
           <SectionKicker
-            accent={dict.home.connectKickerAccent}
-            caption={dict.home.connectKickerCaption}
+            accent={dict.home.board.kickerAccent}
+            caption={dict.home.board.kickerCaption}
             tone="magenta"
             order="caption-first"
             className="justify-center"
           />
-          <h2 className="mt-4 font-display text-2xl leading-snug font-normal tracking-[0.02em] text-ink sm:text-3xl">
-            {dict.home.connectTitle}
-          </h2>
-          <p className="mx-auto mt-4 leading-relaxed text-ink-soft">
-            {dict.home.connectText}
+          <h3 className="mt-4 font-display text-2xl leading-snug font-normal tracking-[0.02em] text-ink sm:text-3xl">
+            {dict.home.board.title}
+          </h3>
+          <p className="mx-auto mt-3 max-w-xl leading-relaxed text-ink-soft">
+            {dict.home.board.intro}
           </p>
-          <div className="mt-7 flex flex-wrap justify-center gap-3">
-            <a
-              href="tel:+15628635996"
-              className="button-primary rounded-lg px-5 py-2.5 font-display text-sm font-semibold text-white"
+          <ul className="seigaiha-rings mt-8 grid grid-cols-2 gap-x-6 gap-y-3 rounded-2xl border border-line bg-mist px-6 py-6 text-left sm:grid-cols-3 sm:px-8 lg:-mx-12 lg:grid-cols-5">
+            {dict.home.board.members.map((name) => (
+              <li key={name} className="flex items-center gap-2.5">
+                <span aria-hidden="true" className="h-1.5 w-1.5 shrink-0 rounded-full bg-magenta" />
+                <span className="font-display text-sm font-medium text-ink">{name}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="mx-auto mt-7 max-w-xl leading-relaxed text-ink-soft">
+            {dict.home.board.volunteersNote}
+          </p>
+          <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-ink-soft">
+            {dict.home.board.note}{" "}
+            <Link
+              href={`${href("/")}#contact`}
+              className="font-semibold text-indigo hover:text-indigo-deep"
             >
-              {dict.home.connectCall}
-            </a>
-            <a
-              href="mailto:info@sejscc.org"
-              className="rounded-lg border-2 border-ink/20 px-5 py-2.5 font-display text-sm font-semibold text-ink hover:border-ink"
+              {dict.home.board.noteLink}
+            </Link>
+          </p>
+        </div>
+      </section>
+
+      {aboutVideoIds.length > 0 && (
+        <section className="section-navy-scene seigaiha-rings seigaiha-rings-sky relative text-white">
+          <KanjiWatermark char="映" className="-top-10 -right-8 text-white/5" />
+          <WaveDivider
+            id="videos-top"
+            position="top"
+            seed={19}
+            className="relative text-paper"
+          />
+          <div className="relative mx-auto max-w-6xl px-4 pt-4 pb-22 sm:px-6 sm:pb-30 lg:pb-40">
+            <div className="reveal-rise mx-auto max-w-2xl text-center">
+              <SectionKicker
+                accent={dict.home.history.videosKickerAccent}
+                caption={dict.home.history.videosKickerCaption}
+                tone="sky"
+                order="caption-first"
+                className="justify-center"
+              />
+              <h2 className="mt-4 font-display text-2xl leading-snug font-normal tracking-[0.02em] text-white sm:text-3xl">
+                {dict.home.history.videosTitle}
+              </h2>
+              <p className="mx-auto mt-3 max-w-xl leading-relaxed text-white/75">
+                {dict.home.history.videoCaption}
+              </p>
+            </div>
+            <div
+              className={`mx-auto mt-10 grid gap-6 ${
+                aboutVideoIds.length > 2
+                  ? "sm:grid-cols-2 lg:grid-cols-3"
+                  : aboutVideoIds.length > 1
+                    ? "max-w-4xl sm:grid-cols-2"
+                    : "max-w-3xl"
+              }`}
             >
-              {dict.home.connectEmail}
-            </a>
+              {aboutVideoIds.map((id, i) => (
+                <SiteVideo
+                  key={id}
+                  videoId={id}
+                  dark
+                  title={
+                    aboutVideoIds.length > 1
+                      ? `${dict.home.history.videoTitle} ${i + 1}`
+                      : dict.home.history.videoTitle
+                  }
+                  className=""
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      <div
+        className={
+          aboutVideoIds.length > 0
+            ? "under-wave relative -mt-12 sm:-mt-20 lg:-mt-30"
+            : "relative"
+        }
+      >
+        <Image
+          src={homePhotos.centennial}
+          alt={dict.home.centennialPhotoAlt}
+          width={2000}
+          height={405}
+          sizes="100vw"
+          className="block h-auto min-h-64 w-full object-cover object-bottom sm:min-h-80 lg:min-h-0"
+        />
+        {aboutVideoIds.length > 0 && (
+          <WaveDivider
+            id="videos-bottom"
+            accent="none"
+            seed={33}
+            className="absolute inset-x-0 top-0 text-transparent"
+          />
+        )}
+      </div>
+
+      <section
+        id="contact"
+        className="section-wash-connect relative scroll-mt-16 overflow-clip"
+      >
+        <KanjiWatermark char="絆" className="-top-4 -right-6 text-indigo/5" />
+        <div className="relative mx-auto max-w-5xl px-4 py-16 sm:px-6 sm:py-20">
+          <div className="reveal-rise mx-auto max-w-2xl text-center">
+            <SectionKicker
+              accent={dict.home.connectKickerAccent}
+              caption={dict.home.connectKickerCaption}
+              tone="magenta"
+              order="caption-first"
+              className="justify-center"
+            />
+            <h2 className="mt-4 font-display text-2xl leading-snug font-normal tracking-[0.02em] text-ink sm:text-3xl">
+              {dict.home.connectTitle}
+            </h2>
+            <p className="mx-auto mt-4 max-w-xl leading-relaxed text-ink-soft">
+              {dict.home.connectText}
+            </p>
+          </div>
+          <div className="reveal-rise mt-10 grid gap-5 lg:grid-cols-[2fr_3fr]">
+            <div className="surface-card flex flex-col divide-y divide-line overflow-clip">
+              <a
+                href={mapsUrl(CENTER_ADDRESS)}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={dict.home.contact.addressAria}
+                className="flex flex-1 items-center gap-4 px-5 py-5 hover:bg-mist"
+              >
+                <ContactIcon name="pin" />
+                <span>
+                  <span className="block font-display text-xs font-semibold tracking-[0.14em] text-ink-soft uppercase">
+                    {dict.home.contact.addressLabel}
+                  </span>
+                  <span className="mt-1 block leading-relaxed text-ink">
+                    {CENTER_ADDRESS}
+                  </span>
+                </span>
+              </a>
+              <a
+                href={CENTER_PHONE_HREF}
+                className="flex flex-1 items-center gap-4 px-5 py-5 hover:bg-mist"
+              >
+                <ContactIcon name="phone" />
+                <span>
+                  <span className="block font-display text-xs font-semibold tracking-[0.14em] text-ink-soft uppercase">
+                    {dict.home.contact.phoneLabel}
+                  </span>
+                  <span className="mt-1 block leading-relaxed text-ink">
+                    {CENTER_PHONE}
+                  </span>
+                </span>
+              </a>
+              <a
+                href={`mailto:${CENTER_EMAIL}`}
+                className="flex flex-1 items-center gap-4 px-5 py-5 hover:bg-mist"
+              >
+                <ContactIcon name="mail" />
+                <span>
+                  <span className="block font-display text-xs font-semibold tracking-[0.14em] text-ink-soft uppercase">
+                    {dict.home.contact.emailLabel}
+                  </span>
+                  <span className="mt-1 block leading-relaxed break-all text-ink">
+                    {CENTER_EMAIL}
+                  </span>
+                </span>
+              </a>
+            </div>
+            <div className="surface-card relative min-h-64 overflow-clip lg:min-h-0">
+              <iframe
+                src={mapsEmbedUrl(CENTER_ADDRESS)}
+                title={dict.home.contact.mapTitle}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                className="absolute inset-0 h-full w-full border-0"
+              />
+            </div>
           </div>
         </div>
       </section>
 
-      <Image
-        src={homePhotos.centennial}
-        alt={dict.home.centennialPhotoAlt}
-        width={2000}
-        height={405}
-        sizes="100vw"
-        className="block h-auto w-full"
-      />
     </>
   );
 }

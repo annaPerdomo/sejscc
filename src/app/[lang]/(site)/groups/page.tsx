@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { ExternalLink } from "@/components/external-link";
-import { GroupMedia } from "@/components/group-media";
-import { GroupSpotlight } from "@/components/group-spotlight";
+import Link from "next/link";
+import { DocumentLink } from "@/components/document-link";
+import { GroupCard } from "@/components/group-card";
 import { KanjiWatermark } from "@/components/kanji-watermark";
 import { PageHero } from "@/components/page-hero";
 import { PageSection } from "@/components/page-section";
@@ -15,7 +15,13 @@ import {
   CENTER_PHONE_HREF,
 } from "@/lib/center";
 import { getActiveGroups } from "@/lib/events";
-import { getDictionary, getDictionaryFor } from "@/lib/dictionaries";
+import {
+  FACILITY_USE_FORM_URL,
+  FACILITY_USE_TERMS_URL,
+  NEW_CLUB_FORM_URL,
+  NEW_CLUB_PROCEDURE_URL,
+} from "@/lib/groups";
+import { getDictionary, getDictionaryFor, getLocale } from "@/lib/dictionaries";
 import { hasLocale, localePath } from "@/lib/i18n";
 import { groupsHeroPhoto, photoFor } from "@/lib/photos";
 
@@ -44,7 +50,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function GroupsPage() {
-  const [dict, groups] = await Promise.all([getDictionary(), getActiveGroups()]);
+  const [lang, dict, groups] = await Promise.all([
+    getLocale(),
+    getDictionary(),
+    getActiveGroups(),
+  ]);
 
   const week = weekDays.map((day) => ({
     day,
@@ -53,8 +63,6 @@ export default async function GroupsPage() {
     ),
   }));
   const hasWeek = week.some(({ entries }) => entries.length > 0);
-
-  const spotlight = groups.filter((group) => group.status === "meeting");
 
   return (
     <>
@@ -79,7 +87,7 @@ export default async function GroupsPage() {
               </a>
             )}
             <a
-              href="#start"
+              href="#club"
               className="font-display text-sm font-semibold text-magenta hover:text-magenta-deep"
             >
               {dict.groups.startCta}
@@ -95,21 +103,6 @@ export default async function GroupsPage() {
             className="reveal-rise aspect-photo w-full rounded-xl border border-line shadow-sm lg:w-96 xl:w-104"
           />
         }
-        below={
-          spotlight.length > 0 && (
-            <GroupSpotlight
-              groups={spotlight}
-              label={dict.groups.spotlightLabel}
-              websiteLabel={dict.groups.website}
-              prevLabel={dict.groups.spotlightPrev}
-              nextLabel={dict.groups.spotlightNext}
-              pauseLabel={dict.groups.spotlightPause}
-              playLabel={dict.groups.spotlightPlay}
-              photoLabel={dict.groups.photoLabel}
-              slideLabel={dict.groups.spotlightSlide}
-            />
-          )
-        }
       />
 
       <PageSection
@@ -122,102 +115,9 @@ export default async function GroupsPage() {
       >
         {groups.length > 0 ? (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {groups.map((group) => {
-              const muted = group.status !== "meeting";
-              const statusLabel =
-                group.status === "paused"
-                  ? dict.groups.pausedLabel
-                  : group.status === "cancelled"
-                    ? dict.groups.cancelledLabel
-                    : null;
-
-              return (
-                <article
-                  key={group.id}
-                  className={`reveal-rise relative flex flex-col overflow-clip ${
-                    muted
-                      ? "rounded-xl border border-dashed border-line bg-cloud"
-                      : "surface-card surface-card-link"
-                  }`}
-                >
-                  <GroupMedia
-                    src={group.imageUrl}
-                    placeholderLabel={dict.groups.photoLabel}
-                    sizes={CARD_SIZES}
-                    muted={muted}
-                    className="border-b border-line"
-                  />
-                  {statusLabel && (
-                    <span className="absolute top-3 right-3 rounded-md border border-line bg-white/90 px-2.5 py-1 font-display text-[11px] font-semibold tracking-[0.14em] text-stone uppercase">
-                      {statusLabel}
-                    </span>
-                  )}
-
-                  <div className="flex flex-1 flex-col gap-2 p-5">
-                    <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
-                      <h3
-                        className={`font-display text-lg font-semibold ${
-                          muted ? "text-ink-soft" : "text-ink"
-                        }`}
-                      >
-                        {group.name}
-                      </h3>
-                      {group.nameJa && (
-                        <span
-                          lang="ja"
-                          className={`font-accent text-sm font-bold tracking-[0.16em] ${
-                            muted ? "text-stone" : "text-indigo"
-                          }`}
-                        >
-                          {group.nameJa}
-                        </span>
-                      )}
-                    </div>
-
-                    {group.meetingSchedule && (
-                      <p
-                        className={`font-display text-xs font-semibold tracking-[0.1em] uppercase ${
-                          muted ? "text-stone" : "text-magenta"
-                        }`}
-                      >
-                        {group.meetingSchedule}
-                      </p>
-                    )}
-
-                    {group.description && (
-                      <p
-                        className={`text-sm leading-relaxed ${
-                          muted ? "text-stone" : "text-ink-soft"
-                        }`}
-                      >
-                        {group.description}
-                      </p>
-                    )}
-
-                    {(group.websiteUrl || group.contactEmail) && (
-                      <div className="mt-auto flex flex-wrap gap-x-5 gap-y-2 border-t border-dashed border-indigo/25 pt-4 font-display text-sm font-semibold">
-                        {group.websiteUrl && (
-                          <ExternalLink
-                            href={group.websiteUrl}
-                            className="text-indigo hover:text-indigo-deep"
-                          >
-                            {dict.groups.website}
-                          </ExternalLink>
-                        )}
-                        {group.contactEmail && (
-                          <a
-                            href={`mailto:${group.contactEmail}`}
-                            className="break-words text-indigo hover:text-indigo-deep"
-                          >
-                            {group.contactEmail}
-                          </a>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </article>
-              );
-            })}
+            {groups.map((group) => (
+              <GroupCard key={group.id} group={group} sizes={CARD_SIZES} />
+            ))}
           </div>
         ) : (
           <p className="rounded-2xl border border-line bg-mist p-8 text-ink-soft">
@@ -280,10 +180,80 @@ export default async function GroupsPage() {
                 </div>
               ))}
             </div>
+
+            <div className="reveal-rise mt-10 flex flex-col gap-4 border-t border-white/15 pt-8 sm:flex-row sm:items-center sm:gap-6">
+              <Link
+                href={localePath(lang, "/events#calendars")}
+                className="button-primary shrink-0 rounded-lg px-7 py-3.5 text-center font-display text-sm font-semibold text-white"
+              >
+                {dict.groups.weekCalendarCta}
+              </Link>
+              <p className="max-w-md text-sm leading-relaxed text-white/75">
+                {dict.groups.weekCalendarNote}
+              </p>
+            </div>
           </div>
-          <WaveDivider id="week-bottom" seed={31} className="text-mist" />
+          <WaveDivider id="week-bottom" seed={31} className="text-azure" />
         </section>
       )}
+
+      <PageSection
+        id="room"
+        surface="azure"
+        watermark="室"
+        watermarkClassName="-top-16 -right-10 text-indigo/5"
+        accent={dict.groups.room.accent}
+        caption={dict.groups.room.caption}
+        title={dict.groups.room.title}
+        lede={dict.groups.room.lede}
+      >
+        <p className="reveal-rise mb-7 max-w-2xl leading-relaxed text-ink-soft">
+          {dict.groups.room.eligibility}
+        </p>
+        <div className="grid gap-5 sm:grid-cols-2">
+          <DocumentLink
+            href={FACILITY_USE_FORM_URL}
+            format={dict.groups.formatPdf}
+            label={dict.groups.room.formLabel}
+            description={dict.groups.room.formDescription}
+          />
+          <DocumentLink
+            href={FACILITY_USE_TERMS_URL}
+            format={dict.groups.formatPdf}
+            label={dict.groups.room.termsLabel}
+            description={dict.groups.room.termsDescription}
+          />
+        </div>
+      </PageSection>
+
+      <PageSection
+        id="club"
+        surface="cream"
+        watermark="部"
+        watermarkClassName="top-24 -left-12 text-indigo/5"
+        accent={dict.groups.club.accent}
+        caption={dict.groups.club.caption}
+        title={dict.groups.club.title}
+        lede={dict.groups.club.lede}
+      >
+        <p className="reveal-rise mb-7 max-w-2xl leading-relaxed text-ink-soft">
+          {dict.groups.club.mission}
+        </p>
+        <div className="grid gap-5 sm:grid-cols-2">
+          <DocumentLink
+            href={NEW_CLUB_PROCEDURE_URL}
+            format={dict.groups.formatDoc}
+            label={dict.groups.club.procedureLabel}
+            description={dict.groups.club.procedureDescription}
+          />
+          <DocumentLink
+            href={NEW_CLUB_FORM_URL}
+            format={dict.groups.formatPdf}
+            label={dict.groups.club.formLabel}
+            description={dict.groups.club.formDescription}
+          />
+        </div>
+      </PageSection>
 
       <section id="start" className="relative scroll-mt-28 overflow-clip bg-mist">
         <KanjiWatermark char="始" className="-top-20 right-4 text-indigo/5" />

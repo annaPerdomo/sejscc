@@ -16,10 +16,12 @@
     "announcementSignup": "Sign up"
   },
   "nav": {
+    "about": "About Us",
     "japaneseSchool": "Japanese School",
     "events": "Events",
-    "groups": "Groups & Programs",
+    "groups": "Sports & Classes",
     "payments": "Support Us",
+    "contact": "Contact",
     "volunteerSignIn": "Volunteer sign-in"
   },
   "footer": {
@@ -46,7 +48,7 @@
         "headingLine2": "and Community Center",
         "body": "For 101 years, Saturdays here have meant Japanese school. The rest of the week: judo, hula, ukulele, and bingo — everyone is welcome.",
         "primaryCta": "See upcoming events",
-        "secondaryCta": "Explore groups & programs"
+        "secondaryCta": "Explore sports & classes"
       },
       {
         "id": "school",
@@ -59,7 +61,7 @@
         "headingLine2": "Japanese School",
         "body": "Language, reading, and calligraphy from kindergarten through Level 12, with adult classes online. No Japanese background required.",
         "primaryCta": "Tuition & registration",
-        "secondaryCta": "Meet our groups"
+        "secondaryCta": "See sports & classes"
       },
       {
         "id": "clubs",
@@ -83,7 +85,7 @@
         "headingLine1": "Who we are,",
         "headingLine2": "and what we do",
         "body": "A volunteer-run nonprofit serving Japanese American families and neighbors in Norwalk since 1925.",
-        "primaryCta": "Get in touch"
+        "primaryCta": "Read our story"
       },
       {
         "id": "donate",
@@ -139,7 +141,7 @@
         }
       ],
       "primaryCta": "Tuition & registration",
-      "secondaryCta": "Meet our groups"
+      "secondaryCta": "See sports & classes"
     },
     "sportsClubs": {
       "kickerAccent": "クラブ活動",
@@ -157,6 +159,10 @@
       "headingLine1": "101 years,",
       "headingLine2": "still growing.",
       "body": "From a small group of Japanese immigrant families in 1925 to a vibrant community today. We honor our heritage while building connections for the future.",
+      "missionLabel": "Our Mission",
+      "missionText": "To preserve and share our Japanese heritage and its traditions with the community through cultural, educational, and social activities.",
+      "videoTitle": "A video tour of the Southeast Japanese School & Community Center",
+      "videoCaption": "A look inside the center, its history, and its traditions.",
       "photoLabel": "Historic photo coming soon",
       "milestones": [
         {
@@ -207,15 +213,44 @@
           "text": "The center celebrated its 100th anniversary on July 26, with 132 students enrolled at the Gakuen and four generations together in the hall.",
           "photoAlt": "Visitors looking through the group history displays at the 100th anniversary celebration"
         }
-      ]
+      ],
+      "videosKickerAccent": "紹介動画",
+      "videosKickerCaption": "Featured Videos",
+      "videosTitle": "See the center in motion"
+    },
+    "board": {
+      "kickerAccent": "運営委員会",
+      "kickerCaption": "Our Volunteers",
+      "title": "Board of Directors",
+      "intro": "SEJSCC is entirely volunteer-run. The board sets direction on behalf of the community it serves.",
+      "members": [
+        "Dean Wada",
+        "Simon Yao",
+        "Carrie Nakatani",
+        "Tye Masaki",
+        "Ernie Nishii",
+        "Masa Lau",
+        "Colleen Sonoda",
+        "Miki Suzuki",
+        "Karrie Takeuchi",
+        "Rich Tamaki"
+      ],
+      "volunteersNote": "They're only part of the picture — dozens more volunteers teach classes, coach teams, run the kitchen, and keep the center open every week.",
+      "note": "To reach a board member, leave a message with",
+      "noteLink": "the center."
     },
     "connectKickerAccent": "コミュニティ",
     "connectKickerCaption": "Our Community",
     "connectTitle": "All Generations. One Community.",
     "connectText": "Everyone is welcome at SEJSCC. We are a nonprofit organization and all of our activities are open to anyone, regardless of race or religion. Together we learn, celebrate, volunteer, and create memories that last a lifetime.",
-    "connectCall": "Call (562) 863-5996",
-    "connectEmail": "Email the Center",
     "centennialPhotoAlt": "The whole community gathered outside the center for its 100th anniversary in 2025",
+    "contact": {
+      "addressLabel": "Address",
+      "addressAria": "Get directions to the center (opens in Google Maps)",
+      "phoneLabel": "Phone",
+      "emailLabel": "Email",
+      "mapTitle": "Map showing the center's location in Norwalk, California"
+    },
     "heroPause": "Pause the slideshow",
     "heroPlay": "Play the slideshow"
   },
@@ -271,7 +306,7 @@
       "openLabel": "Open in Google Calendar",
       "facilities": {
         "label": "Facilities calendar",
-        "description": "Which rooms are booked, day by day. For a group's regular meeting day, see the Groups page.",
+        "description": "Which rooms are booked, day by day. For a group's regular meeting day, see the Sports & Classes page.",
         "frameTitle": "SEJSCC facilities calendar, showing room bookings for classes and clubs"
       },
       "comingEvents": {
@@ -319,26 +354,23 @@
     "directions": "Open in Google Maps"
   },
   "groups": {
-    "metaTitle": "Groups & Programs",
+    "metaTitle": "Sports & Classes",
     "metaDescription": "Japanese school, judo, basketball, and cultural groups that meet at the Southeast Japanese School & Community Center.",
     "kickerAccent": "活動の輪",
     "kickerCaption": "Find Your Circle",
-    "titleLine1": "Groups &",
-    "titleLine2": "Programs",
+    "titleLine1": "Sports &",
+    "titleLine2": "Classes",
     "lede": "The center is shared by independent groups and programs — from Japanese language school to judo and basketball. Reach out to a group directly to join, or contact the center to start a new one.",
     "scheduleCta": "Weekly schedule",
     "startCta": "Have an idea? Start a new club",
     "photoLabel": "Photo coming soon",
     "heroPhotoAlt": "Hula dancers performing with ʻulīʻulī gourd rattles",
-    "spotlightLabel": "Groups at the center",
-    "spotlightPrev": "Previous group",
-    "spotlightNext": "Next group",
-    "spotlightPause": "Stop rotating groups",
-    "spotlightPlay": "Rotate groups automatically",
     "directoryAccent": "全団体",
     "directoryCaption": "Who Meets Here",
     "directoryTitle": "Every group at the center",
     "website": "Website",
+    "meetsAtCenter": "At the center",
+    "askCta": "Ask the center",
     "pausedLabel": "Paused",
     "cancelledLabel": "Discontinued",
     "empty": "Group listings are coming soon. In the meantime, call the center at (562) 863-5996 to learn about Japanese school, judo, basketball, and other programs.",
@@ -347,6 +379,8 @@
     "weekTitleLine1": "A week",
     "weekTitleLine2": "at the center",
     "weekNote": "Schedules can change — confirm times with the group before you visit.",
+    "weekCalendarCta": "See the facilities calendar",
+    "weekCalendarNote": "Room bookings, day by day — including one-time events and anything not on the weekly schedule above.",
     "weekDays": {
       "mon": "Mon",
       "tue": "Tue",
@@ -367,7 +401,30 @@
     "useEmailCta": "Email the center",
     "useCallCta": "Call the center",
     "useFit": "We're looking for groups that fit what the center is for — Japanese language and culture, martial arts, music and dance, sports, and activities that bring neighbors of every age together. The board reviews each proposal and will talk through space, scheduling, and insurance with you before anything is confirmed.",
-    "spotlightSlide": "{n} of {total}"
+    "formatPdf": "PDF",
+    "formatDoc": "Word document",
+    "room": {
+      "accent": "施設利用",
+      "caption": "Facility Use",
+      "title": "Request a room",
+      "lede": "Holding a one-time event at the center — a tournament, a recital, a family gathering? Reserve a room with the facility use application.",
+      "eligibility": "Reservations are for current participants and members affiliated with a SEJSCC club. The application asks what the event is, how many people you expect, and which rooms and equipment you need. Read the terms of the agreement before you sign — they cover setup, clean-up, insurance, and fees.",
+      "formLabel": "One-time facility use application",
+      "formDescription": "The reservation form. Fill it in, sign it, and return it to the office.",
+      "termsLabel": "Terms of the agreement",
+      "termsDescription": "What renters agree to: hours, clean-up, damage, insurance, and payment."
+    },
+    "club": {
+      "accent": "新規クラブ",
+      "caption": "New Clubs",
+      "title": "Start a new club",
+      "lede": "Have a class or activity you'd like to run at the center? The board welcomes proposals, and the two documents below are where it starts.",
+      "mission": "The center is a nonprofit whose mission is teaching the Japanese language and studies in the arts, history, civilization, sciences, and exercises of Japan — alongside sports, social, and healthy-lifestyle activities for members and participants of every age. Proposals that fit that mission are the ones the board can say yes to.",
+      "procedureLabel": "Application procedure",
+      "procedureDescription": "How the process works, step by step, and what the board will ask you about.",
+      "formLabel": "New club application form",
+      "formDescription": "The proposal itself: your activity, who it's for, and the space and schedule you need."
+    }
   },
   "school": {
     "metaTitle": "Japanese School",
