@@ -103,17 +103,6 @@ export default async function AdminDashboard() {
 
       <div className="mt-10 grid gap-6 sm:grid-cols-2">
         <SummaryCard
-          kanji="部"
-          title="Groups"
-          addHref="/admin/groups/new"
-          addLabel="+ Add a new group"
-          viewHref="/admin/groups"
-          viewLabel="View & edit all groups"
-        >
-          {activeGroups.length} {activeGroups.length === 1 ? "group is" : "groups are"}{" "}
-          listed on the community page.
-        </SummaryCard>
-        <SummaryCard
           kanji="祭"
           title="Events"
           addHref="/admin/events/new"
@@ -124,6 +113,18 @@ export default async function AdminDashboard() {
           {upcomingEvents.length} upcoming{" "}
           {upcomingEvents.length === 1 ? "event is" : "events are"} on the
           community calendar.
+        </SummaryCard>
+        <SummaryCard
+          kanji="部"
+          title="Groups"
+          addHref="/admin/groups/new"
+          addLabel="+ Add a new group"
+          viewHref="/admin/groups"
+          viewLabel="View & edit all groups"
+        >
+          {activeGroups.length}{" "}
+          {activeGroups.length === 1 ? "group is" : "groups are"} listed on the
+          community page.
         </SummaryCard>
       </div>
     </div>

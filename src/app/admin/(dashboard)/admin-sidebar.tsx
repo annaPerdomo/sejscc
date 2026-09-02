@@ -17,8 +17,8 @@ const NAV: {
   adminOnly?: boolean;
 }[] = [
   { href: "/admin", label: "Dashboard", kanji: "家" },
-  { href: "/admin/groups", label: "Groups", kanji: "部" },
   { href: "/admin/events", label: "Events", kanji: "祭" },
+  { href: "/admin/groups", label: "Groups", kanji: "部" },
   { href: "/admin/volunteers", label: "Volunteers", kanji: "友", adminOnly: true },
   { href: "/admin/settings", label: "Settings", kanji: "設", adminOnly: true },
 ];
