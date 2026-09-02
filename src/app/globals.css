@@ -45,6 +45,10 @@
   --font-accent: var(--font-shippori-mincho), var(--font-zen-maru-gothic), Georgia, serif;
 }
 
+html {
+  overscroll-behavior: none;
+}
+
 body {
   background:
     radial-gradient(circle at 4% 12%, --alpha(var(--color-celadon) / 48%), transparent 19rem),
