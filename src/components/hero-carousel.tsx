@@ -53,13 +53,48 @@ export function HeroCarousel({
     setMountedPhotos(Array.from(new Set([...mountedPhotos, active, upcoming])));
   }
 
+  const tabListRef = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  // Not scrollIntoView: it walks every scrollable ancestor, dragging the whole
+  // page back to the hero on each advance.
   useEffect(() => {
-    tabRefs.current[active]?.scrollIntoView({
-      block: "nearest",
-      inline: "nearest",
-      behavior: reduceMotion ? "auto" : "smooth",
+    const strip = tabListRef.current;
+    if (!strip) return;
+
+    const align = (behavior: ScrollBehavior) => {
+      const tab = tabRefs.current[active];
+      if (!tab) return;
+      // The scrollport is the padding box, not the border box a bounding rect
+      // reports.
+      const styles = window.getComputedStyle(strip);
+      const stripBox = strip.getBoundingClientRect();
+      const paddingBoxLeft = stripBox.left + strip.clientLeft;
+      const visibleLeft = paddingBoxLeft + parseFloat(styles.paddingLeft);
+      const visibleRight =
+        paddingBoxLeft + strip.clientWidth - parseFloat(styles.paddingRight);
+      const tabBox = tab.getBoundingClientRect();
+      const overflowLeft = tabBox.left - visibleLeft;
+      const overflowRight = tabBox.right - visibleRight;
+      if (overflowLeft >= 0 && overflowRight <= 0) return;
+      strip.scrollTo({
+        left:
+          strip.scrollLeft + (overflowLeft < 0 ? overflowLeft : overflowRight),
+        behavior,
+      });
+    };
+
+    align(reduceMotion ? "auto" : "smooth");
+
+    // ResizeObserver fires once on observe; without the width guard that first
+    // callback would cut the smooth scroll above short.
+    let lastWidth = strip.clientWidth;
+    const observer = new ResizeObserver(() => {
+      if (strip.clientWidth === lastWidth) return;
+      lastWidth = strip.clientWidth;
+      align("auto");
     });
+    observer.observe(strip);
+    return () => observer.disconnect();
   }, [active, reduceMotion]);
 
   useEffect(() => {
@@ -183,6 +218,7 @@ export function HeroCarousel({
 
         <div className="mt-9 flex items-start gap-4 border-t border-white/20">
           <div
+            ref={tabListRef}
             role="tablist"
             aria-label={tabsLabel}
             className="flex flex-1 gap-4 overflow-x-auto sm:gap-0"
