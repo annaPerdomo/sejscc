@@ -1,10 +1,11 @@
 // Draws a stand-in flyer for every demo event without a real one, to
-// materials/demo-flyers/<slug>.pdf where seed-demo-events.mjs looks for it.
+// materials/demo-flyers/<slug>.pdf where seed-demo-events.mts looks for it.
 // Renders by printing HTML from headless Chrome, so macOS-only.
 import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import type { DemoEvent, DemoEventKind } from "./demo-events.mts";
 import { CENTER, DEMO_EVENTS } from "./demo-events.mts";
 
 const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
@@ -19,7 +20,7 @@ const JP_SERIF = '"Hiragino Mincho ProN", "Yu Mincho", serif';
 const PHONE = "(562) 863-5996";
 const ORG = "Southeast Japanese School & Community Center";
 
-// Mirrors the @theme palette in src/app/globals.css; copied because .mjs can't
+// Mirrors the @theme palette in src/app/globals.css; copied because .mts can't
 // import CSS. Re-check it against the theme when the site's colors change.
 const COLOR = {
   paper: "#fcfdff",
@@ -40,10 +41,19 @@ const COLOR = {
   sand: "#f3e7d3",
   navy: "#12365f",
   inkDeep: "#0e2540",
+} as const;
+
+type KindStyle = {
+  kicker: string;
+  kanji: string;
+  background: string;
+  accent: string;
+  rule: string;
+  dark?: boolean;
 };
 
 // `dark` flips the sheet to light type on a deep ground.
-const KINDS = {
+const KINDS: Record<DemoEventKind, KindStyle> = {
   festival: {
     kicker: "イベント案内",
     kanji: "祭",
@@ -113,11 +123,12 @@ const KINDS = {
 
 // Chrome rasterises a whole page that carries a transparency group, so tints
 // are mixed into flat colours up front and no opacity is used on the sheet.
-function mix(color, onto, amount) {
-  const parse = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+function mix(color: string, onto: string, amount: number): string {
+  const parse = (hex: string) =>
+    [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
   const [r, g, b] = parse(color);
   const [br, bg, bb] = parse(onto);
-  const blend = (a, b2) => Math.round(a * amount + b2 * (1 - amount));
+  const blend = (a: number, b2: number) => Math.round(a * amount + b2 * (1 - amount));
   return `#${[blend(r, br), blend(g, bg), blend(b, bb)]
     .map((v) => v.toString(16).padStart(2, "0"))
     .join("")}`;
@@ -132,7 +143,7 @@ const SEIGAIHA_OFFSETS = [
   [-40, 60], [40, 60], [120, 60], [200, 60],
 ];
 
-function seigaihaSvg(ringColor, discColor) {
+function seigaihaSvg(ringColor: string, discColor: string): string {
   const uses = SEIGAIHA_OFFSETS.map(
     ([x, y]) => `<use href="#ring" x="${x}" y="${y}"/>`
   ).join("");
@@ -150,7 +161,7 @@ function seigaihaSvg(ringColor, discColor) {
     </svg>`;
 }
 
-function logoDataUri(dark) {
+function logoDataUri(dark: boolean): string {
   const file = dark ? "logo-mark-white.png" : "logo-mark.png";
   const bytes = readFileSync(path.join("public", file));
   return `data:image/png;base64,${bytes.toString("base64")}`;
@@ -159,11 +170,11 @@ function logoDataUri(dark) {
 const LOGO = { light: logoDataUri(false), dark: logoDataUri(true) };
 
 /** Dates are plain calendar strings here, so they format in UTC. */
-function parseDay(date) {
+function parseDay(date: string): Date {
   return new Date(`${date}T12:00:00Z`);
 }
 
-function formatDate(date) {
+function formatDate(date: string): string {
   return parseDay(date).toLocaleDateString("en-US", {
     weekday: "long",
     month: "long",
@@ -173,14 +184,14 @@ function formatDate(date) {
   });
 }
 
-function formatTime(time) {
+function formatTime(time: string): string {
   const [hour, minute] = time.split(":").map(Number);
   const suffix = hour < 12 ? "AM" : "PM";
   const twelve = hour % 12 === 0 ? 12 : hour % 12;
   return `${twelve}:${String(minute).padStart(2, "0")} ${suffix}`;
 }
 
-function lead(description) {
+function lead(description: string): string | null {
   if (!description) return null;
   const sentences = description.split("\n\n")[0].match(/[^.!?]+[.!?]+/g);
   if (!sentences) return null;
@@ -192,15 +203,15 @@ function lead(description) {
   return (text || sentences[0]).trim();
 }
 
-const TALL_TITLE = (title) => (title.length > 38 ? "40pt" : "50pt");
-const WIDE_TITLE = (title) =>
+const TALL_TITLE = (title: string) => (title.length > 38 ? "40pt" : "50pt");
+const WIDE_TITLE = (title: string) =>
   title.length > 38 ? "33pt" : title.length > 26 ? "38pt" : "44pt";
 
 const ORDINALS = ["First", "Second", "Third", "Fourth", "Fifth"];
 
 /** Mirrors describeRepeat() in src/lib/recurrence.ts. */
-function repeatLine(event) {
-  if (!event.repeat || event.repeat === "none") return null;
+function repeatLine(event: DemoEvent): string | null {
+  if (!event.repeat) return null;
   const day = parseDay(event.date);
   const weekday = day.toLocaleDateString("en-US", {
     weekday: "long",
@@ -212,21 +223,28 @@ function repeatLine(event) {
   return event.repeat === "weekly" ? `Every ${weekday}` : `Every other ${weekday}`;
 }
 
-function escapeHtml(value) {
-  return value.replace(
-    /[&<>"]/g,
-    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]
-  );
+const HTML_ESCAPES: Record<string, string> = {
+  "&": "&amp;",
+  "<": "&lt;",
+  ">": "&gt;",
+  '"': "&quot;",
+};
+
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>"]/g, (c) => HTML_ESCAPES[c]);
 }
 
-function flyerHtml(event) {
-  const kind = KINDS[event.kind] ?? KINDS.community;
+function flyerHtml(event: DemoEvent): string {
+  const kind = KINDS[event.kind];
   const text = kind.dark ? COLOR.sand : COLOR.ink;
   const soft = kind.dark ? COLOR.sky : COLOR.inkSoft;
   const card = mix("#ffffff", kind.background, kind.dark ? 0.06 : 0.62);
 
   const repeats = repeatLine(event);
-  const times = [event.start, event.end].filter(Boolean).map(formatTime).join(" – ");
+  const times = [event.start, event.end]
+    .filter((t): t is string => Boolean(t))
+    .map(formatTime)
+    .join(" – ");
   const [venue, ...address] = (event.location ?? CENTER).split(", ");
   const atCenter = (event.location ?? CENTER) === CENTER;
 
