@@ -46,3 +46,6 @@ next-env.d.ts
 
 # source flyers and centennial artwork — kept locally, uploaded to Blob when used
 /materials/
+
+# prompt packs — working notes, not shipped
+/prompts/

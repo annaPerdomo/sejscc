@@ -8,15 +8,22 @@ if (!process.env.DATABASE_URL) {
 }
 
 const sql = neon(process.env.DATABASE_URL);
-const added = await sql`
+const rows: { email?: unknown }[] = await sql`
   insert into allowed_email (email)
   select lower(email) from "user"
   on conflict do nothing
   returning email
 `;
 
+const added = rows.map((row) => {
+  if (typeof row.email !== "string") {
+    throw new Error("allowed_email backfill returned a row with no email");
+  }
+  return row.email;
+});
+
 console.log(
   added.length
-    ? `Added ${added.length} address(es):\n  ${added.map((row) => row.email).join("\n  ")}`
+    ? `Added ${added.length} address(es):\n  ${added.join("\n  ")}`
     : "Every account is already on the allowlist. Nothing to do."
 );

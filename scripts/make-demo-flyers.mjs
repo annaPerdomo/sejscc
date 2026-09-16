@@ -5,7 +5,7 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { CENTER, DEMO_EVENTS } from "./demo-events.mjs";
+import { CENTER, DEMO_EVENTS } from "./demo-events.mts";
 
 const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const OUT_DIR = path.join("materials", "demo-flyers");

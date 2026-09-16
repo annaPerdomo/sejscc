@@ -13,7 +13,7 @@ import {
   DEMO_EVENTS,
   RETIRED_SLUGS,
   TITLE_PREFIX,
-} from "./demo-events.mjs";
+} from "./demo-events.mts";
 
 const args = process.argv.slice(2);
 const clear = args.includes("--clear");

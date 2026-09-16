@@ -1,9 +1,10 @@
-// The demo event list, shared by seed-demo-events.mjs (writes the rows) and
-// make-demo-flyers.mjs (draws a flyer for each one).
+// The demo event list, shared by seed-demo-events.mts (writes the rows) and
+// make-demo-flyers.mts (draws a flyer for each one).
 
-// Must match CENTER_ADDRESS in src/lib/center.ts exactly, or venueLabel() stops
-// collapsing seeded rows to "At the center". Copied because .mjs can't import TS.
-export const CENTER = "14615 S. Gridley Rd., Norwalk, CA 90650";
+import { CENTER_ADDRESS } from "../src/lib/center.ts";
+import type { EventRepeat, events } from "../src/db/schema.ts";
+
+export const CENTER = CENTER_ADDRESS;
 export const PARK = "Norwalk Park, 13000 Clarkdale Ave., Norwalk, CA 90650";
 
 // Marks every seeded row, on screen and for the seeder's own delete guards, so
@@ -27,11 +28,40 @@ export const RETIRED_SLUGS = [
   "nikkei-seniors-november-2026",
 ];
 
+export type DemoEventKind =
+  | "festival"
+  | "bingo"
+  | "sports"
+  | "market"
+  | "tradition"
+  | "food"
+  | "school"
+  | "music"
+  | "community";
+
+export type DemoEvent = {
+  slug: string;
+  kind: DemoEventKind;
+  title: string;
+  date: string;
+  description: string;
+  wide?: boolean;
+  start?: string;
+  end?: string;
+  flyer?: string;
+  noFlyer?: boolean;
+  location?: string;
+  repeat?: Exclude<EventRepeat, "none">;
+  until?: string;
+  signup?: string;
+  status?: (typeof events.$inferSelect)["status"];
+};
+
 // `flyer` names a file in the flyers directory (--flyers=..., default
-// ./materials); without one, make-demo-flyers.mjs draws a stand-in. `noFlyer`
+// ./materials); without one, make-demo-flyers.mts draws a stand-in. `noFlyer`
 // opts out of both, so the board can see a card with no flyer at all. `repeat` +
 // `until` post a single row that moves itself forward.
-export const DEMO_EVENTS = [
+export const DEMO_EVENTS: DemoEvent[] = [
   {
     slug: "cultural-festival-2025",
     kind: "festival",
