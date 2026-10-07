@@ -44,6 +44,8 @@ import {
 
 export const revalidate = 300;
 
+const CENTENNIAL_ANCHOR = "centennial";
+
 const CONTACT_ICONS = {
   pin: (
     <>
@@ -471,6 +473,7 @@ export default async function HomePage() {
             milestones={milestones}
             photoLabel={dict.home.history.photoLabel}
             finalePhotoCaption={dict.home.history.centennialPhotoCaption}
+            finaleId={CENTENNIAL_ANCHOR}
             className="mx-auto max-w-7xl"
           />
         </div>
@@ -484,6 +487,7 @@ export default async function HomePage() {
               label: dict.home.history.centennialGalleryLabel,
             }}
             skipTo="#board"
+            skipBackTo={`#${CENTENNIAL_ANCHOR}`}
           />
         )}
 

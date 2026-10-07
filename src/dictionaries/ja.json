@@ -376,7 +376,8 @@
         "titleAccent": "創立百周年",
         "title": "100年を、ともに祝う",
         "dates": "1925年 — 2025年",
-        "skip": "写真をとばす"
+        "skip": "写真をとばす",
+        "skipBack": "写真の前にもどる"
       },
       "videosKickerAccent": "紹介動画",
       "videosKickerCaption": "Featured Videos",

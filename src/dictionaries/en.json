@@ -376,7 +376,8 @@
         "titleAccent": "",
         "title": "Celebrating 100 years",
         "dates": "1925 — 2025",
-        "skip": "Skip the photos"
+        "skip": "Skip the photos",
+        "skipBack": "Skip back up"
       },
       "videosKickerAccent": "紹介動画",
       "videosKickerCaption": "Featured Videos",

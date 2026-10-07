@@ -525,8 +525,8 @@ body {
   }
 
   .emaki {
-    /* 26rem: the stage's header clearance, title row, progress row and band padding. */
-    --emaki-photo-height: clamp(12rem, 100svh - 26rem, 36rem);
+    /* 28rem: the stage's header clearance, title row, progress and skip-back row and band padding. */
+    --emaki-photo-height: clamp(12rem, 100svh - 28rem, 36rem);
   }
 
   .emaki-stage {

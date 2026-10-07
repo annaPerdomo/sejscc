@@ -78,7 +78,7 @@ be built from these tokens via Tailwind utility classes.
   scrolls down, or a strip to swipe without scroll-driven animation; its
   parts are `emaki-stage`, `emaki-track`, `emaki-band`, `emaki-strip`,
   `emaki-photo` and `emaki-progress`, and it always carries
-  a skip link past itself),
+  a skip link past itself in each direction),
   `calendar-menu` (a
   `<details>` disclosure styled as a button), `seigaiha-rings` (with
   `seigaiha-rings-sky`, `seigaiha-rings-gold`, the slow-moving

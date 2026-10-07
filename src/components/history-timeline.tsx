@@ -23,11 +23,13 @@ export function HistoryTimeline({
   milestones,
   photoLabel,
   finalePhotoCaption,
+  finaleId,
   className = "",
 }: {
   milestones: Milestone[];
   photoLabel: string;
   finalePhotoCaption: string;
+  finaleId: string;
   className?: string;
 }) {
   const lastIndex = milestones.length - 1;
@@ -39,6 +41,7 @@ export function HistoryTimeline({
             key={milestone.year}
             milestone={milestone}
             photoCaption={finalePhotoCaption}
+            id={finaleId}
           />
         ) : (
           <TimelineMilestone
@@ -113,9 +116,11 @@ function TimelineMilestone({
 function FinaleMilestone({
   milestone,
   photoCaption,
+  id,
 }: {
   milestone: Milestone;
   photoCaption: string;
+  id?: string;
 }) {
   return (
     <li className="relative pt-2">
@@ -158,7 +163,10 @@ function FinaleMilestone({
             clear AA over the white sign. */}
         <div className="relative col-start-1 row-start-1 flex flex-col">
           <div aria-hidden="true" className="h-svh shrink-0" />
-          <div className="flex min-h-svh flex-col justify-center bg-linear-to-b from-transparent via-ink-deep/80 via-25% to-ink-deep/90 px-4 pt-24 pb-24 text-center sm:px-6">
+          <div
+            id={id}
+            className="flex min-h-svh flex-col justify-center bg-linear-to-b from-transparent via-ink-deep/80 via-25% to-ink-deep/90 px-4 pt-24 pb-24 text-center sm:px-6"
+          >
             <div className="reveal-rise mx-auto max-w-3xl">
               {milestone.era && (
                 <p

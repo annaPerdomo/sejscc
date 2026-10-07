@@ -10,6 +10,7 @@ export type EmakiCopy = {
   title: string;
   dates: string;
   skip: string;
+  skipBack: string;
 };
 
 export function CentennialEmaki({
@@ -17,11 +18,13 @@ export function CentennialEmaki({
   interludes,
   copy,
   skipTo,
+  skipBackTo,
 }: {
   photos: EmakiPhoto[];
   interludes: EmakiInterlude[];
   copy: EmakiCopy;
   skipTo: string;
+  skipBackTo: string;
 }) {
   const scenes = splitIntoScenes(photos, Math.max(interludes.length - 1, 1));
   const closing = interludes.length > 1 ? interludes[interludes.length - 1] : undefined;
@@ -69,13 +72,17 @@ export function CentennialEmaki({
           </div>
         </div>
 
-        <div
-          aria-hidden="true"
-          className="relative px-4 sm:px-8 lg:px-12"
-        >
-          <div className="h-0.5 bg-white/15">
+        <div className="relative flex items-center gap-6 px-4 sm:px-8 lg:px-12">
+          <div aria-hidden="true" className="h-0.5 flex-1 bg-white/15">
             <div className="emaki-progress h-full bg-gold" />
           </div>
+          <a
+            href={skipBackTo}
+            className="button-light shrink-0 rounded-full px-5 py-3 font-display text-sm font-semibold"
+          >
+            {copy.skipBack}
+            <span aria-hidden="true"> ↑</span>
+          </a>
         </div>
       </div>
     </div>
