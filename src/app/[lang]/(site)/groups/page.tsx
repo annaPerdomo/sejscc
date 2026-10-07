@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { DocumentLink } from "@/components/document-link";
-import { GroupCard } from "@/components/group-card";
+import { GroupPortrait } from "@/components/group-portrait";
 import { KanjiWatermark } from "@/components/kanji-watermark";
-import { PageHero } from "@/components/page-hero";
-import { PageSection } from "@/components/page-section";
+import { PhotoHero } from "@/components/photo-hero";
+import { SectionHeading } from "@/components/section-heading";
 import { SectionKicker } from "@/components/section-kicker";
-import { SitePhoto } from "@/components/site-photo";
 import { WaveDivider } from "@/components/wave-divider";
 import { weekDays } from "@/db/schema";
 import {
@@ -23,11 +23,19 @@ import {
 } from "@/lib/groups";
 import { getDictionary, getDictionaryFor, getLocale } from "@/lib/dictionaries";
 import { hasLocale, localePath } from "@/lib/i18n";
-import { groupsHeroPhoto, photoFor } from "@/lib/photos";
+import { groupsPhotos } from "@/lib/photos";
 
 export const revalidate = 300;
 
-const CARD_SIZES = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 17rem";
+const DAY_KANJI = {
+  mon: "月",
+  tue: "火",
+  wed: "水",
+  thu: "木",
+  fri: "金",
+  sat: "土",
+  sun: "日",
+} as const;
 
 type Props = { params: Promise<{ lang: string }> };
 
@@ -66,114 +74,122 @@ export default async function GroupsPage() {
 
   return (
     <>
-      <PageHero
+      <PhotoHero
         id="groups"
-        wash="section-wash-groups-hero"
-        watermark="輪"
-        watermarkClassName="-bottom-24 -left-12 text-indigo/5"
+        photo={groupsPhotos.hero}
+        photoAlt={dict.groups.heroPhotoAlt}
         accent={dict.groups.kickerAccent}
         caption={dict.groups.kickerCaption}
         titleLine1={dict.groups.titleLine1}
         titleLine2={dict.groups.titleLine2}
-        lede={dict.groups.lede}
+        lede={<p>{dict.groups.lede}</p>}
+        settlesInto="paper"
         actions={
           <>
             {hasWeek && (
-              <a
-                href="#week"
-                className="button-primary rounded-lg px-6 py-3.5 font-display text-sm font-semibold text-white"
-              >
+              <a href="#week" className="button-light px-7 py-4 text-base">
                 {dict.groups.scheduleCta}
               </a>
             )}
             <a
               href="#club"
-              className="font-display text-sm font-semibold text-magenta hover:text-magenta-deep"
+              className="link-arrow py-2 font-display text-lg font-semibold text-sky hover:text-white"
             >
               {dict.groups.startCta}
             </a>
           </>
         }
-        media={
-          <SitePhoto
-            photo={photoFor(groupsHeroPhoto, dict.groups.heroPhotoAlt)}
-            preload
-            sizes="(max-width: 640px) 92vw, (max-width: 1024px) 60vw, 26rem"
-            placeholderLabel={dict.groups.photoLabel}
-            className="reveal-bloom aspect-photo w-full rounded-xl border border-line shadow-sm lg:w-96 xl:w-104"
-          />
-        }
       />
 
-      <PageSection
-        surface="white"
-        watermark="道"
-        watermarkClassName="top-64 -right-16 text-indigo/5"
-        accent={dict.groups.directoryAccent}
-        caption={dict.groups.directoryCaption}
-        title={dict.groups.directoryTitle}
-      >
-        {groups.length > 0 ? (
-          <div className="reveal-stagger grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {groups.map((group) => (
-              <GroupCard key={group.id} group={group} sizes={CARD_SIZES} />
-            ))}
+      <section className="seigaiha-rings seigaiha-rings-fade relative bg-paper pt-10 pb-20 sm:pt-14 sm:pb-28 lg:pb-40">
+        <KanjiWatermark char="道" className="top-40 -right-14 text-indigo/5" />
+        <div className="relative mx-auto max-w-wide px-5 sm:px-10 lg:px-16">
+          <div className="reveal-rise mb-12 max-w-3xl">
+            <SectionKicker
+              accent={dict.groups.directoryAccent}
+              caption={dict.groups.directoryCaption}
+              size="lg"
+            />
+            <SectionHeading className="mt-4 sm:text-5xl">
+              {dict.groups.directoryTitle}
+            </SectionHeading>
           </div>
-        ) : (
-          <p className="rounded-2xl border border-line bg-mist p-8 text-ink-soft">
-            {dict.groups.empty}
-          </p>
-        )}
-      </PageSection>
+          {groups.length > 0 ? (
+            <div className="drift-columns reveal-stagger-2-3 grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-12 2xl:grid-cols-4">
+              {groups.map((group) => (
+                <div key={group.id}>
+                  <GroupPortrait group={group} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="max-w-2xl text-lg leading-relaxed text-ink-soft">
+              {dict.groups.empty}
+            </p>
+          )}
+        </div>
+      </section>
 
       {hasWeek && (
         <section
           id="week"
-          className="section-navy-scene edge-flush relative scroll-mt-28 overflow-clip text-white"
+          className="section-navy-scene seigaiha-rings seigaiha-rings-sky relative scroll-mt-28 border-b-8 border-gold text-white"
         >
           <KanjiWatermark char="週" className="-right-12 -bottom-20 text-white/5" />
-          <WaveDivider id="week-top" position="top" seed={19} className="relative text-white" />
-          <div className="relative mx-auto max-w-6xl px-4 pt-4 pb-6 sm:px-6 sm:pb-8">
-            <div className="reveal-rise mb-9">
+          <WaveDivider id="week-top" position="top" seed={19} className="relative text-paper" />
+          <div className="relative mx-auto max-w-wide px-5 pt-6 pb-20 sm:px-10 sm:pb-24 lg:px-16">
+            <div className="reveal-rise mb-12 max-w-3xl">
               <SectionKicker
                 accent={dict.groups.weekAccent}
                 caption={dict.groups.weekCaption}
                 tone="sky"
+                size="lg"
               />
-              <h2 className="mt-3 font-display text-3xl font-normal tracking-[0.02em] sm:text-4xl">
-                <span className="block text-white">{dict.groups.weekTitleLine1}</span>
-                <span className="block text-sky">{dict.groups.weekTitleLine2}</span>
+              <h2 className="mt-4 font-display text-4xl leading-tight font-normal tracking-[0.02em] sm:text-5xl">
+                <span className="text-white">{dict.groups.weekTitleLine1}</span>{" "}
+                <span className="text-sky">{dict.groups.weekTitleLine2}</span>
               </h2>
-              <p className="mt-4 max-w-xl text-sm leading-relaxed text-white/75">
+              <p className="mt-5 text-lg leading-relaxed text-white/85">
                 {dict.groups.weekNote}
               </p>
             </div>
 
-            <div className="reveal-stagger-4-7 grid grid-cols-2 gap-x-5 gap-y-7 sm:grid-cols-4 lg:grid-cols-7">
+            <div className="reveal-stagger-4-7 grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-4 lg:grid-cols-7 lg:gap-x-5">
               {week.map(({ day, entries }) => (
-                <div
-                  key={day}
-                  className="reveal-rise lg:border-l lg:border-white/15 lg:pl-5 lg:first:border-l-0 lg:first:pl-0"
-                >
-                  <h3
-                    className={`border-b-2 pb-2 font-display text-sm font-semibold tracking-[0.14em] uppercase ${
-                      entries.length
-                        ? "border-indigo text-white"
-                        : "border-white/20 text-white/70"
-                    }`}
-                  >
-                    {dict.groups.weekDays[day]}
+                <div key={day} className="reveal-rise flex flex-col">
+                  <h3 className="flex flex-col items-center gap-2">
+                    <span
+                      lang="ja"
+                      aria-hidden="true"
+                      className={`kanji-box w-20 font-accent text-5xl font-bold ${
+                        entries.length ? "text-white" : "text-white/60"
+                      }`}
+                    >
+                      {DAY_KANJI[day]}
+                    </span>
+                    <span
+                      className={
+                        dict.groups.weekDays[day] === DAY_KANJI[day]
+                          ? "sr-only"
+                          : "font-display text-base font-semibold tracking-[0.16em] text-sky uppercase"
+                      }
+                    >
+                      {dict.groups.weekDays[day]}
+                    </span>
                   </h3>
                   {entries.length > 0 ? (
-                    <ul className="mt-3.5 space-y-2.5">
+                    <ul className="mt-5 flex flex-col gap-3">
                       {entries.map((group) => (
-                        <li key={group.id} className="text-sm text-white/85">
+                        <li
+                          key={group.id}
+                          className="nafuda text-center font-display text-base leading-snug font-semibold"
+                        >
                           {group.name}
                         </li>
                       ))}
                     </ul>
                   ) : (
-                    <p className="mt-3.5 text-sm leading-relaxed text-white/75">
+                    <p className="mt-5 rounded-xs border-2 border-dashed border-white/30 px-3 py-4 text-center text-base leading-snug text-white/80">
                       {dict.groups.weekQuiet}
                     </p>
                   )}
@@ -181,123 +197,150 @@ export default async function GroupsPage() {
               ))}
             </div>
 
-            <div className="reveal-rise mt-10 flex flex-col gap-4 border-t border-white/15 pt-8 sm:flex-row sm:items-center sm:gap-6">
+            <div className="reveal-rise mt-14 flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-8">
               <Link
                 href={localePath(lang, "/events#calendars")}
-                className="button-primary shrink-0 rounded-lg px-7 py-3.5 text-center font-display text-sm font-semibold text-white"
+                className="button-light shrink-0 px-7 py-4 text-center text-base"
               >
                 {dict.groups.weekCalendarCta}
               </Link>
-              <p className="max-w-md text-sm leading-relaxed text-white/75">
+              <p className="max-w-xl text-lg leading-relaxed text-white/85">
                 {dict.groups.weekCalendarNote}
               </p>
             </div>
           </div>
-          <WaveDivider id="week-bottom" seed={31} className="text-azure" />
         </section>
       )}
 
-      <PageSection
-        id="room"
-        surface="azure"
-        watermark="室"
-        watermarkClassName="-top-16 -right-10 text-indigo/5"
-        accent={dict.groups.room.accent}
-        caption={dict.groups.room.caption}
-        title={dict.groups.room.title}
-        lede={dict.groups.room.lede}
-      >
-        <p className="reveal-rise mb-7 max-w-2xl leading-relaxed text-ink-soft">
-          {dict.groups.room.eligibility}
-        </p>
-        <div className="reveal-stagger-2 grid gap-5 sm:grid-cols-2">
-          <DocumentLink
-            href={FACILITY_USE_FORM_URL}
-            format={dict.groups.formatPdf}
-            label={dict.groups.room.formLabel}
-            description={dict.groups.room.formDescription}
+      <div className="grid lg:grid-cols-2">
+        {[
+          {
+            id: "room",
+            surface: "bg-azure",
+            watermark: "室",
+            copy: dict.groups.room,
+            note: dict.groups.room.eligibility,
+            documents: [
+              {
+                href: FACILITY_USE_FORM_URL,
+                format: dict.groups.formatPdf,
+                label: dict.groups.room.formLabel,
+                description: dict.groups.room.formDescription,
+              },
+              {
+                href: FACILITY_USE_TERMS_URL,
+                format: dict.groups.formatPdf,
+                label: dict.groups.room.termsLabel,
+                description: dict.groups.room.termsDescription,
+              },
+            ],
+          },
+          {
+            id: "club",
+            surface: "bg-cream",
+            watermark: "部",
+            copy: dict.groups.club,
+            note: dict.groups.club.mission,
+            documents: [
+              {
+                href: NEW_CLUB_PROCEDURE_URL,
+                format: dict.groups.formatDoc,
+                label: dict.groups.club.procedureLabel,
+                description: dict.groups.club.procedureDescription,
+              },
+              {
+                href: NEW_CLUB_FORM_URL,
+                format: dict.groups.formatPdf,
+                label: dict.groups.club.formLabel,
+                description: dict.groups.club.formDescription,
+              },
+            ],
+          },
+        ].map((panel) => (
+          <section
+            key={panel.id}
+            id={panel.id}
+            className={`relative scroll-mt-28 overflow-clip px-5 py-16 sm:px-10 sm:py-20 lg:px-16 lg:py-24 ${panel.surface}`}
+          >
+            <KanjiWatermark char={panel.watermark} className="-top-10 -right-8 text-indigo/5" />
+            <div className="relative max-w-2xl">
+              <div className="reveal-rise">
+                <SectionKicker
+                  accent={panel.copy.accent}
+                  caption={panel.copy.caption}
+                  tone="tinted"
+                  size="lg"
+                />
+                <SectionHeading className="mt-4 sm:text-5xl">{panel.copy.title}</SectionHeading>
+                <p className="mt-5 text-lg leading-relaxed text-ink">{panel.copy.lede}</p>
+                <p className="mt-4 text-lg leading-relaxed text-ink-soft">{panel.note}</p>
+              </div>
+              <div className="reveal-stagger-2 mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                {panel.documents.map((document) => (
+                  <DocumentLink key={document.label} {...document} />
+                ))}
+              </div>
+            </div>
+          </section>
+        ))}
+      </div>
+
+      <section id="start" className="relative isolate scroll-mt-28 overflow-clip bg-ink-deep text-white">
+        <div className="absolute inset-0 -z-10">
+          <Image
+            src={groupsPhotos.start}
+            alt={dict.groups.usePhotoAlt}
+            fill
+            sizes="100vw"
+            className="ken-burns-out object-cover"
           />
-          <DocumentLink
-            href={FACILITY_USE_TERMS_URL}
-            format={dict.groups.formatPdf}
-            label={dict.groups.room.termsLabel}
-            description={dict.groups.room.termsDescription}
+          {/* The wash keeps white copy at AA over the bright dojo walls. */}
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 bg-gradient-to-b from-ink-deep/90 via-ink-deep/80 to-ink-deep/95 lg:bg-gradient-to-r lg:from-ink-deep/95 lg:via-ink-deep/85 lg:to-ink-deep/40"
           />
         </div>
-      </PageSection>
-
-      <PageSection
-        id="club"
-        surface="cream"
-        watermark="部"
-        watermarkClassName="top-24 -left-12 text-indigo/5"
-        accent={dict.groups.club.accent}
-        caption={dict.groups.club.caption}
-        title={dict.groups.club.title}
-        lede={dict.groups.club.lede}
-      >
-        <p className="reveal-rise mb-7 max-w-2xl leading-relaxed text-ink-soft">
-          {dict.groups.club.mission}
-        </p>
-        <div className="reveal-stagger-2 grid gap-5 sm:grid-cols-2">
-          <DocumentLink
-            href={NEW_CLUB_PROCEDURE_URL}
-            format={dict.groups.formatDoc}
-            label={dict.groups.club.procedureLabel}
-            description={dict.groups.club.procedureDescription}
-          />
-          <DocumentLink
-            href={NEW_CLUB_FORM_URL}
-            format={dict.groups.formatPdf}
-            label={dict.groups.club.formLabel}
-            description={dict.groups.club.formDescription}
-          />
-        </div>
-      </PageSection>
-
-      <section id="start" className="relative scroll-mt-28 overflow-clip bg-mist">
-        <KanjiWatermark char="始" className="-top-20 right-4 text-indigo/5" />
-        <div className="relative mx-auto flex max-w-6xl flex-col gap-9 px-4 py-14 sm:px-6 sm:py-16 lg:flex-row lg:items-center lg:justify-between lg:gap-14">
+        <div className="relative mx-auto flex max-w-wide flex-col gap-10 px-5 py-20 sm:px-10 sm:py-28 lg:px-16 lg:py-36">
           <div className="reveal-rise max-w-2xl">
             <SectionKicker
               accent={dict.groups.startAccent}
               caption={dict.groups.startCaption}
+              tone="photo"
+              size="lg"
             />
-            <h2 className="mt-4 font-display text-2xl font-normal tracking-[0.02em] sm:text-3xl">
-              <span className="block text-indigo">{dict.groups.useTitleLine1}</span>
-              <span className="block text-ink">{dict.groups.useTitleLine2}</span>
+            <h2 className="mt-5 font-display text-5xl leading-tight font-light sm:text-6xl">
+              <span className="block text-white">{dict.groups.useTitleLine1}</span>
+              <span className="block font-normal text-sky">{dict.groups.useTitleLine2}</span>
             </h2>
-            <p className="mt-4 leading-relaxed text-ink-soft">
+            <p className="mt-6 text-lg leading-relaxed text-white/90 sm:text-xl">
               {dict.groups.useBefore}
               <a
                 href={`mailto:${CENTER_EMAIL}`}
-                className="font-semibold text-indigo hover:text-indigo-deep"
+                className="font-semibold text-white underline decoration-sky underline-offset-4 hover:text-sky"
               >
                 {CENTER_EMAIL}
               </a>
               {dict.groups.useBetween}
               <a
                 href={CENTER_PHONE_HREF}
-                className="font-semibold text-indigo hover:text-indigo-deep"
+                className="font-semibold text-white underline decoration-sky underline-offset-4 hover:text-sky"
               >
                 {CENTER_PHONE}
               </a>
               {dict.groups.useAfter}
             </p>
-            <p className="mt-4 leading-relaxed text-ink-soft">
-              {dict.groups.useFit}
-            </p>
+            <p className="mt-4 text-lg leading-relaxed text-white/85">{dict.groups.useFit}</p>
           </div>
-          <div className="reveal-rise flex shrink-0 flex-col gap-3 sm:flex-row lg:flex-col">
+          <div className="reveal-rise flex flex-col gap-3 sm:flex-row">
             <a
               href={`mailto:${CENTER_EMAIL}`}
-              className="button-donate rounded-lg px-7 py-3.5 text-center font-display text-sm font-semibold text-white"
+              className="button-donate rounded-lg px-8 py-4 text-center font-display text-base font-semibold text-white"
             >
               {dict.groups.useEmailCta}
             </a>
             <a
               href={CENTER_PHONE_HREF}
-              className="rounded-lg border-2 border-ink/20 px-7 py-3 text-center font-display text-sm font-semibold text-ink hover:border-ink"
+              className="button-outline-light px-8 py-3.5 text-center text-base"
             >
               {dict.groups.useCallCta}
             </a>
