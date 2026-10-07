@@ -191,7 +191,7 @@ function formatTime(time: string): string {
   return `${twelve}:${String(minute).padStart(2, "0")} ${suffix}`;
 }
 
-function lead(description: string): string | null {
+function lead(description: string | undefined): string | null {
   if (!description) return null;
   const sentences = description.split("\n\n")[0].match(/[^.!?]+[.!?]+/g);
   if (!sentences) return null;

@@ -9,7 +9,7 @@ export const PARK = "Norwalk Park, 13000 Clarkdale Ave., Norwalk, CA 90650";
 
 // Marks every seeded row, on screen and for the seeder's own delete guards, so
 // demo content is never mistaken for — or deletes — real Center information.
-export const TITLE_PREFIX = "[TEST] ";
+export const TITLE_PREFIX = "[EXAMPLE] ";
 
 // Live pages the Center really runs, so a demo click lands somewhere real.
 export const NYS = "https://www.norwalkyouthsports.org/";
@@ -44,7 +44,7 @@ export type DemoEvent = {
   kind: DemoEventKind;
   title: string;
   date: string;
-  description: string;
+  description?: string;
   wide?: boolean;
   start?: string;
   end?: string;
@@ -218,8 +218,6 @@ export const DEMO_EVENTS: DemoEvent[] = [
     start: "11:30",
     end: "14:30",
     repeat: "monthly",
-    description:
-      "The Nikkei Seniors meet the second Tuesday of every month for lunch, bingo, and a guest speaker. New members are always welcome — come as a guest first and see whether it suits you.",
   },
   {
     slug: "monthly-bingo-2026-09-12",
@@ -287,8 +285,6 @@ export const DEMO_EVENTS: DemoEvent[] = [
     start: "09:00",
     end: "12:00",
     location: PARK,
-    description:
-      "The annual athletic meet for every student at the Japanese school. Wear your class color and bring a hat — we are outdoors all morning.",
   },
   {
     slug: "holiday-boutique-2026",
@@ -308,8 +304,6 @@ export const DEMO_EVENTS: DemoEvent[] = [
     date: "2026-11-14",
     start: "09:00",
     end: "12:15",
-    description:
-      "Students learn about the Seven-Five-Three festival, and a few are dressed in traditional kimono for photographs in front of the hall.",
   },
   {
     slug: "mochitsuki-2026",
@@ -330,8 +324,6 @@ export const DEMO_EVENTS: DemoEvent[] = [
     date: "2026-12-19",
     start: "18:00",
     end: "20:00",
-    description:
-      "Hikari Taiko closes out the year with a concert in the hall, including pieces from the youth group. Doors open at 5:30 PM; suggested donation $10.",
   },
   {
     slug: "shinnenkai-2027",

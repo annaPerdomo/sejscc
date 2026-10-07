@@ -55,7 +55,12 @@ if (options.force !== targetHost) {
 
 const sql = neon(process.env.DATABASE_URL);
 const slugs = DEMO_EVENTS.map((event) => event.slug);
-const demoTitle = `${TITLE_PREFIX}%`;
+// Rows seeded under an earlier prefix stay recognisable, so a re-seed or
+// --clear still reaches them.
+const RETIRED_TITLE_PREFIXES = ["[TEST] "];
+const demoTitles = [TITLE_PREFIX, ...RETIRED_TITLE_PREFIXES].map(
+  (prefix) => `${prefix}%`
+);
 
 type FlyerRow = { flyer_url?: unknown; flyer_download_url?: unknown };
 
@@ -77,7 +82,7 @@ async function dropBlobs(rows: FlyerRow[]) {
 if (options.clear) {
   const removed: FlyerRow[] = await sql`
     delete from event
-    where slug = any(${[...slugs, ...RETIRED_SLUGS]}) and title like ${demoTitle}
+    where slug = any(${[...slugs, ...RETIRED_SLUGS]}) and title like any(${demoTitles})
     returning slug, flyer_url, flyer_download_url
   `;
   await dropBlobs(removed);
@@ -87,7 +92,7 @@ if (options.clear) {
 
 const retired: FlyerRow[] = await sql`
   delete from event
-  where slug = any(${RETIRED_SLUGS}) and title like ${demoTitle}
+  where slug = any(${RETIRED_SLUGS}) and title like any(${demoTitles})
   returning slug, flyer_url, flyer_download_url
 `;
 if (retired.length) {
@@ -173,7 +178,7 @@ for (const event of DEMO_EVENTS) {
       ${crypto.randomUUID()},
       ${event.slug},
       ${TITLE_PREFIX + event.title},
-      ${event.description},
+      ${event.description ?? null},
       ${flyer?.imageUrl ?? null},
       ${flyer?.downloadUrl ?? null},
       ${event.signup ?? null},
@@ -197,7 +202,7 @@ for (const event of DEMO_EVENTS) {
       location = excluded.location,
       status = excluded.status,
       updated_at = now()
-    where event.title like ${demoTitle}
+    where event.title like any(${demoTitles})
     returning slug
   `;
   if (rows.length) written += 1;
