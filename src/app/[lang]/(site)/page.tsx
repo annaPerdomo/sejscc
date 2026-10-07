@@ -7,6 +7,8 @@ import {
   GroupsShowcase,
   type GroupsShowcaseItem,
 } from "@/components/groups-showcase";
+import { CentennialEmaki } from "@/components/centennial-emaki";
+import { HistoryFounders, type Founder } from "@/components/history-founders";
 import { HistoryTimeline, type Milestone } from "@/components/history-timeline";
 import { SectionHeading } from "@/components/section-heading";
 import { SchoolSlideshow, type SchoolSlide } from "@/components/school-slideshow";
@@ -30,6 +32,10 @@ import { localePath } from "@/lib/i18n";
 import { getAboutVideoUrls } from "@/lib/site-settings";
 import { youtubeVideoId } from "@/lib/video";
 import {
+  boardPhoto,
+  historyAlbumPhotos,
+  historyCentennialPhotos,
+  historyFounderPhotos,
   historyMilestonePhotos,
   homePhotos,
   photoFor,
@@ -124,9 +130,29 @@ export default async function HomePage() {
     const image = historyMilestonePhotos[step.id];
     return {
       year: step.year,
+      era: step.era,
+      title: step.title,
       text: step.text,
       photo: image ? { image, alt: step.photoAlt } : undefined,
+      snapshots: dict.home.history.album.flatMap((item) => {
+        const snapshot = historyAlbumPhotos[item.id];
+        return item.milestoneId === step.id && snapshot
+          ? [{ ...item, photo: { image: snapshot, alt: item.photoAlt } }]
+          : [];
+      }),
     };
+  });
+
+  const centennialGallery = dict.home.history.centennialGallery.flatMap((item) => {
+    const image = historyCentennialPhotos[item.id];
+    return image ? [{ image, alt: item.photoAlt }] : [];
+  });
+
+  const founders: Founder[] = dict.home.history.founders.flatMap((founder) => {
+    const image = historyFounderPhotos[founder.id];
+    return image
+      ? [{ ...founder, photo: { image, alt: founder.photoAlt } }]
+      : [];
   });
 
   return (
@@ -379,81 +405,143 @@ export default async function HomePage() {
 
       <section
         id="history"
-        className="section-wash-history relative scroll-mt-28 overflow-clip"
+        className="section-wash-history relative scroll-mt-28 overflow-clip pb-20 sm:pb-24 lg:pb-32"
       >
         <KanjiWatermark char="和" className="-bottom-10 left-4 text-ink/5" />
-        <div className="relative mx-auto max-w-7xl px-4 pt-16 pb-4 sm:px-6 sm:pt-20 sm:pb-6">
+        <div className="relative isolate overflow-clip">
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 -z-10 mask-t-from-75% mask-b-from-70%"
+          >
+            <div className="parallax-drift absolute inset-x-0 -inset-y-16">
+              <Image
+                src={homePhotos.eventsBackdrop}
+                alt=""
+                fill
+                sizes="100vw"
+                className="photo-develop object-cover"
+              />
+            </div>
+            {/* At 88% the wash keeps every text color at AA over the darkest
+                pixels of the photo; thin it and the kicker and captions fail. */}
+            <div className="absolute inset-0 bg-paper/88" />
+          </div>
+          <div className="relative mx-auto grid max-w-7xl gap-12 px-4 pt-16 pb-20 sm:px-6 sm:pt-20 sm:pb-24 lg:grid-cols-12 lg:items-center lg:gap-12 lg:px-10">
+            <div className="lg:col-span-6">
+              <div className="reveal-rise">
+                <SectionKicker
+                  accent={dict.home.history.kickerAccent}
+                  caption={dict.home.history.kickerCaption}
+                  tone="magenta"
+                  size="lg"
+                />
+                <h2 className="mt-5 font-display text-4xl leading-tight font-normal tracking-[0.02em] sm:text-5xl 2xl:text-6xl">
+                  <span className="block text-ink">
+                    {dict.home.history.headingLine1}
+                  </span>
+                  <span className="block text-magenta">
+                    {dict.home.history.headingLine2}
+                  </span>
+                </h2>
+                <p className="mt-6 text-lg leading-relaxed text-ink-soft">
+                  {dict.home.history.body}
+                </p>
+                <p className="mt-8 border-l-2 border-magenta py-1 pl-5 font-display text-lg leading-relaxed text-ink italic">
+                  <span className="block font-display text-sm font-semibold tracking-[0.14em] text-magenta uppercase not-italic">
+                    {dict.home.history.missionLabel}
+                  </span>
+                  <span className="mt-1.5 block">
+                    {dict.home.history.missionText}
+                  </span>
+                </p>
+              </div>
+            </div>
+
+            <div className="mx-auto w-full max-w-3xl lg:col-span-6">
+              <HistoryFounders
+                label={dict.home.history.foundersLabel}
+                founders={founders}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="relative mx-auto max-w-wide px-4 pb-8 sm:px-6 lg:px-10">
           <HistoryTimeline
             milestones={milestones}
             photoLabel={dict.home.history.photoLabel}
-          >
-            <SectionKicker
-              accent={dict.home.history.kickerAccent}
-              caption={dict.home.history.kickerCaption}
-              tone="magenta"
-              order="caption-first"
-              className="justify-center"
-            />
-            <h2 className="mt-5 font-display text-3xl leading-snug font-normal tracking-[0.02em]">
-              <span className="text-ink">{dict.home.history.headingLine1}</span>
-              <br />
-              <span className="text-magenta">
-                {dict.home.history.headingLine2}
-              </span>
-            </h2>
-            <p className="mt-5 leading-relaxed text-ink-soft">
-              {dict.home.history.body}
-            </p>
-            <p className="mt-6 border-l-2 border-magenta py-1 pl-5 text-left font-display leading-relaxed text-ink italic">
-              <span className="block font-display text-xs font-semibold tracking-[0.14em] text-magenta uppercase not-italic">
-                {dict.home.history.missionLabel}
-              </span>
-              <span className="mt-1.5 block">
-                {dict.home.history.missionText}
-              </span>
-            </p>
-          </HistoryTimeline>
+            finalePhotoCaption={dict.home.history.centennialPhotoCaption}
+            className="mx-auto max-w-7xl"
+          />
         </div>
 
-        <div className="reveal-rise relative mx-auto max-w-3xl px-4 pt-10 pb-20 text-center sm:px-6 sm:pb-24">
-          <SectionKicker
-            accent={dict.home.board.kickerAccent}
-            caption={dict.home.board.kickerCaption}
-            tone="magenta"
-            order="caption-first"
-            className="justify-center"
+        {centennialGallery.length > 0 && (
+          <CentennialEmaki
+            photos={centennialGallery}
+            interludes={dict.home.history.centennialInterludes}
+            copy={{
+              ...dict.home.history.centennialStage,
+              label: dict.home.history.centennialGalleryLabel,
+            }}
+            skipTo="#board"
           />
-          <h3 className="mt-4 font-display text-2xl leading-snug font-normal tracking-[0.02em] text-ink sm:text-3xl">
-            {dict.home.board.title}
-          </h3>
-          <p className="mx-auto mt-3 max-w-xl leading-relaxed text-ink-soft">
-            {dict.home.board.intro}
-          </p>
-          <ul className="seigaiha-rings reveal-stagger-3-5 mt-8 grid grid-cols-2 gap-x-6 gap-y-3 rounded-2xl border border-line bg-mist px-6 py-6 text-left sm:grid-cols-3 sm:px-8 lg:-mx-12 lg:grid-cols-5">
-            {dict.home.board.members.map((name) => (
-              <li key={name} className="reveal-rise flex items-center gap-2.5">
-                <span
-                  aria-hidden="true"
-                  className="reveal-pop h-1.5 w-1.5 shrink-0 rounded-full bg-magenta"
+        )}
+
+        <div
+          id="board"
+          className="relative mx-auto grid max-w-7xl scroll-mt-28 gap-10 px-4 pt-20 sm:px-6 sm:pt-24 lg:grid-cols-12 lg:items-center lg:gap-14 lg:px-10 lg:pt-32"
+        >
+          <div className="reveal-swing-left lg:col-span-7">
+            <div className="flyer-mount relative">
+              <div className="photo-develop">
+                <Image
+                  src={boardPhoto}
+                  alt={dict.home.board.photoAlt}
+                  sizes="(max-width: 1024px) calc(100vw - 4rem), 44rem"
+                  placeholder="blur"
                 />
-                <span className="font-display text-sm font-medium text-ink">
-                  {name}
-                </span>
-              </li>
-            ))}
-          </ul>
-          <p className="mx-auto mt-7 max-w-xl leading-relaxed text-ink-soft">
-            {dict.home.board.volunteersNote}
-          </p>
-          <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-ink-soft">
-            {dict.home.board.note}{" "}
-            <Link
-              href={`${href("/")}#contact`}
-              className="font-semibold text-indigo hover:text-indigo-deep"
-            >
-              {dict.home.board.noteLink}
-            </Link>
-          </p>
+              </div>
+            </div>
+          </div>
+          <div className="reveal-rise lg:col-span-5">
+            <SectionKicker
+              accent={dict.home.board.kickerAccent}
+              caption={dict.home.board.kickerCaption}
+              tone="magenta"
+              order="caption-first"
+            />
+            <h3 className="mt-4 font-display text-3xl leading-snug font-normal tracking-[0.02em] text-ink sm:text-4xl">
+              {dict.home.board.title}
+            </h3>
+            <p className="mt-4 text-lg leading-relaxed text-ink-soft">
+              {dict.home.board.intro}
+            </p>
+            <ul className="seigaiha-rings reveal-stagger-2 mt-7 grid grid-cols-2 gap-x-6 gap-y-3 rounded-2xl border border-line bg-mist px-6 py-6">
+              {dict.home.board.members.map((name) => (
+                <li key={name} className="reveal-rise flex items-center gap-2.5">
+                  <span
+                    aria-hidden="true"
+                    className="reveal-pop h-1.5 w-1.5 shrink-0 rounded-full bg-magenta"
+                  />
+                  <span className="font-display text-base font-medium text-ink">
+                    {name}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-7 leading-relaxed text-ink-soft">
+              {dict.home.board.volunteersNote}
+            </p>
+            <p className="mt-3 leading-relaxed text-ink-soft">
+              {dict.home.board.note}{" "}
+              <Link
+                href={`${href("/")}#contact`}
+                className="font-semibold text-indigo hover:text-indigo-deep"
+              >
+                {dict.home.board.noteLink}
+              </Link>
+            </p>
+          </div>
         </div>
       </section>
 

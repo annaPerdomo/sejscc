@@ -190,56 +190,194 @@
       "videoTitle": "A video tour of the Southeast Japanese School & Community Center",
       "videoCaption": "A look inside the center, its history, and its traditions.",
       "photoLabel": "Historic photo coming soon",
+      "centennialPhotoCaption": "100th Anniversary · July 26, 2025",
+      "foundersLabel": "The people who began it",
+      "founders": [
+        {
+          "id": "nawa",
+          "name": "Juichi & Sakaye Nawa",
+          "role": "The school's first home was built on their ranch.",
+          "year": "1925",
+          "photoAlt": "A formal portrait of Juichi Nawa, seated, and Sakaye Nawa, standing beside him"
+        },
+        {
+          "id": "hayashi",
+          "name": "Rev. Tsunesuke Hayashi",
+          "role": "First principal of the Japanese school.",
+          "year": "1925",
+          "photoAlt": "A portrait of Reverend Tsunesuke Hayashi as a young man in a dark suit"
+        },
+        {
+          "id": "kurai",
+          "name": "Principal Shuyu Kurai",
+          "role": "Reopened the Gakuen after the war.",
+          "year": "1957",
+          "photoAlt": "A portrait of Principal Shuyu Kurai in a pinstripe suit and glasses"
+        }
+      ],
+      "album": [
+        {
+          "id": "1973-attendance-award",
+          "milestoneId": "1962",
+          "year": "1973",
+          "text": "A good attendance award, signed by Principal Kurai in English and Japanese.",
+          "photoAlt": "A 1973 Southeast Japanese Language School good attendance certificate with a gold seal, written in English and Japanese"
+        },
+        {
+          "id": "1977-gym-construction",
+          "milestoneId": "1977",
+          "year": "1977",
+          "text": "The new gymnasium rising beside the old school building.",
+          "photoAlt": "The walls of the new gymnasium under construction in 1977, braced with timber, beside the old school"
+        },
+        {
+          "id": "1994-tilt-up",
+          "milestoneId": "1994",
+          "year": "1994",
+          "text": "A crane lifting the annex walls into place.",
+          "photoAlt": "A crane raising a concrete wall panel for the 1994 annex while workers watch"
+        },
+        {
+          "id": "1994-kagami-biraki",
+          "milestoneId": "1994",
+          "year": "1994",
+          "text": "Breaking open a sake barrel, kagami-biraki, to celebrate the new annex.",
+          "photoAlt": "Board members and guests with mallets breaking open a sake barrel outside the new annex in 1994"
+        }
+      ],
       "milestones": [
         {
           "id": "1925",
           "year": "1925",
+          "era": "",
+          "title": "A school on the Nawa Ranch",
           "text": "Reverend Tsunesuke Hayashi had been teaching Japanese at the Friends Japanese Church since 1923. In 1925 the community broke ground on a school of its own on the Nawa Ranch, beside the land the center stands on today, and he became its first principal.",
           "photoAlt": "The Nawa Ranch outside Norwalk, where the first Japanese language school was built in 1925"
         },
         {
           "id": "1930",
           "year": "1930",
+          "era": "",
+          "title": "A schoolhouse of our own",
           "text": "Parents and community members paid for a new school building, raised under Takuichi Nakatani on the site the center still occupies. Judo classes began in 1931, kendo in 1934.",
           "photoAlt": "The community gathered outside the new Norwalk Gakuen school building at its 1930 dedication"
         },
         {
           "id": "1936",
           "year": "1936",
+          "era": "",
+          "title": "The heart of the community",
           "text": "The Gakuen had become the heart of Japanese immigrant life in Norwalk — Saturday classes for the children, and the community's own gatherings the rest of the year. Enrollment reached 250 before the war.",
           "photoAlt": "Members of the Gakuen Agriculture Union gathered for a banquet in 1936"
         },
         {
           "id": "1942",
           "year": "1942",
+          "era": "",
+          "title": "Taken away, and coming home",
           "text": "Every Japanese American family in Norwalk was incarcerated, and the school building was rented to an American church. Families returned to the area in 1946, and Norwalk Gakuen reopened on June 22, 1957 under Principal Shuyu Kurai.",
           "photoAlt": "Two archival photographs from the war years — the flag over the Manzanar incarceration camp, and a judoka seated in seiza"
         },
         {
           "id": "1962",
           "year": "1962",
+          "era": "",
+          "title": "A new name, and new groups",
           "text": "On April 11 the school was granted nonprofit status and took the name it carries today. The Youth Activities Group — now Norwalk Youth Sports — was established the same year, parents hosted the first Summer Festival in 1963, and a kendo class formed in 1964.",
           "photoAlt": "The kendo class in 1965, in bogu, with their instructors"
         },
         {
           "id": "1977",
           "year": "1977",
+          "era": "",
+          "title": "A hall for everyone",
           "text": "Years of fundraising opened a new building with a gymnasium, kitchen and three classrooms. Bonsai, ballroom dance and tea ceremony classes followed, and Hikari Taiko formed in 1978.",
           "photoAlt": "The hall full of guests at the 1977 new building dedication, hung with koinobori"
         },
         {
           "id": "1994",
           "year": "1994",
+          "era": "",
+          "title": "Room to grow",
           "text": "After four years of fundraising, an annex was dedicated in July with ten more classrooms, a multipurpose room and two bathrooms.",
           "photoAlt": "Members gathered for the 1994 groundbreaking outside the new annex"
         },
         {
           "id": "2025",
           "year": "2025",
+          "era": "",
+          "title": "One hundred years",
           "text": "The center celebrated its 100th anniversary on July 26, with 132 students enrolled at the Gakuen and four generations together in the hall.",
-          "photoAlt": "Visitors looking through the group history displays at the 100th anniversary celebration"
+          "photoAlt": "The hand-decorated “Omedetō 100” sign, framed in paper flowers and folded cranes, from the 100th anniversary celebration"
         }
       ],
+      "centennialGalleryLabel": "Photos from the 100th anniversary celebration",
+      "centennialGallery": [
+        {
+          "id": "hall",
+          "photoAlt": "The gymnasium filled with long tables and guests at the 100th anniversary celebration"
+        },
+        {
+          "id": "kanpai",
+          "photoAlt": "An older woman raising her glass in a joyful toast"
+        },
+        {
+          "id": "band",
+          "photoAlt": "A band playing on stage beneath big blue “100” balloons"
+        },
+        {
+          "id": "kids-eating",
+          "photoAlt": "Three young guests tasting dessert"
+        },
+        {
+          "id": "history-displays",
+          "photoAlt": "Visitors looking through the group history displays at the 100th anniversary celebration"
+        },
+        {
+          "id": "old-friends",
+          "photoAlt": "Two longtime members catching up in the crowd"
+        },
+        {
+          "id": "proclamation",
+          "photoAlt": "Two men in suits holding a framed proclamation honoring the center"
+        },
+        {
+          "id": "family",
+          "photoAlt": "A father and his toddler waving from their table"
+        },
+        {
+          "id": "kagami-biraki",
+          "photoAlt": "Children in happi coats breaking open a sake barrel at the photo booth"
+        },
+        {
+          "id": "laughter",
+          "photoAlt": "Two older men sharing a laugh at their table"
+        },
+        {
+          "id": "crowd",
+          "photoAlt": "A large crowd gathered outside the center for the group photo"
+        }
+      ],
+      "centennialInterludes": [
+        {
+          "kanji": "",
+          "caption": "July 26, 2025"
+        },
+        {
+          "kanji": "",
+          "caption": "Four generations, one hall"
+        },
+        {
+          "kanji": "",
+          "caption": "On to the next hundred"
+        }
+      ],
+      "centennialStage": {
+        "titleAccent": "",
+        "title": "Celebrating 100 years",
+        "dates": "1925 — 2025",
+        "skip": "Skip the photos"
+      },
       "videosKickerAccent": "紹介動画",
       "videosKickerCaption": "Featured Videos",
       "videosTitle": "See the center in motion"
@@ -249,6 +387,7 @@
       "kickerCaption": "Our Volunteers",
       "title": "Board of Directors",
       "intro": "SEJSCC is entirely volunteer-run. The board sets direction on behalf of the community it serves.",
+      "photoAlt": "The 2025 board of directors standing together in the gym in front of the center's banner, many wearing blue leis",
       "members": [
         "Dean Wada",
         "Simon Yao",

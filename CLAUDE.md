@@ -24,6 +24,7 @@ All design tokens live in `@theme` in [globals.css](src/app/globals.css)
 `cream`, `azure`, `celadon`, `peach`, `lilac`; aspect ratios: `aspect-flyer` (flyers),
 `aspect-card` (card media), `aspect-photo`, `aspect-band`; widths: `max-w-wide`
 (the event rows, wider than the `max-w-6xl` the rest of a section sits in);
+vertical Japanese text: `writing-vertical`;
 fonts: `font-sans` (Zen Maru Gothic, body copy), `font-display` (Jost,
 headings and UI labels),
 `font-accent` (Shippori Mincho, Japanese kicker text)). Every component must
@@ -71,7 +72,14 @@ be built from these tokens via Tailwind utility classes.
   school's gate sign), `kanji-box` (a kanji-practice square with dashed
   centre guides), `byobu-frame` (a folding-screen mount: lacquer rails,
   metal corner caps and a band of gold leaf, around the school
-  slideshow), `calendar-menu` (a
+  slideshow), `kakejiku` (a hanging scroll: silk mount, top rod and
+  gold-capped roller; its image sits in a `kakejiku-panel`), `emaki` (a picture scroll: the 100th anniversary photos on a silk band
+  across a dark stage that pins and pans right to left as the reader
+  scrolls down, or a strip to swipe without scroll-driven animation; its
+  parts are `emaki-stage`, `emaki-track`, `emaki-band`, `emaki-strip`,
+  `emaki-photo` and `emaki-progress`, and it always carries
+  a skip link past itself),
+  `calendar-menu` (a
   `<details>` disclosure styled as a button), `seigaiha-rings` (with
   `seigaiha-rings-sky`, `seigaiha-rings-gold`, the slow-moving
   `seigaiha-rings-drift`, and
@@ -87,7 +95,14 @@ be built from these tokens via Tailwind utility classes.
   takes the variant naming its own columns: `reveal-stagger-2`,
   `reveal-stagger-3`, `reveal-stagger-2-3`, `reveal-stagger-3-5`,
   `reveal-stagger-4-7`), `reveal-rule`,
-  `reveal-rail`, `reveal-pop`, `reveal-turn`, `watermark-drift`,
+  `reveal-rail`, `reveal-pop`, `reveal-turn`, `timeline-fill` (a rail
+  that fills to the middle of the screen as the reader scrolls),
+  `timeline-dot` / `timeline-tick` (a point on that rail and the tick
+  that draws out from it to its year),
+  `ink-bleed` (a year that sharpens out of a blur), `parallax-drift` (a backdrop that moves
+  slower than the page; it needs 4rem of overhang top and bottom),
+  `photo-develop` (a photo warming from black-and-white to color as it
+  scrolls in), `watermark-drift`,
   `ken-burns-in` / `ken-burns-out`, `enter-rise` / `enter-stagger` /
   `enter-fade` / `enter-rule` / `brush-draw` / `menu-drop`, `hero-drift`, `link-arrow`,
   `lantern-sway` (a slow rotation hung from the top of an SVG group),
