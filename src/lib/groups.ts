@@ -11,3 +11,5 @@ export const NEW_CLUB_PROCEDURE_URL =
 
 export const NEW_CLUB_FORM_URL =
   "https://www.sejscc.org/wp-content/uploads/2024/04/Application-form.pdf";
+
+export const MAX_GROUP_PHOTOS = 6;

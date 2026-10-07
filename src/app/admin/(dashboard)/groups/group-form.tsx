@@ -20,6 +20,7 @@ import {
 } from "@/components/admin/admin-field";
 import { weekDays, type GroupStatus, type WeekDay } from "@/db/schema";
 import { normalizeContactEmail, normalizeWebsiteUrl } from "@/lib/format";
+import { MAX_GROUP_PHOTOS } from "@/lib/groups";
 import { createGroup, updateGroup, type GroupInput } from "./actions";
 import { GROUP_STATUS_OPTIONS } from "./status";
 
@@ -29,6 +30,8 @@ type ExistingGroup = {
   nameJa: string | null;
   description: string | null;
   imageUrl: string | null;
+  imageIsLogo: boolean;
+  photoUrls: string[];
   websiteUrl: string | null;
   contactEmail: string | null;
   meetingSchedule: string | null;
@@ -36,6 +39,11 @@ type ExistingGroup = {
   active: boolean;
   status: GroupStatus;
 };
+
+type PendingPhoto = { key: string; preview: string } & (
+  | { url: string; file?: undefined }
+  | { url?: undefined; file: File }
+);
 
 const DAY_LABELS: Record<WeekDay, string> = {
   mon: "Monday",
@@ -70,6 +78,11 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
     group?.imageUrl ?? null
   );
   const [imageRemoved, setImageRemoved] = useState(false);
+  const [imageIsLogo, setImageIsLogo] = useState(group?.imageIsLogo ?? false);
+  const photoInputRef = useRef<HTMLInputElement>(null);
+  const [photos, setPhotos] = useState<PendingPhoto[]>(
+    (group?.photoUrls ?? []).map((url) => ({ key: url, preview: url, url }))
+  );
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -101,6 +114,52 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
     setPreviewUrl(null);
     setImageRemoved(true);
     if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  function onPickPhotos(files: FileList | null) {
+    setError(null);
+    if (!files) return;
+    const picked = Array.from(files);
+    if (picked.some((file) => file.size > 10 * 1024 * 1024)) {
+      setError("One of those photos is larger than 10MB. Try exporting a smaller one.");
+      return;
+    }
+    const room = MAX_GROUP_PHOTOS - photos.length;
+    if (picked.length > room) {
+      setError(
+        room === 0
+          ? `This group already has ${MAX_GROUP_PHOTOS} photos. Remove one to add another.`
+          : `Only ${room} more photo${room === 1 ? "" : "s"} can be added (${MAX_GROUP_PHOTOS} at most).`
+      );
+      return;
+    }
+    setPhotos((current) => [
+      ...current,
+      ...picked.map((file) => ({
+        key: crypto.randomUUID(),
+        preview: URL.createObjectURL(file),
+        file,
+      })),
+    ]);
+    if (photoInputRef.current) photoInputRef.current.value = "";
+  }
+
+  function removePhoto(removed: PendingPhoto) {
+    if (removed.url === undefined) URL.revokeObjectURL(removed.preview);
+    setPhotos((current) => current.filter((photo) => photo.key !== removed.key));
+  }
+
+  async function uploadPhotos(): Promise<string[]> {
+    return Promise.all(
+      photos.map(async (photo) => {
+        if (photo.url !== undefined) return photo.url;
+        const result = await upload(`groups/photos/${photo.file.name}`, photo.file, {
+          access: "public",
+          handleUploadUrl: "/api/upload",
+        });
+        return result.url;
+      })
+    );
   }
 
   async function uploadImage(): Promise<string | null> {
@@ -138,6 +197,8 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
         active,
         status,
         imageUrl: await uploadImage(),
+        imageIsLogo,
+        photoUrls: await uploadPhotos(),
       };
       if (group) {
         await updateGroup(group.id, input);
@@ -196,7 +257,7 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
 
       <AdminCard>
         <AdminCardHeading step={2} tag={<AdminOptional />}>
-          Photo or Logo
+          Logo
         </AdminCardHeading>
         <div className="mt-4 flex flex-wrap items-start gap-5">
           {previewUrl && (
@@ -236,13 +297,83 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
           />
         </div>
         <p className="mt-3 text-xs text-stone">
-          Shown across the top of the group’s card on the website. A photo or a
-          logo both work — it is fitted inside the card, never cropped.
+          Shown across the top of the group’s card on the Sports &amp; Classes
+          page. A logo or a single photo both work — it is fitted inside its
+          frame, never cropped.
         </p>
+        {previewUrl && (
+          <label className="mt-4 flex items-start gap-3">
+            <input
+              type="checkbox"
+              checked={imageIsLogo}
+              onChange={(e) => setImageIsLogo(e.target.checked)}
+              className="mt-1 h-5 w-5 accent-indigo"
+            />
+            <span>
+              <span className="block font-semibold text-ink">
+                This image is the group’s logo
+              </span>
+              <span className="mt-0.5 block text-sm text-stone">
+                Logos also appear next to the group’s name on the home page.
+                Leave unchecked if it’s a photo.
+              </span>
+            </span>
+          </label>
+        )}
       </AdminCard>
 
       <AdminCard>
         <AdminCardHeading step={3} tag={<AdminOptional />}>
+          Photos
+        </AdminCardHeading>
+        <div className="mt-4 flex flex-wrap items-start gap-3">
+          {photos.map((photo, index) => (
+            <div key={photo.key} className="flex w-32 flex-col items-start gap-1">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={photo.preview}
+                alt=""
+                className="aspect-photo w-full rounded-lg border border-line bg-mist object-cover shadow-sm"
+              />
+              <button
+                type="button"
+                onClick={() => removePhoto(photo)}
+                aria-label={`Remove photo ${index + 1}`}
+                className="text-sm font-medium text-indigo-deep hover:underline"
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+          {photos.length < MAX_GROUP_PHOTOS && (
+            <button
+              type="button"
+              onClick={() => photoInputRef.current?.click()}
+              className="flex h-28 w-28 flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-line p-3 text-center text-sm text-stone hover:border-indigo hover:text-indigo"
+            >
+              <span className="text-2xl">↑</span>
+              Add photos
+              <span className="text-xs">JPG, PNG, or WebP</span>
+            </button>
+          )}
+          <input
+            ref={photoInputRef}
+            type="file"
+            multiple
+            accept="image/jpeg,image/png,image/webp"
+            className="hidden"
+            onChange={(e) => onPickPhotos(e.target.files)}
+          />
+        </div>
+        <p className="mt-3 text-xs text-stone">
+          Up to {MAX_GROUP_PHOTOS} photos of the group in action. When the
+          group is featured on the home page they play one at a time as a
+          slideshow, starting with the first, so lead with the best.
+        </p>
+      </AdminCard>
+
+      <AdminCard>
+        <AdminCardHeading step={4} tag={<AdminOptional />}>
           Details
         </AdminCardHeading>
         <fieldset className="mt-4">
@@ -296,7 +427,7 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
       </AdminCard>
 
       <AdminCard>
-        <AdminCardHeading step={4} tag={<AdminOptional />}>
+        <AdminCardHeading step={5} tag={<AdminOptional />}>
           Website &amp; Contact
         </AdminCardHeading>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -322,7 +453,7 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
       </AdminCard>
 
       <AdminCard>
-        <AdminCardHeading step={5}>On the Website</AdminCardHeading>
+        <AdminCardHeading step={6}>On the Website</AdminCardHeading>
         <label className="mt-4 flex items-start gap-3">
           <input
             type="checkbox"

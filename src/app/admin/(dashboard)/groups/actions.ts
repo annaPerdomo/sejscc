@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { groups, weekDays, type GroupStatus, type WeekDay } from "@/db/schema";
 import { requireUser, revalidateSite } from "@/lib/admin";
+import { MAX_GROUP_PHOTOS } from "@/lib/groups";
 import {
   normalizeContactEmail,
   normalizeWebsiteUrl,
@@ -16,6 +17,8 @@ export type GroupInput = {
   nameJa: string;
   description: string;
   imageUrl: string | null;
+  imageIsLogo: boolean;
+  photoUrls: string[];
   websiteUrl: string;
   contactEmail: string;
   meetingSchedule: string;
@@ -40,6 +43,16 @@ function checkedImageUrl(raw: string | null) {
   return raw;
 }
 
+function checkedPhotoUrls(raw: string[]) {
+  if (!Array.isArray(raw)) return [];
+  return [...new Set(raw)]
+    .slice(0, MAX_GROUP_PHOTOS)
+    .flatMap((url) => {
+      const checked = checkedImageUrl(url);
+      return checked ? [checked] : [];
+    });
+}
+
 // The form caps these too, but the columns are unbounded text and a server
 // action can be called directly, so the ceiling has to be enforced here.
 function trimmed(value: string, max: number) {
@@ -56,11 +69,14 @@ function checkedMeetingDays(raw: WeekDay[]) {
 function groupValues(input: GroupInput) {
   const name = trimmed(input.name, 100);
   if (!name) throw new Error("A group name is required.");
+  const imageUrl = checkedImageUrl(input.imageUrl);
   return {
     name,
     nameJa: trimmed(input.nameJa, 60),
     description: trimmed(input.description, 500),
-    imageUrl: checkedImageUrl(input.imageUrl),
+    imageUrl,
+    imageIsLogo: imageUrl !== null && input.imageIsLogo === true,
+    photoUrls: checkedPhotoUrls(input.photoUrls),
     websiteUrl: normalizeWebsiteUrl(input.websiteUrl),
     contactEmail: normalizeContactEmail(input.contactEmail),
     meetingSchedule: trimmed(input.meetingSchedule, 100),
@@ -72,11 +88,12 @@ function groupValues(input: GroupInput) {
 
 // Best-effort: the row is already written, so a failed cleanup must not
 // surface as a save error.
-async function deleteImage(url: string) {
+async function deleteImages(urls: string[]) {
+  if (urls.length === 0) return;
   try {
-    await del(url);
+    await del(urls);
   } catch (error) {
-    console.error("Failed to delete group image blob:", error);
+    console.error("Failed to delete group image blobs:", error);
   }
 }
 
@@ -99,9 +116,12 @@ export async function updateGroup(id: string, input: GroupInput) {
   const values = groupValues(input);
   await db.update(groups).set(values).where(eq(groups.id, id));
 
-  if (existing.imageUrl && existing.imageUrl !== values.imageUrl) {
-    await deleteImage(existing.imageUrl);
-  }
+  const kept = new Set([values.imageUrl, ...values.photoUrls]);
+  await deleteImages(
+    [existing.imageUrl, ...existing.photoUrls].filter(
+      (url): url is string => url !== null && !kept.has(url)
+    )
+  );
 
   revalidateSite();
 }
@@ -112,9 +132,11 @@ export async function deleteGroup(id: string) {
   if (!existing) return;
   await db.delete(groups).where(eq(groups.id, id));
 
-  if (existing.imageUrl) {
-    await deleteImage(existing.imageUrl);
-  }
+  await deleteImages(
+    [existing.imageUrl, ...existing.photoUrls].filter(
+      (url): url is string => url !== null
+    )
+  );
 
   revalidateSite();
 }

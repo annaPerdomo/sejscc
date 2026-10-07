@@ -124,6 +124,8 @@ export const groups = pgTable("group", {
   nameJa: text("name_ja"),
   description: text("description"),
   imageUrl: text("image_url"),
+  imageIsLogo: boolean("image_is_logo").notNull().default(false),
+  photoUrls: text("photo_urls").array().notNull().default([]),
   websiteUrl: text("website_url"),
   contactEmail: text("contact_email"),
   meetingSchedule: text("meeting_schedule"),

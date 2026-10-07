@@ -49,3 +49,4 @@ next-env.d.ts
 
 # prompt packs — working notes, not shipped
 /prompts/
+/docs/photo-library/
