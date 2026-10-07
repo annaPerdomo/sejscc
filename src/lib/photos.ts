@@ -59,7 +59,7 @@ export const schoolPhotos = {
     "/photos/level-elementary.jpg",
     "/photos/level-intermediate.jpg",
     "/photos/level-advanced.jpg",
-    "/photos/level-adult.jpg",
+    "/photos/level-adult-online.jpg",
     "/photos/level-shuji.jpg",
   ],
   /** Matches `school.year.months`. Hanami and Shichi-go-san have no photo yet. */
