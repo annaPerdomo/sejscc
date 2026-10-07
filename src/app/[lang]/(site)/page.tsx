@@ -9,6 +9,7 @@ import {
 } from "@/components/groups-showcase";
 import { HistoryTimeline, type Milestone } from "@/components/history-timeline";
 import { SectionHeading } from "@/components/section-heading";
+import { SchoolSlideshow, type SchoolSlide } from "@/components/school-slideshow";
 import { SectionKicker } from "@/components/section-kicker";
 import { SitePhoto } from "@/components/site-photo";
 import { SiteVideo } from "@/components/site-video";
@@ -28,7 +29,12 @@ import { getDictionary, getLocale } from "@/lib/dictionaries";
 import { localePath } from "@/lib/i18n";
 import { getAboutVideoUrls } from "@/lib/site-settings";
 import { youtubeVideoId } from "@/lib/video";
-import { historyMilestonePhotos, homePhotos, photoFor } from "@/lib/photos";
+import {
+  historyMilestonePhotos,
+  homePhotos,
+  photoFor,
+  schoolPhotos,
+} from "@/lib/photos";
 
 export const revalidate = 300;
 
@@ -100,6 +106,20 @@ export default async function HomePage() {
       photoUrls: group.photoUrls,
     }));
 
+  const schoolSlides: SchoolSlide[] = dict.home.japaneseSchool.slides.flatMap(
+    (slide, i) => {
+      const src = homePhotos.schoolSlides[i];
+      return src ? [{ ...slide, src }] : [];
+    },
+  );
+
+  const schoolClasses = dict.school.classes.levels
+    .map((level, i) => ({
+      ...level,
+      photo: photoFor(schoolPhotos.levels[i], level.photoAlt),
+    }))
+    .filter((level) => level.status === "");
+
   const milestones: Milestone[] = dict.home.history.milestones.map((step) => {
     const image = historyMilestonePhotos[step.id];
     return {
@@ -170,90 +190,183 @@ export default async function HomePage() {
           seed={12}
           className="relative text-cream"
         />
-        <div className="relative mx-auto grid max-w-wide gap-10 px-4 pt-6 pb-20 sm:px-6 sm:pb-24 lg:grid-cols-12 lg:items-center lg:gap-14 lg:px-10 lg:pb-28">
-          <div className="reveal-rise lg:col-span-5">
-            <span className="block font-display text-sm font-semibold tracking-[0.24em] text-sky uppercase">
-              {dict.home.japaneseSchool.kicker}
-            </span>
-            <span className="mt-5 mb-5 block h-0.5 w-9 bg-indigo" />
-            <h2 className="font-display text-4xl leading-tight font-normal tracking-[0.02em] sm:text-5xl">
-              <span className="block text-white">
-                {dict.home.japaneseSchool.headingLine1}
-              </span>
-              <span className="block text-sky">
-                {dict.home.japaneseSchool.headingLine2}
-              </span>
-            </h2>
-            <p className="mt-5 font-display text-xl font-semibold text-sky">
-              {dict.home.japaneseSchool.subheading}
-            </p>
-            <p className="mt-5 max-w-lg text-lg leading-relaxed text-white/80">
-              {dict.home.japaneseSchool.body}
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                href={`${href("/school")}#tuition`}
-                className="button-primary rounded-lg px-7 py-4 font-display text-base font-semibold text-white"
+        <div className="relative mx-auto max-w-wide px-4 pt-6 pb-20 sm:px-6 sm:pb-24 lg:px-10 lg:pb-28">
+          <div className="grid gap-10 lg:grid-cols-12 lg:items-center lg:gap-14">
+            <div className="reveal-rise lg:col-span-5">
+              <div className="flex items-start justify-between gap-5">
+                <div>
+                  <SectionKicker
+                    accent={dict.home.japaneseSchool.kickerAccent}
+                    caption={dict.home.japaneseSchool.kickerCaption}
+                    tone="sky"
+                    size="lg"
+                  />
+                  <h2 className="mt-5 font-display text-4xl leading-tight font-normal tracking-[0.02em] sm:text-5xl">
+                    <span className="block text-white">
+                      {dict.home.japaneseSchool.headingLine1}
+                    </span>
+                    <span className="block text-sky">
+                      {dict.home.japaneseSchool.headingLine2}
+                    </span>
+                  </h2>
+                  <p className="mt-5 font-display text-xl font-semibold text-sky">
+                    {dict.home.japaneseSchool.subheading}
+                  </p>
+                  <p className="mt-5 max-w-lg text-lg leading-relaxed text-white/80">
+                    {dict.home.japaneseSchool.body}
+                  </p>
+                </div>
+                <div className="relative shrink-0">
+                  <p
+                    lang="ja"
+                    className="school-plaque font-accent text-lg font-bold tracking-[0.16em] sm:text-xl"
+                  >
+                    {dict.home.japaneseSchool.plaque}
+                  </p>
+                  <span
+                    aria-hidden="true"
+                    className="reveal-pop absolute top-full left-1/2 z-10 -mt-3 size-18 -translate-x-1/2 -rotate-6 rounded-xs bg-magenta p-1 text-cream shadow-md sm:size-20"
+                  >
+                    <span className="flex h-full flex-col items-center justify-center border-2 border-cream/90 outline outline-1 -outline-offset-4 outline-cream/60">
+                      <span className="font-accent text-xs leading-none font-bold tracking-[0.2em] uppercase">
+                        {dict.home.japaneseSchool.sealAccent}
+                      </span>
+                      <span className="mt-1 font-accent text-lg leading-none font-bold sm:text-xl">
+                        {dict.home.japaneseSchool.sealYear}
+                      </span>
+                    </span>
+                  </span>
+                </div>
+              </div>
+              <ul
+                aria-label={dict.home.japaneseSchool.skillsLabel}
+                className="mt-7 grid max-w-sm grid-cols-4 gap-3 sm:gap-4"
               >
-                {dict.home.japaneseSchool.primaryCta}
-              </Link>
-              <Link
-                href={href("/groups")}
-                className="rounded-lg border-2 border-white/50 px-7 py-3.5 font-display text-base font-semibold text-white hover:border-white hover:bg-white/10"
-              >
-                {dict.home.japaneseSchool.secondaryCta}
-              </Link>
+                {dict.home.japaneseSchool.skills.map((skill) => (
+                  <li key={skill.kanji} className="flex flex-col items-center gap-2">
+                    <span
+                      lang="ja"
+                      aria-hidden="true"
+                      className="kanji-box w-full font-accent text-4xl font-bold text-white sm:text-5xl"
+                    >
+                      {skill.kanji}
+                    </span>
+                    <span className="font-display text-base font-semibold text-sky">
+                      {skill.label}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link
+                  href={`${href("/school")}#tuition`}
+                  className="button-primary rounded-lg px-7 py-4 font-display text-base font-semibold text-white"
+                >
+                  {dict.home.japaneseSchool.primaryCta}
+                </Link>
+                <Link
+                  href={href("/groups")}
+                  className="rounded-lg border-2 border-white/50 px-7 py-3.5 font-display text-base font-semibold text-white hover:border-white hover:bg-white/10"
+                >
+                  {dict.home.japaneseSchool.secondaryCta}
+                </Link>
+              </div>
+            </div>
+
+            <div className="lg:col-span-7">
+              <SchoolSlideshow
+                slides={schoolSlides}
+                sizes="(max-width: 1024px) 100vw, 52rem"
+                labels={{
+                  region: dict.home.japaneseSchool.slidesLabel,
+                  pause: dict.home.japaneseSchool.slidePause,
+                  play: dict.home.japaneseSchool.slidePlay,
+                  show: dict.home.japaneseSchool.slideShow,
+                }}
+                className="reveal-bloom"
+              />
             </div>
           </div>
 
-          <div className="relative lg:col-span-7">
-            <div className="grid grid-cols-2 gap-3 sm:h-144 sm:grid-cols-3 sm:grid-rows-3 sm:gap-4 lg:h-160">
-              <SitePhoto
-                photo={photoFor(
-                  homePhotos.japaneseSchool,
-                  dict.home.japaneseSchool.photoAlt,
-                )}
-                dark
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 66vw, 36rem"
-                placeholderLabel={dict.home.japaneseSchool.photoLabel}
-                className="reveal-bloom col-span-2 aspect-photo rounded-sm sm:row-span-2 sm:aspect-auto"
-              />
-              {dict.home.japaneseSchool.highlights.map((item, i) => (
-                <figure
-                  key={item.title}
-                  className={`reveal-bloom relative aspect-square overflow-clip rounded-sm sm:aspect-auto ${
-                    i === 3 ? "sm:col-span-2" : ""
-                  }`}
-                >
+          <ul className="reveal-stagger mt-14 grid grid-cols-2 gap-3 sm:gap-4 lg:mt-20 lg:grid-cols-4">
+            {dict.home.japaneseSchool.highlights.map((item, i) => (
+              <li key={item.title} className="reveal-bloom">
+                <figure className="relative aspect-square overflow-clip rounded-sm sm:aspect-card">
                   <SitePhoto
                     photo={photoFor(homePhotos.highlights[i], item.photoAlt)}
                     dark
-                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 18rem"
+                    sizes="(max-width: 1024px) 50vw, 24rem"
                     placeholderLabel={dict.home.photoSoon}
                     className="h-full w-full"
                   />
-                  <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink-deep via-ink-deep/80 to-transparent px-4 pt-12 pb-4 sm:px-5 sm:pb-5">
-                    <span className="block font-display text-lg leading-tight font-semibold text-white lg:text-xl">
+                  <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink-deep via-ink-deep/85 to-transparent px-4 pt-14 pb-4 sm:px-5 sm:pb-5">
+                    <span
+                      lang={lang === "en" ? "ja" : "en"}
+                      className="block font-accent text-sm font-bold tracking-[0.14em] text-sky sm:text-base"
+                    >
+                      {item.term}
+                    </span>
+                    <span className="mt-0.5 block font-display text-lg leading-tight font-semibold text-white sm:text-xl">
                       {item.title}
                     </span>
-                    <span className="mt-1 block text-sm leading-snug text-white/85 sm:text-base">
+                    <span className="mt-1 hidden text-base leading-snug text-white/85 sm:block">
                       {item.text}
                     </span>
                   </figcaption>
                 </figure>
-              ))}
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-16 lg:mt-24">
+            <div className="reveal-rise flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
+              <div>
+                <SectionKicker
+                  accent={dict.home.japaneseSchool.classesAccent}
+                  caption={dict.home.japaneseSchool.classesCaption}
+                  tone="sky"
+                />
+                <h3 className="mt-3 font-display text-3xl leading-snug font-normal tracking-[0.02em] text-white sm:text-4xl">
+                  {dict.home.japaneseSchool.classesHeading}
+                </h3>
+                <p className="mt-2 text-lg text-white/80">
+                  {dict.home.japaneseSchool.classesFacts}
+                </p>
+              </div>
+              <Link
+                href={`${href("/school")}#classes`}
+                className="link-arrow py-2 font-display text-lg font-semibold text-sky hover:text-white"
+              >
+                {dict.home.japaneseSchool.classesCta}
+              </Link>
             </div>
-            <span
-              aria-hidden="true"
-              className="reveal-pop absolute -top-5 -left-3 flex size-24 -rotate-12 flex-col items-center justify-center rounded-sm bg-magenta text-white shadow-lg ring-4 ring-magenta/30 sm:-top-7 sm:-left-5 sm:size-28 lg:-left-7"
-            >
-              <span className="font-accent text-base leading-none sm:text-lg">
-                {dict.home.japaneseSchool.sealAccent}
-              </span>
-              <span className="mt-1 font-display text-2xl leading-none font-semibold tracking-[0.04em] sm:text-3xl">
-                {dict.home.japaneseSchool.sealYear}
-              </span>
-            </span>
+            <ol className="mt-8 grid grid-cols-2 gap-x-3 gap-y-7 sm:grid-cols-3 sm:gap-x-4 lg:grid-cols-6">
+              {schoolClasses.map((level) => (
+                <li key={level.name} className="reveal-rise">
+                  <SitePhoto
+                    photo={level.photo}
+                    dark
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16rem"
+                    placeholderLabel={dict.home.photoSoon}
+                    className="aspect-photo rounded-sm"
+                  />
+                  <div className="mt-3 border-t-2 border-gold pt-2.5">
+                    <span
+                      lang="ja"
+                      className="block font-accent text-xl font-bold tracking-[0.1em] text-sky"
+                    >
+                      {level.nameJa}
+                    </span>
+                    <span className="mt-0.5 block font-display text-base leading-snug font-semibold text-white">
+                      {level.name}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-base leading-snug text-white/75">
+                    {level.summary}
+                  </p>
+                </li>
+              ))}
+            </ol>
           </div>
         </div>
         <BrushEdge

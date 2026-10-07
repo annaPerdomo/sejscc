@@ -19,13 +19,24 @@ export function photoFor(
 
 export const homePhotos = {
   eventsBackdrop: "/campus-hero.jpg",
-  japaneseSchool: "/photos/home-school.jpg",
+  /** Matches `home.japaneseSchool.slides`. */
+  schoolSlides: [
+    "/photos/home-school-shuji-class.jpg",
+    "/photos/home-school-1972-christmas.jpg",
+    "/photos/home-school-1980-speech.jpg",
+    "/photos/home-school-1984-undokai.jpg",
+    "/photos/home-school-2001-christmas.jpg",
+    "/photos/home-school-2005-undokai.jpg",
+    "/photos/home-school-2018-ohanashikai.jpg",
+    "/photos/home-school-2024-undokai.jpg",
+    "/photos/home-school-2025-teachers-level.jpg",
+  ],
   /** Matches `home.japaneseSchool.highlights`. */
   highlights: [
-    "/photos/school-hero-3.jpg",
-    "/photos/home-highlight-levels.jpg",
-    "/photos/home-highlight-online.jpg",
-    "/photos/home-highlight-culture.jpg",
+    "/photos/home-school-brush.jpg",
+    "/photos/home-school-speech.jpg",
+    "/photos/home-school-nengajo.jpg",
+    "/photos/home-school-graduates.jpg",
   ],
   centennial: "/photos/home-centennial.jpg",
 } as const;

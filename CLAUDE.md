@@ -67,7 +67,11 @@ be built from these tokens via Tailwind utility classes.
   `button-primary`, `button-donate`, `flyer-mount` (a flyer on a cream
   board with gold rules; pair it with the gold rings), `asanoha-frame` (a
   navy band of gold hemp-leaf lattice around the featured group photo),
-  `calendar-menu` (a
+  `school-plaque` (a cream name board set in vertical Japanese, like a
+  school's gate sign), `kanji-box` (a kanji-practice square with dashed
+  centre guides), `byobu-frame` (a folding-screen mount: lacquer rails,
+  metal corner caps and a band of gold leaf, around the school
+  slideshow), `calendar-menu` (a
   `<details>` disclosure styled as a button), `seigaiha-rings` (with
   `seigaiha-rings-sky`, `seigaiha-rings-gold`, the slow-moving
   `seigaiha-rings-drift`, and
@@ -88,7 +92,8 @@ be built from these tokens via Tailwind utility classes.
   `enter-fade` / `enter-rule` / `brush-draw` / `menu-drop`, `hero-drift`, `link-arrow`,
   `lantern-sway` (a slow rotation hung from the top of an SVG group),
   `tab-progress` (with a per-strip duration
-  class, `hero-progress`, `groups-progress` or `month-progress`, and
+  class, `hero-progress`, `groups-progress`, `month-progress` or
+  `school-progress`, and
   `tab-progress-paused` to
   hold the strip while the reader is hovering or focused inside it; the
   strip advances on the bar's `animationend`, so the CSS duration is the

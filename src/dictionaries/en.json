@@ -52,37 +52,116 @@
     "upcomingPause": "Stop rotating events",
     "upcomingPlay": "Rotate events automatically",
     "japaneseSchool": {
-      "kicker": "Japanese School",
+      "kickerAccent": "日本語学校",
+      "kickerCaption": "Japanese School",
+      "plaque": "サウスイースト日本語学園",
       "headingLine1": "Japanese at heart.",
       "headingLine2": "Learning for life.",
       "subheading": "Saturday mornings, since 1925.",
       "body": "Language, reading, and calligraphy from kindergarten through Level 12, with adult classes online. No Japanese background required — students of every heritage learn side by side.",
-      "sealAccent": "創立",
-      "sealYear": "1925",
-      "photoLabel": "Photo coming soon",
-      "photoAlt": "Students beside a tanabata bamboo hung with paper wishes",
-      "highlights": [
+      "skillsLabel": "The four skills every class builds",
+      "skills": [
         {
-          "title": "Saturday Mornings",
-          "text": "Classes meet every Saturday, 8:45–12:15",
-          "photoAlt": "Students with the flower arrangements they made in class"
+          "kanji": "聞",
+          "label": "Listening"
         },
         {
-          "title": "Kindergarten–Level 12",
-          "text": "Japanese language for all ages",
-          "photoAlt": "Students from several levels after giving their speeches at the ohanashikai"
+          "kanji": "話",
+          "label": "Speaking"
         },
         {
-          "title": "Adult Classes Online",
-          "text": "Learn from wherever you are",
-          "photoAlt": "Adult students in an online Japanese class"
+          "kanji": "読",
+          "label": "Reading"
         },
         {
-          "title": "Cultural Events Year-Round",
-          "text": "Bringing our community together",
-          "photoAlt": "A teacher in a kimono leading a hands-on lesson for students seated on tatami mats"
+          "kanji": "書",
+          "label": "Writing"
         }
       ],
+      "sealAccent": "Est.",
+      "sealYear": "1925",
+      "slidesLabel": "The school through the years",
+      "slidePause": "Stop rotating school photos",
+      "slidePlay": "Rotate school photos automatically",
+      "slideShow": "Show photo: {label}",
+      "slides": [
+        {
+          "label": "Calligraphy",
+          "caption": "Brush calligraphy class",
+          "alt": "Students practicing brush calligraphy at their desks, with their teacher behind them and finished characters on the wall"
+        },
+        {
+          "label": "1972",
+          "caption": "Dancing in yukata at the Christmas program",
+          "alt": "Three dancers in yukata performing on the school stage in 1972"
+        },
+        {
+          "label": "1980",
+          "caption": "A speech at the ohanashikai",
+          "alt": "A student giving a speech at the podium during the 1980 ohanashikai"
+        },
+        {
+          "label": "1984",
+          "caption": "Lining up at undokai, sports day",
+          "alt": "Black-and-white photo of students lining up on the grass at the 1984 undokai"
+        },
+        {
+          "label": "2001",
+          "caption": "The whole school sings at the Christmas program",
+          "alt": "Students in Santa hats singing on stage in front of a full audience in 2001"
+        },
+        {
+          "label": "2005",
+          "caption": "Tamaire, the beanbag toss, at undokai",
+          "alt": "Students throwing red beanbags at a basket on a pole during the 2005 undokai"
+        },
+        {
+          "label": "2018",
+          "caption": "Every class together after the ohanashikai",
+          "alt": "The whole school gathered on stage after the 2018 ohanashikai"
+        },
+        {
+          "label": "2024",
+          "caption": "Tug-of-war at undokai",
+          "alt": "Students in red headbands pulling a rope in a tug-of-war at the 2024 undokai"
+        },
+        {
+          "label": "2025",
+          "caption": "Our teachers today",
+          "alt": "The school's teachers and staff seated together for a group photo in 2025"
+        }
+      ],
+      "highlights": [
+        {
+          "term": "書道",
+          "title": "Calligraphy",
+          "text": "Kanji and kana written with brush and ink",
+          "photoAlt": "A student writing Japanese characters with a calligraphy brush"
+        },
+        {
+          "term": "お話会",
+          "title": "Speech Day",
+          "text": "Each May, students speak in Japanese on stage",
+          "photoAlt": "Two young students giving their speeches at microphones on stage"
+        },
+        {
+          "term": "年賀状",
+          "title": "New Year's Cards",
+          "text": "Students' cards are honored each winter",
+          "photoAlt": "Students holding certificates from the New Year's card contest, with a teacher"
+        },
+        {
+          "term": "卒業",
+          "title": "Graduation",
+          "text": "Graduates celebrate in kimono",
+          "photoAlt": "Two graduates in kimono"
+        }
+      ],
+      "classesAccent": "クラス案内",
+      "classesCaption": "Kindergarten to Adults",
+      "classesHeading": "A class for every age",
+      "classesFacts": "Every Saturday, 8:45–12:15 · Adult classes online",
+      "classesCta": "See all classes",
       "primaryCta": "Tuition & registration",
       "secondaryCta": "See sports & classes"
     },
