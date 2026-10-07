@@ -4,10 +4,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { AddToCalendar } from "@/components/add-to-calendar";
-import { BrushEdge } from "@/components/brush-edge";
+import { DatePage } from "@/components/date-page";
 import { ExternalLink } from "@/components/external-link";
 import { KanjiWatermark } from "@/components/kanji-watermark";
 import { SectionKicker } from "@/components/section-kicker";
+import { WaveDivider } from "@/components/wave-divider";
 import { calendarLinks, calendarOptions } from "@/lib/calendars";
 import {
   CENTER_EMAIL,
@@ -18,7 +19,14 @@ import {
 } from "@/lib/center";
 import { getEventBySlug, getUpcomingEventSlugs } from "@/lib/events";
 import { getImageSize } from "@/lib/image-size";
-import { formatEventDate, formatEventTime, wallClockNow } from "@/lib/format";
+import {
+  formatEventDate,
+  formatEventDay,
+  formatEventMonth,
+  formatEventTime,
+  formatWeekday,
+  wallClockNow,
+} from "@/lib/format";
 import {
   describeRepeat,
   latestOccurrence,
@@ -27,6 +35,7 @@ import {
 } from "@/lib/recurrence";
 import { getDictionary, getDictionaryFor, getLocale } from "@/lib/dictionaries";
 import { hasLocale, localePath } from "@/lib/i18n";
+import { homePhotos } from "@/lib/photos";
 
 export const revalidate = 300;
 
@@ -130,189 +139,193 @@ export default async function EventPage({ params }: Props) {
   const backLink = (className: string) => (
     <Link
       href={localePath(lang, "/events")}
-      className={`font-display text-sm font-semibold ${className}`}
+      className={`inline-block py-2 font-display text-base font-semibold ${className}`}
     >
       {dict.eventDetail.back}
     </Link>
   );
 
+  const month = formatEventMonth(start, lang);
+  const day = formatEventDay(start, lang);
+
   return (
     <>
-      <section className="section-navy-scene edge-flush relative overflow-clip text-white">
-        <KanjiWatermark
-          char="祭"
-          className="-right-12 -bottom-10 text-white/5"
-        />
-        <div className="enter-stagger relative mx-auto max-w-6xl px-4 pt-6 pb-12 sm:px-6 sm:pt-7 sm:pb-14">
-          <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-3">
-            {backLink("text-sky hover:text-white")}
-            <SectionKicker
-              accent={dict.eventDetail.kickerAccent}
-              caption={dict.eventDetail.kickerCaption}
-              tone="sky"
-              order="caption-first"
-              entrance="load"
-            />
-          </div>
-          <h1 className="mt-4 font-display text-4xl leading-tight font-normal tracking-[0.02em] text-white sm:text-5xl">
-            {event.title}
-          </h1>
-          <span aria-hidden="true" className="mt-4 block h-0.5 w-9 bg-indigo" />
-          {facts.length > 0 && (
-            <dl className="mt-6 flex flex-wrap gap-x-10 gap-y-5">
-              {facts.map((fact) => (
-                <div key={fact.label}>
-                  <dt className="font-display text-xs font-semibold tracking-[0.16em] text-sky uppercase">
-                    <span aria-hidden="true" className="mr-1.5 text-base">
-                      {fact.emoji}
-                    </span>
-                    {fact.label}
-                  </dt>
-                  <dd className="mt-1.5 text-base text-white">{fact.value}</dd>
-                </div>
-              ))}
-            </dl>
-          )}
-          {nextDates.length > 1 && (
-            <div className="mt-7">
-              <h2 className="font-display text-xs font-semibold tracking-[0.16em] text-sky uppercase">
-                {dict.eventDetail.upcomingDates}
-              </h2>
-              <ul className="mt-3 flex flex-wrap gap-2">
-                {nextDates.slice(1).map((occurrence) => (
-                  <li
-                    key={occurrence.toISOString()}
-                    className="rounded-lg border border-sky/40 bg-white/10 px-3.5 py-2 font-display text-sm font-semibold text-white"
-                  >
-                    {formatEventDate(occurrence, lang)}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+      <section className="edge-flush relative isolate overflow-clip bg-ink-deep text-white">
+        <div aria-hidden="true" className="absolute inset-0 -z-10">
+          <Image
+            src={event.flyerUrl ?? homePhotos.eventsBackdrop}
+            alt=""
+            fill
+            sizes="50vw"
+            className="scale-125 object-cover blur-2xl"
+          />
+          {/* The flyer's own colors glow through; at this strength every
+              text color here keeps AA over the brightest flyer. */}
+          <div className="absolute inset-0 bg-gradient-to-br from-ink-deep/95 via-navy/90 to-ink-deep/85" />
         </div>
-        <BrushEdge
-          id="event-detail"
-          variant="ink"
-          className="absolute inset-x-0 bottom-0"
-        />
-      </section>
+        <KanjiWatermark char="祭" className="-right-12 -bottom-10 text-white/5" />
 
-      <section className="relative overflow-clip bg-mist py-10 sm:py-12">
-        <KanjiWatermark
-          char="縁"
-          className="-right-14 -bottom-20 text-indigo/5"
-        />
         <div
-          className={`relative mx-auto grid max-w-6xl gap-10 px-4 sm:px-6 lg:items-start lg:gap-x-16 ${
-            event.flyerUrl
-              ? "lg:grid-cols-[1fr_36rem] lg:grid-rows-[auto_1fr]"
-              : ""
+          className={`relative mx-auto grid max-w-wide gap-12 px-5 pt-8 pb-28 sm:px-10 sm:pb-36 lg:items-center lg:px-16 ${
+            event.flyerUrl ? "lg:grid-cols-12 lg:gap-14" : ""
           }`}
         >
-          <div className="lg:col-start-1 lg:row-start-1">
-            {event.description && (
-              <div className="reveal-swing-left max-w-2xl">
-                <SectionKicker
-                  accent={dict.eventDetail.aboutAccent}
-                  caption={dict.eventDetail.aboutCaption}
+          <div className={`enter-stagger ${event.flyerUrl ? "lg:col-span-7" : "max-w-4xl"}`}>
+            <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-3">
+              {backLink("text-sky hover:text-white")}
+              <SectionKicker
+                accent={dict.eventDetail.kickerAccent}
+                caption={dict.eventDetail.kickerCaption}
+                tone="photo"
+                order="caption-first"
+                entrance="load"
+              />
+            </div>
+            <h1 className="mt-8 font-display text-4xl leading-tight font-normal text-balance sm:text-5xl xl:text-6xl">
+              {event.title}
+            </h1>
+            <div className="mt-9 flex items-start gap-6 sm:gap-8">
+              {month && day && (
+                <DatePage
+                  month={month}
+                  day={day}
+                  weekday={start ? formatWeekday(start, lang) : null}
+                  size="lg"
                 />
-                <div className="mt-5 leading-relaxed whitespace-pre-line text-ink-soft">
-                  {event.description}
-                </div>
+              )}
+              {facts.length > 0 && (
+                <dl className="flex flex-col gap-4">
+                  {facts.map((fact) => (
+                    <div key={fact.label} className="flex items-start gap-3">
+                      <dt className="w-8 shrink-0 text-center text-2xl leading-none">
+                        <span aria-hidden="true">{fact.emoji}</span>
+                        <span className="sr-only">{fact.label}</span>
+                      </dt>
+                      <dd className="text-lg leading-snug text-white sm:text-xl">{fact.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
+            </div>
+            {nextDates.length > 1 && (
+              <div className="mt-10">
+                <h2 className="font-display text-sm font-semibold tracking-[0.18em] text-sky uppercase">
+                  {dict.eventDetail.upcomingDates}
+                </h2>
+                <ul className="mt-4 flex flex-wrap gap-4">
+                  {nextDates.slice(1).map((occurrence) => (
+                    <li key={occurrence.toISOString()}>
+                      <DatePage
+                        month={formatEventMonth(occurrence, lang) ?? ""}
+                        day={formatEventDay(occurrence, lang) ?? ""}
+                      />
+                      <span className="sr-only">{formatEventDate(occurrence, lang)}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             )}
-
-            {signupUrl && (
-              <div className="reveal-rise mt-8">
-                <ExternalLink
-                  href={signupUrl}
-                  className="button-primary inline-block rounded-lg px-7 py-3.5 font-display text-sm font-semibold text-white"
-                >
-                  {dict.eventDetail.signUp}
-                </ExternalLink>
-              </div>
-            )}
-
-            {calendar && (
-              <div className="reveal-rise relative z-20 mt-8">
-                <AddToCalendar
-                  tone="light"
-                  label={dict.calendar.addToCalendar}
-                  menuLabel={dict.calendar.chooseCalendar}
-                  options={calendar}
-                  className="w-fit"
-                />
+            {(signupUrl || calendar) && (
+              <div className="relative z-20 mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                {signupUrl && (
+                  <ExternalLink href={signupUrl} className="button-light px-7 py-4 text-center text-base">
+                    {dict.eventDetail.signUp}
+                  </ExternalLink>
+                )}
+                {calendar && (
+                  <AddToCalendar
+                    tone="dark"
+                    placement="above"
+                    label={dict.calendar.addToCalendar}
+                    menuLabel={dict.calendar.chooseCalendar}
+                    options={calendar}
+                  />
+                )}
               </div>
             )}
           </div>
 
-          {/* In source order between the copy blocks so it sits mid-page on a phone. */}
           {event.flyerUrl && (
-            <div className="reveal-swing-right lg:col-start-2 lg:row-span-2 lg:row-start-1">
+            <div className="enter-rise flex flex-col items-center lg:col-span-5">
               {/* Flyers arrive portrait and landscape, so no fixed aspect box:
                   measured dimensions let a height and a width cap apply at once,
                   and an unmeasured flyer fills the width rather than squashing. */}
-              <Image
-                src={event.flyerUrl}
-                alt={dict.eventDetail.flyerAlt.replace("{title}", event.title)}
-                width={flyerSize?.width ?? 800}
-                height={flyerSize?.height ?? 1000}
-                sizes="(max-width: 1023px) 100vw, 36rem"
-                className={`mx-auto h-auto shadow-2xl ring-1 ring-ink/10 ${
-                  flyerSize ? "w-auto max-w-full lg:max-h-132" : "w-full"
-                }`}
-                preload
-              />
+              <div className="flyer-mount seigaiha-rings seigaiha-rings-gold w-fit max-w-full">
+                <Image
+                  src={event.flyerUrl}
+                  alt={dict.eventDetail.flyerAlt.replace("{title}", event.title)}
+                  width={flyerSize?.width ?? 800}
+                  height={flyerSize?.height ?? 1000}
+                  sizes="(max-width: 1023px) 100vw, 36rem"
+                  className={`relative h-auto ring-1 ring-ink/10 ${
+                    flyerSize ? "w-auto max-w-full lg:max-h-hero-flyer" : "w-full"
+                  }`}
+                  preload
+                />
+              </div>
               {event.flyerDownloadUrl && (
                 <a
                   href={event.flyerDownloadUrl}
                   download
-                  className="button-outline mx-auto mt-8 block w-fit px-6 py-3 font-display text-sm font-semibold"
+                  className="mt-8 rounded-lg border-2 border-white/70 px-6 py-3.5 font-display text-base font-semibold text-white hover:border-white hover:bg-white hover:text-navy"
                 >
                   {dict.eventDetail.downloadFlyer}
                 </a>
               )}
             </div>
           )}
+        </div>
+        <WaveDivider id="event-detail" seed={17} className="absolute inset-x-0 bottom-0 text-paper" />
+      </section>
 
-          <div className="lg:col-start-1 lg:row-start-2">
-            <div className="reveal-rise grid gap-7 border-t border-line pt-8 sm:grid-cols-2">
+      <section className="seigaiha-rings seigaiha-rings-fade relative bg-paper pt-12 pb-20 sm:pt-16 sm:pb-24">
+        <KanjiWatermark char="縁" className="-right-14 -bottom-20 text-indigo/5" />
+        <div className="relative mx-auto grid max-w-wide gap-14 px-5 sm:px-10 lg:grid-cols-12 lg:px-16">
+          {event.description && (
+            <div className="reveal-rise lg:col-span-7">
+              <SectionKicker
+                accent={dict.eventDetail.aboutAccent}
+                caption={dict.eventDetail.aboutCaption}
+                size="lg"
+              />
+              <div className="mt-6 text-lg leading-relaxed whitespace-pre-line text-ink-soft sm:text-xl sm:leading-relaxed">
+                {event.description}
+              </div>
+            </div>
+          )}
+
+          <div
+            className={`reveal-rise flex flex-col gap-10 ${
+              event.description ? "lg:col-span-4 lg:col-start-9" : "lg:col-span-12 sm:flex-row"
+            }`}
+          >
+            <div>
+              <h2 className="font-display text-sm font-semibold tracking-[0.18em] text-ink-soft uppercase">
+                {dict.eventDetail.questions}
+              </h2>
+              <p className="mt-3 flex flex-col gap-1 text-lg">
+                <a href={CENTER_PHONE_HREF} className="w-fit py-1 font-semibold text-indigo hover:text-indigo-deep">
+                  {CENTER_PHONE}
+                </a>
+                <a
+                  href={`mailto:${CENTER_EMAIL}`}
+                  className="w-fit py-1 font-semibold text-indigo hover:text-indigo-deep"
+                >
+                  {CENTER_EMAIL}
+                </a>
+              </p>
+            </div>
+            {isAtCenter(event.location) && (
               <div>
-                <h2 className="font-display text-xs font-semibold tracking-[0.16em] text-ink-soft uppercase">
-                  {dict.eventDetail.questions}
+                <h2 className="font-display text-sm font-semibold tracking-[0.18em] text-ink-soft uppercase">
+                  {dict.eventDetail.parking}
                 </h2>
-                <p className="mt-2 leading-relaxed">
-                  <a
-                    href={CENTER_PHONE_HREF}
-                    className="text-indigo hover:text-indigo-deep"
-                  >
-                    {CENTER_PHONE}
-                  </a>
-                  <br />
-                  <a
-                    href={`mailto:${CENTER_EMAIL}`}
-                    className="text-indigo hover:text-indigo-deep"
-                  >
-                    {CENTER_EMAIL}
-                  </a>
+                <p className="mt-3 text-lg leading-relaxed text-ink-soft">
+                  {dict.eventDetail.parkingBody}
                 </p>
               </div>
-              {isAtCenter(event.location) && (
-                <div>
-                  <h2 className="font-display text-xs font-semibold tracking-[0.16em] text-ink-soft uppercase">
-                    {dict.eventDetail.parking}
-                  </h2>
-                  <p className="mt-2 leading-relaxed text-ink-soft">
-                    {dict.eventDetail.parkingBody}
-                  </p>
-                </div>
-              )}
-            </div>
-
-            <div className="reveal-rise mt-10">
-              {backLink("text-indigo hover:text-indigo-deep")}
-            </div>
+            )}
+            <div>{backLink("text-indigo hover:text-indigo-deep")}</div>
           </div>
         </div>
       </section>

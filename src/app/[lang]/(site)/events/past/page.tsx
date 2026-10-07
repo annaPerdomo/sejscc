@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { EventCard, FOUR_UP_SIZES } from "@/components/event-card";
+import { EventPoster } from "@/components/event-poster";
 import { KanjiWatermark } from "@/components/kanji-watermark";
-import { PageHero } from "@/components/page-hero";
+import { PhotoHero } from "@/components/photo-hero";
 import { getPastEvents, type Event } from "@/lib/events";
 import { getDictionary, getDictionaryFor, getLocale } from "@/lib/dictionaries";
 import { hasLocale, localePath } from "@/lib/i18n";
+import { eventsPhotos } from "@/lib/photos";
 
 export const revalidate = 300;
 
@@ -55,60 +56,52 @@ export default async function PastEventsPage() {
 
   return (
     <>
-      <PageHero
+      <PhotoHero
         id="past-events"
-        wash="section-wash-events-hero"
-        watermark="昔"
-        watermarkClassName="-right-14 -bottom-24 text-indigo/5"
+        photo={eventsPhotos.archive}
+        photoAlt={archive.heroPhotoAlt}
         accent={dict.events.pastAccent}
         caption={dict.events.pastCaption}
         titleLine1={archive.titleLine1}
         titleLine2={archive.titleLine2}
-        lede={archive.lede}
+        lede={<p>{archive.lede}</p>}
+        settlesInto="mist"
         eyebrow={
           <Link
             href={localePath(lang, "/events")}
-            className="font-display text-sm font-semibold text-indigo hover:text-indigo-deep"
+            className="inline-block py-2 font-display text-base font-semibold text-sky hover:text-white"
           >
             {dict.eventDetail.back}
           </Link>
         }
       />
 
-      <section className="relative overflow-clip bg-white py-14 sm:py-16">
-        <KanjiWatermark char="縁" className="-right-12 -bottom-20 text-indigo/5" />
-        {years.length === 0 ? (
-          <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
-            <p className="rounded-2xl border border-line bg-mist p-8 text-ink-soft">
-              {archive.empty}
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-14">
-            {years.map(([year, yearEvents]) => (
-              <div key={year}>
-                <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
-                  <h2 className="reveal-rise border-b border-line pb-3 font-display text-2xl text-ink">
-                    {archive.yearLabel.replace("{year}", String(year))}
-                  </h2>
-                </div>
-                <div className="relative mx-auto mt-6 max-w-6xl px-4 sm:px-6 lg:max-w-wide">
-                  <div className="reveal-stagger grid gap-7 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="relative overflow-clip bg-mist pt-10 pb-20 sm:pt-14 sm:pb-28">
+        <KanjiWatermark char="縁" className="-right-12 bottom-20 text-indigo/5" />
+        <div className="relative mx-auto max-w-wide px-5 sm:px-10 lg:px-16">
+          {years.length === 0 ? (
+            <p className="max-w-2xl text-lg leading-relaxed text-ink-soft">{archive.empty}</p>
+          ) : (
+            <div className="flex flex-col gap-24">
+              {years.map(([year, yearEvents]) => (
+                <div key={year} className="grid gap-10 lg:grid-cols-12 lg:gap-12">
+                  <div className="lg:col-span-3">
+                    <h2 className="ink-bleed border-b-4 border-magenta pb-3 font-display text-6xl leading-none font-light text-indigo-deep lg:sticky lg:top-36 lg:border-b-0 lg:border-l-4 lg:pb-0 lg:pl-6 xl:text-8xl">
+                      {archive.yearLabel.replace("{year}", String(year))}
+                    </h2>
+                  </div>
+                  <div className="reveal-stagger-2-3 grid gap-x-10 gap-y-16 sm:grid-cols-2 lg:col-span-9 lg:grid-cols-3 2xl:grid-cols-4">
                     {yearEvents.map((event, i) => (
-                      <EventCard
-                        key={event.id}
-                        event={event}
-                        index={i}
-                        sizes={FOUR_UP_SIZES}
-                        className="reveal-bloom"
-                      />
+                      <div key={event.id} className="reveal-bloom">
+                        <EventPoster event={event} index={i} variant="compact" />
+                      </div>
                     ))}
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </div>
       </section>
     </>
   );

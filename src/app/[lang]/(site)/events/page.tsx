@@ -1,41 +1,26 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { EventCard, FOUR_UP_SIZES } from "@/components/event-card";
+import { EventPoster } from "@/components/event-poster";
 import { GoogleCalendar } from "@/components/google-calendar";
-import { HeroPhotos } from "@/components/hero-photos";
+import { KanjiWatermark } from "@/components/kanji-watermark";
 import { LanternString } from "@/components/lantern-string";
-import { PageHero } from "@/components/page-hero";
-import { PageSection } from "@/components/page-section";
+import { PhotoHero } from "@/components/photo-hero";
 import { RevealMore } from "@/components/reveal-more";
+import { SectionHeading } from "@/components/section-heading";
+import { SectionKicker } from "@/components/section-kicker";
 import { calendarSources } from "@/lib/calendars";
 import { getPastEvents, getUpcomingEvents } from "@/lib/events";
 import { getDictionary, getDictionaryFor, getLocale } from "@/lib/dictionaries";
 import { hasLocale, localePath } from "@/lib/i18n";
-import { eventsHeroPhotos, photoFor } from "@/lib/photos";
+import { eventsPhotos } from "@/lib/photos";
 
 export const revalidate = 300;
 
-const UPCOMING_PREVIEW = 12;
+const UPCOMING_PREVIEW = 10;
 const PAST_PREVIEW = 4;
 
-// Tiles drop from the end on narrow screens: the two-column grid only fills
-// whole rows at three tiles and at five.
-const HERO_LAYOUT = [
-  "col-span-2 aspect-photo lg:col-span-6 lg:row-span-7",
-  "aspect-square lg:col-span-6 lg:row-span-7",
-  "aspect-square lg:col-span-3 lg:row-span-5",
-  "hidden aspect-square sm:block lg:col-span-3 lg:row-span-5",
-  "hidden aspect-square sm:block lg:col-span-3 lg:row-span-5",
-  "hidden lg:col-span-3 lg:row-span-5 lg:block",
-];
-const HERO_SIZES = [
-  "(max-width: 1024px) 92vw, 17rem",
-  "(max-width: 1024px) 46vw, 17rem",
-  "(max-width: 1024px) 46vw, 8rem",
-  "(max-width: 1024px) 46vw, 8rem",
-  "(max-width: 1024px) 46vw, 8rem",
-  "8rem",
-];
+const POSTER_GRID =
+  "reveal-stagger-2-3 grid gap-x-10 gap-y-16 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4";
 
 type Props = { params: Promise<{ lang: string }> };
 
@@ -62,181 +47,170 @@ export default async function EventsPage() {
     getDictionary(),
     getLocale(),
     getUpcomingEvents(),
-    getPastEvents(),
+    getPastEvents(PAST_PREVIEW),
   ]);
-
-  const heroPhotos = eventsHeroPhotos.map((src, i) =>
-    photoFor(src, dict.events.heroPhotoAlts[i])
-  );
+  const [next, ...later] = upcoming;
 
   return (
     <>
-      <PageHero
+      <PhotoHero
         id="events"
-        wash="section-wash-events-hero"
-        watermark="祭"
-        watermarkClassName="-right-14 -bottom-24 text-magenta/5"
+        photo={eventsPhotos.hero}
+        photoAlt={dict.events.heroPhotoAlt}
         accent={dict.events.kickerAccent}
         caption={dict.events.kickerCaption}
         titleLine1={dict.events.titleLine1}
-        lede={dict.events.lede}
-        settlesInto="azure"
-        tight
+        lede={<p>{dict.events.lede}</p>}
+        settlesInto="cream"
+        ornament={<LanternString id="events" tone="dark" className="absolute inset-x-0 top-0" />}
         actions={
-          <a
-            href="#calendars"
-            className="button-primary rounded-lg px-6 py-3.5 font-display text-sm font-semibold text-white"
-          >
-            {dict.events.calendars.heroCta}
-          </a>
-        }
-        media={
-          <HeroPhotos
-            layout={HERO_LAYOUT}
-            photos={heroPhotos}
-            sizes={HERO_SIZES}
-            tileClassName="w-full rounded-md border border-line shadow-sm lg:aspect-auto"
-            placeholderLabel={dict.events.photoLabel}
-            preloadFirst
-            className="grid w-full shrink-0 grid-cols-2 gap-3 lg:h-88 lg:w-136 lg:grid-cols-12 lg:grid-rows-12 lg:gap-3"
-          />
+          <>
+            {next && (
+              <a href="#upcoming" className="button-light px-7 py-4 text-base">
+                {dict.events.upcomingTitle}
+              </a>
+            )}
+            <a
+              href="#calendars"
+              className="link-arrow py-2 font-display text-lg font-semibold text-sky hover:text-white"
+            >
+              {dict.events.calendars.heroCta}
+            </a>
+          </>
         }
       />
 
-      <PageSection
+      <section
         id="upcoming"
-        surface="azure"
-        tight
-        wide
-        watermark="催"
-        watermarkClassName="-top-20 -left-12 text-magenta/5"
-        ornament={<LanternString id="events" tone="light" className="relative" />}
-        accent={dict.events.upcomingAccent}
-        caption={dict.events.upcomingCaption}
-        title={dict.events.upcomingTitle}
+        className="relative scroll-mt-28 overflow-clip bg-cream pt-10 pb-20 sm:pt-14 sm:pb-28"
       >
-        {upcoming.length > 0 ? (
-          <>
-            <div className="reveal-stagger-2-3 grid gap-7 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-              {upcoming.slice(0, UPCOMING_PREVIEW).map((event, i) => (
-                <EventCard
-                  key={event.id}
-                  event={event}
-                  index={i}
-                  badge={i === 0 ? dict.events.nextUpBadge : undefined}
-                  withSignup
-                  className="reveal-bloom"
-                />
-              ))}
-            </div>
-            <RevealMore
-              moreLabel={dict.events.upcomingShowMore}
-              lessLabel={dict.events.upcomingShowLess}
-              more={
-                upcoming.length > UPCOMING_PREVIEW ? (
-                  <div className="reveal-stagger-2-3 mt-7 grid gap-7 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-                    {upcoming.slice(UPCOMING_PREVIEW).map((event, i) => (
-                      <EventCard
-                        key={event.id}
-                        event={event}
-                        index={UPCOMING_PREVIEW + i}
-                        withSignup
-                        className="reveal-bloom"
-                      />
-                    ))}
-                  </div>
-                ) : undefined
-              }
-            >
-              <a
-                href="#calendars"
-                className="link-arrow font-display text-sm font-semibold text-indigo hover:text-indigo-deep"
-              >
-                {dict.events.calendars.sectionCta}
-              </a>
-            </RevealMore>
-          </>
-        ) : (
-          <p className="rounded-2xl border border-line bg-white p-8 text-ink-soft">
-            {dict.events.empty}
-          </p>
-        )}
-      </PageSection>
-
-      <PageSection
-        id="calendars"
-        surface="white"
-        watermark="週"
-        watermarkClassName="top-48 -right-16 text-indigo/5"
-        accent={dict.events.calendars.accent}
-        caption={dict.events.calendars.caption}
-        title={dict.events.calendars.title}
-        lede={dict.events.calendars.lede}
-      >
-        <div className="grid gap-6">
-          {calendarSources.map((source) => (
-            <GoogleCalendar
-              key={source.key}
-              source={source}
-              locale={locale}
-              label={dict.events.calendars[source.key].label}
-              description={dict.events.calendars[source.key].description}
-              frameTitle={dict.events.calendars[source.key].frameTitle}
-              openLabel={dict.events.calendars.openLabel}
+        <KanjiWatermark char="催" className="-top-10 -left-10 text-magenta/5" />
+        <div className="relative mx-auto max-w-wide px-5 sm:px-10 lg:px-16">
+          <div className="reveal-rise mb-14 max-w-3xl">
+            <SectionKicker
+              accent={dict.events.upcomingAccent}
+              caption={dict.events.upcomingCaption}
+              tone="tinted"
+              size="lg"
             />
-          ))}
-        </div>
-      </PageSection>
+            <SectionHeading className="mt-4 sm:text-5xl">{dict.events.upcomingTitle}</SectionHeading>
+          </div>
 
-      {past.length > 0 && (
-        <PageSection
-          id="past"
-          surface="mist"
-          wide
-          watermark="昔"
-          watermarkClassName="-right-12 -bottom-20 text-indigo/5"
-          accent={dict.events.pastAccent}
-          caption={dict.events.pastCaption}
-          title={dict.events.pastTitle}
-        >
-          <div className="reveal-stagger grid gap-7 sm:grid-cols-2 lg:grid-cols-4">
-            {past.slice(0, PAST_PREVIEW).map((event, i) => (
-              <EventCard
-                key={event.id}
-                event={event}
-                index={i}
-                sizes={FOUR_UP_SIZES}
-                className="reveal-bloom"
+          {next ? (
+            <>
+              <div className="reveal-rise mx-auto max-w-6xl">
+                <EventPoster
+                  event={next}
+                  badge={dict.events.nextUpBadge}
+                  withSignup
+                  variant="feature"
+                />
+              </div>
+
+              {later.length > 0 && (
+                <div className={`mt-24 ${POSTER_GRID}`}>
+                  {later.slice(0, UPCOMING_PREVIEW).map((event, i) => (
+                    <div key={event.id} className="reveal-bloom">
+                      <EventPoster event={event} index={i + 1} withSignup />
+                    </div>
+                  ))}
+                </div>
+              )}
+              <RevealMore
+                moreLabel={dict.events.upcomingShowMore}
+                lessLabel={dict.events.upcomingShowLess}
+                more={
+                  later.length > UPCOMING_PREVIEW ? (
+                    <div className={`mt-16 ${POSTER_GRID}`}>
+                      {later.slice(UPCOMING_PREVIEW).map((event, i) => (
+                        <div key={event.id} className="reveal-bloom">
+                          <EventPoster
+                            event={event}
+                            index={UPCOMING_PREVIEW + i + 1}
+                            withSignup
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  ) : undefined
+                }
+              >
+                <a
+                  href="#calendars"
+                  className="link-arrow py-2 font-display text-lg font-semibold text-indigo hover:text-indigo-deep"
+                >
+                  {dict.events.calendars.sectionCta}
+                </a>
+              </RevealMore>
+            </>
+          ) : (
+            <p className="max-w-2xl text-lg leading-relaxed text-ink-soft">{dict.events.empty}</p>
+          )}
+        </div>
+      </section>
+
+      <section
+        id="calendars"
+        className="seigaiha-rings seigaiha-rings-fade relative scroll-mt-28 bg-paper pt-16 pb-20 sm:pt-20 sm:pb-28"
+      >
+        <KanjiWatermark char="週" className="top-24 -right-14 text-indigo/5" />
+        <div className="relative mx-auto max-w-6xl px-5 sm:px-10">
+          <div className="reveal-rise mb-12 max-w-3xl">
+            <SectionKicker
+              accent={dict.events.calendars.accent}
+              caption={dict.events.calendars.caption}
+              size="lg"
+            />
+            <SectionHeading className="mt-4 sm:text-5xl">{dict.events.calendars.title}</SectionHeading>
+            <p className="mt-5 text-lg leading-relaxed text-ink-soft">
+              {dict.events.calendars.lede}
+            </p>
+          </div>
+          <div className="grid gap-14">
+            {calendarSources.map((source) => (
+              <GoogleCalendar
+                key={source.key}
+                source={source}
+                locale={locale}
+                label={dict.events.calendars[source.key].label}
+                description={dict.events.calendars[source.key].description}
+                frameTitle={dict.events.calendars[source.key].frameTitle}
+                openLabel={dict.events.calendars.openLabel}
               />
             ))}
           </div>
-          <RevealMore
-            moreLabel={dict.events.pastShowMore}
-            lessLabel={dict.events.pastShowLess}
-            more={
-              past.length > PAST_PREVIEW ? (
-                <div className="reveal-stagger mt-5 grid gap-7 sm:grid-cols-2 lg:grid-cols-4">
-                  {past.slice(PAST_PREVIEW).map((event, i) => (
-                    <EventCard
-                      key={event.id}
-                      event={event}
-                      index={PAST_PREVIEW + i}
-                      sizes={FOUR_UP_SIZES}
-                      className="reveal-bloom"
-                    />
-                  ))}
+        </div>
+      </section>
+
+      {past.length > 0 && (
+        <section id="past" className="relative scroll-mt-28 overflow-clip bg-mist pt-16 pb-20 sm:pt-20 sm:pb-28">
+          <KanjiWatermark char="昔" className="-right-12 -bottom-20 text-indigo/5" />
+          <div className="relative mx-auto max-w-wide px-5 sm:px-10 lg:px-16">
+            <div className="reveal-rise mb-14 max-w-3xl">
+              <SectionKicker
+                accent={dict.events.pastAccent}
+                caption={dict.events.pastCaption}
+                size="lg"
+              />
+              <SectionHeading className="mt-4 sm:text-5xl">{dict.events.pastTitle}</SectionHeading>
+            </div>
+            <div className="reveal-stagger grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-4">
+              {past.slice(0, PAST_PREVIEW).map((event, i) => (
+                <div key={event.id} className="reveal-bloom">
+                  <EventPoster event={event} index={i} variant="compact" />
                 </div>
-              ) : undefined
-            }
-          >
-            <Link
-              href={localePath(locale, "/events/past")}
-              className="link-arrow font-display text-sm font-semibold text-indigo hover:text-indigo-deep"
-            >
-              {dict.events.pastArchiveCta}
-            </Link>
-          </RevealMore>
-        </PageSection>
+              ))}
+            </div>
+            <div className="mt-12">
+              <Link
+                href={localePath(locale, "/events/past")}
+                className="button-outline inline-block px-6 py-3.5 font-display text-base font-semibold"
+              >
+                {dict.events.pastArchiveCta}
+              </Link>
+            </div>
+          </div>
+        </section>
       )}
     </>
   );
