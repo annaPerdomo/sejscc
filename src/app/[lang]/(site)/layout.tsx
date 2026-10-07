@@ -141,7 +141,7 @@ export default async function SiteLayout({
       <main className="flex-1">{children}</main>
 
       <footer className="seigaiha-rings seigaiha-rings-sky seigaiha-rings-drift bg-navy text-white">
-        <div className="mx-auto grid max-w-6xl grid-cols-2 gap-x-4 gap-y-8 px-4 py-10 sm:grid-cols-3 sm:gap-10 sm:px-6 sm:py-14">
+        <div className="mx-auto grid max-w-6xl grid-cols-2 gap-x-4 gap-y-8 px-4 py-8 sm:grid-cols-3 sm:gap-10 lg:grid-cols-4 sm:px-6 sm:py-10">
           <div className="col-span-2 sm:col-span-1">
             <div className="flex items-center gap-3">
               <Image src="/logo-mark-white.png" alt="" width={40} height={40} />
@@ -172,11 +172,11 @@ export default async function SiteLayout({
               </a>
             </p>
           </div>
-          <div className="text-sm">
+          <div className="text-sm lg:col-span-2">
             <p className="font-display text-xs font-semibold tracking-[0.14em] text-sky uppercase">
               {dict.footer.visit}
             </p>
-            <ul className="mt-4 space-y-2 text-white/80">
+            <ul className="mt-4 space-y-2 text-white/80 lg:grid lg:grid-cols-2 lg:gap-x-6 lg:gap-y-2 lg:space-y-0">
               {nav.map((item) => (
                 <li key={item.href}>
                   <Link
@@ -198,7 +198,7 @@ export default async function SiteLayout({
             </ul>
           </div>
         </div>
-        <div className="border-t border-white/15 px-4 py-5 sm:px-6">
+        <div className="border-t border-white/15 px-4 py-4 sm:px-6">
           <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 text-center lg:flex-row lg:items-baseline lg:justify-between lg:gap-6 lg:text-left">
             <span className="text-xs text-white/60">
               © {new Date().getFullYear()} {dict.footer.legal}
