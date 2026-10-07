@@ -27,15 +27,16 @@ export function SchoolLevels({
   const level = levels[active];
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[19rem_1fr] lg:items-start lg:gap-7">
+    <div className="grid gap-10 lg:grid-cols-12 lg:items-start lg:gap-14">
       <div
         role="tablist"
         aria-label={tablistLabel}
         aria-orientation="vertical"
-        className="flex flex-col gap-2"
+        className="flex flex-col lg:col-span-5"
       >
         {levels.map((item, i) => {
           const current = i === active;
+          const climbed = i <= active;
           return (
             <button
               key={item.name}
@@ -45,33 +46,43 @@ export function SchoolLevels({
               aria-selected={current}
               aria-controls="school-level-panel"
               onClick={() => setActive(i)}
-              className={`flex items-center justify-between gap-3 rounded-xl border px-4 py-3 text-left transition duration-200 hover:-translate-y-0.5 ${
-                current
-                  ? "border-navy bg-navy"
-                  : "border-line bg-white hover:border-indigo"
+              className={`group flex items-stretch gap-4 rounded-lg pr-4 text-left transition-colors ${
+                current ? "bg-white shadow-md" : "hover:bg-white/70"
               }`}
             >
-              <span className="flex flex-col gap-0.5">
+              <span aria-hidden="true" className="relative flex w-8 shrink-0 justify-center">
                 <span
-                  className={`font-display text-base font-semibold ${
-                    current ? "text-white" : item.status ? "text-ink-soft" : "text-ink"
+                  className={`absolute inset-y-0 w-1 transition-colors duration-500 group-first:top-1/2 group-last:bottom-1/2 ${
+                    climbed ? "bg-gold" : "bg-line"
+                  }`}
+                />
+                <span
+                  className={`relative mt-6 size-4 rounded-full border-2 transition duration-300 ${
+                    current
+                      ? "scale-125 border-magenta bg-magenta"
+                      : climbed
+                        ? "border-gold bg-gold"
+                        : "border-line bg-white group-hover:border-indigo"
+                  }`}
+                />
+              </span>
+              <span className="flex min-w-0 flex-1 flex-col gap-1 py-4">
+                <span
+                  className={`font-display text-lg leading-snug font-semibold ${
+                    current ? "text-indigo-deep" : item.status ? "text-ink-soft" : "text-ink"
                   }`}
                 >
                   {item.name}
                 </span>
-                <span
-                  className={`font-display text-xs tracking-[0.06em] ${
-                    current ? "text-sky" : "text-stone"
-                  }`}
-                >
+                <span className="text-base leading-snug text-ink-soft">
                   {item.status || item.summary}
                 </span>
               </span>
               <span
                 lang="ja"
                 aria-hidden="true"
-                className={`shrink-0 font-accent text-lg font-bold ${
-                  current ? "text-sky" : "text-indigo"
+                className={`self-center font-accent text-2xl font-bold transition-colors ${
+                  current ? "text-magenta" : "text-indigo"
                 }`}
               >
                 {item.nameJa}
@@ -87,38 +98,40 @@ export function SchoolLevels({
         role="tabpanel"
         id="school-level-panel"
         aria-labelledby={`school-level-tab-${active}`}
-        className="enter-fade surface-card overflow-clip"
+        className="enter-fade lg:col-span-7"
       >
-        <SitePhoto
-          photo={level.photo}
-          sizes="(max-width: 1024px) 100vw, 48rem"
-          placeholderLabel={photoLabel}
-          className="aspect-photo w-full border-b border-line sm:aspect-auto sm:h-80 lg:h-96"
-        />
-        <div className="p-6 sm:p-7">
-          <div className="flex flex-wrap items-baseline gap-x-3.5 gap-y-1">
-            <h3 className="font-display text-2xl font-semibold text-ink">{level.name}</h3>
-            <span lang="ja" className="font-accent text-lg font-bold tracking-[0.14em] text-indigo">
-              {level.nameJa}
-            </span>
-          </div>
-          {level.status && (
-            <p className="mt-3 rounded-lg border border-magenta/30 bg-cream px-4 py-2.5 font-display text-sm font-semibold text-magenta">
-              {level.status}
-            </p>
-          )}
-          <p className="mt-3 leading-relaxed text-ink-soft">{level.description}</p>
-          <ul className="mt-5 flex flex-wrap gap-2">
-            {level.points.map((point) => (
-              <li
-                key={point}
-                className="rounded-full border border-line bg-mist px-3 py-1.5 font-display text-xs font-semibold text-ink"
-              >
-                {point}
-              </li>
-            ))}
-          </ul>
+        <div className="relative">
+          <SitePhoto
+            photo={level.photo}
+            sizes="(max-width: 1024px) 100vw, 52rem"
+            placeholderLabel={photoLabel}
+            className="aspect-photo w-full rounded-sm shadow-xl"
+          />
+          <p
+            lang="ja"
+            aria-hidden="true"
+            className="school-plaque absolute -top-4 right-4 font-accent text-xl font-bold tracking-[0.2em] sm:right-6 sm:text-2xl"
+          >
+            {level.nameJa}
+          </p>
         </div>
+        <h3 className="mt-7 font-display text-3xl leading-tight font-normal text-ink sm:text-4xl">
+          {level.name}
+        </h3>
+        {level.status && (
+          <p className="mt-4 w-fit rounded-xs bg-magenta px-4 py-2 font-display text-base font-semibold text-white">
+            {level.status}
+          </p>
+        )}
+        <p className="mt-4 text-lg leading-relaxed text-ink-soft">{level.description}</p>
+        <ul className="mt-6 grid gap-x-8 gap-y-3 sm:grid-cols-2">
+          {level.points.map((point) => (
+            <li key={point} className="flex items-baseline gap-3 text-lg text-ink">
+              <span aria-hidden="true" className="size-2 shrink-0 rotate-45 bg-gold" />
+              {point}
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   );
