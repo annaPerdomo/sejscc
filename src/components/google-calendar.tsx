@@ -57,10 +57,10 @@ export function GoogleCalendar({
   const view = useCalendarView(compactView, wideView);
 
   return (
-    <article className="surface-card reveal-rise overflow-clip">
-      <div className="border-b border-line px-5 py-4 sm:px-6">
-        <h3 className="font-display text-lg font-semibold text-ink">{label}</h3>
-        <p className="mt-1 text-sm leading-relaxed text-ink-soft">
+    <article className="reveal-rise mt-3 rounded-sm bg-white shadow-xl ring-1 ring-ink/5">
+      <div className="calendar-binding rounded-t-sm px-6 pt-8 pb-6 sm:px-8">
+        <h3 className="font-display text-2xl font-semibold text-white">{label}</h3>
+        <p className="mt-2 max-w-2xl text-base leading-relaxed text-white/85">
           {description}
         </p>
       </div>
@@ -76,10 +76,10 @@ export function GoogleCalendar({
         <div className={`w-full bg-white ${frameHeight}`} />
       )}
 
-      <div className="border-t border-line px-5 py-3 sm:px-6">
+      <div className="border-t border-line px-6 py-4 sm:px-8">
         <ExternalLink
           href={calendarSubscribeUrl(calendarId)}
-          className="font-display text-sm font-semibold text-indigo hover:text-indigo-deep"
+          className="link-arrow font-display text-base font-semibold text-indigo hover:text-indigo-deep"
         >
           {openLabel}
         </ExternalLink>

@@ -36,9 +36,24 @@
   /* Keeps the hero's flyer, details and event list inside one laptop screen. */
   --spacing-hero-flyer: min(50svh, 36rem);
 
+  /* A page's opening photo fills the screen below the sticky header, up to
+     a height a wide monitor can still frame. */
+  --spacing-page-hero: min(calc(100svh - 7rem), 54rem);
+
+  /* A stacked panel leaves a strip of the one beneath it showing. */
+  --spacing-stack-panel: calc(100svh - 10rem);
+
+  /* Leaves room under the sticky header for the caption, so a school-year
+     event's photo and its write-up share one laptop screen. */
+  --spacing-year-photo: min(calc(100svh - 32rem), 32rem);
+
   --text-watermark: clamp(12rem, 24vw, 25rem);
   --text-watermark--line-height: 1;
 }
+
+/* A screen tall enough to show a whole sticky panel; shorter or zoomed-in
+   screens get panels that scroll normally, so none of their copy is cut off. */
+@custom-variant tall (@media (min-height: 48rem));
 
 @theme inline {
   --font-sans: var(--font-zen-maru-gothic), system-ui, sans-serif;
@@ -127,39 +142,6 @@ body {
 
   .section-wash-groups {
     background: linear-gradient(180deg, var(--color-paper), var(--color-cream) 70%);
-  }
-
-  /* Capped at 55% lilac: `stone` caption text clears 4.5:1 over the glow at
-     that strength, and a brighter wash drops the top-right corner under AA. */
-  .section-wash-groups-hero {
-    background:
-      radial-gradient(46rem 30rem at 88% 14%, --alpha(var(--color-lilac) / 55%), transparent 62%),
-      linear-gradient(165deg, var(--color-paper), var(--color-mist) 62%);
-  }
-
-  /* Capped at 22% peach: any brighter and `stone` caption text drops under
-     4.5:1 on cream. */
-  .section-wash-events-hero {
-    background:
-      radial-gradient(44rem 29rem at 86% 12%, --alpha(var(--color-peach) / 22%), transparent 60%),
-      linear-gradient(165deg, var(--color-paper), var(--color-cream) 62%);
-  }
-
-  /* Capped at 14% sky, like the groups hero: `stone` caption text clears
-     4.5:1 on mist by a thin margin, so a brighter wash drops the top-right
-     corner under AA. */
-  .section-wash-school-hero {
-    background:
-      radial-gradient(47rem 30rem at 92% 20%, --alpha(var(--color-sky) / 14%), transparent 62%),
-      linear-gradient(160deg, var(--color-paper), var(--color-mist) 55%);
-  }
-
-  /* Capped at 40% celadon: any brighter and `stone` caption text drops under
-     4.5:1 on cloud. */
-  .section-wash-payments-hero {
-    background:
-      radial-gradient(42rem 28rem at 10% 8%, --alpha(var(--color-celadon) / 40%), transparent 62%),
-      linear-gradient(200deg, var(--color-paper), var(--color-cloud) 70%);
   }
 
   /* Paper with faint shoji-screen verticals and a soft white fade at the top. */
@@ -266,6 +248,20 @@ body {
 
   .button-light:hover {
     background: var(--color-sky);
+  }
+
+  .button-outline-light {
+    border: 2px solid --alpha(var(--color-white) / 60%);
+    border-radius: var(--radius-lg);
+    font-family: var(--font-display);
+    font-weight: 600;
+    color: var(--color-white);
+    transition: border-color 150ms ease, background-color 150ms ease;
+  }
+
+  .button-outline-light:hover {
+    border-color: var(--color-white);
+    background: --alpha(var(--color-white) / 10%);
   }
 
   .button-primary {
@@ -667,6 +663,124 @@ body {
       --byobu-cap: --spacing(10);
       padding: --spacing(2.5);
     }
+  }
+
+  .date-page {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: clip;
+    border-radius: var(--radius-sm);
+    background: var(--color-cream);
+    color: var(--color-ink);
+    box-shadow:
+      0 0 0 1px --alpha(var(--color-gold) / 60%),
+      0 10px 22px --alpha(var(--color-ink-deep) / 22%);
+  }
+
+  .date-page-month {
+    position: relative;
+    align-self: stretch;
+    background:
+      radial-gradient(circle at 26% 30%, --alpha(var(--color-ink-deep) / 55%) 0 2px, transparent 2.5px),
+      radial-gradient(circle at 74% 30%, --alpha(var(--color-ink-deep) / 55%) 0 2px, transparent 2.5px),
+      var(--color-magenta);
+    color: var(--color-white);
+    text-align: center;
+  }
+
+  .nafuda {
+    position: relative;
+    padding: --spacing(3) --spacing(3) --spacing(2.5);
+    border-radius: var(--radius-xs);
+    background: linear-gradient(180deg, var(--color-cream), var(--color-sand));
+    color: var(--color-ink-deep);
+    box-shadow:
+      inset 0 0 0 1px --alpha(var(--color-gold) / 70%),
+      0 6px 14px --alpha(var(--color-ink-deep) / 45%);
+  }
+
+  .nafuda::before {
+    content: "";
+    position: absolute;
+    top: --spacing(1);
+    left: 50%;
+    width: --spacing(1.5);
+    height: --spacing(1.5);
+    border-radius: var(--radius-full);
+    background: --alpha(var(--color-ink-deep) / 55%);
+    translate: -50% 0;
+  }
+
+  .paper-sheet {
+    position: relative;
+    background: var(--color-white);
+    clip-path: polygon(0 0, calc(100% - --spacing(8)) 0, 100% --spacing(8), 100% 100%, 0 100%);
+  }
+
+  .paper-sheet::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: --spacing(8);
+    height: --spacing(8);
+    background: linear-gradient(225deg, transparent 50%, var(--color-line) 50%);
+    pointer-events: none;
+  }
+
+  .envelope {
+    position: relative;
+    isolation: isolate;
+    background: var(--color-cream);
+    box-shadow:
+      0 0 0 1px --alpha(var(--color-gold) / 60%),
+      0 24px 48px --alpha(var(--color-ink-deep) / 18%);
+  }
+
+  .envelope::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      linear-gradient(to bottom right, transparent calc(50% - 1px), --alpha(var(--color-gold) / 40%) 50%, transparent calc(50% + 1px)) left top / 50% 55% no-repeat,
+      linear-gradient(to bottom left, transparent calc(50% - 1px), --alpha(var(--color-gold) / 40%) 50%, transparent calc(50% + 1px)) right top / 50% 55% no-repeat;
+    pointer-events: none;
+  }
+
+  .calendar-binding {
+    position: relative;
+    background: var(--color-navy);
+  }
+
+  .calendar-binding::before {
+    content: "";
+    position: absolute;
+    inset-inline: --spacing(6);
+    top: calc(--spacing(2.5) * -1);
+    height: --spacing(5);
+    background: radial-gradient(
+        circle at center,
+        transparent 0 3px,
+        var(--color-sand) 3px 5px,
+        transparent 5.5px
+      )
+      0 0 / --spacing(7) 100% repeat-x;
+    pointer-events: none;
+  }
+
+  .then-now-frame {
+    display: grid;
+    gap: --spacing(4);
+  }
+
+  .then-now-stage {
+    padding-block: --spacing(14);
+  }
+
+  .then-now-edge {
+    display: none;
   }
 
   .calendar-menu > summary {
@@ -1092,12 +1206,12 @@ body {
       --group-photos: 6;
     }
 
-    .month-progress {
-      --tab-progress: 5.2s;
-    }
-
     .school-progress {
       --tab-progress: 7s;
+    }
+
+    .year-progress {
+      --tab-progress: 9s;
     }
 
     .lantern-sway {
@@ -1149,6 +1263,66 @@ body {
 
       .ken-burns-out {
         animation-name: ken-burns-out;
+      }
+
+      .then-now {
+        height: 260svh;
+        view-timeline: --then-now block;
+      }
+
+      .then-now-stage {
+        position: sticky;
+        top: 0;
+        display: flex;
+        height: 100svh;
+        flex-direction: column;
+        justify-content: center;
+        padding-top: --spacing(28);
+        padding-bottom: --spacing(6);
+      }
+
+      .then-now-frame {
+        grid-template-areas: "stack";
+        gap: 0;
+      }
+
+      .then-now-frame > * {
+        grid-area: stack;
+      }
+
+      .then-now-reveal,
+      .then-now-edge {
+        animation-timing-function: linear;
+        animation-fill-mode: both;
+        animation-timeline: --then-now;
+        animation-range: contain 15% contain 80%;
+      }
+
+      .then-now-reveal {
+        animation-name: then-now-wipe;
+      }
+
+      .then-now-edge {
+        display: block;
+        animation-name: then-now-edge;
+      }
+
+      /* This sets the whole `animation`, so a reveal goes on an element
+         inside the grid item, not on the item. */
+      @media (64rem <= width < 96rem) {
+        .drift-columns > :nth-child(3n + 2) {
+          animation: drift-column linear both;
+          animation-timeline: view();
+          animation-range: cover 0% cover 100%;
+        }
+      }
+
+      @media (width >= 96rem) {
+        .drift-columns > :nth-child(2n) {
+          animation: drift-column linear both;
+          animation-timeline: view();
+          animation-range: cover 0% cover 100%;
+        }
       }
     }
   }
@@ -1345,6 +1519,33 @@ body {
   }
   to {
     rotate: 8deg;
+  }
+}
+
+@keyframes then-now-wipe {
+  from {
+    clip-path: inset(0 0 0 100%);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes then-now-edge {
+  from {
+    translate: 100% 0;
+  }
+  to {
+    translate: 0 0;
+  }
+}
+
+@keyframes drift-column {
+  from {
+    translate: 0 7rem;
+  }
+  to {
+    translate: 0 -1rem;
   }
 }
 

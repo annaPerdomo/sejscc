@@ -11,6 +11,7 @@ import { CentennialEmaki } from "@/components/centennial-emaki";
 import { HistoryFounders, type Founder } from "@/components/history-founders";
 import { HistoryTimeline, type Milestone } from "@/components/history-timeline";
 import { SectionHeading } from "@/components/section-heading";
+import { SchoolSeal } from "@/components/school-seal";
 import { SchoolSlideshow, type SchoolSlide } from "@/components/school-slideshow";
 import { SectionKicker } from "@/components/section-kicker";
 import { SitePhoto } from "@/components/site-photo";
@@ -251,19 +252,12 @@ export default async function HomePage() {
                   >
                     {dict.home.japaneseSchool.plaque}
                   </p>
-                  <span
-                    aria-hidden="true"
-                    className="reveal-pop absolute top-full left-1/2 z-10 -mt-3 size-18 -translate-x-1/2 -rotate-6 rounded-xs bg-magenta p-1 text-cream shadow-md sm:size-20"
-                  >
-                    <span className="flex h-full flex-col items-center justify-center border-2 border-cream/90 outline outline-1 -outline-offset-4 outline-cream/60">
-                      <span className="font-accent text-xs leading-none font-bold tracking-[0.2em] uppercase">
-                        {dict.home.japaneseSchool.sealAccent}
-                      </span>
-                      <span className="mt-1 font-accent text-lg leading-none font-bold sm:text-xl">
-                        {dict.home.japaneseSchool.sealYear}
-                      </span>
-                    </span>
-                  </span>
+                  <SchoolSeal
+                    accent={dict.home.japaneseSchool.sealAccent}
+                    year={dict.home.japaneseSchool.sealYear}
+                    size="sm"
+                    className="reveal-pop z-10"
+                  />
                 </div>
               </div>
               <ul

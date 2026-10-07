@@ -425,15 +425,7 @@
     "kickerCaption": "What's Happening",
     "titleLine1": "Events",
     "lede": "Festivals, fundraisers, bingo nights, and more — hosted by the center and the groups that call it home.",
-    "photoLabel": "Photo coming soon",
-    "heroPhotoAlts": [
-      "Taiko drummers mid-performance beneath paper lanterns at the summer festival",
-      "Dancers in yukata circling the parking lot for the festival's bon odori",
-      "Children choosing prizes from the table on bingo night",
-      "A vendor helping a shopper try on a bracelet at the holiday boutique",
-      "Children in kimono dancing with scarves on the center's stage",
-      "Festival-goers lining up at the udon and sushi counter"
-    ],
+    "heroPhotoAlt": "Dancers in yukata and happi coats circling together in the summer festival's bon odori",
     "upcomingAccent": "開催予定",
     "upcomingCaption": "On the Calendar",
     "upcomingTitle": "Coming up at the center",
@@ -481,14 +473,13 @@
     },
     "pastTitle": "Past Events",
     "pastArchiveCta": "See all past events",
-    "pastShowMore": "Show more past events",
-    "pastShowLess": "Show fewer",
     "archive": {
       "metaTitle": "Past Events",
       "metaDescription": "A look back at the festivals, fundraisers, and gatherings held at the Southeast Japanese School & Community Center in Norwalk, CA.",
       "titleLine1": "Past",
       "titleLine2": "Events",
       "lede": "Everything the center has hosted, newest first.",
+      "heroPhotoAlt": "Children in kimono dancing with scarves on the center's stage",
       "yearLabel": "{year}",
       "empty": "No past events have been posted yet."
     }
@@ -533,7 +524,7 @@
     "scheduleCta": "Weekly schedule",
     "startCta": "Have an idea? Start a new club",
     "photoLabel": "Photo coming soon",
-    "heroPhotoAlt": "Hula dancers performing with ʻulīʻulī gourd rattles",
+    "heroPhotoAlt": "Taiko drummers striking their drums on the center's stage",
     "directoryAccent": "全団体",
     "directoryCaption": "Who Meets Here",
     "directoryTitle": "Every group at the center",
@@ -570,6 +561,7 @@
     "useEmailCta": "Email the center",
     "useCallCta": "Call the center",
     "useFit": "We're looking for groups that fit what the center is for — Japanese language and culture, martial arts, music and dance, sports, and activities that bring neighbors of every age together. The board reviews each proposal and will talk through space, scheduling, and insurance with you before anything is confirmed.",
+    "usePhotoAlt": "Norwalk Judo students and instructors gathered on the dojo mats",
     "formatPdf": "PDF",
     "formatDoc": "Word document",
     "room": {
@@ -606,12 +598,7 @@
     "registerCta": "Online registration",
     "tuitionCta": "Classes & tuition",
     "photoLabel": "Photo coming soon",
-    "heroPhotoAlts": [
-      "Kindergarten students with their teachers",
-      "The whole school gathered on stage for the ohanashikai speech program",
-      "Students with the flower arrangements they made in class",
-      "Students playing a team game at the undokai"
-    ],
+    "heroPhotoAlt": "Students in red headbands pulling together in the tug-of-war at the undokai",
     "facts": [
       {
         "label": "School hours",
@@ -735,111 +722,139 @@
     "year": {
       "accent": "年中行事",
       "caption": "Annual Cultural Events",
-      "titleLead": "A cultural event",
-      "titleRest": "every month",
-      "lede": "Our program provides a rich variety of cultural activities, including monthly cultural events to enhance cultural experience and understanding.",
-      "tablistLabel": "Cultural events by month",
-      "pauseLabel": "Stop rotating months",
-      "playLabel": "Rotate months automatically",
-      "months": [
+      "titleLead": "The year in",
+      "titleRest": "four seasons",
+      "lede": "Japanese culture follows the turning of the seasons. Through the school year, students celebrate each season's festivals in class, learning the words, the customs and the stories behind them.",
+      "listLabel": "School year events",
+      "pause": "Stop rotating school year events",
+      "play": "Rotate school year events automatically",
+      "currentLabel": "Current",
+      "seasons": {
+        "spring": { "kanji": "春", "name": "Spring" },
+        "summer": { "kanji": "夏", "name": "Summer" },
+        "autumn": { "kanji": "秋", "name": "Autumn" },
+        "winter": { "kanji": "冬", "name": "Winter" }
+      },
+      "events": [
         {
-          "abbr": "Jan",
-          "nameJa": "一月",
-          "termJa": "お正月",
-          "when": "January",
-          "title": "Oshogatsu",
-          "description": "In January, to welcome the new year, the students are served ozoni.",
-          "photoAlt": "Students eating ozoni to welcome the new year"
-        },
-        {
-          "abbr": "Feb",
-          "nameJa": "二月",
-          "termJa": "節分",
-          "when": "Beginning of February",
-          "title": "Setsubun",
-          "description": "In the beginning of February, students celebrate Setsubun. They are given roasted soybeans to eat to ensure their good luck throughout the new year.",
-          "photoAlt": "Students wearing oni masks they made for Setsubun"
-        },
-        {
+          "id": "hinamatsuri",
+          "month": 3,
           "abbr": "Mar",
-          "nameJa": "三月",
           "termJa": "ひな祭り",
+          "gloss": "The doll festival",
+          "label": "Hinamatsuri",
           "when": "March",
           "title": "Hinamatsuri",
           "description": "March is Hinamatsuri — a doll festival to celebrate girls. Boys and girls alike observe the hina-ningyo display that showcases the Emperor and Empress's court.",
           "photoAlt": "Students seated in front of the hina-ningyo doll display"
         },
         {
-          "abbr": "Apr",
-          "nameJa": "四月",
-          "termJa": "お花見",
-          "when": "The arrival of spring",
-          "title": "Hanami",
-          "description": "Students learn about Japan's appreciation for nature and celebrate the arrival of spring.",
-          "photoAlt": ""
-        },
-        {
+          "id": "kodomonohi",
+          "month": 5,
           "abbr": "May",
-          "nameJa": "五月",
-          "termJa": "お話会",
+          "termJa": "こどもの日",
+          "gloss": "Children's Day",
+          "label": "Kodomo no Hi",
           "when": "Speech program & Children's Day",
           "title": "Ohanashikai · Kodomo no Hi",
           "description": "Students showcase what they have learned in the past year through a speech program held onstage. On Children's Day, the koi no bori — fish flags — and samurai helmets and dolls are displayed, and children learn about this festival through a presentation.",
           "photoAlt": "Students beneath koinobori carp streamers and a samurai doll display"
         },
         {
-          "abbr": "Jun–Jul",
-          "nameJa": "六・七月",
+          "id": "tanabata",
+          "month": 6,
+          "abbr": "Jun – Jul",
           "termJa": "七夕",
+          "gloss": "“The evening of the seventh”",
+          "label": "Tanabata",
           "when": "Cultural Festival · second weekend in June",
           "title": "Tanabata",
           "description": "The star festival is celebrated by allowing the students to write down their wishes and hang them on a traditional tanabata tree. Our school holds an annual Cultural Festival the second weekend in June. School ends at the end of June, with vacation time during the month of July.",
           "photoAlt": "Students beside a tanabata bamboo hung with their paper wishes"
         },
         {
+          "id": "shigyo",
+          "month": 8,
           "abbr": "Aug",
-          "nameJa": "八月",
           "termJa": "始業",
-          "when": "Third Saturday of the month",
+          "gloss": "The start of lessons",
+          "label": "School Begins",
+          "when": "Third Saturday of August",
           "title": "School Begins",
           "description": "School begins on the third Saturday of the month.",
           "photoAlt": "The Gakuen teaching staff at the start of the school year"
         },
         {
+          "id": "jugyosankan",
+          "month": 9,
           "abbr": "Sep",
-          "nameJa": "九月",
           "termJa": "授業参観",
+          "gloss": "Visiting the classroom",
+          "label": "Back to School",
           "when": "Back to School Day",
           "title": "Back to School",
           "description": "Back to School Day is held to learn about our curriculum and school program.",
-          "photoAlt": "Students seated on the floor watching a koto demonstration"
+          "photoAlt": "A classroom of students at their desks working on a craft while a teacher helps, with hiragana charts and student artwork on the walls"
         },
         {
+          "id": "undokai",
+          "month": 10,
           "abbr": "Oct",
-          "nameJa": "十月",
           "termJa": "運動会",
+          "gloss": "Sports day",
+          "label": "Undokai",
           "when": "Annual athletic event",
           "title": "Undokai",
           "description": "Undokai is an annual athletic event held in October. Every student attending the Southeast Japanese School will participate in the various sport games at a nearby park.",
           "photoAlt": "Students playing a team game at the undokai"
         },
         {
+          "id": "shichigosan",
+          "month": 11,
           "abbr": "Nov",
-          "nameJa": "十一月",
           "termJa": "七五三",
+          "gloss": "“Seven, five, three”",
+          "label": "Shichi-go-san",
           "when": "Each November",
-          "title": "Shichi-go san",
+          "title": "Shichi-go-san",
           "description": "The Seven-five-three Festival is held in November each year at local shrines in Japan. At Southeast Japanese School, students learn about the festival, and a few students will have the opportunity to dress in the traditional kimono for the occasion.",
-          "photoAlt": ""
+          "photoAlt": "Young students in Shichi-go-san kimono spreading their sleeves to show the patterns down the school hallway, beside a smiling girl in a red and pink kimono with flowers in her hair"
         },
         {
+          "id": "toshikoshi",
+          "month": 12,
           "abbr": "Dec",
-          "nameJa": "十二月",
           "termJa": "年越し",
+          "gloss": "Crossing into the new year",
+          "label": "Toshikoshi",
           "when": "Oshogatsu festivities",
-          "title": "New Years",
+          "title": "Toshikoshi",
           "description": "Students experience a sample of the oshogatsu festivities by viewing traditional mochi pounding and tasting toshikoshi soba.",
           "photoAlt": "Students and families shaping mochi at the year-end mochitsuki"
+        },
+        {
+          "id": "oshogatsu",
+          "month": 1,
+          "abbr": "Jan",
+          "termJa": "お正月",
+          "gloss": "The New Year",
+          "label": "Oshogatsu",
+          "when": "January",
+          "title": "Oshogatsu",
+          "description": "In January, to welcome the new year, the students are served ozoni.",
+          "photoAlt": "Students eating ozoni to welcome the new year"
+        },
+        {
+          "id": "setsubun",
+          "month": 2,
+          "abbr": "Feb",
+          "termJa": "節分",
+          "gloss": "“Dividing the seasons”",
+          "label": "Setsubun",
+          "when": "Beginning of February",
+          "title": "Setsubun",
+          "description": "In the beginning of February, students celebrate Setsubun. They are given roasted soybeans to eat to ensure their good luck throughout the new year.",
+          "photoAlt": "Students wearing oni masks they made for Setsubun"
         }
       ]
     },
@@ -911,10 +926,10 @@
       "missionLabel": "Our mission",
       "mission": "“We, at Southeast Japanese School, are committed to providing instructions in the Japanese language and culture. Our goal is to enable students to successfully function in a Japanese-speaking environment and to foster an appreciation of the Japanese culture.”",
       "thenCaption": "Norwalk Gakuen · 1925",
-      "nowCaption": "Southeast Gakuen · today",
+      "nowCaption": "Southeast Gakuen · 2018",
       "thenPhotoLabel": "Historic photo coming soon",
       "thenPhotoAlt": "The community gathered outside the original wooden Norwalk Gakuen schoolhouse in 1930",
-      "nowPhotoAlt": "The community gathered outside the center for the 100th anniversary in 2025"
+      "nowPhotoAlt": "The whole school, students and teachers, on the gym stage with their trophies after the 2018 Ohanashikai speech contest"
     },
     "join": {
       "accent": "ようこそ、サウスイースト学園へ",
@@ -925,7 +940,8 @@
       "leadAfter": " and leave a message.",
       "registerCta": "Online registration",
       "emailCta": "Email the school",
-      "note": "We do not return phone calls to out of area numbers."
+      "note": "We do not return phone calls to out of area numbers.",
+      "photoAlt": "Students practicing shuji calligraphy at long tables with their teacher"
     }
   },
   "payments": {
@@ -937,6 +953,7 @@
     "titleLine2": "open.",
     "lede": "SEJSCC is a 501(c)(3), so every gift is tax-deductible.",
     "photoLabel": "Photo coming soon",
+    "heroPhotoAlt": "A teacher in a pink kimono showing children how to fold origami",
     "donateFrame": "Donate to SEJSCC",
     "donateTroubleBefore": "Having trouble with the form? ",
     "donateTroubleLink": "Open it on Zeffy",

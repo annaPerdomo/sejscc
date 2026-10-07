@@ -106,53 +106,47 @@ export const historyCentennialPhotos: Record<string, StaticImageData> = {
 };
 
 export const schoolPhotos = {
-  hero: [
-    "/photos/school-hero-1.jpg",
-    "/photos/school-hero-2.jpg",
-    "/photos/school-hero-3.jpg",
-    "/photos/school-hero-4.jpg",
-  ],
+  hero: "/photos/hero-school.jpg",
+  join: "/photos/home-school-shuji-class.jpg",
   then: "/photos/school-then.jpg",
-  now: "/photos/school-now.jpg",
+  now: "/photos/school-ohanashikai-2018.jpg",
   /** Matches `school.classes.levels`. */
   levels: [
-    "/photos/level-kindergarten.jpg",
-    "/photos/level-beginning.jpg",
-    "/photos/level-elementary.jpg",
-    "/photos/level-intermediate.jpg",
-    "/photos/level-advanced.jpg",
+    "/photos/level-kindergarten-2025.jpg",
+    "/photos/level-beginning-2025.jpg",
+    "/photos/level-elementary-2025.jpg",
+    "/photos/level-intermediate-2025.jpg",
+    "/photos/level-advanced-2025.jpg",
     "/photos/level-adult-online.jpg",
     "/photos/level-shuji.jpg",
   ],
-  /** Matches `school.year.months`. Hanami and Shichi-go-san have no photo yet. */
-  months: [
-    "/photos/month-oshogatsu.jpg",
-    "/photos/month-setsubun.jpg",
-    "/photos/month-hinamatsuri.jpg",
-    undefined,
-    "/photos/month-kodomonohi.jpg",
-    "/photos/month-tanabata.jpg",
-    "/photos/month-shigyo.jpg",
-    "/photos/month-jugyosankan.jpg",
-    "/photos/month-undokai.jpg",
-    undefined,
-    "/photos/month-toshikoshi.jpg",
-  ],
+  /** Keyed by `school.year.events[].id`. An event without a photo stays off the page. */
+  events: {
+    hinamatsuri: "/photos/month-hinamatsuri.jpg",
+    kodomonohi: "/photos/month-kodomonohi.jpg",
+    tanabata: "/photos/month-tanabata.jpg",
+    shigyo: "/photos/month-shigyo.jpg",
+    jugyosankan: "/photos/month-jugyosankan-classroom.jpg",
+    undokai: "/photos/month-undokai.jpg",
+    shichigosan: "/photos/month-shichigosan-kimono.jpg",
+    toshikoshi: "/photos/month-toshikoshi.jpg",
+    oshogatsu: "/photos/month-oshogatsu.jpg",
+    setsubun: "/photos/month-setsubun.jpg",
+  },
 } as const;
 
-/** Matches `events.heroPhotoAlts`. */
-export const eventsHeroPhotos = [
-  "/photos/events-hero-1.jpg",
-  "/photos/events-ondo-dancing.jpg",
-  "/photos/events-bingo-night.jpg",
-  "/photos/events-boutique.jpg",
-  "/photos/events-odori-ondo.jpg",
-  "/photos/events-festival-food.jpg",
-] as const;
+export const eventsPhotos = {
+  hero: "/photos/hero-about.jpg",
+  archive: "/photos/events-odori-ondo.jpg",
+} as const;
 
-export const groupsHeroPhoto = "/photos/groups-hero-2.jpg";
+export const groupsPhotos = {
+  hero: "/photos/hero-clubs.jpg",
+  start: "/photos/groups-judo-1.jpg",
+} as const;
 
 export const donatePhotos = {
+  hero: "/photos/hero-donate.jpg",
   /** Matches `payments.donateReasons`. */
   reasons: [
     "/photos/donate-dojo.jpg",

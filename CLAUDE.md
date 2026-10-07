@@ -24,6 +24,9 @@ All design tokens live in `@theme` in [globals.css](src/app/globals.css)
 `cream`, `azure`, `celadon`, `peach`, `lilac`; aspect ratios: `aspect-flyer` (flyers),
 `aspect-card` (card media), `aspect-photo`, `aspect-band`; widths: `max-w-wide`
 (the event rows, wider than the `max-w-6xl` the rest of a section sits in);
+heights: `min-h-page-hero` (a page's opening photo, the screen below the
+header), `h-stack-panel` (a sticky panel in a stack) and `min-h-year-photo` (the
+school-year photo, short enough to share a screen with its caption);
 vertical Japanese text: `writing-vertical`;
 fonts: `font-sans` (Zen Maru Gothic, body copy), `font-display` (Jost,
 headings and UI labels),
@@ -36,7 +39,7 @@ be built from these tokens via Tailwind utility classes.
   use them for fills and rules there, never for words. On `paper` and `mist`,
   `stone` is the lightest color still safe for body copy; on the tinted
   surfaces (`azure`, `celadon`, `peach`, `lilac`, `cream`) it falls below AA,
-  so use `ink-soft` or `ink` there — that's what `PageSection`'s `tinted`
+  so use `ink-soft` or `ink` there — that's what `SectionKicker`'s `tinted`
   kicker tone is for. `sand` is a light stroke color for decoration on
   dark surfaces only; `ink-deep` is darker than `navy` and takes the same
   text colors.
@@ -80,7 +83,17 @@ be built from these tokens via Tailwind utility classes.
   `emaki-photo` and `emaki-progress`, and it always carries
   a skip link past itself in each direction),
   `calendar-menu` (a
-  `<details>` disclosure styled as a button), `seigaiha-rings` (with
+  `<details>` disclosure styled as a button), `date-page` (a tear-off day
+  calendar page; its band is `date-page-month`, and it is decorative, so the
+  date must also be in words), `nafuda` (a dojo's wooden
+  name tag, for the weekly board), `paper-sheet` (a document with a folded
+  corner; its clip-path also clips shadows and focus rings, so those go on a
+  wrapper), `envelope` (the check-by-mail address), `calendar-binding` (a
+  wall calendar's ringed spine), `then-now` / `then-now-stage` /
+  `then-now-frame` / `then-now-reveal` / `then-now-edge` (two photos of the
+  same place, pinned while today's wipes across the old one; without
+  scroll-driven animation they simply stack), `drift-columns` (the middle
+  column of a three-across grid drifts up past its neighbours), `seigaiha-rings` (with
   `seigaiha-rings-sky`, `seigaiha-rings-gold`, the slow-moving
   `seigaiha-rings-drift`, and
   `seigaiha-rings-fade` for a section whose texture would otherwise start as a
@@ -107,14 +120,13 @@ be built from these tokens via Tailwind utility classes.
   `enter-fade` / `enter-rule` / `brush-draw` / `menu-drop`, `hero-drift`, `link-arrow`,
   `lantern-sway` (a slow rotation hung from the top of an SVG group),
   `tab-progress` (with a per-strip duration
-  class, `hero-progress`, `groups-progress`, `month-progress` or
-  `school-progress`, and
+  class, `hero-progress`, `groups-progress`, `school-progress`, `year-progress`, and
   `tab-progress-paused` to
   hold the strip while the reader is hovering or focused inside it; the
   strip advances on the bar's `animationend`, so the CSS duration is the
   rotation interval),
   `between-waves`, `card-stretch`, and the
-  `section-wash-*` / `section-wash-*-hero` backgrounds, and the three dark
+  `section-wash-*` backgrounds, and the three dark
   scenes, `section-navy-scene`, `section-midnight-scene` (ink-deep, for the
   school) and `section-indigo-scene` (indigo-deep, for the videos), so no
   two dark sections on a page share a tone. Extend one of these rather than restyling a card or button

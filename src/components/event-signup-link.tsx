@@ -16,7 +16,7 @@ export function EventSignupLink({
     <ExternalLink
       href={href}
       aria-label={ariaTemplate.replace("{title}", title)}
-      className="button-primary relative z-10 w-fit rounded-lg px-4 py-2.5 font-display text-xs font-semibold tracking-[0.08em] text-white uppercase"
+      className="button-primary relative z-10 w-fit rounded-lg px-6 py-3.5 font-display text-sm font-semibold tracking-[0.08em] text-white uppercase"
     >
       {label}
     </ExternalLink>

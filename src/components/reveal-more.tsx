@@ -38,7 +38,7 @@ export function RevealMore({
             aria-expanded={open}
             aria-controls={revealedId}
             onClick={() => setOpen(!open)}
-            className="rounded-lg border border-line bg-white px-5 py-2.5 font-display text-sm font-semibold text-indigo hover:border-indigo"
+            className="button-outline px-6 py-3.5 font-display text-base font-semibold"
           >
             {open ? lessLabel : moreLabel}
           </button>

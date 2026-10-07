@@ -6,13 +6,13 @@ type LanternStringProps = {
 };
 
 const HEIGHT = 112;
-const POST_Y = 4;
+const POST_Y = 0;
 const SAG = 80;
 const SPANS = 3;
 
 const TONES = {
   dark: {
-    cord: "stroke-sand/50",
+    cord: "stroke-sand/70",
     colors: [
       { body: "fill-magenta", glow: "fill-magenta/40" },
       { body: "fill-sand", glow: "fill-sand/30" },
@@ -169,6 +169,12 @@ export function LanternString({
             vectorEffect="non-scaling-stroke"
           />
         </svg>
+        {Array.from({ length: SPANS + 1 }, (_, i) => (
+          <svg key={i} x={`${(100 / SPANS) * i}%`} overflow="visible">
+            <rect x="-5" y="-2" width="10" height="5" rx="1.5" className="fill-gold" />
+            <circle cy="5" r="3" fill="none" className="stroke-gold" strokeWidth="1.5" />
+          </svg>
+        ))}
         {LANTERNS.map((lantern, i) => (
           <svg
             key={lantern.x}
