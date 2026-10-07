@@ -1,15 +1,17 @@
 import Image from "next/image";
 import Link from "next/link";
-import { BambooGrove } from "@/components/bamboo-grove";
 import { BrushEdge } from "@/components/brush-edge";
-import { HeroCarousel, type HeroTab } from "@/components/hero-carousel";
-import { GroupCard } from "@/components/group-card";
+import { EventsHero } from "@/components/events-hero";
+import { BambooGrove } from "@/components/bamboo-grove";
+import {
+  GroupsShowcase,
+  type GroupsShowcaseItem,
+} from "@/components/groups-showcase";
 import { HistoryTimeline, type Milestone } from "@/components/history-timeline";
 import { SectionHeading } from "@/components/section-heading";
 import { SectionKicker } from "@/components/section-kicker";
 import { SitePhoto } from "@/components/site-photo";
 import { SiteVideo } from "@/components/site-video";
-import { UpcomingEvents } from "@/components/upcoming-events";
 import { WaveDivider } from "@/components/wave-divider";
 import { KanjiWatermark } from "@/components/kanji-watermark";
 import {
@@ -21,16 +23,12 @@ import {
   mapsUrl,
 } from "@/lib/center";
 import { getActiveGroups, getUpcomingEvents } from "@/lib/events";
+import { weekDays } from "@/db/schema";
 import { getDictionary, getLocale } from "@/lib/dictionaries";
 import { localePath } from "@/lib/i18n";
 import { getAboutVideoUrls } from "@/lib/site-settings";
 import { youtubeVideoId } from "@/lib/video";
-import {
-  historyMilestonePhotos,
-  homeHeroPhotos,
-  homePhotos,
-  photoFor,
-} from "@/lib/photos";
+import { historyMilestonePhotos, homePhotos, photoFor } from "@/lib/photos";
 
 export const revalidate = 300;
 
@@ -69,34 +67,11 @@ function ContactIcon({ name }: { name: keyof typeof CONTACT_ICONS }) {
   );
 }
 
-const HERO_LINKS: Record<
-  string,
-  { primary: (href: (p: string) => string) => string; secondary?: (href: (p: string) => string) => string }
-> = {
-  center: {
-    primary: (href) => href("/events"),
-    secondary: (href) => href("/groups"),
-  },
-  school: {
-    primary: (href) => href("/school"),
-    secondary: (href) => href("/groups"),
-  },
-  clubs: {
-    primary: (href) => href("/groups"),
-  },
-  about: {
-    primary: (href) => href("/") + "#about",
-  },
-  donate: {
-    primary: (href) => href("/payments") + "#donate",
-  },
-};
-
 export default async function HomePage() {
   const [lang, dict, upcoming, groups, aboutVideoUrls] = await Promise.all([
     getLocale(),
     getDictionary(),
-    getUpcomingEvents(8),
+    getUpcomingEvents(5),
     getActiveGroups(),
     getAboutVideoUrls(),
   ]);
@@ -105,27 +80,25 @@ export default async function HomePage() {
     .map((url) => youtubeVideoId(url))
     .filter((id): id is string => id !== null);
 
-  const heroTabs: HeroTab[] = dict.home.heroTabs.map((tab) => {
-    const links = HERO_LINKS[tab.id];
-    return {
-      id: tab.id,
-      tabLabel: tab.tabLabel,
-      tabLabelAccent: tab.tabLabelAccent,
-      kickerAccent: tab.kickerAccent,
-      kickerCaption: tab.kickerCaption,
-      headingLine1: tab.headingLine1,
-      headingLine2: tab.headingLine2,
-      body: tab.body,
-      primaryCta: { label: tab.primaryCta, href: links.primary(href) },
-      secondaryCta:
-        "secondaryCta" in tab && tab.secondaryCta && links.secondary
-          ? { label: tab.secondaryCta, href: links.secondary(href) }
-          : undefined,
-      photoSrc: homeHeroPhotos[tab.id],
-      photoAlt: tab.photoAlt,
-      placeholderLabel: dict.home.photoSoon,
-    };
-  });
+  const showcase: GroupsShowcaseItem[] = groups
+    .filter((group) => group.status === "meeting")
+    .map((group) => ({
+      id: group.id,
+      name: group.name,
+      websiteUrl: group.websiteUrl,
+      description: group.description,
+      schedule:
+        group.meetingSchedule ??
+        (group.meetingDays.length > 0
+          ? weekDays
+              .filter((day) => group.meetingDays.includes(day))
+              .map((day) => dict.groups.weekDays[day])
+              .join(" · ")
+          : null),
+      imageUrl: group.imageUrl,
+      logoUrl: group.imageIsLogo ? group.imageUrl : null,
+      photoUrls: group.photoUrls,
+    }));
 
   const milestones: Milestone[] = dict.home.history.milestones.map((step) => {
     const image = historyMilestonePhotos[step.id];
@@ -138,240 +111,163 @@ export default async function HomePage() {
 
   return (
     <>
-      <HeroCarousel
-        tabs={heroTabs}
-        tabsLabel={dict.home.heroTabsLabel}
-        pauseLabel={dict.home.heroPause}
-        playLabel={dict.home.heroPlay}
-      />
+      <EventsHero events={upcoming} />
 
-      <section className="section-wash-events relative z-10 pt-2 pb-12">
+      <section
+        id="groups"
+        className="section-wash-groups edge-flush relative z-10 scroll-mt-28"
+      >
         <BambooGrove />
-        <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
-          <div className="enter-rise mb-4 flex flex-wrap items-end justify-between gap-4">
+        <div className="relative mx-auto max-w-wide px-5 pt-12 pb-20 sm:px-10 sm:pt-14 sm:pb-24 lg:px-16 lg:pb-32">
+          {showcase.length > 0 ? (
+            <GroupsShowcase
+              items={showcase}
+              ctaHref={href("/groups")}
+              labels={{
+                kickerAccent: dict.home.sportsClubs.kickerAccent,
+                kickerCaption: dict.home.sportsClubs.kickerCaption,
+                headingLine1: dict.home.sportsClubs.headingLine1,
+                headingLine2: dict.home.sportsClubs.headingLine2,
+                body: dict.home.sportsClubs.body,
+                cta: dict.home.sportsClubs.cta,
+                list: dict.home.sportsClubs.listLabel,
+                website: dict.groups.website,
+                pause: dict.home.sportsClubs.pause,
+                play: dict.home.sportsClubs.play,
+                photo: dict.home.sportsClubs.photo,
+                photoAlt: dict.home.sportsClubs.photoAlt,
+              }}
+            />
+          ) : (
             <div>
               <SectionKicker
-                accent={dict.home.upcomingKickerAccent}
-                caption={dict.home.upcomingKickerCaption}
-                entrance="load"
+                accent={dict.home.sportsClubs.kickerAccent}
+                caption={dict.home.sportsClubs.kickerCaption}
+                size="lg"
               />
-              <SectionHeading className="mt-2">
-                {dict.home.upcomingTitle}
+              <SectionHeading className="mt-3">
+                <span className="text-indigo">
+                  {dict.home.sportsClubs.headingLine1}
+                </span>{" "}
+                {dict.home.sportsClubs.headingLine2}
               </SectionHeading>
+              <p className="mt-5 max-w-2xl text-lg text-ink-soft">
+                {dict.home.sportsClubs.empty}
+              </p>
             </div>
-            <Link
-              href={href("/events")}
-              className="link-arrow font-display text-sm font-semibold text-indigo hover:text-indigo-deep"
-            >
-              {dict.home.viewAll}
-            </Link>
-          </div>
-        </div>
-        <div
-          className={`relative mx-auto px-4 sm:px-6 ${
-            upcoming.length > 0 ? "max-w-6xl 2xl:max-w-wide" : "max-w-6xl"
-          }`}
-        >
-          {upcoming.length > 0 ? (
-            <UpcomingEvents events={upcoming} />
-          ) : (
-            <p className="rounded-2xl border border-line bg-mist p-8 text-ink-soft">
-              {dict.home.noEvents}
-            </p>
           )}
         </div>
       </section>
 
-      <section id="school" className="section-navy-scene edge-flush relative scroll-mt-28 overflow-clip text-white">
+      <section
+        id="school"
+        className="section-midnight-scene seigaiha-rings seigaiha-rings-sky edge-flush scroll-mt-28 text-white"
+      >
         <KanjiWatermark char="学" className="-top-14 -left-10 text-white/5" />
-        <WaveDivider id="school-top" position="top" seed={12} className="relative text-white" />
-        <div className="relative mx-auto grid max-w-6xl gap-10 px-4 pt-6 pb-8 sm:px-6 sm:pb-10 lg:grid-cols-[1fr_auto] lg:items-center">
-          <div className="reveal-rise">
-            <span className="block font-display text-xs font-semibold tracking-[0.24em] text-sky uppercase">
+        <WaveDivider
+          id="school-top"
+          position="top"
+          seed={12}
+          className="relative text-cream"
+        />
+        <div className="relative mx-auto grid max-w-wide gap-10 px-4 pt-6 pb-20 sm:px-6 sm:pb-24 lg:grid-cols-12 lg:items-center lg:gap-14 lg:px-10 lg:pb-28">
+          <div className="reveal-rise lg:col-span-5">
+            <span className="block font-display text-sm font-semibold tracking-[0.24em] text-sky uppercase">
               {dict.home.japaneseSchool.kicker}
             </span>
             <span className="mt-5 mb-5 block h-0.5 w-9 bg-indigo" />
-            <h2 className="font-display text-3xl leading-snug font-normal tracking-[0.02em] sm:text-4xl">
-              <span className="block text-white">{dict.home.japaneseSchool.headingLine1}</span>
-              <span className="block text-sky">{dict.home.japaneseSchool.headingLine2}</span>
+            <h2 className="font-display text-4xl leading-tight font-normal tracking-[0.02em] sm:text-5xl">
+              <span className="block text-white">
+                {dict.home.japaneseSchool.headingLine1}
+              </span>
+              <span className="block text-sky">
+                {dict.home.japaneseSchool.headingLine2}
+              </span>
             </h2>
-            <p className="mt-4 font-display text-lg font-semibold text-sky">
+            <p className="mt-5 font-display text-xl font-semibold text-sky">
               {dict.home.japaneseSchool.subheading}
             </p>
-            <p className="mt-5 max-w-lg leading-relaxed text-white/75">
+            <p className="mt-5 max-w-lg text-lg leading-relaxed text-white/80">
               {dict.home.japaneseSchool.body}
             </p>
-          </div>
-          <div className="reveal-bloom relative mx-auto aspect-square w-72 sm:w-96 lg:w-120">
-            <SitePhoto
-              photo={photoFor(
-                homePhotos.japaneseSchool,
-                dict.home.japaneseSchool.photoAlt
-              )}
-              dark
-              shape="circle"
-              sizes="(max-width: 640px) 18rem, (max-width: 1024px) 24rem, 30rem"
-              placeholderLabel={dict.home.japaneseSchool.photoLabel}
-              className="h-full w-full"
-            />
-            {/* Sharing the photo's box makes 320 the photo's own radius, so the
-                ring's clearance holds at every width; an inset would scale it. */}
-            <svg
-              viewBox="0 0 640 640"
-              aria-hidden="true"
-              className="reveal-turn pointer-events-none absolute inset-0 overflow-visible"
-            >
-              <defs>
-                <filter id="enso-a" x="-30%" y="-30%" width="160%" height="160%">
-                  <feTurbulence
-                    type="fractalNoise"
-                    baseFrequency="0.045"
-                    numOctaves="4"
-                    seed="11"
-                    result="n"
-                  />
-                  <feDisplacementMap in="SourceGraphic" in2="n" scale="7" />
-                </filter>
-                <filter id="enso-b" x="-30%" y="-30%" width="160%" height="160%">
-                  <feTurbulence
-                    type="fractalNoise"
-                    baseFrequency="0.11"
-                    numOctaves="3"
-                    seed="4"
-                    result="n"
-                  />
-                  <feDisplacementMap in="SourceGraphic" in2="n" scale="5" />
-                </filter>
-              </defs>
-              <g transform="rotate(118 320 320)">
-                <circle
-                  cx="320"
-                  cy="320"
-                  r="344"
-                  fill="none"
-                  className="stroke-sand/70"
-                  strokeWidth="13"
-                  strokeLinecap="round"
-                  strokeDasharray="878 1284"
-                  opacity="0.9"
-                  filter="url(#enso-a)"
-                />
-                <circle
-                  cx="320"
-                  cy="320"
-                  r="349"
-                  fill="none"
-                  className="stroke-sand/50"
-                  strokeWidth="5"
-                  strokeLinecap="round"
-                  strokeDasharray="61 22 182 31 503 1338"
-                  strokeDashoffset="84"
-                  opacity="0.55"
-                  filter="url(#enso-b)"
-                />
-              </g>
-              <g transform="rotate(-52 320 320)">
-                <circle
-                  cx="320"
-                  cy="320"
-                  r="346"
-                  fill="none"
-                  className="stroke-sand/40"
-                  strokeWidth="7"
-                  strokeLinecap="round"
-                  strokeDasharray="324 1830"
-                  opacity="0.6"
-                  filter="url(#enso-b)"
-                />
-              </g>
-            </svg>
-          </div>
-        </div>
-        <div className="reveal-stagger relative mx-auto grid max-w-6xl grid-cols-2 gap-x-6 gap-y-10 px-4 pb-4 sm:px-6 lg:grid-cols-4">
-          {dict.home.japaneseSchool.highlights.map((item, i) => (
-            <div key={i} className="reveal-bloom flex flex-col items-start">
-              <SitePhoto
-                photo={photoFor(homePhotos.highlights[i], item.photoAlt)}
-                dark
-                sizes="(max-width: 1024px) 45vw, 17rem"
-                placeholderLabel={dict.home.photoSoon}
-                className="aspect-photo w-full rounded-xl transition-transform duration-300 ease-out hover:-rotate-1 hover:scale-105"
-              />
-              <span className="mt-5 block h-0.5 w-8 bg-indigo" />
-              <span className="mt-3.5 font-display text-lg leading-tight font-semibold text-white">
-                {item.title}
-              </span>
-              <span className="mt-2.5 text-sm leading-relaxed text-white/70">{item.text}</span>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                href={`${href("/school")}#tuition`}
+                className="button-primary rounded-lg px-7 py-4 font-display text-base font-semibold text-white"
+              >
+                {dict.home.japaneseSchool.primaryCta}
+              </Link>
+              <Link
+                href={href("/groups")}
+                className="rounded-lg border-2 border-white/50 px-7 py-3.5 font-display text-base font-semibold text-white hover:border-white hover:bg-white/10"
+              >
+                {dict.home.japaneseSchool.secondaryCta}
+              </Link>
             </div>
-          ))}
-        </div>
-        <div className="relative mx-auto flex max-w-6xl flex-wrap gap-3 px-4 pt-8 pb-16 sm:px-6 sm:pb-20">
-          <Link
-            href={`${href("/school")}#tuition`}
-            className="button-primary rounded-lg px-7 py-3.5 font-display text-sm font-semibold text-white"
-          >
-            {dict.home.japaneseSchool.primaryCta}
-          </Link>
-          <Link
-            href={href("/groups")}
-            className="rounded-lg border-2 border-white/50 px-7 py-3 font-display text-sm font-semibold text-white hover:border-white hover:bg-white/10"
-          >
-            {dict.home.japaneseSchool.secondaryCta}
-          </Link>
-        </div>
-        <BrushEdge id="school-bottom" variant="ink" className="absolute inset-x-0 bottom-0" />
-      </section>
-
-      <section className="section-wash-groups seigaiha-rings seigaiha-rings-fade edge-flush">
-        <KanjiWatermark
-          char="輪"
-          className="-right-10 -bottom-16 text-indigo/5"
-        />
-        <BrushEdge id="clubs-bottom" variant="paper" className="absolute inset-x-0 bottom-0" />
-        <div className="relative mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
-          <div className="reveal-rise mb-10 text-center">
-            <SectionKicker
-              accent={dict.home.sportsClubs.kickerAccent}
-              caption={dict.home.sportsClubs.kickerCaption}
-              className="mb-3.5 justify-center"
-            />
-            <SectionHeading>
-              <span className="text-indigo">
-                {dict.home.sportsClubs.headingLine1}
-              </span>{" "}
-              {dict.home.sportsClubs.headingLine2}
-            </SectionHeading>
-            <p className="mx-auto mt-3.5 max-w-2xl text-ink-soft">
-              {dict.home.sportsClubs.body}
-            </p>
           </div>
-          {groups.length > 0 ? (
-            <div className="reveal-stagger grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {groups.map((group) => (
-                <GroupCard
-                  key={group.id}
-                  group={group}
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                />
+
+          <div className="relative lg:col-span-7">
+            <div className="grid grid-cols-2 gap-3 sm:h-144 sm:grid-cols-3 sm:grid-rows-3 sm:gap-4 lg:h-160">
+              <SitePhoto
+                photo={photoFor(
+                  homePhotos.japaneseSchool,
+                  dict.home.japaneseSchool.photoAlt,
+                )}
+                dark
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 66vw, 36rem"
+                placeholderLabel={dict.home.japaneseSchool.photoLabel}
+                className="reveal-bloom col-span-2 aspect-photo rounded-sm sm:row-span-2 sm:aspect-auto"
+              />
+              {dict.home.japaneseSchool.highlights.map((item, i) => (
+                <figure
+                  key={item.title}
+                  className={`reveal-bloom relative aspect-square overflow-clip rounded-sm sm:aspect-auto ${
+                    i === 3 ? "sm:col-span-2" : ""
+                  }`}
+                >
+                  <SitePhoto
+                    photo={photoFor(homePhotos.highlights[i], item.photoAlt)}
+                    dark
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 18rem"
+                    placeholderLabel={dict.home.photoSoon}
+                    className="h-full w-full"
+                  />
+                  <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink-deep via-ink-deep/80 to-transparent px-4 pt-12 pb-4 sm:px-5 sm:pb-5">
+                    <span className="block font-display text-lg leading-tight font-semibold text-white lg:text-xl">
+                      {item.title}
+                    </span>
+                    <span className="mt-1 block text-sm leading-snug text-white/85 sm:text-base">
+                      {item.text}
+                    </span>
+                  </figcaption>
+                </figure>
               ))}
             </div>
-          ) : (
-            <p className="rounded-2xl border border-line bg-white p-8 text-center text-ink-soft">
-              {dict.home.sportsClubs.empty}
-            </p>
-          )}
-          <div className="mt-11 text-center">
-            <Link
-              href={href("/groups")}
-              className="button-primary inline-block rounded-lg px-7 py-3 font-display text-sm font-semibold text-white"
+            <span
+              aria-hidden="true"
+              className="reveal-pop absolute -top-5 -left-3 flex size-24 -rotate-12 flex-col items-center justify-center rounded-sm bg-magenta text-white shadow-lg ring-4 ring-magenta/30 sm:-top-7 sm:-left-5 sm:size-28 lg:-left-7"
             >
-              {dict.home.sportsClubs.cta}
-            </Link>
+              <span className="font-accent text-base leading-none sm:text-lg">
+                {dict.home.japaneseSchool.sealAccent}
+              </span>
+              <span className="mt-1 font-display text-2xl leading-none font-semibold tracking-[0.04em] sm:text-3xl">
+                {dict.home.japaneseSchool.sealYear}
+              </span>
+            </span>
           </div>
         </div>
+        <BrushEdge
+          id="school-bottom"
+          variant="ink"
+          settlesInto="white"
+          className="absolute inset-x-0 bottom-0"
+        />
       </section>
 
-      <section id="about" className="section-wash-history relative scroll-mt-28 overflow-clip">
+      <section
+        id="history"
+        className="section-wash-history relative scroll-mt-28 overflow-clip"
+      >
         <KanjiWatermark char="和" className="-bottom-10 left-4 text-ink/5" />
         <div className="relative mx-auto max-w-7xl px-4 pt-16 pb-4 sm:px-6 sm:pt-20 sm:pb-6">
           <HistoryTimeline
@@ -388,7 +284,9 @@ export default async function HomePage() {
             <h2 className="mt-5 font-display text-3xl leading-snug font-normal tracking-[0.02em]">
               <span className="text-ink">{dict.home.history.headingLine1}</span>
               <br />
-              <span className="text-magenta">{dict.home.history.headingLine2}</span>
+              <span className="text-magenta">
+                {dict.home.history.headingLine2}
+              </span>
             </h2>
             <p className="mt-5 leading-relaxed text-ink-soft">
               {dict.home.history.body}
@@ -397,7 +295,9 @@ export default async function HomePage() {
               <span className="block font-display text-xs font-semibold tracking-[0.14em] text-magenta uppercase not-italic">
                 {dict.home.history.missionLabel}
               </span>
-              <span className="mt-1.5 block">{dict.home.history.missionText}</span>
+              <span className="mt-1.5 block">
+                {dict.home.history.missionText}
+              </span>
             </p>
           </HistoryTimeline>
         </div>
@@ -419,8 +319,13 @@ export default async function HomePage() {
           <ul className="seigaiha-rings reveal-stagger-3-5 mt-8 grid grid-cols-2 gap-x-6 gap-y-3 rounded-2xl border border-line bg-mist px-6 py-6 text-left sm:grid-cols-3 sm:px-8 lg:-mx-12 lg:grid-cols-5">
             {dict.home.board.members.map((name) => (
               <li key={name} className="reveal-rise flex items-center gap-2.5">
-                <span aria-hidden="true" className="reveal-pop h-1.5 w-1.5 shrink-0 rounded-full bg-magenta" />
-                <span className="font-display text-sm font-medium text-ink">{name}</span>
+                <span
+                  aria-hidden="true"
+                  className="reveal-pop h-1.5 w-1.5 shrink-0 rounded-full bg-magenta"
+                />
+                <span className="font-display text-sm font-medium text-ink">
+                  {name}
+                </span>
               </li>
             ))}
           </ul>
@@ -440,7 +345,7 @@ export default async function HomePage() {
       </section>
 
       {aboutVideoIds.length > 0 && (
-        <section className="section-navy-scene seigaiha-rings seigaiha-rings-sky relative text-white">
+        <section className="section-indigo-scene seigaiha-rings seigaiha-rings-sky text-white">
           <KanjiWatermark char="映" className="-top-10 -right-8 text-white/5" />
           <WaveDivider
             id="videos-top"
@@ -453,7 +358,7 @@ export default async function HomePage() {
               <SectionKicker
                 accent={dict.home.history.videosKickerAccent}
                 caption={dict.home.history.videosKickerCaption}
-                tone="sky"
+                tone="photo"
                 order="caption-first"
                 className="justify-center"
               />
@@ -597,7 +502,6 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-
     </>
   );
 }

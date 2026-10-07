@@ -36,78 +36,19 @@
   },
   "home": {
     "photoSoon": "Photos coming soon",
-    "heroTabs": [
-      {
-        "id": "center",
-        "photoAlt": "The Southeast Japanese School & Community Center campus",
-        "tabLabel": "The Center",
-        "tabLabelAccent": "施設",
-        "kickerAccent": "ようこそ",
-        "kickerCaption": "Welcome · Norwalk, California · Since 1925",
-        "headingLine1": "Southeast Japanese School",
-        "headingLine2": "and Community Center",
-        "body": "For 101 years, Saturdays here have meant Japanese school. Throughout the week, the center is also home to dance, martial arts, music, sports, and more — a community for everyone.",
-        "primaryCta": "See upcoming events",
-        "secondaryCta": "Explore sports & classes"
-      },
-      {
-        "id": "school",
-        "photoAlt": "Students racing across the field at the school's annual undokai",
-        "tabLabel": "Japanese School",
-        "tabLabelAccent": "日本語学校",
-        "kickerAccent": "日本語学校",
-        "kickerCaption": "Saturdays",
-        "headingLine1": "Southeast Gakuen",
-        "headingLine2": "Japanese School",
-        "body": "Language, reading, and calligraphy from kindergarten through Level 12, with adult classes online. No Japanese background required.",
-        "primaryCta": "Tuition & registration",
-        "secondaryCta": "See sports & classes"
-      },
-      {
-        "id": "clubs",
-        "photoAlt": "Taiko drummers performing on stage",
-        "tabLabel": "Sports & Classes",
-        "tabLabelAccent": "クラブ活動",
-        "kickerAccent": "クラブ活動",
-        "kickerCaption": "20+ groups call the center home",
-        "headingLine1": "One roof,",
-        "headingLine2": "many circles",
-        "body": "Judo, kendo, basketball, hula, ukulele, ikebana — in the dojo, the gym and the classrooms. Our community is a home for everyone.",
-        "primaryCta": "Browse sports & clubs"
-      },
-      {
-        "id": "about",
-        "photoAlt": "Community members dancing ondo in yukata at the summer festival",
-        "tabLabel": "About Us",
-        "tabLabelAccent": "私たちについて",
-        "kickerAccent": "私たちについて",
-        "kickerCaption": "A nonprofit community organization",
-        "headingLine1": "Who we are,",
-        "headingLine2": "and what we do",
-        "body": "A volunteer-run nonprofit serving Japanese American families and neighbors in Norwalk since 1925.",
-        "primaryCta": "Read our story"
-      },
-      {
-        "id": "donate",
-        "photoAlt": "A teacher in kimono kneeling on tatami mats with a group of young children at summer culture camp",
-        "tabLabel": "Donate",
-        "tabLabelAccent": "寄付",
-        "kickerAccent": "寄付",
-        "kickerCaption": "SEJSCC is a 501(c)(3) nonprofit",
-        "headingLine1": "Support",
-        "headingLine2": "the center",
-        "body": "Every gift helps sustain the school, the center, and the festivals that have brought generations together for over a century.",
-        "primaryCta": "Donate now"
-      }
-    ],
-    "heroTabsLabel": "Highlights of the center",
-    "upcomingKickerAccent": "おしらせ",
-    "upcomingKickerCaption": "Everyone Is Invited",
-    "upcomingTitle": "There's a Seat for You",
+    "eventsHero": {
+      "kickerAccent": "おしらせ",
+      "kickerCaption": "Mark Your Calendar",
+      "headingLine1": "Coming up at the",
+      "headingLine2": "Southeast Japanese School and Community Center",
+      "nextLabel": "Next event",
+      "upcomingLabel": "Upcoming event",
+      "panelTitle": "Upcoming events",
+      "listLabel": "Upcoming events",
+      "detailsCta": "See event details"
+    },
     "viewAll": "See all upcoming events",
     "noEvents": "New events are being planned — check back soon, or call the center at (562) 863-5996.",
-    "upcomingPrev": "Previous events",
-    "upcomingNext": "Next events",
     "upcomingPause": "Stop rotating events",
     "upcomingPlay": "Rotate events automatically",
     "japaneseSchool": {
@@ -116,6 +57,8 @@
       "headingLine2": "Learning for life.",
       "subheading": "Saturday mornings, since 1925.",
       "body": "Language, reading, and calligraphy from kindergarten through Level 12, with adult classes online. No Japanese background required — students of every heritage learn side by side.",
+      "sealAccent": "創立",
+      "sealYear": "1925",
       "photoLabel": "Photo coming soon",
       "photoAlt": "Students beside a tanabata bamboo hung with paper wishes",
       "highlights": [
@@ -127,7 +70,7 @@
         {
           "title": "Kindergarten–Level 12",
           "text": "Japanese language for all ages",
-          "photoAlt": "Students playing a team game at the undokai"
+          "photoAlt": "Students from several levels after giving their speeches at the ohanashikai"
         },
         {
           "title": "Adult Classes Online",
@@ -137,7 +80,7 @@
         {
           "title": "Cultural Events Year-Round",
           "text": "Bringing our community together",
-          "photoAlt": "Students and families shaping mochi at the year-end mochitsuki"
+          "photoAlt": "A teacher in a kimono leading a hands-on lesson for students seated on tatami mats"
         }
       ],
       "primaryCta": "Tuition & registration",
@@ -149,9 +92,13 @@
       "headingLine1": "One roof,",
       "headingLine2": "many circles",
       "body": "Over a dozen groups call the center home — the dojo, the gym, and the craft tables. Most welcome beginners year-round.",
-      "photoLabel": "Photo coming soon",
       "cta": "See all sports & classes",
-      "empty": "Group listings are coming soon. Call the center at (562) 863-5996 to learn about Japanese school, judo, basketball, and other programs."
+      "empty": "Group listings are coming soon. Call the center at (562) 863-5996 to learn about Japanese school, judo, basketball, and other programs.",
+      "listLabel": "All groups",
+      "pause": "Stop rotating groups",
+      "play": "Rotate groups automatically",
+      "photo": "Show photo {n} of {total}",
+      "photoAlt": "{name}, photo {n} of {total}"
     },
     "history": {
       "kickerAccent": "私たちの歩み",
@@ -250,9 +197,7 @@
       "phoneLabel": "Phone",
       "emailLabel": "Email",
       "mapTitle": "Map showing the center's location in Norwalk, California"
-    },
-    "heroPause": "Pause the slideshow",
-    "heroPlay": "Play the slideshow"
+    }
   },
   "events": {
     "metaTitle": "Events",
@@ -287,7 +232,13 @@
       "weekly": "Every {weekday}",
       "biweekly": "Every other {weekday}",
       "monthly": "{ordinal} {weekday} of the month",
-      "ordinals": ["First", "Second", "Third", "Fourth", "Fifth"],
+      "ordinals": [
+        "First",
+        "Second",
+        "Third",
+        "Fourth",
+        "Fifth"
+      ],
       "until": "{schedule}, through {date}"
     },
     "calendars": {
@@ -323,6 +274,14 @@
       "empty": "No past events have been posted yet."
     }
   },
+  "calendar": {
+    "addToCalendar": "Add to calendar",
+    "chooseCalendar": "Choose your calendar",
+    "google": "Google Calendar",
+    "apple": "Apple Calendar",
+    "outlook": "Outlook.com",
+    "download": "Download .ics file"
+  },
   "eventDetail": {
     "notFound": "Event not found",
     "kickerAccent": "催し物",
@@ -339,9 +298,6 @@
     "repeats": "Repeats",
     "upcomingDates": "Upcoming dates",
     "signUp": "Sign up for this event",
-    "addToCalendar": "Add to calendar",
-    "calendarGoogle": "Google Calendar",
-    "calendarDownload": "Apple or Outlook",
     "questions": "Questions",
     "parking": "Parking & entry",
     "parkingBody": "Free parking on site. Enter through the main hall doors on Gridley Rd.",
@@ -473,7 +429,10 @@
           "summary": "Age 5",
           "status": "",
           "description": "Children who are five years old learn the Japanese culture through organized activities involving crafts, songs, and the Japanese language.",
-          "points": ["Age 5", "Crafts, songs, and the Japanese language"],
+          "points": [
+            "Age 5",
+            "Crafts, songs, and the Japanese language"
+          ],
           "photoAlt": "Kindergarten students with their teachers"
         },
         {

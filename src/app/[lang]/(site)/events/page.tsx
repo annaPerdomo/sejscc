@@ -3,6 +3,7 @@ import Link from "next/link";
 import { EventCard, FOUR_UP_SIZES } from "@/components/event-card";
 import { GoogleCalendar } from "@/components/google-calendar";
 import { HeroPhotos } from "@/components/hero-photos";
+import { LanternString } from "@/components/lantern-string";
 import { PageHero } from "@/components/page-hero";
 import { PageSection } from "@/components/page-section";
 import { RevealMore } from "@/components/reveal-more";
@@ -109,6 +110,7 @@ export default async function EventsPage() {
         wide
         watermark="催"
         watermarkClassName="-top-20 -left-12 text-magenta/5"
+        ornament={<LanternString id="events" tone="light" className="relative" />}
         accent={dict.events.upcomingAccent}
         caption={dict.events.upcomingCaption}
         title={dict.events.upcomingTitle}

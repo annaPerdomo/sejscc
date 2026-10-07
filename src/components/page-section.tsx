@@ -31,6 +31,7 @@ export function PageSection({
   wide = false,
   watermark,
   watermarkClassName,
+  ornament,
   accent,
   caption,
   title,
@@ -43,6 +44,7 @@ export function PageSection({
   wide?: boolean;
   watermark: string;
   watermarkClassName: string;
+  ornament?: ReactNode;
   accent: string;
   caption: string;
   title: ReactNode;
@@ -57,6 +59,7 @@ export function PageSection({
       }`}
     >
       <KanjiWatermark char={watermark} className={watermarkClassName} />
+      {ornament}
       <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
         <div className={`reveal-rise ${tight ? "mb-6" : "mb-9"}`}>
           <SectionKicker

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, type AnimationEvent } from "react";
+import { useState, type AnimationEvent } from "react";
+import { useReducedMotion } from "@/components/carousel-hooks";
 import { CarouselPlayToggle } from "@/components/carousel-play-toggle";
 import { SitePhoto, type SitePhotoSource } from "@/components/site-photo";
 
@@ -31,18 +32,10 @@ export function SchoolYear({
   const [hoverPaused, setHoverPaused] = useState(false);
   const [focusPaused, setFocusPaused] = useState(false);
   const [stopped, setStopped] = useState(false);
-  const [reduceMotion, setReduceMotion] = useState(false);
+  const reduceMotion = useReducedMotion();
   const month = months[active];
   const rotating = !stopped && !reduceMotion;
   const paused = hoverPaused || focusPaused;
-
-  useEffect(() => {
-    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const sync = () => setReduceMotion(query.matches);
-    sync();
-    query.addEventListener("change", sync);
-    return () => query.removeEventListener("change", sync);
-  }, []);
 
   const advance = (event: AnimationEvent<HTMLSpanElement>) => {
     if (event.animationName !== "tab-progress") return;

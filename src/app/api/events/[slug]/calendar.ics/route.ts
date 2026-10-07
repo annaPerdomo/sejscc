@@ -9,8 +9,8 @@ function safeFileName(slug: string) {
   return slug.replace(/[^a-z0-9-]/gi, "") || "event";
 }
 
-// For Apple Calendar, Outlook and the phone apps; Google users get the
-// template link on the page instead, which adds the event without a download.
+// For Apple Calendar and the phone apps; Google and Outlook users get
+// template links on the page instead, which add the event without a download.
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ slug: string }> }

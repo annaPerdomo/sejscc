@@ -36,78 +36,19 @@
   },
   "home": {
     "photoSoon": "写真は準備中です",
-    "heroTabs": [
-      {
-        "id": "center",
-        "photoAlt": "サウスイースト日本語学園・コミュニティセンターの施設",
-        "tabLabel": "The Center",
-        "tabLabelAccent": "施設",
-        "kickerAccent": "ようこそ",
-        "kickerCaption": "Welcome · Norwalk, California · Since 1925",
-        "headingLine1": "サウスイースト日本語学園・",
-        "headingLine2": "コミュニティセンター",
-        "body": "この地で101年、土曜日といえば日本語学校です。平日も、踊り、武道、音楽、スポーツなど、さまざまな活動の場に――どなたでも歓迎するコミュニティです。",
-        "primaryCta": "今後のイベントを見る",
-        "secondaryCta": "スポーツ・教室を見る"
-      },
-      {
-        "id": "school",
-        "photoAlt": "学園の運動会でグラウンドを駆ける生徒たち",
-        "tabLabel": "Japanese School",
-        "tabLabelAccent": "日本語学校",
-        "kickerAccent": "日本語学校",
-        "kickerCaption": "Saturdays",
-        "headingLine1": "サウスイースト学園",
-        "headingLine2": "日本語学校",
-        "body": "幼稚園からレベル12まで、日本語・読解・書道を学べます。大人向けのオンライン講座もあります。日本語の経験は問いません。",
-        "primaryCta": "授業料・登録案内",
-        "secondaryCta": "スポーツ・教室を見る"
-      },
-      {
-        "id": "clubs",
-        "photoAlt": "舞台で演奏する太鼓のメンバー",
-        "tabLabel": "Sports & Classes",
-        "tabLabelAccent": "クラブ活動",
-        "kickerAccent": "クラブ活動",
-        "kickerCaption": "20+ groups call the center home",
-        "headingLine1": "ひとつ屋根の下、",
-        "headingLine2": "広がる輪",
-        "body": "柔道、剣道、バスケットボール、フラ、ウクレレ、生け花――道場、体育館、教室で。だれもが居場所を見つけられるコミュニティです。",
-        "primaryCta": "スポーツ・クラブを見る"
-      },
-      {
-        "id": "about",
-        "photoAlt": "夏祭りで浴衣を着て音頭を踊る地域の人々",
-        "tabLabel": "About Us",
-        "tabLabelAccent": "私たちについて",
-        "kickerAccent": "私たちについて",
-        "kickerCaption": "A nonprofit community organization",
-        "headingLine1": "私たちについて、",
-        "headingLine2": "活動のご紹介",
-        "body": "1925年の創立以来、ノーウォークの日系家族と地域の皆さまに寄り添うボランティア運営の非営利団体です。",
-        "primaryCta": "私たちの歩みを見る"
-      },
-      {
-        "id": "donate",
-        "photoAlt": "サマーキャンプで畳に座る子どもたちに教える着物姿の先生",
-        "tabLabel": "Donate",
-        "tabLabelAccent": "寄付",
-        "kickerAccent": "寄付",
-        "kickerCaption": "SEJSCC is a 501(c)(3) nonprofit",
-        "headingLine1": "センターを",
-        "headingLine2": "支える",
-        "body": "皆さまのご支援が、学校、センター、そして一世紀以上にわたり世代をつないできたお祭りを支えます。",
-        "primaryCta": "寄付する"
-      }
-    ],
-    "heroTabsLabel": "センターの見どころ",
-    "upcomingKickerAccent": "おしらせ",
-    "upcomingKickerCaption": "Everyone Is Invited",
-    "upcomingTitle": "あなたのための席があります",
+    "eventsHero": {
+      "kickerAccent": "おしらせ",
+      "kickerCaption": "Mark Your Calendar",
+      "headingLine1": "サウスイースト日本語学園・コミュニティセンターの",
+      "headingLine2": "これからの行事",
+      "nextLabel": "次回のイベント",
+      "upcomingLabel": "今後のイベント",
+      "panelTitle": "今後のイベント",
+      "listLabel": "今後のイベント",
+      "detailsCta": "イベントの詳細を見る"
+    },
     "viewAll": "今後のイベントをすべて見る",
     "noEvents": "新しいイベントを準備中です。またご確認いただくか、センター（(562) 863-5996）までお電話ください。",
-    "upcomingPrev": "前のイベント",
-    "upcomingNext": "次のイベント",
     "upcomingPause": "イベントの自動切り替えを停止",
     "upcomingPlay": "イベントを自動で切り替える",
     "japaneseSchool": {
@@ -116,6 +57,8 @@
       "headingLine2": "生涯の学びに。",
       "subheading": "1925年から、土曜日の朝に。",
       "body": "幼稚園からレベル12まで、日本語・読解・書道を学びます。大人向けのオンライン講座もあり、日本語の経験がなくても、どなたでも一緒に学べます。",
+      "sealAccent": "創立",
+      "sealYear": "1925",
       "photoLabel": "写真は準備中です",
       "photoAlt": "願い事を書いた短冊を飾った七夕の笹と生徒たち",
       "highlights": [
@@ -127,7 +70,7 @@
         {
           "title": "幼稚園〜レベル12",
           "text": "全年齢向けの日本語クラス",
-          "photoAlt": "運動会で団体競技に取り組む生徒たち"
+          "photoAlt": "お話会でスピーチを終えた、さまざまなレベルの生徒たち"
         },
         {
           "title": "大人向けオンライン講座",
@@ -137,7 +80,7 @@
         {
           "title": "年間を通じた文化行事",
           "text": "コミュニティをつなぐ行事の数々",
-          "photoAlt": "年末の餅つきで餅を丸める生徒と家族"
+          "photoAlt": "畳に座った生徒たちに、着物姿の先生が手ほどきをしている様子"
         }
       ],
       "primaryCta": "授業料・登録案内",
@@ -149,9 +92,13 @@
       "headingLine1": "ひとつ屋根の下、",
       "headingLine2": "広がる輪",
       "body": "道場、体育館、工作テーブル――十以上のグループがセンターを拠点に活動しています。多くが初心者も年間を通じて歓迎しています。",
-      "photoLabel": "写真は準備中です",
       "cta": "スポーツ・クラブをすべて見る",
-      "empty": "グループの一覧は準備中です。日本語学校、柔道、バスケットボールなどのプログラムについては、センター（(562) 863-5996）までお問い合わせください。"
+      "empty": "グループの一覧は準備中です。日本語学校、柔道、バスケットボールなどのプログラムについては、センター（(562) 863-5996）までお問い合わせください。",
+      "listLabel": "すべてのグループ",
+      "pause": "グループの自動切り替えを止める",
+      "play": "グループを自動で切り替える",
+      "photo": "{total}枚中{n}枚目の写真を表示",
+      "photoAlt": "{name}の写真（{total}枚中{n}枚目）"
     },
     "history": {
       "kickerAccent": "私たちの歩み",
@@ -250,9 +197,7 @@
       "phoneLabel": "電話",
       "emailLabel": "メール",
       "mapTitle": "カリフォルニア州ノーウォークにあるセンターの地図"
-    },
-    "heroPause": "スライドショーを一時停止",
-    "heroPlay": "スライドショーを再生"
+    }
   },
   "events": {
     "metaTitle": "イベント",
@@ -287,7 +232,13 @@
       "weekly": "毎週{weekday}",
       "biweekly": "隔週{weekday}",
       "monthly": "毎月第{ordinal}{weekday}",
-      "ordinals": ["1", "2", "3", "4", "5"],
+      "ordinals": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
       "until": "{schedule}（{date}まで）"
     },
     "calendars": {
@@ -323,6 +274,14 @@
       "empty": "過去のイベントはまだ掲載されていません。"
     }
   },
+  "calendar": {
+    "addToCalendar": "カレンダーに追加",
+    "chooseCalendar": "カレンダーを選択",
+    "google": "Googleカレンダー",
+    "apple": "Appleカレンダー",
+    "outlook": "Outlook.com",
+    "download": ".icsファイルをダウンロード"
+  },
   "eventDetail": {
     "notFound": "イベントが見つかりません",
     "kickerAccent": "催し物",
@@ -339,9 +298,6 @@
     "repeats": "開催頻度",
     "upcomingDates": "今後の開催日",
     "signUp": "このイベントに申し込む",
-    "addToCalendar": "カレンダーに追加",
-    "calendarGoogle": "Googleカレンダー",
-    "calendarDownload": "Apple・Outlook",
     "questions": "お問い合わせ",
     "parking": "駐車場・入口",
     "parkingBody": "駐車場は無料です。グリッドリー通り側のメインホール入口からお入りください。",
@@ -473,7 +429,10 @@
           "summary": "5歳のお子さま",
           "status": "",
           "description": "5歳のお子さまが、工作・歌・日本語を取り入れた活動を通して、日本の文化を学びます。",
-          "points": ["5歳", "工作・歌・日本語"],
+          "points": [
+            "5歳",
+            "工作・歌・日本語"
+          ],
           "photoAlt": "先生と一緒に並ぶ幼稚園クラスの子どもたち"
         },
         {
@@ -482,7 +441,11 @@
           "summary": "日本語の経験は必要ありません",
           "status": "",
           "description": "「聞く・話す」を中心に日本語に触れ、読み書きも少しずつ学びます。文化の学習や工作も授業に取り入れています。",
-          "points": ["6歳以上", "「聞く・話す」を中心に", "文化の学習と工作"],
+          "points": [
+            "6歳以上",
+            "「聞く・話す」を中心に",
+            "文化の学習と工作"
+          ],
           "photoAlt": "先生と一緒に並ぶレベル1のクラス"
         },
         {
@@ -491,7 +454,10 @@
           "summary": "日常会話を身につける",
           "status": "",
           "description": "基本的な会話力に加えて、短い文の読み書きを続けて練習します。日常生活に関する話題で短い会話ができるようになります。日本の礼儀作法や年中行事も授業に取り入れています。",
-          "points": ["日常生活についての短い会話", "短い文の読み書き"],
+          "points": [
+            "日常生活についての短い会話",
+            "短い文の読み書き"
+          ],
           "photoAlt": "先生と一緒に並ぶ小学レベルのクラス"
         },
         {
@@ -500,7 +466,10 @@
           "summary": "授業の大半は日本語で",
           "status": "",
           "description": "「聞く・話す・読む・書く」を通して、日本語の環境で行動できる力をさらに伸ばします。必要な情報を尋ねる、会話に参加する、詳しい事実を伝え合うといった力を養います。授業は大半を日本語で行い、話し合いや活動にも日本語で参加します。",
-          "points": ["授業の大半は日本語", "日本語での話し合いと活動"],
+          "points": [
+            "授業の大半は日本語",
+            "日本語での話し合いと活動"
+          ],
           "photoAlt": "先生と一緒に並ぶ中級クラス"
         },
         {

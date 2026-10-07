@@ -16,6 +16,7 @@ export function PageHero({
   lede,
   eyebrow,
   below,
+  ornament,
   actions,
   media,
   settlesInto,
@@ -37,6 +38,7 @@ export function PageHero({
   lede?: string;
   eyebrow?: ReactNode;
   below?: ReactNode;
+  ornament?: ReactNode;
   actions?: ReactNode;
   media?: ReactNode;
   settlesInto?: "white" | "mist" | "azure";
@@ -49,6 +51,7 @@ export function PageHero({
   return (
     <section className={`edge-flush relative overflow-clip ${wash}`}>
       <KanjiWatermark char={watermark} className={watermarkClassName} />
+      {ornament}
       <div
         className={`relative mx-auto grid max-w-6xl gap-8 px-4 sm:px-6 lg:items-center ${
           tight ? "lg:gap-10" : "lg:gap-14"

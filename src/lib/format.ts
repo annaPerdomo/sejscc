@@ -55,6 +55,22 @@ export function formatCalendarDate(date: Date | null, locale: Locale = "en") {
   });
 }
 
+export function formatEventMonth(date: Date | null, locale: Locale = "en") {
+  if (!date) return null;
+  return date.toLocaleDateString(INTL_LOCALES[locale], {
+    month: "short",
+    timeZone: "UTC",
+  });
+}
+
+export function formatEventDay(date: Date | null, locale: Locale = "en") {
+  if (!date) return null;
+  return date.toLocaleDateString(INTL_LOCALES[locale], {
+    day: "numeric",
+    timeZone: "UTC",
+  });
+}
+
 export function formatWeekday(date: Date, locale: Locale = "en") {
   return date.toLocaleDateString(INTL_LOCALES[locale], {
     weekday: "long",

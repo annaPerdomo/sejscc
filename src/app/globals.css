@@ -33,6 +33,9 @@
   /* Four across at this width keeps the card width three across has in max-w-6xl. */
   --container-wide: 96rem;
 
+  /* Keeps the hero's flyer, details and event list inside one laptop screen. */
+  --spacing-hero-flyer: min(50svh, 36rem);
+
   --text-watermark: clamp(12rem, 24vw, 25rem);
   --text-watermark--line-height: 1;
 }
@@ -63,19 +66,6 @@ body {
 }
 
 @layer components {
-  /* Warm off-white that fades in from white at the top and settles back to
-     white at the bottom, so both adjoining wave dividers keep matching. */
-  .section-wash-events {
-    background:
-      linear-gradient(
-        180deg,
-        var(--color-white),
-        --alpha(var(--color-cream) / 70%) 7rem,
-        transparent 85%
-      ),
-      var(--color-white);
-  }
-
   /* The paths and the --wave-cap / --wave-tail heights must match
      wave-divider.tsx. */
   .between-waves,
@@ -136,7 +126,7 @@ body {
   }
 
   .section-wash-groups {
-    background: var(--color-mist);
+    background: linear-gradient(180deg, var(--color-paper), var(--color-cream) 70%);
   }
 
   /* Capped at 55% lilac: `stone` caption text clears 4.5:1 over the glow at
@@ -208,6 +198,22 @@ body {
       );
   }
 
+  /* Sky text clears 4.5:1 on ink-deep even under the corner glow. */
+  .section-midnight-scene {
+    background:
+      radial-gradient(60rem 36rem at 92% 0%, --alpha(var(--color-indigo) / 22%), transparent 62%),
+      linear-gradient(170deg, var(--color-ink-deep), var(--color-ink) 60%, var(--color-ink-deep));
+  }
+
+  /* The glows stay in the corners: sky text only clears 4.5:1 on the bare
+     indigo-deep base, so captions here are white. */
+  .section-indigo-scene {
+    background:
+      radial-gradient(52rem 32rem at 0% 100%, --alpha(var(--color-indigo) / 55%), transparent 62%),
+      radial-gradient(48rem 30rem at 100% 0%, --alpha(var(--color-magenta) / 16%), transparent 60%),
+      linear-gradient(165deg, var(--color-indigo-deep), var(--color-navy));
+  }
+
   .callout-celadon {
     background: linear-gradient(135deg, var(--color-celadon), var(--color-white));
   }
@@ -223,38 +229,6 @@ body {
 
   .surface-card-link {
     transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
-  }
-
-  .event-track {
-    --event-cards: 1;
-    --event-gap: 1.75rem;
-    display: flex;
-    gap: var(--event-gap);
-  }
-
-  .event-track > * {
-    flex: 0 0
-      calc(
-        (100% - (var(--event-cards) - 1) * var(--event-gap)) / var(--event-cards)
-      );
-  }
-
-  @media (min-width: 40rem) {
-    .event-track {
-      --event-cards: 2;
-    }
-  }
-
-  @media (min-width: 64rem) {
-    .event-track {
-      --event-cards: 3;
-    }
-  }
-
-  @media (min-width: 96rem) {
-    .event-track {
-      --event-cards: 4;
-    }
   }
 
   /* A card's main link, spread over the whole card. The z-index is load-bearing:
@@ -277,6 +251,21 @@ body {
       0 20px 44px --alpha(var(--color-ink) / 12%),
       0 3px 8px --alpha(var(--color-ink) / 4%);
     transform: translateY(-0.25rem);
+  }
+
+  .button-light {
+    border-radius: var(--radius-lg);
+    background: var(--color-white);
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    color: var(--color-navy);
+    box-shadow: var(--shadow-lg);
+    transition: background-color 150ms ease;
+  }
+
+  .button-light:hover {
+    background: var(--color-sky);
   }
 
   .button-primary {
@@ -414,6 +403,62 @@ body {
   .seigaiha-rings-sky {
     --seigaiha-ring-color: var(--color-sky);
     --seigaiha-ring-opacity: 12%;
+  }
+
+  .seigaiha-rings-gold {
+    --seigaiha-ring-color: var(--color-gold);
+    --seigaiha-ring-opacity: 22%;
+  }
+
+  /* Position the image inside so it paints above the paired
+     `seigaiha-rings-gold` texture. */
+  .flyer-mount {
+    padding: --spacing(3.5);
+    background: var(--color-cream);
+    box-shadow:
+      0 0 0 1px --alpha(var(--color-gold) / 80%),
+      0 30px 60px --alpha(var(--color-ink-deep) / 45%),
+      0 6px 16px --alpha(var(--color-ink-deep) / 25%);
+  }
+
+  .flyer-mount::after {
+    content: "";
+    position: absolute;
+    inset: --spacing(1.5);
+    border: 1px solid --alpha(var(--color-gold) / 55%);
+    pointer-events: none;
+  }
+
+  .asanoha-frame {
+    position: relative;
+    isolation: isolate;
+    padding: --spacing(2.5);
+    border-radius: var(--radius-sm);
+    background: var(--color-navy);
+    box-shadow:
+      0 0 0 1px --alpha(var(--color-gold) / 45%),
+      0 18px 36px --alpha(var(--color-ink-deep) / 16%);
+  }
+
+  .asanoha-frame::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: var(--color-gold);
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='34.64' viewBox='0 0 20 34.64'%3E%3Cpath d='M-20 17.32L0 17.32M-10 0L0 -17.32M-10 0L0 -5.77M-10 0L0 5.77M-10 0L0 17.32M-10 0L10 0M-10 11.55L0 17.32M-10 23.09L0 17.32M-10 34.64L0 17.32M-10 34.64L0 28.87M-10 34.64L0 40.41M-10 34.64L0 51.96M-10 34.64L10 34.64M0 -17.32L10 0M0 -5.77L10 0M0 5.77L0 17.32M0 5.77L10 0M0 17.32L0 28.87M0 17.32L10 0M0 17.32L10 11.55M0 17.32L10 23.09M0 17.32L10 34.64M0 17.32L20 17.32M0 28.87L10 34.64M0 40.41L10 34.64M0 51.96L10 34.64M10 -11.55L10 0M10 0L10 11.55M10 0L20 -17.32M10 0L20 -5.77M10 0L20 5.77M10 0L20 17.32M10 0L30 0M10 11.55L20 17.32M10 23.09L10 34.64M10 23.09L20 17.32M10 34.64L10 46.19M10 34.64L20 17.32M10 34.64L20 28.87M10 34.64L20 40.41M10 34.64L20 51.96M10 34.64L30 34.64M20 -17.32L30 0M20 -5.77L30 0M20 5.77L20 17.32M20 5.77L30 0M20 17.32L20 28.87M20 17.32L30 0M20 17.32L30 11.55M20 17.32L30 23.09M20 17.32L30 34.64M20 17.32L40 17.32M20 28.87L30 34.64M20 40.41L30 34.64M20 51.96L30 34.64' fill='none' stroke='black' stroke-width='0.9'/%3E%3C/svg%3E");
+    mask-size: 20px 34.64px;
+    opacity: 35%;
+    pointer-events: none;
+  }
+
+  .calendar-menu > summary {
+    list-style: none;
+  }
+
+  .calendar-menu > summary::-webkit-details-marker {
+    display: none;
   }
 
   /* Without luminance masking the tile's opaque occluding discs make the
@@ -649,30 +694,31 @@ body {
     .enter-rise,
     .enter-stagger > * {
       animation: reveal-rise 950ms cubic-bezier(0.22, 1, 0.36, 1) both;
+      animation-delay: var(--enter-delay, 0ms);
     }
 
     .enter-stagger > :nth-child(2) {
-      animation-delay: 120ms;
+      animation-delay: calc(var(--enter-delay, 0ms) + 120ms);
     }
 
     .enter-stagger > :nth-child(3) {
-      animation-delay: 240ms;
+      animation-delay: calc(var(--enter-delay, 0ms) + 240ms);
     }
 
     .enter-stagger > :nth-child(4) {
-      animation-delay: 360ms;
+      animation-delay: calc(var(--enter-delay, 0ms) + 360ms);
     }
 
     .enter-stagger > :nth-child(5) {
-      animation-delay: 480ms;
+      animation-delay: calc(var(--enter-delay, 0ms) + 480ms);
     }
 
     .enter-stagger > :nth-child(6) {
-      animation-delay: 600ms;
+      animation-delay: calc(var(--enter-delay, 0ms) + 600ms);
     }
 
     .enter-stagger > :nth-child(n + 7) {
-      animation-delay: 720ms;
+      animation-delay: calc(var(--enter-delay, 0ms) + 720ms);
     }
 
     .enter-fade {
@@ -681,12 +727,31 @@ body {
 
     .enter-rule {
       transform-origin: left;
-      animation: reveal-rule 800ms cubic-bezier(0.22, 1, 0.36, 1) 300ms both;
+      animation: reveal-rule 800ms cubic-bezier(0.22, 1, 0.36, 1) both;
+      animation-delay: calc(var(--enter-delay, 0ms) + 300ms);
     }
 
     .brush-draw {
       stroke-dasharray: 1;
       animation: brush-draw 1200ms cubic-bezier(0.65, 0, 0.35, 1) 250ms both;
+    }
+
+    /* `--enter-delay` holds the entrances inside each stage until it starts. */
+    .hero-intro-photo {
+      animation: hero-intro-settle 2400ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .hero-intro-scrim {
+      animation: hero-intro 1100ms ease-in-out 700ms both;
+    }
+
+    .hero-intro {
+      --enter-delay: 1300ms;
+    }
+
+    .hero-intro-late {
+      --enter-delay: 2400ms;
+      animation: hero-intro 900ms ease-out 2400ms both;
     }
 
     .hero-drift {
@@ -705,20 +770,41 @@ body {
     }
 
     .hero-progress {
-      --tab-progress: 6.5s;
+      --tab-progress: 8s;
+    }
+
+    .groups-progress {
+      --tab-progress: calc(6s / var(--group-photos, 1) + 2s);
+    }
+
+    .groups-progress-2 {
+      --group-photos: 2;
+    }
+
+    .groups-progress-3 {
+      --group-photos: 3;
+    }
+
+    .groups-progress-4 {
+      --group-photos: 4;
+    }
+
+    .groups-progress-5 {
+      --group-photos: 5;
+    }
+
+    .groups-progress-6 {
+      --group-photos: 6;
     }
 
     .month-progress {
       --tab-progress: 5.2s;
     }
 
-    .bamboo-sway {
-      transform-origin: bottom center;
-      animation: bamboo-sway 7s ease-in-out infinite alternate;
-    }
-
-    .bamboo-sway-late {
-      animation-delay: -3s;
+    .lantern-sway {
+      transform-box: fill-box;
+      transform-origin: top center;
+      animation: bamboo-sway 5s ease-in-out infinite alternate;
     }
 
     .button-primary::after,
@@ -867,6 +953,18 @@ body {
   }
   to {
     stroke-dashoffset: 0;
+  }
+}
+
+@keyframes hero-intro {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes hero-intro-settle {
+  from {
+    transform: scale(1.06);
   }
 }
 

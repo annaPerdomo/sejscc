@@ -26,7 +26,7 @@ export default async function SiteLayout({
   const href = (path: string) => localePath(lang, path);
 
   const nav = [
-    { href: `${href("/")}#about`, label: dict.nav.about },
+    { href: `${href("/")}#history`, label: dict.nav.about },
     { href: href("/school"), label: dict.nav.japaneseSchool },
     { href: href("/events"), label: dict.nav.events },
     { href: href("/groups"), label: dict.nav.groups },

@@ -3,11 +3,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
+import { AddToCalendar } from "@/components/add-to-calendar";
 import { BrushEdge } from "@/components/brush-edge";
 import { ExternalLink } from "@/components/external-link";
 import { KanjiWatermark } from "@/components/kanji-watermark";
 import { SectionKicker } from "@/components/section-kicker";
-import { eventCalendarUrl } from "@/lib/calendars";
+import { calendarLinks, calendarOptions } from "@/lib/calendars";
 import {
   CENTER_EMAIL,
   CENTER_PHONE,
@@ -17,11 +18,7 @@ import {
 } from "@/lib/center";
 import { getEventBySlug, getUpcomingEventSlugs } from "@/lib/events";
 import { getImageSize } from "@/lib/image-size";
-import {
-  formatEventDate,
-  formatEventTime,
-  wallClockNow,
-} from "@/lib/format";
+import { formatEventDate, formatEventTime, wallClockNow } from "@/lib/format";
 import {
   describeRepeat,
   latestOccurrence,
@@ -79,8 +76,9 @@ export default async function EventPage({ params }: Props) {
   const start = nextDates[0] ?? latestOccurrence(event, now) ?? event.startAt;
   const end = start ? occurrenceEnd(event, start) : null;
   const repeat = describeRepeat(event, dict.events.repeat, lang);
-  const facts: { label: string; value: ReactNode }[] = [
+  const facts: { emoji: string; label: string; value: ReactNode }[] = [
     {
+      emoji: "📅",
       label:
         repeat && nextDates.length > 0
           ? dict.eventDetail.nextDate
@@ -88,11 +86,13 @@ export default async function EventPage({ params }: Props) {
       value: formatEventDate(start, lang),
     },
     {
+      emoji: "🕒",
       label: dict.eventDetail.time,
       value: formatEventTime(start, end, lang),
     },
-    { label: dict.eventDetail.repeats, value: repeat },
+    { emoji: "🔁", label: dict.eventDetail.repeats, value: repeat },
     {
+      emoji: "📍",
       label: dict.eventDetail.where,
       value: event.location && (
         <ExternalLink
@@ -111,16 +111,20 @@ export default async function EventPage({ params }: Props) {
     event.signupUrl && (nextDates.length > 0 || !event.startAt)
       ? event.signupUrl
       : null;
-  // The .ics route derives the same occurrence, so both paths add the same date.
-  const googleCalendarUrl =
+  // The .ics route derives the same occurrence, so every option adds the same date.
+  const calendar =
     nextDates.length > 0
-      ? eventCalendarUrl({
-          title: event.title,
-          start: nextDates[0],
-          end: occurrenceEnd(event, nextDates[0]),
-          details: event.description,
-          location: event.location,
-        })
+      ? calendarOptions(
+          calendarLinks({
+            slug: event.slug,
+            title: event.title,
+            start: nextDates[0],
+            end: occurrenceEnd(event, nextDates[0]),
+            details: event.description,
+            location: event.location,
+          }),
+          dict.calendar,
+        )
       : null;
 
   const backLink = (className: string) => (
@@ -135,7 +139,10 @@ export default async function EventPage({ params }: Props) {
   return (
     <>
       <section className="section-navy-scene edge-flush relative overflow-clip text-white">
-        <KanjiWatermark char="祭" className="-right-12 -bottom-10 text-white/5" />
+        <KanjiWatermark
+          char="祭"
+          className="-right-12 -bottom-10 text-white/5"
+        />
         <div className="enter-stagger relative mx-auto max-w-6xl px-4 pt-6 pb-12 sm:px-6 sm:pt-7 sm:pb-14">
           <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-3">
             {backLink("text-sky hover:text-white")}
@@ -150,15 +157,15 @@ export default async function EventPage({ params }: Props) {
           <h1 className="mt-4 font-display text-4xl leading-tight font-normal tracking-[0.02em] text-white sm:text-5xl">
             {event.title}
           </h1>
-          <span
-            aria-hidden="true"
-            className="mt-4 block h-0.5 w-9 bg-indigo"
-          />
+          <span aria-hidden="true" className="mt-4 block h-0.5 w-9 bg-indigo" />
           {facts.length > 0 && (
             <dl className="mt-6 flex flex-wrap gap-x-10 gap-y-5">
               {facts.map((fact) => (
                 <div key={fact.label}>
                   <dt className="font-display text-xs font-semibold tracking-[0.16em] text-sky uppercase">
+                    <span aria-hidden="true" className="mr-1.5 text-base">
+                      {fact.emoji}
+                    </span>
                     {fact.label}
                   </dt>
                   <dd className="mt-1.5 text-base text-white">{fact.value}</dd>
@@ -192,7 +199,10 @@ export default async function EventPage({ params }: Props) {
       </section>
 
       <section className="relative overflow-clip bg-mist py-10 sm:py-12">
-        <KanjiWatermark char="縁" className="-right-14 -bottom-20 text-indigo/5" />
+        <KanjiWatermark
+          char="縁"
+          className="-right-14 -bottom-20 text-indigo/5"
+        />
         <div
           className={`relative mx-auto grid max-w-6xl gap-10 px-4 sm:px-6 lg:items-start lg:gap-x-16 ${
             event.flyerUrl
@@ -224,25 +234,15 @@ export default async function EventPage({ params }: Props) {
               </div>
             )}
 
-            {googleCalendarUrl && (
-              <div className="reveal-rise mt-8">
-                <h2 className="font-display text-xs font-semibold tracking-[0.16em] text-ink-soft uppercase">
-                  {dict.eventDetail.addToCalendar}
-                </h2>
-                <div className="mt-3 flex flex-wrap gap-3">
-                  <ExternalLink
-                    href={googleCalendarUrl}
-                    className="button-outline px-6 py-3 font-display text-sm font-semibold"
-                  >
-                    {dict.eventDetail.calendarGoogle}
-                  </ExternalLink>
-                  <a
-                    href={`/api/events/${event.slug}/calendar.ics`}
-                    className="button-outline px-6 py-3 font-display text-sm font-semibold"
-                  >
-                    {dict.eventDetail.calendarDownload}
-                  </a>
-                </div>
+            {calendar && (
+              <div className="reveal-rise relative z-20 mt-8">
+                <AddToCalendar
+                  tone="light"
+                  label={dict.calendar.addToCalendar}
+                  menuLabel={dict.calendar.chooseCalendar}
+                  options={calendar}
+                  className="w-fit"
+                />
               </div>
             )}
           </div>

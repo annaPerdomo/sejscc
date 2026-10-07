@@ -17,23 +17,15 @@ export function photoFor(
   return src ? { src, alt } : undefined;
 }
 
-/** Keyed by `home.heroTabs[].id`. */
-export const homeHeroPhotos: Record<string, string | undefined> = {
-  center: "/campus-hero.jpg",
-  school: "/photos/hero-school.jpg",
-  clubs: "/photos/hero-clubs.jpg",
-  about: "/photos/hero-about.jpg",
-  donate: "/photos/hero-donate.jpg",
-};
-
 export const homePhotos = {
+  eventsBackdrop: "/campus-hero.jpg",
   japaneseSchool: "/photos/home-school.jpg",
   /** Matches `home.japaneseSchool.highlights`. */
   highlights: [
     "/photos/school-hero-3.jpg",
-    "/photos/school-hero-4.jpg",
-    "/photos/home-highlight-adult.jpg",
-    "/photos/month-toshikoshi.jpg",
+    "/photos/home-highlight-levels.jpg",
+    "/photos/home-highlight-online.jpg",
+    "/photos/home-highlight-culture.jpg",
   ],
   centennial: "/photos/home-centennial.jpg",
 } as const;

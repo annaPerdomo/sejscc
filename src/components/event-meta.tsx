@@ -38,7 +38,7 @@ export function EventIcon({ name }: { name: EventIconName }) {
       viewBox="0 0 24 24"
       fill="none"
       aria-hidden="true"
-      className="mt-px h-4 w-4 shrink-0"
+      className="inline-block h-4 w-4 align-middle"
       stroke="currentColor"
       strokeWidth={1.7}
       strokeLinecap="round"
@@ -57,8 +57,10 @@ export function EventMeta({
   children: ReactNode;
 }) {
   return (
-    <span className="inline-flex items-start gap-1.5">
-      <EventIcon name={icon} />
+    <span className="inline-flex items-baseline gap-1.5">
+      <span className="shrink-0">
+        <EventIcon name={icon} />
+      </span>
       <span>{children}</span>
     </span>
   );

@@ -64,8 +64,13 @@ be built from these tokens via Tailwind utility classes.
 - Shared visual treatments that aren't components in their own right live as
   classes in `@layer components` in [globals.css](src/app/globals.css):
   `surface-card` (plus `surface-card-link` for a clickable card),
-  `button-primary`, `button-donate`, `seigaiha-rings` (with
-  `seigaiha-rings-sky`, the slow-moving `seigaiha-rings-drift`, and
+  `button-primary`, `button-donate`, `flyer-mount` (a flyer on a cream
+  board with gold rules; pair it with the gold rings), `asanoha-frame` (a
+  navy band of gold hemp-leaf lattice around the featured group photo),
+  `calendar-menu` (a
+  `<details>` disclosure styled as a button), `seigaiha-rings` (with
+  `seigaiha-rings-sky`, `seigaiha-rings-gold`, the slow-moving
+  `seigaiha-rings-drift`, and
   `seigaiha-rings-fade` for a section whose texture would otherwise start as a
   hard line under the divider above it), `edge-flush` (on a section that ends
   in a wave or brush edge, so the next one covers the hairline the two
@@ -81,15 +86,18 @@ be built from these tokens via Tailwind utility classes.
   `reveal-rail`, `reveal-pop`, `reveal-turn`, `watermark-drift`,
   `ken-burns-in` / `ken-burns-out`, `enter-rise` / `enter-stagger` /
   `enter-fade` / `enter-rule` / `brush-draw` / `menu-drop`, `hero-drift`, `link-arrow`,
-  `bamboo-sway` (with `bamboo-sway-late` to offset a neighbour),
+  `lantern-sway` (a slow rotation hung from the top of an SVG group),
   `tab-progress` (with a per-strip duration
-  class, `hero-progress` or `month-progress`, and `tab-progress-paused` to
+  class, `hero-progress`, `groups-progress` or `month-progress`, and
+  `tab-progress-paused` to
   hold the strip while the reader is hovering or focused inside it; the
   strip advances on the bar's `animationend`, so the CSS duration is the
   rotation interval),
-  `between-waves`, `event-track`, `card-stretch`, and the
-  `section-wash-*` / `section-wash-*-hero` / `section-navy-scene`
-  backgrounds. Extend one of these rather than restyling a card or button
+  `between-waves`, `card-stretch`, and the
+  `section-wash-*` / `section-wash-*-hero` backgrounds, and the three dark
+  scenes, `section-navy-scene`, `section-midnight-scene` (ink-deep, for the
+  school) and `section-indigo-scene` (indigo-deep, for the videos), so no
+  two dark sections on a page share a tone. Extend one of these rather than restyling a card or button
   inline, and build them from tokens — use `--alpha(var(--color-x) / 20%)`
   for a tint instead of writing the color out again.
 - Motion comes in two families. The `reveal-*` classes are scroll-driven
@@ -113,10 +121,8 @@ be built from these tokens via Tailwind utility classes.
   position; the card's focus ring is drawn by `surface-card-link:has(...)`,
   so a stretched link must live inside a `surface-card-link` to be visibly
   focusable.
-- `event-track` lays out a horizontally scrolling row of equal-width cards
-  (1 / 2 / 3 across, set by `--event-cards`). `between-waves` masks a texture
-  to the wave lines above and below it — its `--wave-cap` / `--wave-tail`
-  must stay in step with `wave-divider.tsx`.
+- `between-waves` masks a texture to the wave lines above and below it — its
+  `--wave-cap` / `--wave-tail` must stay in step with `wave-divider.tsx`.
 - Anything that auto-advances on a timer (carousel, spotlight) needs a
   visible pause control, not just hover and focus pausing — WCAG 2.2.2 is a
   Level A criterion. Use the shared
