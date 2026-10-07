@@ -405,7 +405,7 @@ export default async function HomePage() {
 
       <section
         id="history"
-        className="section-wash-history relative scroll-mt-28 overflow-clip pb-20 sm:pb-24 lg:pb-32"
+        className="section-wash-history relative scroll-mt-28 overflow-clip pb-12 sm:pb-14 lg:pb-16"
       >
         <KanjiWatermark char="和" className="-bottom-10 left-4 text-ink/5" />
         <div className="relative isolate overflow-clip">
@@ -489,7 +489,7 @@ export default async function HomePage() {
 
         <div
           id="board"
-          className="relative mx-auto grid max-w-7xl scroll-mt-28 gap-10 px-4 pt-20 sm:px-6 sm:pt-24 lg:grid-cols-12 lg:items-center lg:gap-14 lg:px-10 lg:pt-32"
+          className="relative mx-auto grid max-w-7xl scroll-mt-28 gap-10 px-4 pt-14 sm:px-6 sm:pt-18 lg:grid-cols-12 lg:items-center lg:gap-14 lg:px-10 lg:pt-24"
         >
           <div className="reveal-swing-left lg:col-span-7">
             <div className="flyer-mount relative">
@@ -554,7 +554,7 @@ export default async function HomePage() {
             seed={19}
             className="relative text-paper"
           />
-          <div className="relative mx-auto max-w-6xl px-4 pt-4 pb-22 sm:px-6 sm:pb-30 lg:pb-40">
+          <div className="relative mx-auto max-w-wide px-4 pt-4 pb-22 sm:px-6 sm:pb-30 lg:px-10 lg:pb-40">
             <div className="reveal-rise mx-auto max-w-2xl text-center">
               <SectionKicker
                 accent={dict.home.history.videosKickerAccent}
@@ -571,12 +571,12 @@ export default async function HomePage() {
               </p>
             </div>
             <div
-              className={`mx-auto mt-10 grid gap-6 ${
+              className={`mx-auto mt-10 grid max-w-3xl gap-6 lg:gap-8 ${
                 aboutVideoIds.length > 2
-                  ? "reveal-stagger-2-3 sm:grid-cols-2 lg:grid-cols-3"
+                  ? "reveal-stagger-3 lg:max-w-none lg:grid-cols-3"
                   : aboutVideoIds.length > 1
-                    ? "reveal-stagger-2 max-w-4xl sm:grid-cols-2"
-                    : "max-w-3xl"
+                    ? "reveal-stagger-2 sm:grid-cols-2 lg:max-w-6xl"
+                    : "lg:max-w-4xl"
               }`}
             >
               {aboutVideoIds.map((id, i) => (
