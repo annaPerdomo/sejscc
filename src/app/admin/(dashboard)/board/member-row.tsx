@@ -1,14 +1,12 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useId, useState, type ReactNode } from "react";
 import { upload } from "@vercel/blob/client";
 import { AdminAlert } from "@/components/admin/admin-alert";
 import { AdminBadge } from "@/components/admin/admin-badge";
 import { buttonClass } from "@/components/admin/admin-button";
+import { AdminRequired, AdminTextField } from "@/components/admin/admin-field";
 import { AdminImagePicker } from "@/components/admin/admin-image-picker";
-import { EditableText } from "@/components/admin/inline-edit/editable-text";
-import { isImeComposing } from "@/components/admin/inline-edit/ime";
-import type { MemberTextFieldName } from "@/components/volunteer-section";
 import type { BoardMember } from "@/db/schema";
 import type { Locale } from "@/lib/i18n";
 import {
@@ -16,80 +14,165 @@ import {
   englishMemberValue,
   japaneseMemberValue,
 } from "@/lib/volunteer-fields";
-import { focusByKey, type OpenTargetState } from "./open-target";
+import { isImeComposing } from "@/components/admin/inline-edit/ime";
+import { focusByKey } from "./open-target";
 
 type PhotoDraft =
   | { kind: "unchanged" }
   | { kind: "removed" }
   | { kind: "file"; file: File; previewUrl: string; uploadedUrl?: string };
 
-const FIELD_LABELS: Record<MemberTextFieldName, string> = {
-  name: "Name",
-  role: "Title, such as President",
-};
-
-const FIELD_PLACEHOLDERS: Partial<Record<MemberTextFieldName, string>> = {
-  role: "+ Add a title",
-};
-
-export function renderMemberField({
+export function MemberButton({
   member,
-  field,
-  lang,
-  editState,
-  onSaveText,
+  content,
+  onOpen,
 }: {
-  member: BoardMember;
-  field: MemberTextFieldName;
-  lang: Locale;
-  editState: OpenTargetState;
-  onSaveText: (field: MemberTextFieldName, lang: Locale, value: string) => Promise<void>;
-}): ReactNode {
-  const spec = MEMBER_TEXT_FIELDS[field];
-  const englishValue = englishMemberValue(member, field);
-  const value = lang === "en" ? englishValue : japaneseMemberValue(member, field);
-  const noun = lang === "en" ? spec.label : `Japanese ${spec.label}`;
+  member: { id: string; name: string; role: string | null; visible: boolean };
+  content: ReactNode;
+  onOpen: () => void;
+}) {
+  const accessibleName = `Change ${member.name}${member.role ? `, ${member.role}` : ""}${
+    member.visible ? "" : " (hidden from website)"
+  }`;
 
   return (
-    <EditableText
-      key={`${field}-${lang}`}
-      label={`${FIELD_LABELS[field]} — ${lang === "en" ? "English" : "Japanese"}`}
-      noun={noun}
-      value={value}
-      fallback={lang === "ja" ? englishValue : undefined}
-      placeholder={lang === "en" ? FIELD_PLACEHOLDERS[field] : undefined}
-      focusKey={field === "name" ? `member-name-${member.id}` : undefined}
-      maxLength={spec.max}
-      required={lang === "en" && spec.required}
-      {...editState.fieldProps({ kind: "member", id: member.id, field })}
-      onSave={(next) => onSaveText(field, lang, next)}
-    />
+    <button
+      type="button"
+      onClick={onOpen}
+      aria-label={accessibleName}
+      data-focus-key={`member-button-${member.id}`}
+      className="inline-edit-target relative -m-1 block min-h-11 min-w-0 flex-1 rounded-lg p-1 text-left"
+    >
+      <span className="flex flex-col items-start">
+        {content}
+        {!member.visible && (
+          <span className="mt-1">
+            <AdminBadge tone="muted">Hidden</AdminBadge>
+          </span>
+        )}
+      </span>
+      <span
+        aria-hidden="true"
+        className="inline-edit-chip pointer-coarse:opacity-100 absolute -top-3 right-0 ml-0 pointer-coarse:static pointer-coarse:mt-1"
+      >
+        ✎ Change
+      </span>
+    </button>
   );
 }
 
-export function MemberControls({
+export function MemberFieldsForm({
   member,
-  onOpenOptions,
+  lang,
+  onSave,
+  onDirtyChange,
+  onSavingChange,
 }: {
-  member: { id: string; name: string; visible: boolean };
-  onOpenOptions: () => void;
+  member: BoardMember;
+  lang: Locale;
+  onSave: (name: string, role: string) => Promise<void>;
+  onDirtyChange?: (dirty: boolean) => void;
+  onSavingChange?: (saving: boolean) => void;
 }) {
+  const englishName = englishMemberValue(member, "name");
+  const englishRole = englishMemberValue(member, "role");
+  const initialName = lang === "en" ? englishName : japaneseMemberValue(member, "name");
+  const initialRole = lang === "en" ? englishRole : japaneseMemberValue(member, "role");
+
+  const [name, setName] = useState(initialName);
+  const [role, setRole] = useState(initialRole);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const nameGuideId = useId();
+  const roleGuideId = useId();
+
+  function reportDirty(nextName: string, nextRole: string) {
+    onDirtyChange?.(nextName !== initialName || nextRole !== initialRole);
+  }
+
+  function updateName(next: string) {
+    setName(next);
+    reportDirty(next, role);
+  }
+
+  function updateRole(next: string) {
+    setRole(next);
+    reportDirty(name, next);
+  }
+
+  async function save() {
+    if (saving) return;
+    setSaving(true);
+    onSavingChange?.(true);
+    setError(null);
+    try {
+      await onSave(name, role);
+      onDirtyChange?.(false);
+    } catch (e) {
+      setError(
+        e instanceof Error && e.message
+          ? e.message
+          : "Something went wrong saving this. Please try again."
+      );
+    } finally {
+      setSaving(false);
+      onSavingChange?.(false);
+    }
+  }
+
   return (
-    <>
-      {!member.visible && (
-        <span className="shrink-0">
-          <AdminBadge tone="muted">Hidden from website</AdminBadge>
-        </span>
-      )}
+    <form
+      className="space-y-4"
+      onSubmit={(event) => {
+        event.preventDefault();
+        void save();
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" && isImeComposing(event)) event.preventDefault();
+      }}
+    >
+      <div>
+        <AdminTextField
+          label={lang === "en" ? <>Name <AdminRequired /></> : "Japanese name"}
+          value={name}
+          maxLength={MEMBER_TEXT_FIELDS.name.max}
+          disabled={saving}
+          aria-describedby={lang === "ja" ? nameGuideId : undefined}
+          onChange={(event) => updateName(event.target.value)}
+        />
+        {lang === "ja" && (
+          <p id={nameGuideId} className="mt-1 text-sm text-stone">
+            English: {englishName}
+          </p>
+        )}
+      </div>
+      <div>
+        <AdminTextField
+          label={
+            lang === "en" ? "Title, such as President — optional" : "Japanese title — optional"
+          }
+          value={role}
+          maxLength={MEMBER_TEXT_FIELDS.role.max}
+          disabled={saving}
+          aria-describedby={lang === "ja" && englishRole ? roleGuideId : undefined}
+          onChange={(event) => updateRole(event.target.value)}
+        />
+        {lang === "ja" && englishRole && (
+          <p id={roleGuideId} className="mt-1 text-sm text-stone">
+            English: {englishRole}
+          </p>
+        )}
+      </div>
+      {error && <AdminAlert>{error}</AdminAlert>}
       <button
-        type="button"
-        onClick={onOpenOptions}
-        data-focus-key={`member-options-${member.id}`}
-        className={`min-h-11 shrink-0 ${buttonClass("secondary")}`}
+        type="submit"
+        aria-disabled={saving}
+        className={`min-h-12 ${buttonClass("primary")}`}
       >
-        Options<span className="sr-only"> for {member.name}</span>
+        {saving ? "Saving…" : "Save"}
       </button>
-    </>
+    </form>
   );
 }
 

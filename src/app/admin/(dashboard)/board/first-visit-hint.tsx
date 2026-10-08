@@ -42,10 +42,9 @@ export function FirstVisitHint() {
       <AdminAlert role="note">
         <span className="block">
           <strong className="font-semibold">How to edit:</strong> click any
-          words to change them. Use <strong className="font-semibold">Options</strong> on
-          a name or a way to help to move it, hide it, or remove it. Each
-          change goes live as soon as you save it, and you can undo the last
-          one.
+          words to change them. Click a person&apos;s name to change, move,
+          hide or remove them. Each change goes live as soon as you save it,
+          and you can undo the last one.
         </span>
         <button
           type="button"

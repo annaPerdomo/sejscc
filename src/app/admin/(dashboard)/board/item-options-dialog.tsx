@@ -35,11 +35,11 @@ function OptionButton({
   );
 }
 
-export function ItemOptionsDialog({
-  kind,
+export function MemberPanel({
   open,
   onClose,
-  itemName,
+  busy = false,
+  memberName,
   index,
   total,
   moveBusy,
@@ -50,10 +50,10 @@ export function ItemOptionsDialog({
   onRemove,
   children,
 }: {
-  kind: "member" | "role";
   open: boolean;
   onClose: () => void;
-  itemName: string;
+  busy?: boolean;
+  memberName: string;
   index: number;
   total: number;
   moveBusy: boolean;
@@ -65,48 +65,50 @@ export function ItemOptionsDialog({
   children?: ReactNode;
 }) {
   return (
-    <EditDialog title={itemName} open={open} onClose={onClose}>
-      <div className="space-y-4">
-        {index > 0 && (
-          <OptionButton
-            onClick={() => onMove("up")}
-            disabled={moveBusy}
-            focusKey={`${kind}-dialog-move-up`}
-          >
-            Move up<span className="sr-only"> {itemName}</span>
-          </OptionButton>
-        )}
-        {index < total - 1 && (
-          <OptionButton
-            onClick={() => onMove("down")}
-            disabled={moveBusy}
-            focusKey={`${kind}-dialog-move-down`}
-          >
-            Move down<span className="sr-only"> {itemName}</span>
-          </OptionButton>
-        )}
-
-        <div>
-          <OptionButton
-            onClick={onToggleVisible}
-            disabled={visibleBusy}
-            focusKey={`${kind}-dialog-visibility`}
-          >
-            {visible ? "Hide from website" : "Show on website"}
-          </OptionButton>
-          <p className="mt-1 text-sm text-stone">
-            Hidden items stay here so you can show them again later.
-          </p>
-        </div>
-
+    <EditDialog title={memberName} open={open} busy={busy} onClose={onClose}>
+      <div className="space-y-6">
         {children}
+
+        <div className="space-y-4 border-t border-line pt-4">
+          {index > 0 && (
+            <OptionButton
+              onClick={() => onMove("up")}
+              disabled={moveBusy}
+              focusKey="member-dialog-move-up"
+            >
+              Move up<span className="sr-only"> {memberName}</span>
+            </OptionButton>
+          )}
+          {index < total - 1 && (
+            <OptionButton
+              onClick={() => onMove("down")}
+              disabled={moveBusy}
+              focusKey="member-dialog-move-down"
+            >
+              Move down<span className="sr-only"> {memberName}</span>
+            </OptionButton>
+          )}
+
+          <div>
+            <OptionButton
+              onClick={onToggleVisible}
+              disabled={visibleBusy}
+              focusKey="member-dialog-visibility"
+            >
+              {visible ? "Hide from website" : "Show on website"}
+            </OptionButton>
+            <p className="mt-1 text-sm text-stone">
+              Hidden members stay here so you can show them again later.
+            </p>
+          </div>
+        </div>
 
         <div className="border-t border-line pt-4">
           <p className="mb-2 text-sm text-stone">Photo changes and removals can&apos;t be undone.</p>
           <ConfirmDeleteButton
             action={onRemove}
             label="Remove from the page"
-            prompt={`Remove ${itemName}? This can't be undone.`}
+            prompt={`Remove ${memberName}? This can't be undone.`}
             confirmLabel="Yes, remove"
             cancelLabel="Keep"
             busyLabel="Removing…"
@@ -115,7 +117,14 @@ export function ItemOptionsDialog({
       </div>
 
       <div className="mt-5 flex justify-end border-t border-line pt-4">
-        <button type="button" onClick={onClose} className={`min-h-11 ${buttonClass("secondary")}`}>
+        <button
+          type="button"
+          onClick={() => {
+            if (!busy) onClose();
+          }}
+          aria-disabled={busy}
+          className={`min-h-11 ${buttonClass("secondary")}`}
+        >
           Done
         </button>
       </div>

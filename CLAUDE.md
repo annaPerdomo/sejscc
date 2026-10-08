@@ -130,8 +130,8 @@ be built from these tokens via Tailwind utility classes.
   hold the strip while the reader is hovering or focused inside it; the
   strip advances on the bar's `animationend`, so the CSS duration is the
   rotation interval),
-  `between-waves`, `card-stretch`, `pill` (a small rounded label, such as a
-  volunteer role's time commitment), `preview-static` (holds every scroll-driven
+  `between-waves`, `card-stretch`,
+  `preview-static` (holds every scroll-driven
   animation at its end state inside the admin's inert live preview, which has
   no scroll timeline to drive them), `inline-edit-target` / `inline-edit-chip` /
   `inline-edit-field` (click-to-edit text on the admin canvas: the button that

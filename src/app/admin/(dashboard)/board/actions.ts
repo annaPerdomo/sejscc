@@ -3,12 +3,7 @@
 import { del } from "@vercel/blob";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import {
-  VOLUNTEER_SECTION_ID,
-  boardMembers,
-  volunteerRoles,
-  volunteerSection,
-} from "@/db/schema";
+import { VOLUNTEER_SECTION_ID, boardMembers, volunteerSection } from "@/db/schema";
 import type { SectionTextField } from "@/components/volunteer-section";
 import { requireUser, revalidateSite } from "@/lib/admin";
 import { isUploadedFileUrl } from "@/lib/format";
@@ -17,22 +12,14 @@ import { checkedBlobImageUrl } from "@/lib/uploads";
 import {
   LONG_MAX,
   MEMBER_TEXT_FIELDS,
-  ROLE_TEXT_FIELDS,
   SECTION_TEXT_FIELDS,
-  isMemberTextField,
-  isRoleTextField,
   isSectionTextField,
   memberTextPatch,
   requiredMessage,
-  roleTextPatch,
   sectionTextPatch,
   textFieldValue,
   tooLongMessage,
-  type MemberTextField,
-  type RoleTextField,
 } from "@/lib/volunteer-fields";
-
-export type { MemberTextField, RoleTextField };
 
 function tooLong(label: string, max: number): never {
   throw new Error(tooLongMessage(label, max));
@@ -70,23 +57,7 @@ const NOT_FOUND_MESSAGE = "That entry no longer exists. Please reload the page."
 const STALE_ORDER_MESSAGE =
   "The list changed while you were editing. Please reload the page and try again.";
 
-function checkedSignupUrl(raw: string): string | null {
-  const trimmed = raw.trim();
-  if (!trimmed) return null;
-  try {
-    const url = new URL(trimmed);
-    if (url.protocol !== "https:" && url.protocol !== "http:") throw new Error();
-  } catch {
-    throw new Error(
-      "That sign-up link doesn’t look like a web address. It should start with https://"
-    );
-  }
-  return trimmed;
-}
-
-async function nextSortOrder(
-  table: typeof boardMembers | typeof volunteerRoles
-): Promise<number> {
+async function nextSortOrder(table: typeof boardMembers): Promise<number> {
   const existing = await db.select({ sortOrder: table.sortOrder }).from(table);
   return existing.reduce((max, row) => Math.max(max, row.sortOrder), -1) + 1;
 }
@@ -193,26 +164,28 @@ async function deleteBlobBestEffort(url: string | null, label: string) {
   }
 }
 
-export async function updateMemberText(
+export async function updateMemberFields(
   id: string,
-  field: MemberTextField,
   lang: Locale,
-  value: string
+  values: { name: string; role: string }
 ): Promise<void> {
   await requireUser();
 
-  if (!isMemberTextField(field)) throw new Error("That field doesn't exist.");
   if (lang !== "en" && lang !== "ja") throw new Error("That language isn't supported.");
 
-  const { label, max, required: isRequiredField } = MEMBER_TEXT_FIELDS[field];
-  const trimmed = value.trim();
-  validateText(lang, label, max, isRequiredField, trimmed);
+  const nameSpec = MEMBER_TEXT_FIELDS.name;
+  const roleSpec = MEMBER_TEXT_FIELDS.role;
+  const trimmedName = values.name.trim();
+  const trimmedRole = values.role.trim();
+  validateText(lang, nameSpec.label, nameSpec.max, nameSpec.required, trimmedName);
+  validateText(lang, roleSpec.label, roleSpec.max, roleSpec.required, trimmedRole);
 
-  const patch = memberTextPatch(field, lang, textFieldValue(isRequiredField, lang, trimmed));
+  const namePatch = memberTextPatch("name", lang, textFieldValue(nameSpec.required, lang, trimmedName));
+  const rolePatch = memberTextPatch("role", lang, textFieldValue(roleSpec.required, lang, trimmedRole));
 
   const result = await db
     .update(boardMembers)
-    .set(patch as Partial<typeof boardMembers.$inferInsert>)
+    .set({ ...namePatch, ...rolePatch } as Partial<typeof boardMembers.$inferInsert>)
     .where(eq(boardMembers.id, id))
     .returning({ id: boardMembers.id });
   if (result.length === 0) throw new Error(NOT_FOUND_MESSAGE);
@@ -298,117 +271,6 @@ export async function reorderBoardMembers(orderedIds: string[]): Promise<void> {
 
   const [firstUpdate, ...restUpdates] = ids.map((id, index) =>
     db.update(boardMembers).set({ sortOrder: index }).where(eq(boardMembers.id, id))
-  );
-  if (!firstUpdate) return;
-  await db.batch([firstUpdate, ...restUpdates]);
-
-  revalidateSite();
-}
-
-export async function updateRoleText(
-  id: string,
-  field: RoleTextField,
-  lang: Locale,
-  value: string
-): Promise<void> {
-  await requireUser();
-
-  if (!isRoleTextField(field)) throw new Error("That field doesn't exist.");
-  if (lang !== "en" && lang !== "ja") throw new Error("That language isn't supported.");
-
-  const { label, max, required: isRequiredField } = ROLE_TEXT_FIELDS[field];
-  const trimmed = value.trim();
-  validateText(lang, label, max, isRequiredField, trimmed);
-
-  const patch = roleTextPatch(field, lang, textFieldValue(isRequiredField, lang, trimmed));
-
-  const result = await db
-    .update(volunteerRoles)
-    .set(patch as Partial<typeof volunteerRoles.$inferInsert>)
-    .where(eq(volunteerRoles.id, id))
-    .returning({ id: volunteerRoles.id });
-  if (result.length === 0) throw new Error(NOT_FOUND_MESSAGE);
-
-  revalidateSite();
-}
-
-export async function updateRoleSignupUrl(id: string, signupUrl: string): Promise<void> {
-  await requireUser();
-
-  const checkedUrl = checkedSignupUrl(signupUrl);
-  const result = await db
-    .update(volunteerRoles)
-    .set({ signupUrl: checkedUrl })
-    .where(eq(volunteerRoles.id, id))
-    .returning({ id: volunteerRoles.id });
-  if (result.length === 0) throw new Error(NOT_FOUND_MESSAGE);
-
-  revalidateSite();
-}
-
-export async function addVolunteerRole(
-  title: string,
-  description: string
-): Promise<{ id: string }> {
-  await requireUser();
-
-  const trimmedTitle = title.trim();
-  const trimmedDescription = description.trim();
-  validateText("en", ROLE_TEXT_FIELDS.title.label, ROLE_TEXT_FIELDS.title.max, true, trimmedTitle);
-  validateText(
-    "en",
-    ROLE_TEXT_FIELDS.description.label,
-    ROLE_TEXT_FIELDS.description.max,
-    true,
-    trimmedDescription
-  );
-
-  const sortOrder = await nextSortOrder(volunteerRoles);
-  const [row] = await db
-    .insert(volunteerRoles)
-    .values({ title: trimmedTitle, description: trimmedDescription, sortOrder })
-    .returning({ id: volunteerRoles.id });
-
-  revalidateSite();
-  return { id: row.id };
-}
-
-export async function deleteVolunteerRole(id: string): Promise<void> {
-  await requireUser();
-  const result = await db
-    .delete(volunteerRoles)
-    .where(eq(volunteerRoles.id, id))
-    .returning({ id: volunteerRoles.id });
-  if (result.length === 0) throw new Error(NOT_FOUND_MESSAGE);
-
-  revalidateSite();
-}
-
-export async function setVolunteerRoleVisible(
-  id: string,
-  visible: boolean
-): Promise<void> {
-  await requireUser();
-  const result = await db
-    .update(volunteerRoles)
-    .set({ visible })
-    .where(eq(volunteerRoles.id, id))
-    .returning({ id: volunteerRoles.id });
-  if (result.length === 0) throw new Error(NOT_FOUND_MESSAGE);
-
-  revalidateSite();
-}
-
-export async function reorderVolunteerRoles(orderedIds: string[]): Promise<void> {
-  await requireUser();
-  const existing = await db.select({ id: volunteerRoles.id }).from(volunteerRoles);
-  const ids = checkedOrder(
-    orderedIds,
-    existing.map((row) => row.id)
-  );
-
-  const [firstUpdate, ...restUpdates] = ids.map((id, index) =>
-    db.update(volunteerRoles).set({ sortOrder: index }).where(eq(volunteerRoles.id, id))
   );
   if (!firstUpdate) return;
   await db.batch([firstUpdate, ...restUpdates]);
