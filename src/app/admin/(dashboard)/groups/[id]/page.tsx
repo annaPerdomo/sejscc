@@ -6,6 +6,7 @@ import { ConfirmDeleteButton } from "@/components/admin/confirm-delete-button";
 import { GroupForm } from "../group-form";
 import { deleteGroup } from "../actions";
 import { GROUP_STATUS_LABELS } from "../status";
+import { AdminPageWidth } from "@/components/admin/admin-page-width";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,7 @@ export default async function EditGroupPage({
   if (!group) notFound();
 
   return (
-    <div>
+    <AdminPageWidth>
       <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl text-ink">Edit Group</h1>
@@ -41,6 +42,6 @@ export default async function EditGroupPage({
         />
       </div>
       <GroupForm group={group} />
-    </div>
+    </AdminPageWidth>
   );
 }

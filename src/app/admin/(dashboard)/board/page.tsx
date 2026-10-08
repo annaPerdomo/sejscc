@@ -7,6 +7,7 @@ import {
   volunteerSection,
 } from "@/db/schema";
 import { AdminAlert } from "@/components/admin/admin-alert";
+import { AdminPageWidth } from "@/components/admin/admin-page-width";
 import { AdminStep } from "@/components/admin/admin-card";
 import { getDictionaryFor } from "@/lib/dictionaries";
 import { getImageSize } from "@/lib/image-size";
@@ -41,7 +42,7 @@ export default async function BoardAdminPage() {
   const visibleRoles = roles.filter((role) => role.visible);
 
   return (
-    <div>
+    <AdminPageWidth>
       <h1 className="font-display text-3xl text-ink">Board & Volunteers</h1>
       <p className="mt-1 mb-6 max-w-xl text-stone">
         Change the words and photo for the Board & Volunteers part of the
@@ -74,6 +75,6 @@ export default async function BoardAdminPage() {
           <VolunteerRolesEditor roles={roles} />
         </SectionEditor>
       )}
-    </div>
+    </AdminPageWidth>
   );
 }

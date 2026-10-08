@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/admin";
 import { getSiteSettings } from "@/lib/site-settings";
 import { AboutVideoForm, AccessRequestEmailForm } from "./settings-form";
+import { AdminPageWidth } from "@/components/admin/admin-page-width";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +13,7 @@ export default async function SettingsPage() {
   const settings = await getSiteSettings();
 
   return (
-    <div>
+    <AdminPageWidth>
       <h1 className="font-display text-3xl text-ink">Settings</h1>
       <p className="mt-1 mb-8 max-w-xl text-stone">
         Site-wide details that don&apos;t belong to a single page.
@@ -24,6 +25,6 @@ export default async function SettingsPage() {
         />
         <AboutVideoForm initialUrls={settings?.aboutVideoUrls ?? []} />
       </div>
-    </div>
+    </AdminPageWidth>
   );
 }

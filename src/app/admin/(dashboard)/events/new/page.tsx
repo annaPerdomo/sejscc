@@ -1,11 +1,12 @@
 import { getDictionaryFor } from "@/lib/dictionaries";
 import { EventForm } from "../event-form";
+import { AdminPageWidth } from "@/components/admin/admin-page-width";
 
 export default async function NewEventPage() {
   const dict = await getDictionaryFor("en");
 
   return (
-    <div>
+    <AdminPageWidth>
       <h1 className="font-display text-3xl text-ink">Add New Event</h1>
       <p className="mt-1 mb-8 text-stone">
         Start with the title. Everything else is optional — add what you have
@@ -15,6 +16,6 @@ export default async function NewEventPage() {
         repeatPhrases={dict.events.repeat}
         atCenterLabel={dict.events.atCenter}
       />
-    </div>
+    </AdminPageWidth>
   );
 }

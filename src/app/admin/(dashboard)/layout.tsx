@@ -25,9 +25,7 @@ export default async function AdminLayout({
         />
         <div className="flex flex-1 flex-col">
           <main className="flex-1 bg-paper">
-            <div className="mx-auto max-w-5xl px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
-              {children}
-            </div>
+            <div className="px-5 py-8 sm:px-8 lg:px-10 lg:py-10">{children}</div>
           </main>
           <footer className="bg-paper px-4 pb-4 text-center">
             <MadeWithLove madeWith="Made with" by="by" className="text-xs text-stone" />
