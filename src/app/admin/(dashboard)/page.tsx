@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { eq } from "drizzle-orm";
 import { auth } from "@/auth";
 import { db } from "@/db";
 import { boardMembers, volunteerRoles } from "@/db/schema";
@@ -50,13 +49,22 @@ function SummaryCard({
 
 export default async function AdminDashboard() {
   const session = await auth();
-  const [activeGroups, upcomingEvents, visibleBoardMembers, visibleVolunteerRoles] =
+  const [activeGroups, upcomingEvents, allBoardMembers, allVolunteerRoles] =
     await Promise.all([
       getActiveGroups(),
       getUpcomingEvents(),
-      db.select({ id: boardMembers.id }).from(boardMembers).where(eq(boardMembers.visible, true)),
-      db.select({ id: volunteerRoles.id }).from(volunteerRoles).where(eq(volunteerRoles.visible, true)),
+      db.select({ visible: boardMembers.visible }).from(boardMembers),
+      db.select({ visible: volunteerRoles.visible }).from(volunteerRoles),
     ]);
+
+  const boardMemberCounts = {
+    showing: allBoardMembers.filter((member) => member.visible).length,
+    hidden: allBoardMembers.filter((member) => !member.visible).length,
+  };
+  const volunteerRoleCounts = {
+    showing: allVolunteerRoles.filter((role) => role.visible).length,
+    hidden: allVolunteerRoles.filter((role) => !role.visible).length,
+  };
 
   const firstName = session?.user?.name?.trim().split(/\s+/)[0] ?? null;
   const today = new Date();
@@ -140,11 +148,7 @@ export default async function AdminDashboard() {
           viewHref="/#board"
           viewLabel="See it on the website"
         >
-          {`${visibleBoardMembers.length} board member${
-            visibleBoardMembers.length === 1 ? "" : "s"
-          } and ${visibleVolunteerRoles.length} way${
-            visibleVolunteerRoles.length === 1 ? "" : "s"
-          } to help are showing on the home page.`}
+          {`Board members: ${boardMemberCounts.showing} showing, ${boardMemberCounts.hidden} hidden. Ways to help: ${volunteerRoleCounts.showing} showing, ${volunteerRoleCounts.hidden} hidden.`}
         </SummaryCard>
       </div>
     </div>

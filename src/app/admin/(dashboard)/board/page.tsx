@@ -10,7 +10,9 @@ import { AdminAlert } from "@/components/admin/admin-alert";
 import { AdminStep } from "@/components/admin/admin-card";
 import { getDictionaryFor } from "@/lib/dictionaries";
 import { getImageSize } from "@/lib/image-size";
+import { BoardMembersEditor } from "./board-members-editor";
 import { SectionEditor } from "./section-editor";
+import { VolunteerRolesEditor } from "./volunteer-roles-editor";
 
 export const dynamic = "force-dynamic";
 
@@ -25,18 +27,18 @@ export default async function BoardAdminPage() {
     db
       .select()
       .from(boardMembers)
-      .where(eq(boardMembers.visible, true))
       .orderBy(asc(boardMembers.sortOrder), asc(boardMembers.createdAt)),
     db
       .select()
       .from(volunteerRoles)
-      .where(eq(volunteerRoles.visible, true))
       .orderBy(asc(volunteerRoles.sortOrder), asc(volunteerRoles.createdAt)),
     getDictionaryFor("en"),
     getDictionaryFor("ja"),
   ]);
 
   const section = sections[0];
+  const visibleMembers = members.filter((member) => member.visible);
+  const visibleRoles = roles.filter((role) => role.visible);
 
   return (
     <div>
@@ -63,11 +65,14 @@ export default async function BoardAdminPage() {
       ) : (
         <SectionEditor
           section={section}
-          members={members}
-          roles={roles}
+          members={visibleMembers}
+          roles={visibleRoles}
           photoSize={section.photoUrl ? await getImageSize(section.photoUrl) : null}
           labels={{ en: enDict.home.board, ja: jaDict.home.board }}
-        />
+        >
+          <BoardMembersEditor members={members} />
+          <VolunteerRolesEditor roles={roles} />
+        </SectionEditor>
       )}
     </div>
   );

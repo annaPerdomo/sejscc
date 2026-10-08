@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { upload } from "@vercel/blob/client";
 import { AdminButton } from "@/components/admin/admin-button";
@@ -84,12 +84,14 @@ export function SectionEditor({
   roles,
   photoSize,
   labels,
+  children,
 }: {
   section: VolunteerSectionRow;
   members: BoardMember[];
   roles: VolunteerRole[];
   photoSize: ImageSize | null;
   labels: { en: VolunteerSectionLabels; ja: VolunteerSectionLabels };
+  children?: ReactNode;
 }) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
@@ -350,16 +352,17 @@ export function SectionEditor({
   );
 
   return (
-    <form
-      ref={formRef}
-      onSubmit={(event) => {
-        event.preventDefault();
-        void handleSave();
-      }}
-      className="pb-10"
-    >
+    <div className="pb-10">
       <div className="grid gap-8 lg:grid-cols-12 lg:items-start">
         <div className="space-y-6 lg:col-span-7">
+          <form
+            ref={formRef}
+            onSubmit={(event) => {
+              event.preventDefault();
+              void handleSave();
+            }}
+          >
+          <div className="space-y-6">
           <AdminCard>
             <AdminCardHeading step={1}>Words</AdminCardHeading>
             <div className="mt-5 space-y-6">
@@ -524,6 +527,19 @@ export function SectionEditor({
               />
             </div>
           </AdminCard>
+          </div>
+
+          <AdminSaveBar
+            dirty={dirty}
+            saving={busy}
+            status={status}
+            error={error}
+            onSave={() => void handleSave()}
+            onDiscard={handleDiscard}
+          />
+          </form>
+
+          {children}
         </div>
 
         <div className="lg:sticky lg:top-6 lg:col-span-5">
@@ -543,15 +559,6 @@ export function SectionEditor({
           </div>
         </div>
       </div>
-
-      <AdminSaveBar
-        dirty={dirty}
-        saving={busy}
-        status={status}
-        error={error}
-        onSave={() => void handleSave()}
-        onDiscard={handleDiscard}
-      />
-    </form>
+    </div>
   );
 }
