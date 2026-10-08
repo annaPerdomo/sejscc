@@ -6,7 +6,6 @@ import { WaveDivider } from "@/components/wave-divider";
 const SETTLES_INTO = {
   paper: "text-paper",
   white: "text-white",
-  cream: "text-cream",
   mist: "text-mist",
 } as const;
 
@@ -25,7 +24,6 @@ export function PhotoHero({
   actions,
   aside,
   asideAt = "end",
-  ornament,
   below,
   children,
   settlesInto,
@@ -44,7 +42,6 @@ export function PhotoHero({
   actions?: ReactNode;
   aside?: ReactNode;
   asideAt?: "start" | "end";
-  ornament?: ReactNode;
   below?: ReactNode;
   children?: ReactNode;
   settlesInto: keyof typeof SETTLES_INTO;
@@ -116,12 +113,9 @@ export function PhotoHero({
           }`}
         />
       </div>
-      {ornament}
 
       <div
-        className={`relative mx-auto flex max-w-wide flex-col justify-center gap-12 px-5 pb-28 sm:px-10 sm:pb-36 lg:min-h-page-hero lg:px-16 ${
-          ornament ? "pt-32 sm:pt-36" : "pt-14 sm:pt-18"
-        } ${asideAtEnd ? "lg:grid lg:grid-cols-12 lg:items-center lg:gap-10" : ""}`}
+        className={`relative mx-auto flex max-w-wide flex-col justify-center gap-12 px-5 pt-14 pb-28 sm:px-10 sm:pt-18 sm:pb-36 lg:min-h-page-hero lg:px-16 ${asideAtEnd ? "lg:grid lg:grid-cols-12 lg:items-center lg:gap-10" : ""}`}
       >
         {asideAtStart ? (
           <div className="lg:-ml-8 lg:flex lg:items-start lg:gap-20">

@@ -136,7 +136,16 @@ export const schoolPhotos = {
 } as const;
 
 export const eventsPhotos = {
-  hero: "/photos/hero-about.jpg",
+  /** Matches `events.reel.photos`; keep these photos off every other page. */
+  reel: [
+    "/photos/events-reel-1988-festival-raffle-wide.jpg",
+    "/photos/events-reel-1991-las-vegas-night.jpg",
+    "/photos/events-reel-1993-festival-bon-odori.jpg",
+    "/photos/events-reel-2013-festival-game-booth.jpg",
+    "/photos/events-reel-2014-keirokai-magician.jpg",
+    "/photos/events-reel-2024-festival-taiko.jpg",
+    "/photos/events-reel-2025-festival-bon-odori-wide.jpg",
+  ],
   archive: "/photos/events-odori-ondo.jpg",
 } as const;
 

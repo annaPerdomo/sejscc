@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { EventPoster } from "@/components/event-poster";
+import { EventsReel } from "@/components/events-reel";
+import { NextEventDetails, NextEventFlyer } from "@/components/next-event-feature";
 import { GoogleCalendar } from "@/components/google-calendar";
 import { KanjiWatermark } from "@/components/kanji-watermark";
-import { LanternString } from "@/components/lantern-string";
-import { PhotoHero } from "@/components/photo-hero";
 import { RevealMore } from "@/components/reveal-more";
 import { SectionHeading } from "@/components/section-heading";
 import { SectionKicker } from "@/components/section-kicker";
@@ -16,11 +16,10 @@ import { eventsPhotos } from "@/lib/photos";
 
 export const revalidate = 300;
 
-const UPCOMING_PREVIEW = 10;
+const UPCOMING_PREVIEW = 8;
 const PAST_PREVIEW = 4;
 
-const POSTER_GRID =
-  "reveal-stagger-2-3 grid gap-x-10 gap-y-16 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4";
+const POSTER_GRID = "grid gap-x-8 gap-y-16 sm:grid-cols-2 lg:grid-cols-4";
 
 type Props = { params: Promise<{ lang: string }> };
 
@@ -50,104 +49,105 @@ export default async function EventsPage() {
     getPastEvents(PAST_PREVIEW),
   ]);
   const [next, ...later] = upcoming;
+  const reel = dict.events.reel;
+  const reelPhotos = eventsPhotos.reel.flatMap((src, i) => {
+    const photo = reel.photos[i];
+    return photo ? [{ src, ...photo }] : [];
+  });
 
   return (
     <>
-      <PhotoHero
-        id="events"
-        photo={eventsPhotos.hero}
-        photoAlt={dict.events.heroPhotoAlt}
-        accent={dict.events.kickerAccent}
-        caption={dict.events.kickerCaption}
-        titleLine1={dict.events.titleLine1}
-        lede={<p>{dict.events.lede}</p>}
-        settlesInto="cream"
-        ornament={<LanternString id="events" tone="dark" className="absolute inset-x-0 top-0" />}
-        actions={
-          <>
-            {next && (
-              <a href="#upcoming" className="button-light px-7 py-4 text-base">
-                {dict.events.upcomingTitle}
-              </a>
-            )}
-            <a
-              href="#calendars"
-              className="link-arrow py-2 font-display text-lg font-semibold text-sky hover:text-white"
-            >
-              {dict.events.calendars.heroCta}
-            </a>
-          </>
-        }
-      />
-
-      <section
-        id="upcoming"
-        className="relative scroll-mt-28 overflow-clip bg-cream pt-10 pb-20 sm:pt-14 sm:pb-28"
+      <EventsReel
+        photos={reelPhotos}
+        labels={{
+          accent: dict.events.kickerAccent,
+          caption: dict.events.kickerCaption,
+          title: dict.events.titleLine1,
+          list: reel.list,
+          pause: reel.pause,
+          play: reel.play,
+        }}
+        aside={next && <NextEventFlyer event={next} />}
+        settlesIntoAzure={later.length > 0}
       >
-        <KanjiWatermark char="催" className="-top-10 -left-10 text-magenta/5" />
-        <div className="relative mx-auto max-w-wide px-5 sm:px-10 lg:px-16">
-          <div className="reveal-rise mb-14 max-w-3xl">
-            <SectionKicker
-              accent={dict.events.upcomingAccent}
-              caption={dict.events.upcomingCaption}
-              tone="tinted"
-              size="lg"
-            />
-            <SectionHeading className="mt-4 sm:text-5xl">{dict.events.upcomingTitle}</SectionHeading>
+        {next ? (
+          <NextEventDetails event={next} />
+        ) : (
+          <div className="max-w-xl text-lg leading-relaxed text-ink-soft sm:text-xl">
+            <p>{dict.events.lede}</p>
+            <p className="mt-4">{dict.events.empty}</p>
           </div>
-
-          {next ? (
-            <>
-              <div className="reveal-rise mx-auto max-w-6xl">
-                <EventPoster
-                  event={next}
-                  badge={dict.events.nextUpBadge}
-                  withSignup
-                  variant="feature"
-                />
-              </div>
-
-              {later.length > 0 && (
-                <div className={`mt-24 ${POSTER_GRID}`}>
-                  {later.slice(0, UPCOMING_PREVIEW).map((event, i) => (
-                    <div key={event.id} className="reveal-bloom">
-                      <EventPoster event={event} index={i + 1} withSignup />
-                    </div>
-                  ))}
-                </div>
-              )}
-              <RevealMore
-                moreLabel={dict.events.upcomingShowMore}
-                lessLabel={dict.events.upcomingShowLess}
-                more={
-                  later.length > UPCOMING_PREVIEW ? (
-                    <div className={`mt-16 ${POSTER_GRID}`}>
-                      {later.slice(UPCOMING_PREVIEW).map((event, i) => (
-                        <div key={event.id} className="reveal-bloom">
-                          <EventPoster
-                            event={event}
-                            index={UPCOMING_PREVIEW + i + 1}
-                            withSignup
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  ) : undefined
-                }
-              >
-                <a
-                  href="#calendars"
-                  className="link-arrow py-2 font-display text-lg font-semibold text-indigo hover:text-indigo-deep"
-                >
-                  {dict.events.calendars.sectionCta}
-                </a>
-              </RevealMore>
-            </>
-          ) : (
-            <p className="max-w-2xl text-lg leading-relaxed text-ink-soft">{dict.events.empty}</p>
+        )}
+        <div className="mt-6 flex flex-wrap items-center gap-x-8 gap-y-2">
+          {later.length > 0 && (
+            <a
+              href="#upcoming"
+              className="link-arrow py-2 font-display text-lg font-semibold text-indigo hover:text-indigo-deep"
+            >
+              {dict.events.moreUpcomingCta}
+            </a>
           )}
+          <a
+            href="#calendars"
+            className="link-arrow py-2 font-display text-lg font-semibold text-indigo hover:text-indigo-deep"
+          >
+            {dict.events.calendars.heroCta}
+          </a>
         </div>
-      </section>
+      </EventsReel>
+
+      {later.length > 0 && (
+        <section
+          id="upcoming"
+          className="relative scroll-mt-28 overflow-clip bg-azure pt-8 pb-20 sm:pt-10 sm:pb-28"
+        >
+          <KanjiWatermark char="催" className="-top-6 -right-10 text-indigo/5" />
+          <div className="relative mx-auto max-w-wide px-5 sm:px-10 lg:px-16">
+            <div className="mb-8 max-w-3xl">
+              <SectionKicker
+                accent={dict.events.upcomingAccent}
+                caption={dict.events.upcomingCaption}
+                tone="tinted"
+                size="lg"
+                entrance="load"
+              />
+              <SectionHeading className="mt-3">{dict.events.upcomingTitle}</SectionHeading>
+            </div>
+
+            <div className={POSTER_GRID}>
+              {later.slice(0, UPCOMING_PREVIEW).map((event, i) => (
+                <EventPoster key={event.id} event={event} index={i + 1} withSignup />
+              ))}
+            </div>
+            <RevealMore
+              moreLabel={dict.events.upcomingShowMore}
+              lessLabel={dict.events.upcomingShowLess}
+              more={
+                later.length > UPCOMING_PREVIEW ? (
+                  <div className={`mt-16 ${POSTER_GRID}`}>
+                    {later.slice(UPCOMING_PREVIEW).map((event, i) => (
+                      <div key={event.id} className="reveal-bloom">
+                        <EventPoster
+                          event={event}
+                          index={UPCOMING_PREVIEW + i + 1}
+                          withSignup
+                        />
+                      </div>
+                    ))}
+                  </div>
+                ) : undefined
+              }
+            >
+              <a
+                href="#calendars"
+                className="link-arrow py-2 font-display text-lg font-semibold text-indigo hover:text-indigo-deep"
+              >
+                {dict.events.calendars.sectionCta}
+              </a>
+            </RevealMore>
+          </div>
+        </section>
+      )}
 
       <section
         id="calendars"

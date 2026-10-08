@@ -425,7 +425,48 @@
     "kickerCaption": "What's Happening",
     "titleLine1": "Events",
     "lede": "Festivals, fundraisers, bingo nights, and more — hosted by the center and the groups that call it home.",
-    "heroPhotoAlt": "Dancers in yukata and happi coats circling together in the summer festival's bon odori",
+    "reel": {
+      "list": "Photos from past events, by year",
+      "pause": "Stop rotating event photos",
+      "play": "Rotate event photos automatically",
+      "photos": [
+        {
+          "year": "1988",
+          "title": "The raffle booth at the festival",
+          "alt": "Volunteers running a hand-lettered raffle booth under striped and yellow tents on the center's lawn at the 1988 festival"
+        },
+        {
+          "year": "1991",
+          "title": "Las Vegas Night",
+          "alt": "Guests filling long tables in the gym under strings of red, white and black balloons at the 1991 Las Vegas Night"
+        },
+        {
+          "year": "1993",
+          "title": "Bon odori at the festival",
+          "alt": "Women in yukata dancing bon odori across the grass as a crowd looks on at the 1993 festival"
+        },
+        {
+          "year": "2013",
+          "title": "Game booths at the Summer Festival",
+          "alt": "Children and parents crowding a Pull String game booth under blue canopies at the 2013 Summer Festival"
+        },
+        {
+          "year": "2014",
+          "title": "A magic show at Keirōkai",
+          "alt": "A magician performing a trick for a delighted young helper on the center's stage at the 2014 Keirōkai"
+        },
+        {
+          "year": "2024",
+          "title": "Taiko under the lanterns",
+          "alt": "Taiko drummers in happi coats playing beneath strings of paper lanterns at the 2024 Cultural Festival"
+        },
+        {
+          "year": "2025",
+          "title": "Dancing at the Cultural Festival",
+          "alt": "A dancer in an orange kimono leading bon odori across the lantern-strung lot at the 2025 Cultural Festival"
+        }
+      ]
+    },
     "upcomingAccent": "開催予定",
     "upcomingCaption": "On the Calendar",
     "upcomingTitle": "Coming up at the center",
@@ -436,6 +477,7 @@
     "empty": "No upcoming events are posted right now. Check back soon, or call the center at (562) 863-5996.",
     "atCenter": "At the center",
     "detailsCta": "Details",
+    "moreUpcomingCta": "More coming up",
     "nextUpBadge": "Next Up",
     "signupCta": "Sign up",
     "signupAria": "Sign up for {title}",

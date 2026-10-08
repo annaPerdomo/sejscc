@@ -749,27 +749,6 @@ body {
     pointer-events: none;
   }
 
-  .calendar-binding {
-    position: relative;
-    background: var(--color-navy);
-  }
-
-  .calendar-binding::before {
-    content: "";
-    position: absolute;
-    inset-inline: --spacing(6);
-    top: calc(--spacing(2.5) * -1);
-    height: --spacing(5);
-    background: radial-gradient(
-        circle at center,
-        transparent 0 3px,
-        var(--color-sand) 3px 5px,
-        transparent 5.5px
-      )
-      0 0 / --spacing(7) 100% repeat-x;
-    pointer-events: none;
-  }
-
   .then-now-frame {
     display: grid;
     gap: --spacing(4);
@@ -1214,10 +1193,18 @@ body {
       --tab-progress: 9s;
     }
 
-    .lantern-sway {
-      transform-box: fill-box;
-      transform-origin: top center;
-      animation: bamboo-sway 5s ease-in-out infinite alternate;
+    .reel-progress {
+      --tab-progress: 7s;
+    }
+
+    /* Runs a little past the rotation so the outgoing photo is still drifting
+       while it crossfades out. */
+    .reel-zoom {
+      animation: reel-zoom 9s ease-out both;
+    }
+
+    .reel-zoom-paused {
+      animation-play-state: paused;
     }
 
     .button-primary::after,
@@ -1549,12 +1536,12 @@ body {
   }
 }
 
-@keyframes bamboo-sway {
+@keyframes reel-zoom {
   from {
-    rotate: -1.6deg;
+    transform: scale(1);
   }
   to {
-    rotate: 1.6deg;
+    transform: scale(1.08);
   }
 }
 

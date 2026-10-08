@@ -82,14 +82,15 @@ be built from these tokens via Tailwind utility classes.
   parts are `emaki-stage`, `emaki-track`, `emaki-band`, `emaki-strip`,
   `emaki-photo` and `emaki-progress`, and it always carries
   a skip link past itself in each direction),
+  `reel-zoom` (the slow push-in on the events page's backdrop photos, held
+  with `reel-zoom-paused`),
   `calendar-menu` (a
   `<details>` disclosure styled as a button), `date-page` (a tear-off day
   calendar page; its band is `date-page-month`, and it is decorative, so the
   date must also be in words), `nafuda` (a dojo's wooden
   name tag, for the weekly board), `paper-sheet` (a document with a folded
   corner; its clip-path also clips shadows and focus rings, so those go on a
-  wrapper), `envelope` (the check-by-mail address), `calendar-binding` (a
-  wall calendar's ringed spine), `then-now` / `then-now-stage` /
+  wrapper), `envelope` (the check-by-mail address), `then-now` / `then-now-stage` /
   `then-now-frame` / `then-now-reveal` / `then-now-edge` (two photos of the
   same place, pinned while today's wipes across the old one; without
   scroll-driven animation they simply stack), `drift-columns` (the middle
@@ -118,9 +119,8 @@ be built from these tokens via Tailwind utility classes.
   scrolls in), `watermark-drift`,
   `ken-burns-in` / `ken-burns-out`, `enter-rise` / `enter-stagger` /
   `enter-fade` / `enter-rule` / `brush-draw` / `menu-drop`, `hero-drift`, `link-arrow`,
-  `lantern-sway` (a slow rotation hung from the top of an SVG group),
   `tab-progress` (with a per-strip duration
-  class, `hero-progress`, `groups-progress`, `school-progress`, `year-progress`, and
+  class, `hero-progress`, `groups-progress`, `school-progress`, `year-progress`, `reel-progress`, and
   `tab-progress-paused` to
   hold the strip while the reader is hovering or focused inside it; the
   strip advances on the bar's `animationend`, so the CSS duration is the
