@@ -641,6 +641,18 @@
     "tuitionCta": "Classes & tuition",
     "photoLabel": "Photo coming soon",
     "heroPhotoAlt": "Students in red headbands pulling together in the tug-of-war at the undokai",
+    "heroRotationAlts": [
+      "A black-and-white photo of a teacher standing before rows of students seated at desks in a Japanese-language classroom",
+      "Students and a teacher roll mochi dough into balls along a long table in the school kitchen in 2001",
+      "Students work on small carvings at their desks during a 2016 summer craft camp, with their artwork pinned to the wall behind them",
+      "A student speaks into a microphone on stage during the school's 2016 speech contest, with presentation slides projected beside him",
+      "Students pose with Santa Claus beside a Christmas tree and a Mount Fuji backdrop in 2018, holding craft gifts",
+      "A black-and-white photo of students reaching for doughnuts hung on strings during a Welcome Day game for new students"
+    ],
+    "heroPause": "Stop rotating school photos",
+    "heroPlay": "Rotate school photos automatically",
+    "heroPhotosList": "School photos",
+    "heroPhotoLabel": "Photo {n} of {total}",
     "facts": [
       {
         "label": "School hours",

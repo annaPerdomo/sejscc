@@ -7,6 +7,7 @@ import {
   useMountedAround,
   useReducedMotion,
 } from "@/components/carousel-hooks";
+import { CarouselDots } from "@/components/carousel-dots";
 import { CarouselPlayToggle } from "@/components/carousel-play-toggle";
 
 export type SchoolSlide = {
@@ -98,31 +99,18 @@ export function SchoolSlideshow({
         )}
 
         <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-ink-deep/55 to-transparent" />
-        <div className="absolute inset-x-2 top-1 z-10 flex gap-1 sm:inset-x-4">
-          {slides.map((item, i) => (
-            <button
-              key={item.src}
-              type="button"
-              aria-label={labels.show.replace("{label}", item.label)}
-              aria-current={i === active}
-              onClick={() => show(i)}
-              className="group flex-1 rounded-xs py-3 focus-visible:outline-2 focus-visible:outline-sky"
-            >
-              <span className="block h-1 overflow-clip rounded-xs bg-white/35 transition-colors group-hover:bg-white/60">
-                {i <= active && (
-                  <span
-                    key={i === active ? cycle : undefined}
-                    onAnimationEnd={i === active ? advance : undefined}
-                    className={`block h-full bg-white ${
-                      i === active && rotating
-                        ? "tab-progress school-progress"
-                        : ""
-                    } ${i === active && rotating && paused ? "tab-progress-paused" : ""}`}
-                  />
-                )}
-              </span>
-            </button>
-          ))}
+        <div className="absolute inset-x-2 top-1 z-10 sm:inset-x-4">
+          <CarouselDots
+            count={slides.length}
+            active={active}
+            cycle={cycle}
+            rotating={rotating}
+            paused={paused}
+            progressClassName="school-progress"
+            onShow={show}
+            onAdvance={advance}
+            itemAriaLabel={(i) => labels.show.replace("{label}", slides[i].label)}
+          />
         </div>
 
         <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 bg-gradient-to-t from-ink-deep via-ink-deep/75 to-transparent px-4 pt-16 pb-4 sm:px-6 sm:pb-5">

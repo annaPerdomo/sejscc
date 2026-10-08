@@ -1189,6 +1189,10 @@ body {
       --tab-progress: 7s;
     }
 
+    .school-hero-progress {
+      --tab-progress: 7s;
+    }
+
     .year-progress {
       --tab-progress: 9s;
     }

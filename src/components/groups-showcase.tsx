@@ -8,6 +8,7 @@ import {
   useMountedAround,
   useReducedMotion,
 } from "@/components/carousel-hooks";
+import { CarouselDots } from "@/components/carousel-dots";
 import { CarouselPlayToggle } from "@/components/carousel-play-toggle";
 import { EventMeta } from "@/components/event-meta";
 import { ExternalLink } from "@/components/external-link";
@@ -221,45 +222,23 @@ export function GroupsShowcase({
                       {slideCount(item) > 1 && (
                         <>
                           <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-ink-deep/50 to-transparent" />
-                          <div className="absolute inset-x-3 top-2 z-20 flex gap-1 sm:inset-x-5 lg:inset-x-7">
-                            {Array.from(
-                              { length: slideCount(item) },
-                              (_, n) => (
-                                <button
-                                  key={n}
-                                  type="button"
-                                  aria-label={labels.photo
-                                    .replace("{n}", String(n + 1))
-                                    .replace(
-                                      "{total}",
-                                      String(slideCount(item)),
-                                    )}
-                                  aria-current={n === slide}
-                                  onClick={() => show(i, n)}
-                                  className="group flex-1 rounded-xs py-3 focus-visible:outline-2 focus-visible:outline-sky"
-                                >
-                                  <span className="block h-1 overflow-clip rounded-xs bg-sky/35 transition-colors group-hover:bg-sky/60">
-                                    {n <= slide && (
-                                      <span
-                                        key={n === slide ? cycle : undefined}
-                                        onAnimationEnd={
-                                          n === slide ? advance : undefined
-                                        }
-                                        className={`block h-full bg-sky ${
-                                          n === slide && rotating
-                                            ? `tab-progress groups-progress groups-progress-${slideCount(item)}`
-                                            : ""
-                                        } ${
-                                          n === slide && rotating && paused
-                                            ? "tab-progress-paused"
-                                            : ""
-                                        }`}
-                                      />
-                                    )}
-                                  </span>
-                                </button>
-                              ),
-                            )}
+                          <div className="absolute inset-x-3 top-2 z-20 sm:inset-x-5 lg:inset-x-7">
+                            <CarouselDots
+                              count={slideCount(item)}
+                              active={slide}
+                              cycle={cycle}
+                              rotating={rotating}
+                              paused={paused}
+                              progressClassName={`groups-progress groups-progress-${slideCount(item)}`}
+                              tone="sky"
+                              onShow={(n) => show(i, n)}
+                              onAdvance={advance}
+                              itemAriaLabel={(n) =>
+                                labels.photo
+                                  .replace("{n}", String(n + 1))
+                                  .replace("{total}", String(slideCount(item)))
+                              }
+                            />
                           </div>
                         </>
                       )}

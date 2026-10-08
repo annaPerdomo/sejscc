@@ -1,5 +1,14 @@
+"use client";
+
 import Image, { type StaticImageData } from "next/image";
-import type { ReactNode } from "react";
+import { useRef, useState, type AnimationEvent, type ReactNode } from "react";
+import {
+  useInView,
+  useMountedAround,
+  useReducedMotion,
+} from "@/components/carousel-hooks";
+import { CarouselDots } from "@/components/carousel-dots";
+import { CarouselPlayToggle } from "@/components/carousel-play-toggle";
 import { SectionKicker } from "@/components/section-kicker";
 import { WaveDivider } from "@/components/wave-divider";
 
@@ -9,12 +18,27 @@ const SETTLES_INTO = {
   mist: "text-mist",
 } as const;
 
+export type HeroPhoto = {
+  src: string | StaticImageData;
+  alt: string;
+};
+
+type RotationLabels = {
+  pause: string;
+  play: string;
+  list: string;
+  /** Template with `{n}` and `{total}` placeholders. */
+  photo: string;
+};
+
 // Darkening the wash is safe; thinning it drops the sky title line and the
 // white lede under AA where the photo is brightest.
 export function PhotoHero({
   id,
   photo,
   photoAlt,
+  photos,
+  rotationLabels,
   accent,
   caption,
   titleLine1,
@@ -33,6 +57,9 @@ export function PhotoHero({
   photo: string | StaticImageData;
   /** Empty when the photo is only a backdrop. */
   photoAlt: string;
+  photos?: HeroPhoto[];
+  /** Without these, `photos` never rotates. */
+  rotationLabels?: RotationLabels;
   accent: string;
   caption: string;
   titleLine1: string;
@@ -48,6 +75,43 @@ export function PhotoHero({
 }) {
   const asideAtStart = aside && asideAt === "start";
   const asideAtEnd = aside && asideAt === "end";
+
+  const [active, setActive] = useState(0);
+  const [cycle, setCycle] = useState(0);
+  const [stopped, setStopped] = useState(false);
+  const [hoverPaused, setHoverPaused] = useState(false);
+  const [focusPaused, setFocusPaused] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
+  const inView = useInView(sectionRef);
+  const reduceMotion = useReducedMotion();
+  const mounted = useMountedAround(active, photos?.length ?? 1);
+
+  const isRotating = Boolean(photos && photos.length > 1 && rotationLabels);
+  const canRotate = isRotating && !reduceMotion;
+  const rotating = canRotate && !stopped;
+  const paused = hoverPaused || focusPaused || !inView;
+
+  const advance = (event: AnimationEvent<HTMLSpanElement>) => {
+    if (!photos || event.animationName !== "tab-progress") return;
+    setActive((i) => (i + 1) % photos.length);
+    setCycle((c) => c + 1);
+  };
+
+  const show = (index: number) => {
+    setActive(index);
+    setStopped(true);
+    setCycle((c) => c + 1);
+  };
+
+  // Play clears the hover and focus holds too: the pointer is still inside,
+  // and no mouseleave is coming to release them.
+  const toggleRotation = () => {
+    if (stopped) {
+      setHoverPaused(false);
+      setFocusPaused(false);
+    }
+    setStopped(!stopped);
+  };
 
   const text = (
     <div
@@ -84,22 +148,77 @@ export function PhotoHero({
         </div>
       )}
       {children}
+      {isRotating && photos && rotationLabels && (
+        <div className="mt-9 flex items-center gap-4">
+          <CarouselDots
+            count={photos.length}
+            active={active}
+            cycle={cycle}
+            rotating={rotating}
+            paused={paused}
+            progressClassName="school-hero-progress"
+            onShow={show}
+            onAdvance={advance}
+            ariaLabel={rotationLabels.list}
+            itemAriaLabel={(i) =>
+              rotationLabels.photo
+                .replace("{n}", String(i + 1))
+                .replace("{total}", String(photos.length))
+            }
+            className="w-56 sm:w-72"
+          />
+          {canRotate && (
+            <CarouselPlayToggle
+              stopped={stopped}
+              onToggle={toggleRotation}
+              pauseLabel={rotationLabels.pause}
+              playLabel={rotationLabels.play}
+              className="h-10 w-10 shrink-0 border-white/50 bg-transparent text-white hover:bg-white hover:text-navy"
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 
   const belowRow = below && <div className="enter-rise lg:col-span-12">{below}</div>;
 
   return (
-    <section className="edge-flush relative isolate overflow-clip bg-ink-deep text-white">
+    <section
+      ref={sectionRef}
+      onMouseEnter={() => setHoverPaused(true)}
+      onMouseLeave={() => setHoverPaused(false)}
+      onFocus={() => setFocusPaused(true)}
+      onBlur={() => setFocusPaused(false)}
+      className="edge-flush relative isolate overflow-clip bg-ink-deep text-white"
+    >
       <div className="absolute inset-0 -z-10">
-        <Image
-          src={photo}
-          alt={photoAlt}
-          fill
-          preload
-          sizes="100vw"
-          className="hero-intro-photo object-cover"
-        />
+        {isRotating && photos ? (
+          photos.map((item, i) =>
+            mounted.includes(i) ? (
+              <Image
+                key={typeof item.src === "string" ? item.src : i}
+                src={item.src}
+                alt={i === active ? item.alt : ""}
+                fill
+                preload={i === 0}
+                sizes="100vw"
+                className={`object-cover transition-opacity duration-1000 ease-in-out ${
+                  i === 0 ? "hero-intro-photo" : ""
+                } ${i === active ? "opacity-100" : "opacity-0"}`}
+              />
+            ) : null,
+          )
+        ) : (
+          <Image
+            src={photo}
+            alt={photoAlt}
+            fill
+            preload
+            sizes="100vw"
+            className="hero-intro-photo object-cover"
+          />
+        )}
         <div
           aria-hidden="true"
           className="absolute inset-0 bg-gradient-to-b from-ink-deep/90 via-navy/90 to-ink-deep/95 lg:bg-gradient-to-r lg:from-ink-deep/95 lg:via-navy/90 lg:via-50% lg:to-navy/10 lg:to-85%"

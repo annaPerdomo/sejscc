@@ -107,6 +107,15 @@ export const historyCentennialPhotos: Record<string, StaticImageData> = {
 
 export const schoolPhotos = {
   hero: "/photos/hero-school.jpg",
+  /** Matches `school.heroRotationAlts`; keep these photos off every other page. */
+  heroRotation: [
+    "/photos/hero-school-rotation-classroom-instruction-1980s.jpg",
+    "/photos/hero-school-rotation-mochi-rolling-2001.jpg",
+    "/photos/hero-school-rotation-camp-hanabi-craft-2016.jpg",
+    "/photos/hero-school-rotation-speech-contest-2016.jpg",
+    "/photos/hero-school-rotation-christmas-santa-2018.jpg",
+    "/photos/hero-school-rotation-welcome-day-game.jpg",
+  ],
   join: "/photos/home-school-shuji-class.jpg",
   then: "/photos/school-then.jpg",
   now: "/photos/school-ohanashikai-2018.jpg",

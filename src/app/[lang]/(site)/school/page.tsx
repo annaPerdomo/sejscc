@@ -97,12 +97,24 @@ export default async function SchoolPage() {
   const thenPhoto = photoFor(schoolPhotos.then, history.thenPhotoAlt);
   const nowPhoto = photoFor(schoolPhotos.now, history.nowPhotoAlt);
 
+  const heroPhotos = schoolPhotos.heroRotation.flatMap((src, i) => {
+    const alt = dict.school.heroRotationAlts[i];
+    return alt ? [{ src, alt }] : [];
+  });
+
   return (
     <>
       <PhotoHero
         id="school"
         photo={schoolPhotos.hero}
         photoAlt={dict.school.heroPhotoAlt}
+        photos={heroPhotos}
+        rotationLabels={{
+          pause: dict.school.heroPause,
+          play: dict.school.heroPlay,
+          list: dict.school.heroPhotosList,
+          photo: dict.school.heroPhotoLabel,
+        }}
         accent={dict.school.kickerAccent}
         caption={dict.school.kickerCaption}
         titleLine1={dict.school.titleLine1}
