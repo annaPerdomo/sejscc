@@ -201,12 +201,13 @@ export function useBoardLists({
 
   async function removeMember(id: string) {
     const index = members.findIndex((m) => m.id === id);
+    const removed = members[index];
     const neighbor = members[index + 1] ?? members[index - 1];
     await deleteBoardMember(id);
     setMembers((current) => current.filter((m) => m.id !== id));
     closeMemberOptions();
     undo.clear();
-    setStatus({ kind: "saved", message: "Removed from the page." });
+    setStatus({ kind: "saved", message: `Removed ${removed?.name ?? "the board member"} from the page.` });
     setTimeout(() => focusByKey(neighbor ? `member-button-${neighbor.id}` : "add-member-button"), 0);
   }
 
@@ -230,7 +231,7 @@ export function useBoardLists({
     ]);
     editState.close({ kind: "add-member" });
     undo.clear();
-    setStatus({ kind: "saved", message: "Board member added." });
+    setStatus({ kind: "saved", message: `Added ${trimmed} to the page.` });
     router.refresh();
     setTimeout(() => focusByKey(`member-button-${id}`), 0);
   }

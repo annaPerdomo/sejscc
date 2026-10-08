@@ -19,7 +19,7 @@ const NAV: {
   { href: "/admin", label: "Dashboard", kanji: "家" },
   { href: "/admin/events", label: "Events", kanji: "祭" },
   { href: "/admin/groups", label: "Sports & Classes", kanji: "部" },
-  { href: "/admin/board", label: "Board & Volunteers", kanji: "志" },
+  { href: "/admin/board", label: "Board of Directors", kanji: "志" },
   { href: "/admin/volunteers", label: "Who Can Sign In", kanji: "友", adminOnly: true },
   { href: "/admin/settings", label: "Settings", kanji: "設", adminOnly: true },
 ];

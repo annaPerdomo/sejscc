@@ -28,10 +28,12 @@ export default async function BoardAdminPage() {
   return (
     <div>
       <AdminPageWidth>
-        <h1 className="font-display text-3xl text-ink">Board & Volunteers</h1>
-        <p className="mt-1 mb-6 max-w-xl text-stone">
-          Click any words below to change them. Changes go live on the website
-          as soon as you press Save.
+        <h1 className="font-display text-3xl text-ink">Board of Directors</h1>
+        <p className="mt-1 mb-6 max-w-2xl text-stone">
+          Below is the board section exactly as it appears on the home page.
+          Click any words, the photo, or a person&apos;s name to change it. Each
+          change goes live on the website as soon as you press Save, and you can
+          undo the last one.
         </p>
       </AdminPageWidth>
 

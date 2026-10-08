@@ -23,7 +23,6 @@ import {
 } from "@/lib/volunteer-fields";
 import { toVolunteerSectionView } from "@/lib/volunteers-view";
 import { updateMemberPhoto, updateSectionText } from "./actions";
-import { FirstVisitHint } from "./first-visit-hint";
 import { MemberPanel } from "./item-options-dialog";
 import { AddMemberRow, MemberButton, MemberFieldsForm, MemberPhotoField } from "./member-row";
 import { focusByKey, useOpenTarget } from "./open-target";
@@ -205,9 +204,6 @@ export function SectionCanvas({
       />
 
       <div className="section-wash-history relative overflow-clip py-10 sm:py-14">
-        <div className="mx-auto max-w-7xl px-4 pt-6 @volunteer-sm:px-6 @volunteer-lg:px-10">
-          <FirstVisitHint />
-        </div>
         <div className="preview-static">
           <VolunteerSection
             view={view}

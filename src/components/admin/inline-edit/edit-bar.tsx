@@ -1,5 +1,6 @@
 "use client";
 
+import { useId } from "react";
 import type { Locale } from "@/lib/i18n";
 
 export type EditBarStatus =
@@ -19,6 +20,8 @@ export function EditBar({
   status: EditBarStatus;
   undo?: { description: string; busy: boolean; onUndo: () => void };
 }) {
+  const languageLabelId = useId();
+
   return (
     <div
       id="admin-edit-bar"
@@ -26,16 +29,19 @@ export function EditBar({
       className="sticky top-0 z-20 bg-navy px-4 py-3 text-white outline-none sm:px-6"
     >
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-6 gap-y-3">
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-          <p className="font-display text-sm font-semibold tracking-[0.04em]">
-            Editing the home page
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+          <p id={languageLabelId} className="font-display text-sm font-semibold tracking-[0.04em]">
+            Words shown in
           </p>
-          <div role="group" aria-label="Language" className="inline-flex rounded-lg border border-white/30 p-1">
+          <div
+            role="group"
+            aria-labelledby={languageLabelId}
+            className="inline-flex rounded-lg border border-white/30 p-1"
+          >
             <button
               type="button"
               aria-pressed={lang === "en"}
               onClick={() => onLangChange("en")}
-              data-focus-key="lang-en"
               className={`min-h-11 rounded-md px-3 text-sm font-semibold ${
                 lang === "en" ? "bg-sky text-navy" : "text-sky"
               }`}
@@ -58,7 +64,7 @@ export function EditBar({
           <p aria-live="polite" className="min-h-6 text-sm font-medium">
             {status.kind === "saving" && <span className="text-white">Saving…</span>}
             {status.kind === "saved" && (
-              <span className="text-sky">✓ {status.message ?? "Saved — live on the website"}</span>
+              <span className="text-sky">✓ {status.message ?? "Saved. Live on the website."}</span>
             )}
             {status.kind === "error" && (
               <span role="alert" className="text-blossom">

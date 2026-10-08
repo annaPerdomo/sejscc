@@ -137,7 +137,7 @@ export default async function AdminDashboard() {
         </SummaryCard>
         <SummaryCard
           kanji="志"
-          title="Board & Volunteers"
+          title="Board of Directors"
           addHref="/admin/board"
           addLabel="Edit the section"
           viewHref="/#board"
