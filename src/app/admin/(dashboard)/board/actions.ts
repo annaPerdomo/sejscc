@@ -9,42 +9,26 @@ import {
   volunteerRoles,
   volunteerSection,
 } from "@/db/schema";
+import type { SectionTextField } from "@/components/volunteer-section";
 import { requireUser, revalidateSite } from "@/lib/admin";
 import { isUploadedFileUrl } from "@/lib/format";
+import type { Locale } from "@/lib/i18n";
 import { checkedBlobImageUrl } from "@/lib/uploads";
-
-export type VolunteerSectionInput = {
-  title: string;
-  titleJa: string;
-  intro: string;
-  introJa: string;
-  photoAlt: string;
-  photoAltJa: string;
-  volunteersNote: string;
-  volunteersNoteJa: string;
-  contactNote: string;
-  contactNoteJa: string;
-  contactLinkLabel: string;
-  contactLinkLabelJa: string;
-  waysTitle: string;
-  waysTitleJa: string;
-  waysIntro: string;
-  waysIntroJa: string;
-  photoUrl: string | null;
-};
-
-const SHORT_MAX = 80;
-const LINK_MAX = 40;
-const LONG_MAX = 600;
+import {
+  LONG_MAX,
+  SECTION_TEXT_FIELDS,
+  isSectionTextField,
+  requiredMessage,
+  sectionTextPatch,
+  tooLongMessage,
+} from "@/lib/volunteer-fields";
 
 function tooLong(label: string, max: number): never {
-  throw new Error(
-    `The ${label} is too long — please keep it under ${max} characters.`
-  );
+  throw new Error(tooLongMessage(label, max));
 }
 
 function required(label: string): never {
-  throw new Error(`Please fill in the English ${label}.`);
+  throw new Error(requiredMessage(label));
 }
 
 function requiredField(en: string, ja: string, label: string, max: number) {
@@ -106,43 +90,47 @@ function checkedOrder(ids: unknown, existingIds: string[]): string[] {
   return ids;
 }
 
-export async function updateVolunteerSection(
-  input: VolunteerSectionInput
+export async function updateSectionText(
+  field: SectionTextField,
+  lang: Locale,
+  value: string
 ): Promise<void> {
   await requireUser();
 
-  const title = requiredField(input.title, input.titleJa, "heading", SHORT_MAX);
-  const intro = requiredField(input.intro, input.introJa, "introduction", LONG_MAX);
-  const volunteersNote = requiredField(
-    input.volunteersNote,
-    input.volunteersNoteJa,
-    "note about volunteers",
-    LONG_MAX
-  );
-  const waysTitle = requiredField(
-    input.waysTitle,
-    input.waysTitleJa,
-    "ways to help heading",
-    SHORT_MAX
-  );
-  const waysIntro = requiredField(
-    input.waysIntro,
-    input.waysIntroJa,
-    "ways to help introduction",
-    LONG_MAX
-  );
-  const contactNote = requiredField(
-    input.contactNote,
-    input.contactNoteJa,
-    "contact sentence",
-    LONG_MAX
-  );
-  const contactLinkLabel = requiredField(
-    input.contactLinkLabel,
-    input.contactLinkLabelJa,
-    "contact link words",
-    LINK_MAX
-  );
+  if (!isSectionTextField(field)) {
+    throw new Error("That field doesn't exist.");
+  }
+  if (lang !== "en" && lang !== "ja") {
+    throw new Error("That language isn't supported.");
+  }
+
+  const { label, max } = SECTION_TEXT_FIELDS[field];
+  const trimmed = value.trim();
+
+  if (lang === "en") {
+    if (!trimmed) required(label);
+    if (trimmed.length > max) tooLong(label, max);
+  } else {
+    if (trimmed.length > max) tooLong(`Japanese ${label}`, max);
+  }
+
+  const patch = sectionTextPatch(field, lang, lang === "en" ? trimmed : trimmed || null);
+
+  await db
+    .update(volunteerSection)
+    .set(patch as Partial<typeof volunteerSection.$inferInsert>)
+    .where(eq(volunteerSection.id, VOLUNTEER_SECTION_ID));
+
+  revalidateSite();
+}
+
+export async function updateSectionPhoto(input: {
+  photoUrl: string | null;
+  photoAlt: string;
+  photoAltJa: string;
+}): Promise<void> {
+  await requireUser();
+
   // Required even with no custom photo, since the bundled fallback still
   // needs alt text for visitors who can't see it.
   const photoAlt = requiredField(
@@ -151,28 +139,7 @@ export async function updateVolunteerSection(
     "photo description",
     LONG_MAX
   );
-
   const photoUrl = checkedBlobImageUrl(input.photoUrl);
-
-  const values = {
-    title: title.en,
-    titleJa: title.ja,
-    intro: intro.en,
-    introJa: intro.ja,
-    photoUrl,
-    photoAlt: photoAlt.en,
-    photoAltJa: photoAlt.ja,
-    volunteersNote: volunteersNote.en,
-    volunteersNoteJa: volunteersNote.ja,
-    contactNote: contactNote.en,
-    contactNoteJa: contactNote.ja,
-    contactLinkLabel: contactLinkLabel.en,
-    contactLinkLabelJa: contactLinkLabel.ja,
-    waysTitle: waysTitle.en,
-    waysTitleJa: waysTitle.ja,
-    waysIntro: waysIntro.en,
-    waysIntroJa: waysIntro.ja,
-  };
 
   const [existing] = await db
     .select({ photoUrl: volunteerSection.photoUrl })
@@ -180,12 +147,9 @@ export async function updateVolunteerSection(
     .where(eq(volunteerSection.id, VOLUNTEER_SECTION_ID));
 
   await db
-    .insert(volunteerSection)
-    .values({ id: VOLUNTEER_SECTION_ID, ...values })
-    .onConflictDoUpdate({
-      target: volunteerSection.id,
-      set: values,
-    });
+    .update(volunteerSection)
+    .set({ photoUrl, photoAlt: photoAlt.en, photoAltJa: photoAlt.ja })
+    .where(eq(volunteerSection.id, VOLUNTEER_SECTION_ID));
 
   if (
     existing?.photoUrl &&

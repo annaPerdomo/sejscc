@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { ExternalLink } from "@/components/external-link";
 import { SectionKicker } from "@/components/section-kicker";
 import { SitePhoto } from "@/components/site-photo";
@@ -15,19 +16,59 @@ export type VolunteerSectionLabels = {
   newTab: string;
 };
 
+export type SectionTextField =
+  | "title"
+  | "intro"
+  | "volunteersNote"
+  | "contactNote"
+  | "contactLinkLabel"
+  | "waysTitle"
+  | "waysIntro";
+
+export type VolunteerSectionEdit = {
+  text: (field: SectionTextField, value: string) => ReactNode;
+  photo: (image: ReactNode) => ReactNode;
+  member?: (
+    member: VolunteerSectionView["members"][number],
+    content: ReactNode
+  ) => ReactNode;
+  role?: (
+    role: VolunteerSectionView["roles"][number],
+    content: ReactNode
+  ) => ReactNode;
+  afterMembers?: ReactNode;
+  afterRoles?: ReactNode;
+};
+
 export function VolunteerSection({
   view,
   labels,
   contactHref,
-  photoIsLocalPreview = false,
+  edit,
 }: {
   view: VolunteerSectionView;
   labels: VolunteerSectionLabels;
   contactHref: string;
-  /** The admin live preview overlays an unsaved, unuploaded photo as a
-   * `blob:` object URL, which next/image can't optimize. */
-  photoIsLocalPreview?: boolean;
+  edit?: VolunteerSectionEdit;
 }) {
+  const photoImage = view.photo ? (
+    <Image
+      src={view.photo.src}
+      alt={view.photoAlt}
+      width={view.photo.width}
+      height={view.photo.height}
+      sizes="(max-width: 1024px) calc(100vw - 4rem), 44rem"
+      className="h-auto w-full"
+    />
+  ) : (
+    <Image
+      src={boardPhoto}
+      alt={view.photoAlt}
+      sizes="(max-width: 1024px) calc(100vw - 4rem), 44rem"
+      placeholder="blur"
+    />
+  );
+
   return (
     <div className="@container">
       <div className="relative mx-auto max-w-7xl px-4 pt-14 @volunteer-sm:px-6 @volunteer-sm:pt-18 @volunteer-lg:px-10 @volunteer-lg:pt-24">
@@ -35,24 +76,7 @@ export function VolunteerSection({
           <div className="reveal-swing-left @volunteer-lg:col-span-7">
             <div className="flyer-mount relative">
               <div className="photo-develop">
-                {view.photo ? (
-                  <Image
-                    src={view.photo.src}
-                    alt={view.photoAlt}
-                    width={view.photo.width}
-                    height={view.photo.height}
-                    unoptimized={photoIsLocalPreview}
-                    sizes="(max-width: 1024px) calc(100vw - 4rem), 44rem"
-                    className="h-auto w-full"
-                  />
-                ) : (
-                  <Image
-                    src={boardPhoto}
-                    alt={view.photoAlt}
-                    sizes="(max-width: 1024px) calc(100vw - 4rem), 44rem"
-                    placeholder="blur"
-                  />
-                )}
+                {edit ? edit.photo(photoImage) : photoImage}
               </div>
             </div>
           </div>
@@ -64,10 +88,12 @@ export function VolunteerSection({
               order="caption-first"
             />
             <h3 className="mt-4 font-display text-3xl leading-snug font-normal tracking-[0.02em] text-ink @volunteer-sm:text-4xl">
-              {view.title}
+              {edit ? edit.text("title", view.title) : view.title}
             </h3>
-            <p className="mt-4 text-lg leading-relaxed text-ink-soft">{view.intro}</p>
-            {view.members.length > 0 && (
+            <p className="mt-4 text-lg leading-relaxed text-ink-soft">
+              {edit ? edit.text("intro", view.intro) : view.intro}
+            </p>
+            {(edit || view.members.length > 0) && (
               <ul
                 aria-label={labels.membersLabel}
                 className="seigaiha-rings reveal-stagger-2 mt-7 grid grid-cols-2 gap-x-6 gap-y-3 rounded-2xl border border-line bg-mist px-6 py-6"
@@ -98,28 +124,37 @@ export function VolunteerSection({
                     </span>
                   </li>
                 ))}
+                {edit?.afterMembers}
               </ul>
             )}
-            <p className="mt-7 leading-relaxed text-ink-soft">{view.volunteersNote}</p>
+            <p className="mt-7 leading-relaxed text-ink-soft">
+              {edit ? edit.text("volunteersNote", view.volunteersNote) : view.volunteersNote}
+            </p>
             <p className="mt-3 leading-relaxed text-ink-soft">
-              {view.contactNote}{" "}
-              <Link
-                href={contactHref}
-                className="font-semibold text-indigo hover:text-indigo-deep"
-              >
-                {view.contactLinkLabel}
-              </Link>
+              {edit ? edit.text("contactNote", view.contactNote) : view.contactNote}{" "}
+              {edit ? (
+                <span className="font-semibold text-indigo hover:text-indigo-deep">
+                  {edit.text("contactLinkLabel", view.contactLinkLabel)}
+                </span>
+              ) : (
+                <Link
+                  href={contactHref}
+                  className="font-semibold text-indigo hover:text-indigo-deep"
+                >
+                  {view.contactLinkLabel}
+                </Link>
+              )}
             </p>
           </div>
         </div>
 
-        {view.roles.length > 0 && (
+        {(edit || view.roles.length > 0) && (
           <div className="mt-16 @volunteer-sm:mt-20 @volunteer-lg:mt-24">
             <h3 className="reveal-rise font-display text-3xl leading-snug font-normal tracking-[0.02em] text-ink @volunteer-sm:text-4xl">
-              {view.waysTitle}
+              {edit ? edit.text("waysTitle", view.waysTitle) : view.waysTitle}
             </h3>
             <p className="reveal-rise mt-4 max-w-2xl text-lg leading-relaxed text-ink-soft">
-              {view.waysIntro}
+              {edit ? edit.text("waysIntro", view.waysIntro) : view.waysIntro}
             </p>
             <ul className="reveal-stagger-2-3 mt-10 grid gap-x-10 gap-y-10 @volunteer-sm:grid-cols-2 @volunteer-lg:grid-cols-3">
               {view.roles.map((role, index) => {
@@ -143,7 +178,18 @@ export function VolunteerSection({
                     <p className="mt-3 text-lg leading-relaxed text-ink-soft">
                       {role.description}
                     </p>
-                    {role.signupUrl ? (
+                    {edit ? (
+                      role.signupUrl ? (
+                        <span className="button-primary mt-5 w-fit rounded-lg px-6 py-3.5 font-display text-sm font-semibold tracking-[0.08em] text-white uppercase">
+                          {labels.helpCta}
+                          <span className="sr-only"> {labels.newTab}</span>
+                        </span>
+                      ) : (
+                        <span className="link-arrow mt-5 w-fit font-semibold text-indigo hover:text-indigo-deep">
+                          {labels.askCta}
+                        </span>
+                      )
+                    ) : role.signupUrl ? (
                       <ExternalLink
                         href={role.signupUrl}
                         aria-describedby={titleId}
@@ -164,6 +210,7 @@ export function VolunteerSection({
                   </li>
                 );
               })}
+              {edit?.afterRoles}
             </ul>
           </div>
         )}

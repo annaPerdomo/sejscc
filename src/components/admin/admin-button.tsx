@@ -16,7 +16,7 @@ export function buttonVariantClass(variant: AdminButtonVariant) {
 }
 
 export function buttonClass(variant: AdminButtonVariant) {
-  return `inline-block rounded-lg px-5 py-3 disabled:opacity-50 ${VARIANT_STYLES[variant]}`;
+  return `inline-block rounded-lg px-5 py-3 disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:opacity-50 ${VARIANT_STYLES[variant]}`;
 }
 
 export function AdminButton({
