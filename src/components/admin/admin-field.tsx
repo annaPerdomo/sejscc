@@ -108,13 +108,15 @@ export function AdminOptional() {
 export function AdminCharacterCount({
   value,
   max,
+  as: Tag = "p",
 }: {
   value: string;
   max: number;
+  as?: "p" | "span";
 }) {
   return (
-    <p className="mt-1 text-right text-xs text-stone">
+    <Tag className="mt-1 block text-right text-xs text-stone">
       {value.length} / {max} characters
-    </p>
+    </Tag>
   );
 }

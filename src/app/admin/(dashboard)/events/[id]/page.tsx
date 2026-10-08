@@ -6,6 +6,7 @@ import { getDictionaryFor } from "@/lib/dictionaries";
 import { ConfirmDeleteButton } from "@/components/admin/confirm-delete-button";
 import { EventForm } from "../event-form";
 import { deleteEvent } from "../actions";
+import { AdminPageWidth } from "@/components/admin/admin-page-width";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +21,7 @@ export default async function EditEventPage({
   const dict = await getDictionaryFor("en");
 
   return (
-    <div>
+    <AdminPageWidth>
       <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl text-ink">Edit Event</h1>
@@ -42,6 +43,6 @@ export default async function EditEventPage({
         repeatPhrases={dict.events.repeat}
         atCenterLabel={dict.events.atCenter}
       />
-    </div>
+    </AdminPageWidth>
   );
 }

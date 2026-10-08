@@ -8,6 +8,7 @@ import { getCurrentUser } from "@/lib/admin";
 import { ROLE_LABELS } from "@/lib/format";
 import { AddVolunteerForm } from "./add-volunteer-form";
 import { removeAllowedEmail } from "./actions";
+import { AdminPageWidth } from "@/components/admin/admin-page-width";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +28,7 @@ export default async function VolunteersPage() {
   );
 
   return (
-    <div>
+    <AdminPageWidth>
       <h1 className="font-display text-3xl text-ink">Who Can Sign In</h1>
       <p className="mt-1 mb-8 max-w-xl text-stone">
         People on this list can sign in to this dashboard with a link sent to
@@ -86,6 +87,6 @@ export default async function VolunteersPage() {
           </ul>
         )}
       </div>
-    </div>
+    </AdminPageWidth>
   );
 }

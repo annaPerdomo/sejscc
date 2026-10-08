@@ -9,42 +9,37 @@ import {
   volunteerRoles,
   volunteerSection,
 } from "@/db/schema";
+import type { SectionTextField } from "@/components/volunteer-section";
 import { requireUser, revalidateSite } from "@/lib/admin";
 import { isUploadedFileUrl } from "@/lib/format";
+import type { Locale } from "@/lib/i18n";
 import { checkedBlobImageUrl } from "@/lib/uploads";
+import {
+  LONG_MAX,
+  MEMBER_TEXT_FIELDS,
+  ROLE_TEXT_FIELDS,
+  SECTION_TEXT_FIELDS,
+  isMemberTextField,
+  isRoleTextField,
+  isSectionTextField,
+  memberTextPatch,
+  requiredMessage,
+  roleTextPatch,
+  sectionTextPatch,
+  textFieldValue,
+  tooLongMessage,
+  type MemberTextField,
+  type RoleTextField,
+} from "@/lib/volunteer-fields";
 
-export type VolunteerSectionInput = {
-  title: string;
-  titleJa: string;
-  intro: string;
-  introJa: string;
-  photoAlt: string;
-  photoAltJa: string;
-  volunteersNote: string;
-  volunteersNoteJa: string;
-  contactNote: string;
-  contactNoteJa: string;
-  contactLinkLabel: string;
-  contactLinkLabelJa: string;
-  waysTitle: string;
-  waysTitleJa: string;
-  waysIntro: string;
-  waysIntroJa: string;
-  photoUrl: string | null;
-};
-
-const SHORT_MAX = 80;
-const LINK_MAX = 40;
-const LONG_MAX = 600;
+export type { MemberTextField, RoleTextField };
 
 function tooLong(label: string, max: number): never {
-  throw new Error(
-    `The ${label} is too long — please keep it under ${max} characters.`
-  );
+  throw new Error(tooLongMessage(label, max));
 }
 
 function required(label: string): never {
-  throw new Error(`Please fill in the English ${label}.`);
+  throw new Error(requiredMessage(label));
 }
 
 function requiredField(en: string, ja: string, label: string, max: number) {
@@ -56,12 +51,19 @@ function requiredField(en: string, ja: string, label: string, max: number) {
   return { en: trimmedEn, ja: trimmedJa || null };
 }
 
-function optionalField(en: string, ja: string, label: string, max: number) {
-  const trimmedEn = en.trim();
-  const trimmedJa = ja.trim();
-  if (trimmedEn.length > max) tooLong(label, max);
-  if (trimmedJa.length > max) tooLong(`Japanese ${label}`, max);
-  return { en: trimmedEn || null, ja: trimmedJa || null };
+function validateText(
+  lang: Locale,
+  label: string,
+  max: number,
+  isRequiredField: boolean,
+  trimmed: string
+) {
+  if (lang === "en") {
+    if (isRequiredField && !trimmed) required(label);
+    if (trimmed.length > max) tooLong(label, max);
+  } else if (trimmed.length > max) {
+    tooLong(`Japanese ${label}`, max);
+  }
 }
 
 const NOT_FOUND_MESSAGE = "That entry no longer exists. Please reload the page.";
@@ -106,43 +108,47 @@ function checkedOrder(ids: unknown, existingIds: string[]): string[] {
   return ids;
 }
 
-export async function updateVolunteerSection(
-  input: VolunteerSectionInput
+export async function updateSectionText(
+  field: SectionTextField,
+  lang: Locale,
+  value: string
 ): Promise<void> {
   await requireUser();
 
-  const title = requiredField(input.title, input.titleJa, "heading", SHORT_MAX);
-  const intro = requiredField(input.intro, input.introJa, "introduction", LONG_MAX);
-  const volunteersNote = requiredField(
-    input.volunteersNote,
-    input.volunteersNoteJa,
-    "note about volunteers",
-    LONG_MAX
-  );
-  const waysTitle = requiredField(
-    input.waysTitle,
-    input.waysTitleJa,
-    "ways to help heading",
-    SHORT_MAX
-  );
-  const waysIntro = requiredField(
-    input.waysIntro,
-    input.waysIntroJa,
-    "ways to help introduction",
-    LONG_MAX
-  );
-  const contactNote = requiredField(
-    input.contactNote,
-    input.contactNoteJa,
-    "contact sentence",
-    LONG_MAX
-  );
-  const contactLinkLabel = requiredField(
-    input.contactLinkLabel,
-    input.contactLinkLabelJa,
-    "contact link words",
-    LINK_MAX
-  );
+  if (!isSectionTextField(field)) {
+    throw new Error("That field doesn't exist.");
+  }
+  if (lang !== "en" && lang !== "ja") {
+    throw new Error("That language isn't supported.");
+  }
+
+  const { label, max } = SECTION_TEXT_FIELDS[field];
+  const trimmed = value.trim();
+
+  if (lang === "en") {
+    if (!trimmed) required(label);
+    if (trimmed.length > max) tooLong(label, max);
+  } else {
+    if (trimmed.length > max) tooLong(`Japanese ${label}`, max);
+  }
+
+  const patch = sectionTextPatch(field, lang, lang === "en" ? trimmed : trimmed || null);
+
+  await db
+    .update(volunteerSection)
+    .set(patch as Partial<typeof volunteerSection.$inferInsert>)
+    .where(eq(volunteerSection.id, VOLUNTEER_SECTION_ID));
+
+  revalidateSite();
+}
+
+export async function updateSectionPhoto(input: {
+  photoUrl: string | null;
+  photoAlt: string;
+  photoAltJa: string;
+}): Promise<void> {
+  await requireUser();
+
   // Required even with no custom photo, since the bundled fallback still
   // needs alt text for visitors who can't see it.
   const photoAlt = requiredField(
@@ -151,28 +157,7 @@ export async function updateVolunteerSection(
     "photo description",
     LONG_MAX
   );
-
   const photoUrl = checkedBlobImageUrl(input.photoUrl);
-
-  const values = {
-    title: title.en,
-    titleJa: title.ja,
-    intro: intro.en,
-    introJa: intro.ja,
-    photoUrl,
-    photoAlt: photoAlt.en,
-    photoAltJa: photoAlt.ja,
-    volunteersNote: volunteersNote.en,
-    volunteersNoteJa: volunteersNote.ja,
-    contactNote: contactNote.en,
-    contactNoteJa: contactNote.ja,
-    contactLinkLabel: contactLinkLabel.en,
-    contactLinkLabelJa: contactLinkLabel.ja,
-    waysTitle: waysTitle.en,
-    waysTitleJa: waysTitle.ja,
-    waysIntro: waysIntro.en,
-    waysIntroJa: waysIntro.ja,
-  };
 
   const [existing] = await db
     .select({ photoUrl: volunteerSection.photoUrl })
@@ -180,12 +165,9 @@ export async function updateVolunteerSection(
     .where(eq(volunteerSection.id, VOLUNTEER_SECTION_ID));
 
   await db
-    .insert(volunteerSection)
-    .values({ id: VOLUNTEER_SECTION_ID, ...values })
-    .onConflictDoUpdate({
-      target: volunteerSection.id,
-      set: values,
-    });
+    .update(volunteerSection)
+    .set({ photoUrl, photoAlt: photoAlt.en, photoAltJa: photoAlt.ja })
+    .where(eq(volunteerSection.id, VOLUNTEER_SECTION_ID));
 
   if (
     existing?.photoUrl &&
@@ -202,26 +184,6 @@ export async function updateVolunteerSection(
   revalidateSite();
 }
 
-export type BoardMemberInput = {
-  name: string;
-  nameJa: string;
-  role: string;
-  roleJa: string;
-  photoUrl: string | null;
-};
-
-function boardMemberValues(input: BoardMemberInput) {
-  const name = requiredField(input.name, input.nameJa, "name", 80);
-  const role = optionalField(input.role, input.roleJa, "title", 60);
-  return {
-    name: name.en,
-    nameJa: name.ja,
-    role: role.en,
-    roleJa: role.ja,
-    photoUrl: checkedBlobImageUrl(input.photoUrl),
-  };
-}
-
 async function deleteBlobBestEffort(url: string | null, label: string) {
   if (!url || !isUploadedFileUrl(url)) return;
   try {
@@ -231,33 +193,70 @@ async function deleteBlobBestEffort(url: string | null, label: string) {
   }
 }
 
-export async function createBoardMember(input: BoardMemberInput): Promise<void> {
+export async function updateMemberText(
+  id: string,
+  field: MemberTextField,
+  lang: Locale,
+  value: string
+): Promise<void> {
   await requireUser();
-  const values = boardMemberValues(input);
-  const sortOrder = await nextSortOrder(boardMembers);
-  await db.insert(boardMembers).values({ ...values, sortOrder });
+
+  if (!isMemberTextField(field)) throw new Error("That field doesn't exist.");
+  if (lang !== "en" && lang !== "ja") throw new Error("That language isn't supported.");
+
+  const { label, max, required: isRequiredField } = MEMBER_TEXT_FIELDS[field];
+  const trimmed = value.trim();
+  validateText(lang, label, max, isRequiredField, trimmed);
+
+  const patch = memberTextPatch(field, lang, textFieldValue(isRequiredField, lang, trimmed));
+
+  const result = await db
+    .update(boardMembers)
+    .set(patch as Partial<typeof boardMembers.$inferInsert>)
+    .where(eq(boardMembers.id, id))
+    .returning({ id: boardMembers.id });
+  if (result.length === 0) throw new Error(NOT_FOUND_MESSAGE);
+
   revalidateSite();
 }
 
-export async function updateBoardMember(
+export async function updateMemberPhoto(
   id: string,
-  input: BoardMemberInput
+  photoUrl: string | null
 ): Promise<void> {
   await requireUser();
+
   const [existing] = await db
-    .select()
+    .select({ photoUrl: boardMembers.photoUrl })
     .from(boardMembers)
     .where(eq(boardMembers.id, id));
   if (!existing) throw new Error(NOT_FOUND_MESSAGE);
 
-  const values = boardMemberValues(input);
-  await db.update(boardMembers).set(values).where(eq(boardMembers.id, id));
+  const checkedUrl = checkedBlobImageUrl(photoUrl);
+  await db.update(boardMembers).set({ photoUrl: checkedUrl }).where(eq(boardMembers.id, id));
 
-  if (existing.photoUrl && existing.photoUrl !== values.photoUrl) {
+  if (existing.photoUrl && existing.photoUrl !== checkedUrl) {
     await deleteBlobBestEffort(existing.photoUrl, "previous board member photo");
   }
 
   revalidateSite();
+}
+
+export async function addBoardMember(name: string): Promise<{ id: string }> {
+  await requireUser();
+
+  const trimmed = name.trim();
+  const { label, max } = MEMBER_TEXT_FIELDS.name;
+  validateText("en", label, max, true, trimmed);
+
+  const sortOrder = await nextSortOrder(boardMembers);
+  const [row] = await db
+    .insert(boardMembers)
+    .values({ name: trimmed, sortOrder })
+    .returning({ id: boardMembers.id });
+
+  revalidateSite();
+  return { id: row.id };
 }
 
 export async function deleteBoardMember(id: string): Promise<void> {
@@ -306,66 +305,72 @@ export async function reorderBoardMembers(orderedIds: string[]): Promise<void> {
   revalidateSite();
 }
 
-export type VolunteerRoleInput = {
-  title: string;
-  titleJa: string;
-  description: string;
-  descriptionJa: string;
-  commitment: string;
-  commitmentJa: string;
-  signupUrl: string;
-};
-
-function volunteerRoleValues(input: VolunteerRoleInput) {
-  const title = requiredField(input.title, input.titleJa, "title", 80);
-  const description = requiredField(
-    input.description,
-    input.descriptionJa,
-    "description",
-    400
-  );
-  const commitment = optionalField(
-    input.commitment,
-    input.commitmentJa,
-    "commitment",
-    60
-  );
-  return {
-    title: title.en,
-    titleJa: title.ja,
-    description: description.en,
-    descriptionJa: description.ja,
-    commitment: commitment.en,
-    commitmentJa: commitment.ja,
-    signupUrl: checkedSignupUrl(input.signupUrl),
-  };
-}
-
-export async function createVolunteerRole(
-  input: VolunteerRoleInput
-): Promise<void> {
-  await requireUser();
-  const values = volunteerRoleValues(input);
-  const sortOrder = await nextSortOrder(volunteerRoles);
-  await db.insert(volunteerRoles).values({ ...values, sortOrder });
-  revalidateSite();
-}
-
-export async function updateVolunteerRole(
+export async function updateRoleText(
   id: string,
-  input: VolunteerRoleInput
+  field: RoleTextField,
+  lang: Locale,
+  value: string
 ): Promise<void> {
   await requireUser();
-  const [existing] = await db
-    .select()
-    .from(volunteerRoles)
-    .where(eq(volunteerRoles.id, id));
-  if (!existing) throw new Error(NOT_FOUND_MESSAGE);
 
-  const values = volunteerRoleValues(input);
-  await db.update(volunteerRoles).set(values).where(eq(volunteerRoles.id, id));
+  if (!isRoleTextField(field)) throw new Error("That field doesn't exist.");
+  if (lang !== "en" && lang !== "ja") throw new Error("That language isn't supported.");
+
+  const { label, max, required: isRequiredField } = ROLE_TEXT_FIELDS[field];
+  const trimmed = value.trim();
+  validateText(lang, label, max, isRequiredField, trimmed);
+
+  const patch = roleTextPatch(field, lang, textFieldValue(isRequiredField, lang, trimmed));
+
+  const result = await db
+    .update(volunteerRoles)
+    .set(patch as Partial<typeof volunteerRoles.$inferInsert>)
+    .where(eq(volunteerRoles.id, id))
+    .returning({ id: volunteerRoles.id });
+  if (result.length === 0) throw new Error(NOT_FOUND_MESSAGE);
 
   revalidateSite();
+}
+
+export async function updateRoleSignupUrl(id: string, signupUrl: string): Promise<void> {
+  await requireUser();
+
+  const checkedUrl = checkedSignupUrl(signupUrl);
+  const result = await db
+    .update(volunteerRoles)
+    .set({ signupUrl: checkedUrl })
+    .where(eq(volunteerRoles.id, id))
+    .returning({ id: volunteerRoles.id });
+  if (result.length === 0) throw new Error(NOT_FOUND_MESSAGE);
+
+  revalidateSite();
+}
+
+export async function addVolunteerRole(
+  title: string,
+  description: string
+): Promise<{ id: string }> {
+  await requireUser();
+
+  const trimmedTitle = title.trim();
+  const trimmedDescription = description.trim();
+  validateText("en", ROLE_TEXT_FIELDS.title.label, ROLE_TEXT_FIELDS.title.max, true, trimmedTitle);
+  validateText(
+    "en",
+    ROLE_TEXT_FIELDS.description.label,
+    ROLE_TEXT_FIELDS.description.max,
+    true,
+    trimmedDescription
+  );
+
+  const sortOrder = await nextSortOrder(volunteerRoles);
+  const [row] = await db
+    .insert(volunteerRoles)
+    .values({ title: trimmedTitle, description: trimmedDescription, sortOrder })
+    .returning({ id: volunteerRoles.id });
+
+  revalidateSite();
+  return { id: row.id };
 }
 
 export async function deleteVolunteerRole(id: string): Promise<void> {

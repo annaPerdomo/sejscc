@@ -25,13 +25,20 @@ export type VolunteerSectionView = {
   contactLinkLabel: string;
   waysTitle: string;
   waysIntro: string;
-  members: { id: string; name: string; role: string | null; photoUrl: string | null }[];
+  members: {
+    id: string;
+    name: string;
+    role: string | null;
+    photoUrl: string | null;
+    visible: boolean;
+  }[];
   roles: {
     id: string;
     title: string;
     description: string;
     commitment: string | null;
     signupUrl: string | null;
+    visible: boolean;
   }[];
 };
 
@@ -81,6 +88,7 @@ export function toVolunteerSectionView(
       name: localized(member.name, member.nameJa, lang),
       role: localizedOptional(member.role, member.roleJa, lang),
       photoUrl: checkedPhotoUrl(member.photoUrl),
+      visible: member.visible,
     })),
     roles: roles.map((role) => ({
       id: role.id,
@@ -88,6 +96,7 @@ export function toVolunteerSectionView(
       description: localized(role.description, role.descriptionJa, lang),
       commitment: localizedOptional(role.commitment, role.commitmentJa, lang),
       signupUrl: checkedSignupUrl(role.signupUrl),
+      visible: role.visible,
     })),
   };
 }

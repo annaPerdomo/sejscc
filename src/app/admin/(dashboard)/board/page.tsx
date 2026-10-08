@@ -7,16 +7,12 @@ import {
   volunteerSection,
 } from "@/db/schema";
 import { AdminAlert } from "@/components/admin/admin-alert";
-import { AdminStep } from "@/components/admin/admin-card";
+import { AdminPageWidth } from "@/components/admin/admin-page-width";
 import { getDictionaryFor } from "@/lib/dictionaries";
 import { getImageSize } from "@/lib/image-size";
-import { BoardMembersEditor } from "./board-members-editor";
-import { SectionEditor } from "./section-editor";
-import { VolunteerRolesEditor } from "./volunteer-roles-editor";
+import { SectionCanvas } from "./section-canvas";
 
 export const dynamic = "force-dynamic";
-
-const STEPS = ["Words", "Photo", "Board members", "Ways to help"];
 
 export default async function BoardAdminPage() {
   const [sections, members, roles, enDict, jaDict] = await Promise.all([
@@ -37,42 +33,32 @@ export default async function BoardAdminPage() {
   ]);
 
   const section = sections[0];
-  const visibleMembers = members.filter((member) => member.visible);
-  const visibleRoles = roles.filter((role) => role.visible);
 
   return (
     <div>
-      <h1 className="font-display text-3xl text-ink">Board & Volunteers</h1>
-      <p className="mt-1 mb-6 max-w-xl text-stone">
-        Change the words and photo for the Board & Volunteers part of the
-        home page. Your changes appear on the website as soon as you save.
-      </p>
-
-      <ol className="mb-8 flex flex-wrap gap-x-8 gap-y-3">
-        {STEPS.map((label, index) => (
-          <li key={label} className="flex items-center gap-2">
-            <AdminStep n={index + 1} />
-            <span className="font-medium text-ink">{label}</span>
-          </li>
-        ))}
-      </ol>
+      <AdminPageWidth>
+        <h1 className="font-display text-3xl text-ink">Board & Volunteers</h1>
+        <p className="mt-1 mb-6 max-w-xl text-stone">
+          Click any words below to change them. Changes go live on the website
+          as soon as you press Save.
+        </p>
+      </AdminPageWidth>
 
       {!section ? (
-        <AdminAlert>
-          This section hasn&apos;t been set up yet. Ask a developer to run{" "}
-          <code>npm run seed-volunteer-section</code>.
-        </AdminAlert>
+        <AdminPageWidth>
+          <AdminAlert>
+            This section hasn&apos;t been set up yet. Ask a developer to run{" "}
+            <code>npm run seed-volunteer-section</code>.
+          </AdminAlert>
+        </AdminPageWidth>
       ) : (
-        <SectionEditor
+        <SectionCanvas
           section={section}
-          members={visibleMembers}
-          roles={visibleRoles}
+          members={members}
+          roles={roles}
           photoSize={section.photoUrl ? await getImageSize(section.photoUrl) : null}
           labels={{ en: enDict.home.board, ja: jaDict.home.board }}
-        >
-          <BoardMembersEditor members={members} />
-          <VolunteerRolesEditor roles={roles} />
-        </SectionEditor>
+        />
       )}
     </div>
   );

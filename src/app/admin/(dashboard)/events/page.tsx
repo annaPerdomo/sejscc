@@ -9,6 +9,7 @@ import { AdminBadge, type AdminBadgeTone } from "@/components/admin/admin-badge"
 import { AdminButtonLink } from "@/components/admin/admin-button";
 import { AdminEmptyState } from "@/components/admin/admin-card";
 import { AdminListRow } from "@/components/admin/admin-list-row";
+import { AdminPageWidth } from "@/components/admin/admin-page-width";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +26,7 @@ export default async function AdminEventsPage() {
   ]);
 
   return (
-    <div>
+    <AdminPageWidth>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl text-ink">Events</h1>
@@ -79,6 +80,6 @@ export default async function AdminEventsPage() {
           })}
         </ul>
       )}
-    </div>
+    </AdminPageWidth>
   );
 }

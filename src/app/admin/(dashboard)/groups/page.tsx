@@ -4,6 +4,7 @@ import { groups } from "@/db/schema";
 import { AdminButtonLink } from "@/components/admin/admin-button";
 import { AdminEmptyState } from "@/components/admin/admin-card";
 import { GroupList } from "./group-list";
+import { AdminPageWidth } from "@/components/admin/admin-page-width";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +15,7 @@ export default async function AdminGroupsPage() {
     .orderBy(asc(groups.sortOrder), asc(groups.name));
 
   return (
-    <div>
+    <AdminPageWidth>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl text-ink">Sports &amp; Classes</h1>
@@ -35,6 +36,6 @@ export default async function AdminGroupsPage() {
       ) : (
         <GroupList groups={allGroups} />
       )}
-    </div>
+    </AdminPageWidth>
   );
 }

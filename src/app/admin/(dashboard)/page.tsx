@@ -5,6 +5,7 @@ import { boardMembers, volunteerRoles } from "@/db/schema";
 import { getActiveGroups, getUpcomingEvents } from "@/lib/events";
 import { AdminButtonLink } from "@/components/admin/admin-button";
 import { AdminCard } from "@/components/admin/admin-card";
+import { AdminPageWidth } from "@/components/admin/admin-page-width";
 
 export const dynamic = "force-dynamic";
 
@@ -70,7 +71,7 @@ export default async function AdminDashboard() {
   const today = new Date();
 
   return (
-    <div>
+    <AdminPageWidth>
       <div className="flex flex-wrap items-end justify-between gap-6">
         <div>
           <h1 className="font-display text-3xl text-ink sm:text-4xl">
@@ -151,6 +152,6 @@ export default async function AdminDashboard() {
           {`Board members: ${boardMemberCounts.showing} showing, ${boardMemberCounts.hidden} hidden. Ways to help: ${volunteerRoleCounts.showing} showing, ${volunteerRoleCounts.hidden} hidden.`}
         </SummaryCard>
       </div>
-    </div>
+    </AdminPageWidth>
   );
 }
