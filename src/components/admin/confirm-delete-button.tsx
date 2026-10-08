@@ -9,11 +9,17 @@ export function ConfirmDeleteButton({
   label,
   prompt,
   redirectTo,
+  confirmLabel = "Yes, delete",
+  cancelLabel = "Keep it",
+  busyLabel = "Deleting…",
 }: {
   action: () => Promise<void>;
   label: string;
   prompt: string;
   redirectTo?: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  busyLabel?: string;
 }) {
   const router = useRouter();
   const [confirming, setConfirming] = useState(false);
@@ -61,7 +67,7 @@ export function ConfirmDeleteButton({
           onClick={confirm}
           className="min-h-11 rounded-md bg-indigo px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-deep disabled:opacity-50"
         >
-          {busy ? "Deleting…" : "Yes, delete"}
+          {busy ? busyLabel : confirmLabel}
         </button>
         <button
           type="button"
@@ -69,7 +75,7 @@ export function ConfirmDeleteButton({
           onClick={() => setConfirming(false)}
           className="min-h-11 rounded-md px-3 py-2 text-sm font-medium text-ink hover:bg-white"
         >
-          Keep it
+          {cancelLabel}
         </button>
       </div>
       {error && (

@@ -10,9 +10,7 @@ import { AdminAlert } from "@/components/admin/admin-alert";
 import { AdminPageWidth } from "@/components/admin/admin-page-width";
 import { getDictionaryFor } from "@/lib/dictionaries";
 import { getImageSize } from "@/lib/image-size";
-import { BoardMembersEditor } from "./board-members-editor";
 import { SectionCanvas } from "./section-canvas";
-import { VolunteerRolesEditor } from "./volunteer-roles-editor";
 
 export const dynamic = "force-dynamic";
 
@@ -54,25 +52,13 @@ export default async function BoardAdminPage() {
           </AdminAlert>
         </AdminPageWidth>
       ) : (
-        <>
-          <SectionCanvas
-            section={section}
-            members={members}
-            roles={roles}
-            photoSize={section.photoUrl ? await getImageSize(section.photoUrl) : null}
-            labels={{ en: enDict.home.board, ja: jaDict.home.board }}
-          />
-
-          <AdminPageWidth>
-            <h2 className="mt-10 font-display text-2xl text-ink">
-              Board members and ways to help
-            </h2>
-            <div className="mt-5 space-y-6">
-              <BoardMembersEditor members={members} />
-              <VolunteerRolesEditor roles={roles} />
-            </div>
-          </AdminPageWidth>
-        </>
+        <SectionCanvas
+          section={section}
+          members={members}
+          roles={roles}
+          photoSize={section.photoUrl ? await getImageSize(section.photoUrl) : null}
+          labels={{ en: enDict.home.board, ja: jaDict.home.board }}
+        />
       )}
     </div>
   );

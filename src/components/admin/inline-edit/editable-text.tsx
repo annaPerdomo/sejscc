@@ -5,12 +5,15 @@ import { AdminBadge } from "@/components/admin/admin-badge";
 import { buttonClass } from "@/components/admin/admin-button";
 import { AdminCharacterCount } from "@/components/admin/admin-field";
 import { requiredMessage, tooLongMessage } from "@/lib/volunteer-fields";
+import { isImeComposing } from "./ime";
 
 export function EditableText({
   label,
   noun,
   value,
   fallback,
+  placeholder,
+  focusKey,
   multiline = false,
   maxLength,
   required = false,
@@ -26,6 +29,8 @@ export function EditableText({
   noun: string;
   value: string;
   fallback?: string;
+  placeholder?: string;
+  focusKey?: string;
   multiline?: boolean;
   maxLength: number;
   required?: boolean;
@@ -112,7 +117,7 @@ export function EditableText({
   }
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if (event.nativeEvent.isComposing || event.keyCode === 229) return;
+    if (isImeComposing(event)) return;
     if (event.key === "Escape") {
       event.preventDefault();
       handleCancel();
@@ -125,7 +130,8 @@ export function EditableText({
   }
 
   if (!isOpen) {
-    const displayValue = value || fallback || "";
+    const isPlaceholder = !value && !fallback && !!placeholder;
+    const displayValue = value || fallback || placeholder || "";
     const isFallback = !value && !!fallback;
     return (
       <span ref={containerRef} className="inline-flex flex-wrap items-center gap-2">
@@ -134,9 +140,10 @@ export function EditableText({
           type="button"
           onClick={openField}
           aria-label={`Change ${label}: ${displayValue}`}
+          data-focus-key={focusKey}
           className="inline-edit-target"
         >
-          <span>{displayValue}</span>
+          <span className={isPlaceholder ? "text-ink-soft" : undefined}>{displayValue}</span>
           <span aria-hidden="true" className="inline-edit-chip pointer-coarse:opacity-100">
             ✎ Change
           </span>
