@@ -31,9 +31,9 @@ import { weekDays } from "@/db/schema";
 import { getDictionary, getLocale } from "@/lib/dictionaries";
 import { localePath } from "@/lib/i18n";
 import { getAboutVideoUrls } from "@/lib/site-settings";
+import { getVolunteerSection } from "@/lib/volunteers";
 import { youtubeVideoId } from "@/lib/video";
 import {
-  boardPhoto,
   historyAlbumPhotos,
   historyCentennialPhotos,
   historyFounderPhotos,
@@ -42,6 +42,7 @@ import {
   photoFor,
   schoolPhotos,
 } from "@/lib/photos";
+import { VolunteerSection } from "@/components/volunteer-section";
 
 export const revalidate = 300;
 
@@ -83,13 +84,15 @@ function ContactIcon({ name }: { name: keyof typeof CONTACT_ICONS }) {
 }
 
 export default async function HomePage() {
-  const [lang, dict, upcoming, groups, aboutVideoUrls] = await Promise.all([
-    getLocale(),
-    getDictionary(),
-    getUpcomingEvents(5),
-    getActiveGroups(),
-    getAboutVideoUrls(),
-  ]);
+  const lang = await getLocale();
+  const [dict, upcoming, groups, aboutVideoUrls, volunteerSection] =
+    await Promise.all([
+      getDictionary(),
+      getUpcomingEvents(5),
+      getActiveGroups(),
+      getAboutVideoUrls(),
+      getVolunteerSection(lang),
+    ]);
   const href = (path: string) => localePath(lang, path);
   const aboutVideoIds = aboutVideoUrls
     .map((url) => youtubeVideoId(url))
@@ -485,61 +488,14 @@ export default async function HomePage() {
           />
         )}
 
-        <div
-          id="board"
-          className="relative mx-auto grid max-w-7xl scroll-mt-28 gap-10 px-4 pt-14 sm:px-6 sm:pt-18 lg:grid-cols-12 lg:items-center lg:gap-14 lg:px-10 lg:pt-24"
-        >
-          <div className="reveal-swing-left lg:col-span-7">
-            <div className="flyer-mount relative">
-              <div className="photo-develop">
-                <Image
-                  src={boardPhoto}
-                  alt={dict.home.board.photoAlt}
-                  sizes="(max-width: 1024px) calc(100vw - 4rem), 44rem"
-                  placeholder="blur"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="reveal-rise lg:col-span-5">
-            <SectionKicker
-              accent={dict.home.board.kickerAccent}
-              caption={dict.home.board.kickerCaption}
-              tone="magenta"
-              order="caption-first"
+        <div id="board" className="scroll-mt-28">
+          {volunteerSection && (
+            <VolunteerSection
+              view={volunteerSection}
+              labels={dict.home.board}
+              contactHref={`${href("/")}#contact`}
             />
-            <h3 className="mt-4 font-display text-3xl leading-snug font-normal tracking-[0.02em] text-ink sm:text-4xl">
-              {dict.home.board.title}
-            </h3>
-            <p className="mt-4 text-lg leading-relaxed text-ink-soft">
-              {dict.home.board.intro}
-            </p>
-            <ul className="seigaiha-rings reveal-stagger-2 mt-7 grid grid-cols-2 gap-x-6 gap-y-3 rounded-2xl border border-line bg-mist px-6 py-6">
-              {dict.home.board.members.map((name) => (
-                <li key={name} className="reveal-rise flex items-center gap-2.5">
-                  <span
-                    aria-hidden="true"
-                    className="reveal-pop h-1.5 w-1.5 shrink-0 rounded-full bg-magenta"
-                  />
-                  <span className="font-display text-base font-medium text-ink">
-                    {name}
-                  </span>
-                </li>
-              ))}
-            </ul>
-            <p className="mt-7 leading-relaxed text-ink-soft">
-              {dict.home.board.volunteersNote}
-            </p>
-            <p className="mt-3 leading-relaxed text-ink-soft">
-              {dict.home.board.note}{" "}
-              <Link
-                href={`${href("/")}#contact`}
-                className="font-semibold text-indigo hover:text-indigo-deep"
-              >
-                {dict.home.board.noteLink}
-              </Link>
-            </p>
-          </div>
+          )}
         </div>
       </section>
 

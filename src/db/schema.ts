@@ -151,3 +151,74 @@ export const siteSettings = pgTable("site_setting", {
     .defaultNow()
     .$onUpdate(() => new Date()),
 });
+
+export const VOLUNTEER_SECTION_ID = "home";
+
+export const volunteerSection = pgTable("volunteer_section", {
+  id: text("id").primaryKey().default(VOLUNTEER_SECTION_ID),
+  title: text("title").notNull(),
+  titleJa: text("title_ja"),
+  intro: text("intro").notNull(),
+  introJa: text("intro_ja"),
+  photoUrl: text("photo_url"),
+  photoAlt: text("photo_alt").notNull(),
+  photoAltJa: text("photo_alt_ja"),
+  volunteersNote: text("volunteers_note").notNull(),
+  volunteersNoteJa: text("volunteers_note_ja"),
+  contactNote: text("contact_note").notNull(),
+  contactNoteJa: text("contact_note_ja"),
+  contactLinkLabel: text("contact_link_label").notNull(),
+  contactLinkLabelJa: text("contact_link_label_ja"),
+  waysTitle: text("ways_title").notNull(),
+  waysTitleJa: text("ways_title_ja"),
+  waysIntro: text("ways_intro").notNull(),
+  waysIntroJa: text("ways_intro_ja"),
+  updatedAt: timestamp("updated_at", { mode: "date" })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
+export type VolunteerSectionRow = typeof volunteerSection.$inferSelect;
+
+export const boardMembers = pgTable("board_member", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  name: text("name").notNull(),
+  nameJa: text("name_ja"),
+  role: text("role"),
+  roleJa: text("role_ja"),
+  photoUrl: text("photo_url"),
+  sortOrder: integer("sort_order").notNull().default(0),
+  visible: boolean("visible").notNull().default(true),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: "date" })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
+export type BoardMember = typeof boardMembers.$inferSelect;
+
+export const volunteerRoles = pgTable("volunteer_role", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  title: text("title").notNull(),
+  titleJa: text("title_ja"),
+  description: text("description").notNull(),
+  descriptionJa: text("description_ja"),
+  commitment: text("commitment"),
+  commitmentJa: text("commitment_ja"),
+  signupUrl: text("signup_url"),
+  sortOrder: integer("sort_order").notNull().default(0),
+  visible: boolean("visible").notNull().default(true),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: "date" })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
+export type VolunteerRole = typeof volunteerRoles.$inferSelect;

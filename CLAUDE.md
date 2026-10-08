@@ -27,6 +27,11 @@ All design tokens live in `@theme` in [globals.css](src/app/globals.css)
 heights: `min-h-page-hero` (a page's opening photo, the screen below the
 header), `h-stack-panel` (a sticky panel in a stack) and `min-h-year-photo` (the
 school-year photo, short enough to share a screen with its caption);
+spacing: `max-h-preview` (the admin live-preview panel, one screen less its
+header) and `pb-safe-bottom` (a bar pinned to the viewport's bottom edge,
+clear of iOS's home indicator); container breakpoints: `@volunteer-sm` /
+`@volunteer-lg` (the board & volunteers section lays out by its own width,
+so the admin preview matches the home page);
 vertical Japanese text: `writing-vertical`;
 fonts: `font-sans` (Zen Maru Gothic, body copy), `font-display` (Jost,
 headings and UI labels),
@@ -125,7 +130,10 @@ be built from these tokens via Tailwind utility classes.
   hold the strip while the reader is hovering or focused inside it; the
   strip advances on the bar's `animationend`, so the CSS duration is the
   rotation interval),
-  `between-waves`, `card-stretch`, and the
+  `between-waves`, `card-stretch`, `pill` (a small rounded label, such as a
+  volunteer role's time commitment), `preview-static` (holds every scroll-driven
+  animation at its end state inside the admin's inert live preview, which has
+  no scroll timeline to drive them), and the
   `section-wash-*` backgrounds, and the three dark
   scenes, `section-navy-scene`, `section-midnight-scene` (ink-deep, for the
   school) and `section-indigo-scene` (indigo-deep, for the videos), so no

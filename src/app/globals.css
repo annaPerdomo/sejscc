@@ -33,6 +33,12 @@
   /* Four across at this width keeps the card width three across has in max-w-6xl. */
   --container-wide: 96rem;
 
+  /* Equal to Tailwind's sm/lg viewport breakpoints, so VolunteerSection's
+     full-width public layout is unchanged while its container-query
+     variants let the narrower admin preview reflow honestly. */
+  --container-volunteer-sm: 40rem;
+  --container-volunteer-lg: 64rem;
+
   /* Keeps the hero's flyer, details and event list inside one laptop screen. */
   --spacing-hero-flyer: min(50svh, 36rem);
 
@@ -42,6 +48,13 @@
 
   /* A stacked panel leaves a strip of the one beneath it showing. */
   --spacing-stack-panel: calc(100svh - 10rem);
+
+  /* The admin preview panel scrolls on its own, below its own header. */
+  --spacing-preview: calc(100svh - 6rem);
+
+  /* Clears iOS's home-indicator inset for a bar pinned to the viewport's
+     bottom edge. */
+  --spacing-safe-bottom: max(1rem, env(safe-area-inset-bottom));
 
   /* Leaves room under the sticky header for the caption, so a school-year
      event's photo and its write-up share one laptop screen. */
@@ -317,6 +330,16 @@ body {
 
   .button-outline:hover {
     border-color: var(--color-ink);
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--color-line);
+    background: var(--color-mist);
+    padding: --spacing(1) --spacing(3);
+    color: var(--color-ink);
   }
 
   .carousel-button {
@@ -1056,6 +1079,29 @@ body {
         animation-range: cover 5% cover 35%;
       }
     }
+  }
+
+  /* An inert, non-scrolling preview gives view() nothing to drive, so its
+     reveal-* descendants would sit frozen at their start state. */
+  .preview-static :where(
+      .reveal-rise,
+      .reveal-bloom,
+      .reveal-swing-left,
+      .reveal-swing-right,
+      .reveal-pop,
+      .reveal-rule,
+      .reveal-rail,
+      .reveal-turn,
+      .photo-develop,
+      .watermark-drift,
+      .parallax-drift,
+      .ink-bleed
+    ) {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    translate: none !important;
   }
 
   /* The `/ ""` alt text keeps the arrow glyph out of screen readers. */

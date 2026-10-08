@@ -28,7 +28,7 @@ export default async function VolunteersPage() {
 
   return (
     <div>
-      <h1 className="font-display text-3xl text-ink">Volunteers</h1>
+      <h1 className="font-display text-3xl text-ink">Who Can Sign In</h1>
       <p className="mt-1 mb-8 max-w-xl text-stone">
         People on this list can sign in to this dashboard with a link sent to
         their email. Removing someone ends their access right away, including

@@ -4,11 +4,18 @@ import type { ComponentProps, ReactNode } from "react";
 const VARIANT_STYLES = {
   primary: "bg-indigo font-semibold text-white hover:bg-indigo-deep",
   secondary: "border border-line bg-white font-medium text-ink hover:bg-mist",
+  "on-dark": "border border-white/30 font-medium text-white hover:bg-white/10",
 };
 
 export type AdminButtonVariant = keyof typeof VARIANT_STYLES;
 
-function buttonClass(variant: AdminButtonVariant) {
+// The color/weight classes alone, for a caller (a label standing in for a
+// button) that needs its own display and padding instead of buttonClass's.
+export function buttonVariantClass(variant: AdminButtonVariant) {
+  return VARIANT_STYLES[variant];
+}
+
+export function buttonClass(variant: AdminButtonVariant) {
   return `inline-block rounded-lg px-5 py-3 disabled:opacity-50 ${VARIANT_STYLES[variant]}`;
 }
 
