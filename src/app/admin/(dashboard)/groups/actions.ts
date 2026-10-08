@@ -11,6 +11,7 @@ import {
   normalizeWebsiteUrl,
   slugify,
 } from "@/lib/format";
+import { checkedBlobImageUrl } from "@/lib/uploads";
 
 export type GroupInput = {
   name: string;
@@ -27,28 +28,12 @@ export type GroupInput = {
   status: GroupStatus;
 };
 
-// Uploads go straight to Vercel Blob from the browser, so a URL on any other
-// host reached us through a tampered request rather than the upload flow.
-function checkedImageUrl(raw: string | null) {
-  if (!raw) return null;
-  let hostname = "";
-  try {
-    hostname = new URL(raw).hostname;
-  } catch {
-    hostname = "";
-  }
-  if (!hostname.endsWith(".public.blob.vercel-storage.com")) {
-    throw new Error("That photo couldn’t be saved. Please upload it again.");
-  }
-  return raw;
-}
-
 function checkedPhotoUrls(raw: string[]) {
   if (!Array.isArray(raw)) return [];
   return [...new Set(raw)]
     .slice(0, MAX_GROUP_PHOTOS)
     .flatMap((url) => {
-      const checked = checkedImageUrl(url);
+      const checked = checkedBlobImageUrl(url);
       return checked ? [checked] : [];
     });
 }
@@ -69,7 +54,7 @@ function checkedMeetingDays(raw: WeekDay[]) {
 function groupValues(input: GroupInput) {
   const name = trimmed(input.name, 100);
   if (!name) throw new Error("A group name is required.");
-  const imageUrl = checkedImageUrl(input.imageUrl);
+  const imageUrl = checkedBlobImageUrl(input.imageUrl);
   return {
     name,
     nameJa: trimmed(input.nameJa, 60),
