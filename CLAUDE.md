@@ -133,7 +133,11 @@ be built from these tokens via Tailwind utility classes.
   `between-waves`, `card-stretch`, `pill` (a small rounded label, such as a
   volunteer role's time commitment), `preview-static` (holds every scroll-driven
   animation at its end state inside the admin's inert live preview, which has
-  no scroll timeline to drive them), and the
+  no scroll timeline to drive them), `inline-edit-target` / `inline-edit-chip` /
+  `inline-edit-field` (click-to-edit text on the admin canvas: the button that
+  inherits the page's typography, its "Change" chip, and the textarea that
+  replaces it), `edit-dialog` (a native `<dialog>` that is a full-screen sheet
+  on phones and a centred panel from 40rem), and the
   `section-wash-*` backgrounds, and the three dark
   scenes, `section-navy-scene`, `section-midnight-scene` (ink-deep, for the
   school) and `section-indigo-scene` (indigo-deep, for the videos), so no
