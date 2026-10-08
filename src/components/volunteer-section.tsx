@@ -21,6 +21,7 @@ export type SectionTextField =
 
 export type VolunteerSectionEdit = {
   text: (field: SectionTextField, value: string) => ReactNode;
+  contactLink: (label: string, url: string | null) => ReactNode;
   photo: (image: ReactNode) => ReactNode;
   member?: (
     member: VolunteerSectionView["members"][number],
@@ -28,6 +29,8 @@ export type VolunteerSectionEdit = {
   ) => ReactNode;
   afterMembers?: ReactNode;
 };
+
+const contactLinkClass = "font-semibold text-indigo hover:text-indigo-deep";
 
 export function VolunteerSection({
   view,
@@ -144,14 +147,15 @@ export function VolunteerSection({
             <p className="mt-3 leading-relaxed text-ink-soft">
               {edit ? edit.text("contactNote", view.contactNote) : view.contactNote}{" "}
               {edit ? (
-                <span className="font-semibold text-indigo hover:text-indigo-deep">
-                  {edit.text("contactLinkLabel", view.contactLinkLabel)}
+                <span className={contactLinkClass}>
+                  {edit.contactLink(view.contactLinkLabel, view.contactLinkUrl)}
                 </span>
+              ) : view.contactLinkUrl ? (
+                <a href={view.contactLinkUrl} className={contactLinkClass}>
+                  {view.contactLinkLabel}
+                </a>
               ) : (
-                <Link
-                  href={contactHref}
-                  className="font-semibold text-indigo hover:text-indigo-deep"
-                >
+                <Link href={contactHref} className={contactLinkClass}>
                   {view.contactLinkLabel}
                 </Link>
               )}

@@ -3,6 +3,7 @@
 import { useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { EditBar, type EditBarStatus } from "@/components/admin/inline-edit/edit-bar";
+import { EditableLink } from "@/components/admin/inline-edit/editable-link";
 import { EditableText } from "@/components/admin/inline-edit/editable-text";
 import { useUndo } from "@/components/admin/inline-edit/use-undo";
 import { useUnsavedChangesGuard } from "@/components/admin/inline-edit/use-unsaved-changes-guard";
@@ -16,13 +17,15 @@ import type { Locale } from "@/lib/i18n";
 import type { ImageSize } from "@/lib/image-size";
 import {
   SECTION_TEXT_FIELDS,
+  contactLinkUrlForEditing,
   englishSectionValue,
   japaneseSectionValue,
+  normalizeContactLinkUrl,
   withEnglishSectionValue,
   withJapaneseSectionValue,
 } from "@/lib/volunteer-fields";
 import { toVolunteerSectionView } from "@/lib/volunteers-view";
-import { updateMemberPhoto, updateSectionText } from "./actions";
+import { updateContactLink, updateMemberPhoto, updateSectionText } from "./actions";
 import { MemberPanel } from "./item-options-dialog";
 import { AddMemberRow, MemberButton, MemberFieldsForm, MemberPhotoField } from "./member-row";
 import { focusByKey, useOpenTarget } from "./open-target";
@@ -34,7 +37,7 @@ const FIELD_DISPLAY_LABELS: Record<SectionTextField, string> = {
   intro: "Introduction",
   volunteersNote: "Note about volunteers",
   contactNote: "Contact sentence",
-  contactLinkLabel: "Contact link words",
+  contactLinkLabel: "Contact link",
 };
 
 const FIELD_MULTILINE: Record<SectionTextField, boolean> = {
@@ -153,6 +156,69 @@ export function SectionCanvas({
     );
   }
 
+  function renderContactLinkEdit(): ReactNode {
+    const field = "contactLinkLabel";
+    const englishText = englishSectionValue(section, field);
+    const value = lang === "en" ? englishText : japaneseSectionValue(section, field);
+    const noun =
+      lang === "en" ? SECTION_TEXT_FIELDS[field].label : `Japanese ${SECTION_TEXT_FIELDS[field].label}`;
+    const description = "Changed the contact link.";
+
+    function withLink(row: VolunteerSectionRow, words: string, url: string | null) {
+      const withWords =
+        lang === "en"
+          ? withEnglishSectionValue(row, field, words.trim())
+          : withJapaneseSectionValue(row, field, words.trim() || null);
+      return { ...withWords, contactLinkUrl: url };
+    }
+
+    return (
+      <EditableLink
+        key={`${field}-${lang}`}
+        label={`Contact link — ${lang === "en" ? "English" : "Japanese"}`}
+        noun={noun}
+        value={value}
+        fallback={lang === "ja" ? englishText : undefined}
+        url={section.contactLinkUrl}
+        maxLength={SECTION_TEXT_FIELDS[field].max}
+        required={lang === "en"}
+        {...editState.fieldProps({ kind: "section", field })}
+        onSave={async (words, url) => {
+          const previousSection = section;
+          const previousUrlForEditing = contactLinkUrlForEditing(section.contactLinkUrl);
+          const nextUrl = normalizeContactLinkUrl(url);
+          setSection(withLink(section, words, nextUrl));
+          setStatus({ kind: "saving" });
+          try {
+            await updateContactLink(lang, words, url);
+            setStatus({ kind: "saved", message: description });
+            undo.record({
+              description,
+              undo: async () => {
+                setSection(previousSection);
+                try {
+                  await updateContactLink(lang, value, previousUrlForEditing);
+                  router.refresh();
+                } catch (e) {
+                  setSection(withLink(previousSection, words, nextUrl));
+                  const message = e instanceof Error && e.message ? e.message : GENERIC_SAVE_ERROR;
+                  setStatus({ kind: "error", message });
+                  throw e;
+                }
+              },
+            });
+            router.refresh();
+          } catch (e) {
+            setSection(previousSection);
+            const message = e instanceof Error && e.message ? e.message : GENERIC_SAVE_ERROR;
+            setStatus({ kind: "error", message });
+            throw e;
+          }
+        }}
+      />
+    );
+  }
+
   async function onUndo() {
     const error = await undo.runUndo();
     setStatus(error ? { kind: "error", message: error } : { kind: "idle" });
@@ -211,6 +277,7 @@ export function SectionCanvas({
             contactHref="#"
             edit={{
               text: renderTextEdit,
+              contactLink: renderContactLinkEdit,
               photo: renderPhotoEdit,
               member: (viewMember, content) => (
                 <MemberButton

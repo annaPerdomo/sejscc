@@ -15,6 +15,7 @@ import {
   SECTION_TEXT_FIELDS,
   isSectionTextField,
   memberTextPatch,
+  normalizeContactLinkUrl,
   requiredMessage,
   sectionTextPatch,
   textFieldValue,
@@ -108,6 +109,34 @@ export async function updateSectionText(
   await db
     .update(volunteerSection)
     .set(patch as Partial<typeof volunteerSection.$inferInsert>)
+    .where(eq(volunteerSection.id, VOLUNTEER_SECTION_ID));
+
+  revalidateSite();
+}
+
+export async function updateContactLink(
+  lang: Locale,
+  label: string,
+  url: string
+): Promise<void> {
+  await requireUser();
+
+  if (lang !== "en" && lang !== "ja") {
+    throw new Error("That language isn't supported.");
+  }
+
+  const spec = SECTION_TEXT_FIELDS.contactLinkLabel;
+  const trimmed = label.trim();
+  validateText(lang, spec.label, spec.max, true, trimmed);
+  const contactLinkUrl = normalizeContactLinkUrl(url);
+
+  await db
+    .update(volunteerSection)
+    .set(
+      lang === "en"
+        ? { contactLinkLabel: trimmed, contactLinkUrl }
+        : { contactLinkLabelJa: trimmed || null, contactLinkUrl }
+    )
     .where(eq(volunteerSection.id, VOLUNTEER_SECTION_ID));
 
   revalidateSite();

@@ -155,3 +155,37 @@ export function textFieldValue(
 ): string | null {
   return lang === "en" && isRequiredField ? trimmed : trimmed || null;
 }
+
+export const CONTACT_LINK_URL_MAX = 500;
+
+export const CONTACT_LINK_URL_MESSAGE =
+  "Please enter a web address starting with https://, an email address, or leave this empty to send visitors to the Contact section.";
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export function normalizeContactLinkUrl(input: string): string | null {
+  const trimmed = input.trim();
+  if (!trimmed) return null;
+  if (trimmed.length > CONTACT_LINK_URL_MAX) {
+    throw new Error(tooLongMessage("link address", CONTACT_LINK_URL_MAX));
+  }
+
+  const email = trimmed.replace(/^mailto:/i, "");
+  if (EMAIL_PATTERN.test(email)) return `mailto:${email}`;
+
+  const withScheme = /^www\./i.test(trimmed) ? `https://${trimmed}` : trimmed;
+  let url: URL;
+  try {
+    url = new URL(withScheme);
+  } catch {
+    throw new Error(CONTACT_LINK_URL_MESSAGE);
+  }
+  if (url.protocol !== "https:" && url.protocol !== "http:") {
+    throw new Error(CONTACT_LINK_URL_MESSAGE);
+  }
+  return url.href;
+}
+
+export function contactLinkUrlForEditing(stored: string | null): string {
+  return stored?.replace(/^mailto:/i, "") ?? "";
+}

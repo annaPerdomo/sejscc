@@ -169,6 +169,7 @@ export const volunteerSection = pgTable("volunteer_section", {
   contactNoteJa: text("contact_note_ja"),
   contactLinkLabel: text("contact_link_label").notNull(),
   contactLinkLabelJa: text("contact_link_label_ja"),
+  contactLinkUrl: text("contact_link_url"),
   updatedAt: timestamp("updated_at", { mode: "date" })
     .notNull()
     .defaultNow()

@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { AdminBadge } from "@/components/admin/admin-badge";
 import { buttonClass } from "@/components/admin/admin-button";
 import { AdminCharacterCount } from "@/components/admin/admin-field";
 import { requiredMessage, tooLongMessage } from "@/lib/volunteer-fields";
 import { isImeComposing } from "./ime";
+import { useInlineEditFocus } from "./use-inline-edit-focus";
 
 export function EditableText({
   label,
@@ -45,7 +46,6 @@ export function EditableText({
   const containerRef = useRef<HTMLSpanElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const wasOpenRef = useRef(isOpen);
   const [draft, setDraft] = useState(value);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,22 +62,7 @@ export function EditableText({
     onDirtyChange?.(next !== value);
   }
 
-  useEffect(() => {
-    const wasOpen = wasOpenRef.current;
-    wasOpenRef.current = isOpen;
-
-    if (isOpen) {
-      const field = textareaRef.current;
-      field?.focus();
-      field?.setSelectionRange(field.value.length, field.value.length);
-      return;
-    }
-
-    if (!wasOpen) return;
-    const active = document.activeElement;
-    const focusWasHere = active === document.body || (containerRef.current?.contains(active) ?? false);
-    if (focusWasHere) buttonRef.current?.focus();
-  }, [isOpen]);
+  useInlineEditFocus(isOpen, containerRef, buttonRef, textareaRef);
 
   function validate(next: string): string | null {
     const trimmed = next.trim();

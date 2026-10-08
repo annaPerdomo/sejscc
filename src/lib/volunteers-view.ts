@@ -23,6 +23,7 @@ export type VolunteerSectionView = {
   volunteersNote: string;
   contactNote: string;
   contactLinkLabel: string;
+  contactLinkUrl: string | null;
   members: {
     id: string;
     name: string;
@@ -60,6 +61,7 @@ export function toVolunteerSectionView(
     volunteersNote: localized(row.volunteersNote, row.volunteersNoteJa, lang),
     contactNote: localized(row.contactNote, row.contactNoteJa, lang),
     contactLinkLabel: localized(row.contactLinkLabel, row.contactLinkLabelJa, lang),
+    contactLinkUrl: row.contactLinkUrl,
     members: members.map((member) => ({
       id: member.id,
       name: localized(member.name, member.nameJa, lang),
