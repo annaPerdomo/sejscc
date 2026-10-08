@@ -386,24 +386,10 @@
     "board": {
       "kickerAccent": "運営委員会",
       "kickerCaption": "Our Volunteers",
-      "title": "Board of Directors",
-      "intro": "SEJSCC is entirely volunteer-run. The board sets direction on behalf of the community it serves.",
-      "photoAlt": "The 2025 board of directors standing together in the gym in front of the center's banner, many wearing blue leis",
-      "members": [
-        "Dean Wada",
-        "Simon Yao",
-        "Carrie Nakatani",
-        "Tye Masaki",
-        "Ernie Nishii",
-        "Masa Lau",
-        "Colleen Sonoda",
-        "Miki Suzuki",
-        "Karrie Takeuchi",
-        "Rich Tamaki"
-      ],
-      "volunteersNote": "They're only part of the picture — dozens of volunteers teach classes, coach teams, run the kitchen, and keep the center open every week.",
-      "note": "To reach a board member, leave a message with",
-      "noteLink": "the center."
+      "membersLabel": "Board members",
+      "helpCta": "I can help",
+      "askCta": "Ask about this",
+      "newTab": "(opens in a new tab)"
     },
     "connectKickerAccent": "コミュニティ",
     "connectKickerCaption": "Our Community",

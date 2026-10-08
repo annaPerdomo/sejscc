@@ -386,24 +386,10 @@
     "board": {
       "kickerAccent": "運営委員会",
       "kickerCaption": "Our Volunteers",
-      "title": "運営理事会",
-      "intro": "SEJSCCはすべてボランティアで運営されています。理事会が地域の皆さんに代わって方針を定めています。",
-      "photoAlt": "センターの横断幕の前に並ぶ2025年度の理事の皆さん。多くが青いレイを掛けています",
-      "members": [
-        "Dean Wada",
-        "Simon Yao",
-        "Carrie Nakatani",
-        "Tye Masaki",
-        "Ernie Nishii",
-        "Masa Lau",
-        "Colleen Sonoda",
-        "Miki Suzuki",
-        "Karrie Takeuchi",
-        "Rich Tamaki"
-      ],
-      "volunteersNote": "理事会はほんの一部です。数多くのボランティアが、授業を教え、チームを指導し、厨房を担い、毎週センターを開き続けています。",
-      "note": "理事会のメンバーへご連絡の際は、",
-      "noteLink": "センターまで伝言をお残しください。"
+      "membersLabel": "理事一覧",
+      "helpCta": "手伝います",
+      "askCta": "問い合わせる",
+      "newTab": "（新しいタブで開きます）"
     },
     "connectKickerAccent": "コミュニティ",
     "connectKickerCaption": "Our Community",

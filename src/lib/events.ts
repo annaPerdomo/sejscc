@@ -2,6 +2,7 @@ import { cache } from "react";
 import { and, asc, eq, gte, isNotNull, isNull, lt, ne, or, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { events, groups } from "@/db/schema";
+import { failSoft } from "@/lib/fail-soft";
 import { wallClockNow } from "@/lib/format";
 import {
   latestOccurrence,
@@ -11,17 +12,6 @@ import {
 
 export type Event = typeof events.$inferSelect;
 export type Group = typeof groups.$inferSelect;
-
-// Swallowing is deliberate: static generation must succeed before the database
-// is provisioned, and an outage should degrade the site rather than crash it.
-async function failSoft<T>(query: Promise<T>, fallback: T): Promise<T> {
-  try {
-    return await query;
-  } catch (error) {
-    console.error("Database query failed:", error);
-    return fallback;
-  }
-}
 
 /** Midnight today, so a repeat ending today still counts as running today. */
 function today(now: Date) {
