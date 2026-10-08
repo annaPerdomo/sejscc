@@ -1,5 +1,8 @@
 import type { ReactNode } from "react";
+import { eq } from "drizzle-orm";
 import { auth } from "@/auth";
+import { db } from "@/db";
+import { boardMembers, volunteerRoles } from "@/db/schema";
 import { getActiveGroups, getUpcomingEvents } from "@/lib/events";
 import { AdminButtonLink } from "@/components/admin/admin-button";
 import { AdminCard } from "@/components/admin/admin-card";
@@ -47,10 +50,13 @@ function SummaryCard({
 
 export default async function AdminDashboard() {
   const session = await auth();
-  const [activeGroups, upcomingEvents] = await Promise.all([
-    getActiveGroups(),
-    getUpcomingEvents(),
-  ]);
+  const [activeGroups, upcomingEvents, visibleBoardMembers, visibleVolunteerRoles] =
+    await Promise.all([
+      getActiveGroups(),
+      getUpcomingEvents(),
+      db.select({ id: boardMembers.id }).from(boardMembers).where(eq(boardMembers.visible, true)),
+      db.select({ id: volunteerRoles.id }).from(volunteerRoles).where(eq(volunteerRoles.visible, true)),
+    ]);
 
   const firstName = session?.user?.name?.trim().split(/\s+/)[0] ?? null;
   const today = new Date();
@@ -125,6 +131,20 @@ export default async function AdminDashboard() {
           {activeGroups.length}{" "}
           {activeGroups.length === 1 ? "group is" : "groups are"} listed on the
           community page.
+        </SummaryCard>
+        <SummaryCard
+          kanji="志"
+          title="Board & Volunteers"
+          addHref="/admin/board"
+          addLabel="Edit the section"
+          viewHref="/#board"
+          viewLabel="See it on the website"
+        >
+          {`${visibleBoardMembers.length} board member${
+            visibleBoardMembers.length === 1 ? "" : "s"
+          } and ${visibleVolunteerRoles.length} way${
+            visibleVolunteerRoles.length === 1 ? "" : "s"
+          } to help are showing on the home page.`}
         </SummaryCard>
       </div>
     </div>

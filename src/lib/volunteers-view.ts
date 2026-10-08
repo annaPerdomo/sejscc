@@ -36,7 +36,7 @@ export type VolunteerSectionView = {
 };
 
 // Landscape fallback frame used when the blob header read fails.
-const DEFAULT_PHOTO_SIZE = { width: 1200, height: 900 };
+export const DEFAULT_PHOTO_SIZE = { width: 1200, height: 900 };
 
 function checkedPhotoUrl(url: string | null): string | null {
   return url && isUploadedFileUrl(url) ? url : null;
