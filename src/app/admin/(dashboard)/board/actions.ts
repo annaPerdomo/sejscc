@@ -13,17 +13,13 @@ import {
   LONG_MAX,
   MEMBER_TEXT_FIELDS,
   SECTION_TEXT_FIELDS,
-  isMemberTextField,
   isSectionTextField,
   memberTextPatch,
   requiredMessage,
   sectionTextPatch,
   textFieldValue,
   tooLongMessage,
-  type MemberTextField,
 } from "@/lib/volunteer-fields";
-
-export type { MemberTextField };
 
 function tooLong(label: string, max: number): never {
   throw new Error(tooLongMessage(label, max));
@@ -168,26 +164,28 @@ async function deleteBlobBestEffort(url: string | null, label: string) {
   }
 }
 
-export async function updateMemberText(
+export async function updateMemberFields(
   id: string,
-  field: MemberTextField,
   lang: Locale,
-  value: string
+  values: { name: string; role: string }
 ): Promise<void> {
   await requireUser();
 
-  if (!isMemberTextField(field)) throw new Error("That field doesn't exist.");
   if (lang !== "en" && lang !== "ja") throw new Error("That language isn't supported.");
 
-  const { label, max, required: isRequiredField } = MEMBER_TEXT_FIELDS[field];
-  const trimmed = value.trim();
-  validateText(lang, label, max, isRequiredField, trimmed);
+  const nameSpec = MEMBER_TEXT_FIELDS.name;
+  const roleSpec = MEMBER_TEXT_FIELDS.role;
+  const trimmedName = values.name.trim();
+  const trimmedRole = values.role.trim();
+  validateText(lang, nameSpec.label, nameSpec.max, nameSpec.required, trimmedName);
+  validateText(lang, roleSpec.label, roleSpec.max, roleSpec.required, trimmedRole);
 
-  const patch = memberTextPatch(field, lang, textFieldValue(isRequiredField, lang, trimmed));
+  const namePatch = memberTextPatch("name", lang, textFieldValue(nameSpec.required, lang, trimmedName));
+  const rolePatch = memberTextPatch("role", lang, textFieldValue(roleSpec.required, lang, trimmedRole));
 
   const result = await db
     .update(boardMembers)
-    .set(patch as Partial<typeof boardMembers.$inferInsert>)
+    .set({ ...namePatch, ...rolePatch } as Partial<typeof boardMembers.$inferInsert>)
     .where(eq(boardMembers.id, id))
     .returning({ id: boardMembers.id });
   if (result.length === 0) throw new Error(NOT_FOUND_MESSAGE);

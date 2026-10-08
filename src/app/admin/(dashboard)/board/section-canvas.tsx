@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { EditBar, type EditBarStatus } from "@/components/admin/inline-edit/edit-bar";
 import { EditableText } from "@/components/admin/inline-edit/editable-text";
@@ -63,6 +63,8 @@ export function SectionCanvas({
   const [section, setSection] = useState(initialSection);
   const [lang, setLang] = useState<Locale>("en");
   const [status, setStatus] = useState<EditBarStatus>({ kind: "idle" });
+  const [memberFieldsSaving, setMemberFieldsSaving] = useState(false);
+  const memberFieldsDirtyRef = useRef(false);
 
   const editState = useOpenTarget();
   const undo = useUndo();
@@ -158,6 +160,18 @@ export function SectionCanvas({
     document.getElementById("admin-edit-bar")?.focus();
   }
 
+  function openMemberPanel(id: string) {
+    memberFieldsDirtyRef.current = false;
+    setMemberFieldsSaving(false);
+    lists.openMemberOptions(id);
+  }
+
+  function requestCloseMemberPanel() {
+    if (memberFieldsSaving) return;
+    if (memberFieldsDirtyRef.current && !confirm("Leave without saving your changes?")) return;
+    lists.closeMemberOptions();
+  }
+
   async function onMoveMember(id: string, direction: "up" | "down") {
     const result = await lists.moveMember(id, direction);
     if (!result) return;
@@ -206,7 +220,7 @@ export function SectionCanvas({
                 <MemberButton
                   member={viewMember}
                   content={content}
-                  onOpen={() => lists.openMemberOptions(viewMember.id)}
+                  onOpen={() => openMemberPanel(viewMember.id)}
                 />
               ),
               afterMembers: (
@@ -222,7 +236,8 @@ export function SectionCanvas({
 
       <MemberPanel
         open={lists.memberOptionsId !== null}
-        onClose={lists.closeMemberOptions}
+        onClose={requestCloseMemberPanel}
+        busy={memberFieldsSaving}
         memberName={optionsMember?.name ?? ""}
         index={optionsMember ? lists.members.findIndex((m) => m.id === optionsMember.id) : 0}
         total={lists.members.length}
@@ -243,7 +258,14 @@ export function SectionCanvas({
               key={`${optionsMember.id}-${lang}`}
               member={optionsMember}
               lang={lang}
-              onSave={(name, role) => lists.saveMemberFields(optionsMember, lang, { name, role })}
+              onSave={async (name, role) => {
+                await lists.saveMemberFields(optionsMember, lang, { name, role });
+                lists.closeMemberOptions();
+              }}
+              onDirtyChange={(dirty) => {
+                memberFieldsDirtyRef.current = dirty;
+              }}
+              onSavingChange={setMemberFieldsSaving}
             />
             <MemberPhotoField
               member={optionsMember}

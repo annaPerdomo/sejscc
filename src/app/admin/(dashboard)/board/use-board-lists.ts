@@ -19,7 +19,7 @@ import {
   deleteBoardMember,
   reorderBoardMembers,
   setBoardMemberVisible,
-  updateMemberText,
+  updateMemberFields,
 } from "./actions";
 import { focusByKey, type OpenTargetState } from "./open-target";
 
@@ -62,6 +62,13 @@ export function useBoardLists({
   ) {
     const nextName = textFieldValue(MEMBER_TEXT_FIELDS.name.required, fieldLang, values.name.trim());
     const nextRole = textFieldValue(MEMBER_TEXT_FIELDS.role.required, fieldLang, values.role.trim());
+    const previousName =
+      fieldLang === "en" ? englishMemberValue(member, "name") : japaneseMemberValue(member, "name");
+    const previousRole =
+      fieldLang === "en" ? englishMemberValue(member, "role") : japaneseMemberValue(member, "role");
+
+    if (nextName === previousName && nextRole === previousRole) return;
+
     const apply = (row: BoardMember, name: string | null, role: string | null) => {
       const withName =
         fieldLang === "en"
@@ -71,10 +78,6 @@ export function useBoardLists({
         ? withEnglishMemberValue(withName, "role", role)
         : withJapaneseMemberValue(withName, "role", role);
     };
-    const previousName =
-      fieldLang === "en" ? englishMemberValue(member, "name") : japaneseMemberValue(member, "name");
-    const previousRole =
-      fieldLang === "en" ? englishMemberValue(member, "role") : japaneseMemberValue(member, "role");
     const description = `Changed ${member.name}.`;
 
     setMembers((current) =>
@@ -82,8 +85,7 @@ export function useBoardLists({
     );
     setStatus({ kind: "saving" });
     try {
-      await updateMemberText(member.id, "name", fieldLang, values.name);
-      await updateMemberText(member.id, "role", fieldLang, values.role);
+      await updateMemberFields(member.id, fieldLang, { name: values.name, role: values.role });
       setStatus({ kind: "saved", message: description });
       undo.record({
         description,
@@ -92,8 +94,10 @@ export function useBoardLists({
             current.map((m) => (m.id === member.id ? apply(m, previousName, previousRole) : m))
           );
           try {
-            await updateMemberText(member.id, "name", fieldLang, previousName);
-            await updateMemberText(member.id, "role", fieldLang, previousRole);
+            await updateMemberFields(member.id, fieldLang, {
+              name: previousName,
+              role: previousRole,
+            });
             router.refresh();
           } catch (e) {
             setMembers((current) =>
@@ -106,7 +110,9 @@ export function useBoardLists({
       });
       router.refresh();
     } catch (e) {
-      setMembers((current) => current.map((m) => (m.id === member.id ? member : m)));
+      setMembers((current) =>
+        current.map((m) => (m.id === member.id ? apply(m, previousName, previousRole) : m))
+      );
       setStatus({ kind: "error", message: saveError(e) });
       throw e;
     }

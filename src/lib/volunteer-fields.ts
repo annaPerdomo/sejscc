@@ -103,12 +103,6 @@ export const MEMBER_TEXT_FIELDS: Record<MemberTextField, TextFieldSpec<MemberTex
   role: { en: "role", ja: "roleJa", label: "title", max: 60, required: false },
 };
 
-const MEMBER_TEXT_FIELD_NAMES = Object.keys(MEMBER_TEXT_FIELDS) as MemberTextField[];
-
-export function isMemberTextField(field: string): field is MemberTextField {
-  return (MEMBER_TEXT_FIELD_NAMES as string[]).includes(field);
-}
-
 export function englishMemberValue(row: BoardMember, field: MemberTextField): string {
   return row[MEMBER_TEXT_FIELDS[field].en] ?? "";
 }

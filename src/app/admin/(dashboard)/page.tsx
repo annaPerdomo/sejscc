@@ -143,7 +143,7 @@ export default async function AdminDashboard() {
           viewHref="/#board"
           viewLabel="See it on the website"
         >
-          {`${boardMemberCounts.showing} board ${boardMemberCounts.showing === 1 ? "member is" : "members are"} showing on the home page (${boardMemberCounts.hidden} hidden).`}
+          {`${boardMemberCounts.showing} board ${boardMemberCounts.showing === 1 ? "member is" : "members are"} showing on the home page${boardMemberCounts.hidden > 0 ? ` (${boardMemberCounts.hidden} hidden)` : ""}.`}
         </SummaryCard>
       </div>
     </AdminPageWidth>

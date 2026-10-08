@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useId, useState, type ReactNode } from "react";
 import { upload } from "@vercel/blob/client";
 import { AdminAlert } from "@/components/admin/admin-alert";
 import { AdminBadge } from "@/components/admin/admin-badge";
@@ -27,17 +27,21 @@ export function MemberButton({
   content,
   onOpen,
 }: {
-  member: { id: string; name: string; visible: boolean };
+  member: { id: string; name: string; role: string | null; visible: boolean };
   content: ReactNode;
   onOpen: () => void;
 }) {
+  const accessibleName = `Change ${member.name}${member.role ? `, ${member.role}` : ""}${
+    member.visible ? "" : " (hidden from website)"
+  }`;
+
   return (
     <button
       type="button"
       onClick={onOpen}
-      aria-label={`Change ${member.name}`}
+      aria-label={accessibleName}
       data-focus-key={`member-button-${member.id}`}
-      className="inline-edit-target block min-w-0 flex-1 rounded-lg p-1 text-left"
+      className="inline-edit-target relative -m-1 block min-h-11 min-w-0 flex-1 rounded-lg p-1 text-left"
     >
       <span className="flex flex-col items-start">
         {content}
@@ -47,7 +51,10 @@ export function MemberButton({
           </span>
         )}
       </span>
-      <span aria-hidden="true" className="inline-edit-chip pointer-coarse:opacity-100 mt-1 ml-0">
+      <span
+        aria-hidden="true"
+        className="inline-edit-chip pointer-coarse:opacity-100 absolute -top-3 right-0 ml-0 pointer-coarse:static pointer-coarse:mt-1"
+      >
         ✎ Change
       </span>
     </button>
@@ -58,10 +65,14 @@ export function MemberFieldsForm({
   member,
   lang,
   onSave,
+  onDirtyChange,
+  onSavingChange,
 }: {
   member: BoardMember;
   lang: Locale;
   onSave: (name: string, role: string) => Promise<void>;
+  onDirtyChange?: (dirty: boolean) => void;
+  onSavingChange?: (saving: boolean) => void;
 }) {
   const englishName = englishMemberValue(member, "name");
   const englishRole = englishMemberValue(member, "role");
@@ -73,12 +84,31 @@ export function MemberFieldsForm({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const nameGuideId = useId();
+  const roleGuideId = useId();
+
+  function reportDirty(nextName: string, nextRole: string) {
+    onDirtyChange?.(nextName !== initialName || nextRole !== initialRole);
+  }
+
+  function updateName(next: string) {
+    setName(next);
+    reportDirty(next, role);
+  }
+
+  function updateRole(next: string) {
+    setRole(next);
+    reportDirty(name, next);
+  }
+
   async function save() {
     if (saving) return;
     setSaving(true);
+    onSavingChange?.(true);
     setError(null);
     try {
       await onSave(name, role);
+      onDirtyChange?.(false);
     } catch (e) {
       setError(
         e instanceof Error && e.message
@@ -87,41 +117,62 @@ export function MemberFieldsForm({
       );
     } finally {
       setSaving(false);
+      onSavingChange?.(false);
     }
   }
 
   return (
-    <div className="space-y-4">
-      <AdminTextField
-        label={lang === "en" ? <>Name <AdminRequired /></> : "Name"}
-        value={name}
-        maxLength={MEMBER_TEXT_FIELDS.name.max}
-        disabled={saving}
-        onChange={(event) => setName(event.target.value)}
-      />
-      {lang === "ja" && (
-        <p className="text-sm text-stone">English: {englishName}</p>
-      )}
-      <AdminTextField
-        label="Title, such as President — optional"
-        value={role}
-        maxLength={MEMBER_TEXT_FIELDS.role.max}
-        disabled={saving}
-        onChange={(event) => setRole(event.target.value)}
-      />
-      {lang === "ja" && englishRole && (
-        <p className="text-sm text-stone">English: {englishRole}</p>
-      )}
+    <form
+      className="space-y-4"
+      onSubmit={(event) => {
+        event.preventDefault();
+        void save();
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" && isImeComposing(event)) event.preventDefault();
+      }}
+    >
+      <div>
+        <AdminTextField
+          label={lang === "en" ? <>Name <AdminRequired /></> : "Japanese name"}
+          value={name}
+          maxLength={MEMBER_TEXT_FIELDS.name.max}
+          disabled={saving}
+          aria-describedby={lang === "ja" ? nameGuideId : undefined}
+          onChange={(event) => updateName(event.target.value)}
+        />
+        {lang === "ja" && (
+          <p id={nameGuideId} className="mt-1 text-sm text-stone">
+            English: {englishName}
+          </p>
+        )}
+      </div>
+      <div>
+        <AdminTextField
+          label={
+            lang === "en" ? "Title, such as President — optional" : "Japanese title — optional"
+          }
+          value={role}
+          maxLength={MEMBER_TEXT_FIELDS.role.max}
+          disabled={saving}
+          aria-describedby={lang === "ja" && englishRole ? roleGuideId : undefined}
+          onChange={(event) => updateRole(event.target.value)}
+        />
+        {lang === "ja" && englishRole && (
+          <p id={roleGuideId} className="mt-1 text-sm text-stone">
+            English: {englishRole}
+          </p>
+        )}
+      </div>
       {error && <AdminAlert>{error}</AdminAlert>}
       <button
-        type="button"
-        onClick={() => void save()}
+        type="submit"
         aria-disabled={saving}
         className={`min-h-12 ${buttonClass("primary")}`}
       >
         {saving ? "Saving…" : "Save"}
       </button>
-    </div>
+    </form>
   );
 }
 

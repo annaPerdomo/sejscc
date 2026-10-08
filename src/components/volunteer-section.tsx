@@ -61,11 +61,7 @@ export function VolunteerSection({
   return (
     <div className="@container">
       <div className="relative mx-auto max-w-7xl px-4 pt-14 @volunteer-sm:px-6 @volunteer-sm:pt-18 @volunteer-lg:px-10 @volunteer-lg:pt-24">
-        <div
-          className={`grid gap-10 @volunteer-lg:grid-cols-12 @volunteer-lg:gap-14 ${
-            edit ? "@volunteer-lg:items-start" : "@volunteer-lg:items-center"
-          }`}
-        >
+        <div className="grid gap-10 @volunteer-lg:grid-cols-12 @volunteer-lg:items-center @volunteer-lg:gap-14">
           <div className="reveal-swing-left @volunteer-lg:col-span-7">
             <div className="flyer-mount relative">
               <div className="photo-develop">
@@ -130,7 +126,7 @@ export function VolunteerSection({
                   return (
                     <li
                       key={member.id}
-                      className={`reveal-rise flex items-center gap-2.5 rounded-xl p-1.5${
+                      className={`reveal-rise flex items-center gap-2.5 rounded-xl${
                         member.visible ? "" : " border border-dashed border-line"
                       }`}
                     >

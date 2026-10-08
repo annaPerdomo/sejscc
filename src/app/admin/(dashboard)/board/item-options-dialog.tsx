@@ -38,6 +38,7 @@ function OptionButton({
 export function MemberPanel({
   open,
   onClose,
+  busy = false,
   memberName,
   index,
   total,
@@ -51,6 +52,7 @@ export function MemberPanel({
 }: {
   open: boolean;
   onClose: () => void;
+  busy?: boolean;
   memberName: string;
   index: number;
   total: number;
@@ -63,7 +65,7 @@ export function MemberPanel({
   children?: ReactNode;
 }) {
   return (
-    <EditDialog title={memberName} open={open} onClose={onClose}>
+    <EditDialog title={memberName} open={open} busy={busy} onClose={onClose}>
       <div className="space-y-6">
         {children}
 
@@ -115,7 +117,14 @@ export function MemberPanel({
       </div>
 
       <div className="mt-5 flex justify-end border-t border-line pt-4">
-        <button type="button" onClick={onClose} className={`min-h-11 ${buttonClass("secondary")}`}>
+        <button
+          type="button"
+          onClick={() => {
+            if (!busy) onClose();
+          }}
+          aria-disabled={busy}
+          className={`min-h-11 ${buttonClass("secondary")}`}
+        >
           Done
         </button>
       </div>
