@@ -125,25 +125,24 @@ export default async function SchoolPage() {
             </a>
           </>
         }
+        asideAt="start"
         aside={
-          <div className="hidden justify-end lg:flex">
-            <div className="relative">
-              <p
-                lang="ja"
-                className="school-plaque font-accent text-3xl font-bold tracking-[0.18em]"
-              >
-                {dict.home.japaneseSchool.plaque}
-              </p>
-              <SchoolSeal
-                accent={dict.home.japaneseSchool.sealAccent}
-                year={dict.home.japaneseSchool.sealYear}
-                size="lg"
-              />
-            </div>
+          <div className="relative hidden lg:block">
+            <p
+              lang="ja"
+              className="school-plaque font-accent text-2xl font-bold tracking-[0.18em]"
+            >
+              {dict.home.japaneseSchool.plaque}
+            </p>
+            <SchoolSeal
+              accent={dict.home.japaneseSchool.sealAccent}
+              year={dict.home.japaneseSchool.sealYear}
+              size="lg"
+            />
           </div>
         }
         below={
-          <dl className="enter-stagger grid grid-cols-1 gap-x-8 gap-y-7 sm:grid-cols-2 lg:grid-cols-4">
+          <dl className="enter-stagger grid grid-cols-1 gap-x-8 gap-y-7 sm:grid-cols-2 xl:grid-cols-4">
             {dict.school.facts.map((fact) => (
               <div key={fact.label}>
                 <span aria-hidden="true" className="block h-1 w-10 bg-gold" />

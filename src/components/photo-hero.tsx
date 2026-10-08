@@ -24,6 +24,7 @@ export function PhotoHero({
   eyebrow,
   actions,
   aside,
+  asideAt = "end",
   ornament,
   below,
   children,
@@ -42,11 +43,55 @@ export function PhotoHero({
   eyebrow?: ReactNode;
   actions?: ReactNode;
   aside?: ReactNode;
+  asideAt?: "start" | "end";
   ornament?: ReactNode;
   below?: ReactNode;
   children?: ReactNode;
   settlesInto: keyof typeof SETTLES_INTO;
 }) {
+  const asideAtStart = aside && asideAt === "start";
+  const asideAtEnd = aside && asideAt === "end";
+
+  const text = (
+    <div
+      className={`enter-stagger ${
+        asideAtEnd
+          ? "lg:col-span-7"
+          : asideAtStart
+            ? "max-w-3xl lg:max-w-xl xl:max-w-2xl"
+            : "max-w-3xl"
+      }`}
+    >
+      {eyebrow && <div className="mb-6">{eyebrow}</div>}
+      <SectionKicker
+        accent={accent}
+        caption={caption}
+        tone="photo"
+        size="lg"
+        entrance="load"
+      />
+      <h1 className="mt-5 font-display text-4xl leading-none font-light tracking-[0.01em] text-balance sm:text-6xl xl:text-7xl">
+        <span className="block text-white">{titleLine1}</span>
+        {titleLine2 && (
+          <span className="mt-2 block font-normal text-sky">{titleLine2}</span>
+        )}
+      </h1>
+      {lede && (
+        <div className="mt-7 max-w-2xl text-lg leading-relaxed text-white/90 sm:text-xl">
+          {lede}
+        </div>
+      )}
+      {actions && (
+        <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-4">
+          {actions}
+        </div>
+      )}
+      {children}
+    </div>
+  );
+
+  const belowRow = below && <div className="enter-rise lg:col-span-12">{below}</div>;
+
   return (
     <section className="edge-flush relative isolate overflow-clip bg-ink-deep text-white">
       <div className="absolute inset-0 -z-10">
@@ -76,37 +121,23 @@ export function PhotoHero({
       <div
         className={`relative mx-auto flex max-w-wide flex-col justify-center gap-12 px-5 pb-28 sm:px-10 sm:pb-36 lg:min-h-page-hero lg:px-16 ${
           ornament ? "pt-32 sm:pt-36" : "pt-14 sm:pt-18"
-        } ${aside ? "lg:grid lg:grid-cols-12 lg:items-center lg:gap-10" : ""}`}
+        } ${asideAtEnd ? "lg:grid lg:grid-cols-12 lg:items-center lg:gap-10" : ""}`}
       >
-        <div className={`enter-stagger ${aside ? "lg:col-span-7" : "max-w-3xl"}`}>
-          {eyebrow && <div className="mb-6">{eyebrow}</div>}
-          <SectionKicker
-            accent={accent}
-            caption={caption}
-            tone="photo"
-            size="lg"
-            entrance="load"
-          />
-          <h1 className="mt-5 font-display text-4xl leading-none font-light tracking-[0.01em] text-balance sm:text-6xl xl:text-7xl">
-            <span className="block text-white">{titleLine1}</span>
-            {titleLine2 && (
-              <span className="mt-2 block font-normal text-sky">{titleLine2}</span>
-            )}
-          </h1>
-          {lede && (
-            <div className="mt-7 max-w-2xl text-lg leading-relaxed text-white/90 sm:text-xl">
-              {lede}
+        {asideAtStart ? (
+          <div className="lg:-ml-8 lg:flex lg:items-start lg:gap-20">
+            <div className="enter-rise">{aside}</div>
+            <div className="flex flex-col gap-12 lg:flex-1">
+              {text}
+              {belowRow}
             </div>
-          )}
-          {actions && (
-            <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-4">
-              {actions}
-            </div>
-          )}
-          {children}
-        </div>
-        {aside && <div className="enter-rise lg:col-span-5">{aside}</div>}
-        {below && <div className="enter-rise lg:col-span-12">{below}</div>}
+          </div>
+        ) : (
+          <>
+            {text}
+            {asideAtEnd && <div className="enter-rise lg:col-span-5">{aside}</div>}
+            {belowRow}
+          </>
+        )}
       </div>
 
       <WaveDivider
