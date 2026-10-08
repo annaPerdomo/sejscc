@@ -1,11 +1,6 @@
 import { asc, eq } from "drizzle-orm";
 import { db } from "@/db";
-import {
-  VOLUNTEER_SECTION_ID,
-  boardMembers,
-  volunteerRoles,
-  volunteerSection,
-} from "@/db/schema";
+import { VOLUNTEER_SECTION_ID, boardMembers, volunteerSection } from "@/db/schema";
 import { AdminAlert } from "@/components/admin/admin-alert";
 import { AdminPageWidth } from "@/components/admin/admin-page-width";
 import { getDictionaryFor } from "@/lib/dictionaries";
@@ -15,7 +10,7 @@ import { SectionCanvas } from "./section-canvas";
 export const dynamic = "force-dynamic";
 
 export default async function BoardAdminPage() {
-  const [sections, members, roles, enDict, jaDict] = await Promise.all([
+  const [sections, members, enDict, jaDict] = await Promise.all([
     db
       .select()
       .from(volunteerSection)
@@ -24,10 +19,6 @@ export default async function BoardAdminPage() {
       .select()
       .from(boardMembers)
       .orderBy(asc(boardMembers.sortOrder), asc(boardMembers.createdAt)),
-    db
-      .select()
-      .from(volunteerRoles)
-      .orderBy(asc(volunteerRoles.sortOrder), asc(volunteerRoles.createdAt)),
     getDictionaryFor("en"),
     getDictionaryFor("ja"),
   ]);
@@ -55,7 +46,6 @@ export default async function BoardAdminPage() {
         <SectionCanvas
           section={section}
           members={members}
-          roles={roles}
           photoSize={section.photoUrl ? await getImageSize(section.photoUrl) : null}
           labels={{ en: enDict.home.board, ja: jaDict.home.board }}
         />

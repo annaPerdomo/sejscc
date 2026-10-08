@@ -11,7 +11,7 @@ import {
   type SectionTextField,
   type VolunteerSectionLabels,
 } from "@/components/volunteer-section";
-import type { BoardMember, VolunteerRole, VolunteerSectionRow } from "@/db/schema";
+import type { BoardMember, VolunteerSectionRow } from "@/db/schema";
 import type { Locale } from "@/lib/i18n";
 import type { ImageSize } from "@/lib/image-size";
 import {
@@ -22,12 +22,11 @@ import {
   withJapaneseSectionValue,
 } from "@/lib/volunteer-fields";
 import { toVolunteerSectionView } from "@/lib/volunteers-view";
-import { updateMemberPhoto, updateRoleSignupUrl, updateSectionText } from "./actions";
+import { updateMemberPhoto, updateSectionText } from "./actions";
 import { FirstVisitHint } from "./first-visit-hint";
-import { ItemOptionsDialog } from "./item-options-dialog";
-import { AddMemberRow, MemberControls, MemberPhotoField, renderMemberField } from "./member-row";
+import { MemberPanel } from "./item-options-dialog";
+import { AddMemberRow, MemberButton, MemberFieldsForm, MemberPhotoField } from "./member-row";
 import { focusByKey, useOpenTarget } from "./open-target";
-import { AddRoleRow, RoleControls, RoleSignupField, renderRoleField } from "./role-row";
 import { useSectionPhotoDialog } from "./section-photo-dialog";
 import { useBoardLists } from "./use-board-lists";
 
@@ -37,8 +36,6 @@ const FIELD_DISPLAY_LABELS: Record<SectionTextField, string> = {
   volunteersNote: "Note about volunteers",
   contactNote: "Contact sentence",
   contactLinkLabel: "Contact link words",
-  waysTitle: "Ways to help heading",
-  waysIntro: "Ways to help introduction",
 };
 
 const FIELD_MULTILINE: Record<SectionTextField, boolean> = {
@@ -47,8 +44,6 @@ const FIELD_MULTILINE: Record<SectionTextField, boolean> = {
   volunteersNote: true,
   contactNote: true,
   contactLinkLabel: false,
-  waysTitle: false,
-  waysIntro: true,
 };
 
 const GENERIC_SAVE_ERROR = "Something went wrong saving this. Please try again.";
@@ -56,13 +51,11 @@ const GENERIC_SAVE_ERROR = "Something went wrong saving this. Please try again."
 export function SectionCanvas({
   section: initialSection,
   members: initialMembers,
-  roles: initialRoles,
   photoSize,
   labels,
 }: {
   section: VolunteerSectionRow;
   members: BoardMember[];
-  roles: VolunteerRole[];
   photoSize: ImageSize | null;
   labels: { en: VolunteerSectionLabels; ja: VolunteerSectionLabels };
 }) {
@@ -73,7 +66,7 @@ export function SectionCanvas({
 
   const editState = useOpenTarget();
   const undo = useUndo();
-  const lists = useBoardLists({ initialMembers, initialRoles, editState, undo, setStatus });
+  const lists = useBoardLists({ initialMembers, editState, undo, setStatus });
   const { renderPhotoEdit, dialog: photoDialog } = useSectionPhotoDialog({
     section,
     setSection,
@@ -180,25 +173,9 @@ export function SectionCanvas({
     if (key) setTimeout(() => focusByKey(key), 0);
   }
 
-  async function onMoveRole(id: string, direction: "up" | "down") {
-    const result = await lists.moveRole(id, direction);
-    if (!result) return;
-    const { to, length } = result;
-    const key =
-      to === 0 && to === length - 1
-        ? "role-dialog-visibility"
-        : to === 0
-          ? "role-dialog-move-down"
-          : to === length - 1
-            ? "role-dialog-move-up"
-            : null;
-    if (key) setTimeout(() => focusByKey(key), 0);
-  }
-
-  const view = toVolunteerSectionView(section, lists.members, lists.roles, lang, photoSize);
+  const view = toVolunteerSectionView(section, lists.members, lang, photoSize);
 
   const optionsMember = lists.members.find((m) => m.id === lists.memberOptionsId) ?? null;
-  const optionsRole = lists.roles.find((r) => r.id === lists.roleOptionsId) ?? null;
 
   return (
     <div>
@@ -225,38 +202,11 @@ export function SectionCanvas({
             edit={{
               text: renderTextEdit,
               photo: renderPhotoEdit,
-              memberText: (viewMember, field, value) => {
-                const member = lists.members.find((m) => m.id === viewMember.id);
-                if (!member) return value;
-                return renderMemberField({
-                  member,
-                  field,
-                  lang,
-                  editState,
-                  onSaveText: (f, fieldLang, v) => lists.saveMemberText(member, f, fieldLang, v),
-                });
-              },
-              memberControls: (viewMember) => (
-                <MemberControls
+              member: (viewMember, content) => (
+                <MemberButton
                   member={viewMember}
-                  onOpenOptions={() => lists.openMemberOptions(viewMember.id)}
-                />
-              ),
-              roleText: (viewRole, field, value) => {
-                const role = lists.roles.find((r) => r.id === viewRole.id);
-                if (!role) return value;
-                return renderRoleField({
-                  role,
-                  field,
-                  lang,
-                  editState,
-                  onSaveText: (f, fieldLang, v) => lists.saveRoleText(role, f, fieldLang, v),
-                });
-              },
-              roleControls: (viewRole) => (
-                <RoleControls
-                  role={viewRole}
-                  onOpenOptions={() => lists.openRoleOptions(viewRole.id)}
+                  content={content}
+                  onOpen={() => lists.openMemberOptions(viewMember.id)}
                 />
               ),
               afterMembers: (
@@ -265,19 +215,15 @@ export function SectionCanvas({
                   onAdd={lists.addMember}
                 />
               ),
-              afterRoles: (
-                <AddRoleRow {...editState.fieldProps({ kind: "add-role" })} onAdd={lists.addRole} />
-              ),
             }}
           />
         </div>
       </div>
 
-      <ItemOptionsDialog
-        kind="member"
+      <MemberPanel
         open={lists.memberOptionsId !== null}
         onClose={lists.closeMemberOptions}
-        itemName={optionsMember?.name ?? ""}
+        memberName={optionsMember?.name ?? ""}
         index={optionsMember ? lists.members.findIndex((m) => m.id === optionsMember.id) : 0}
         total={lists.members.length}
         moveBusy={!!optionsMember && lists.listBusy === optionsMember.id}
@@ -292,76 +238,41 @@ export function SectionCanvas({
         onRemove={() => (optionsMember ? lists.removeMember(optionsMember.id) : Promise.resolve())}
       >
         {optionsMember && (
-          <MemberPhotoField
-            member={optionsMember}
-            onSaved={async (photoUrl) => {
-              const previousPhotoUrl = optionsMember.photoUrl;
-              lists.setMembers((current) =>
-                current.map((m) => (m.id === optionsMember.id ? { ...m, photoUrl } : m))
-              );
-              setStatus({ kind: "saving" });
-              try {
-                await updateMemberPhoto(optionsMember.id, photoUrl);
-                undo.clear();
-                setStatus({ kind: "saved" });
-                router.refresh();
-              } catch (e) {
+          <>
+            <MemberFieldsForm
+              key={`${optionsMember.id}-${lang}`}
+              member={optionsMember}
+              lang={lang}
+              onSave={(name, role) => lists.saveMemberFields(optionsMember, lang, { name, role })}
+            />
+            <MemberPhotoField
+              member={optionsMember}
+              onSaved={async (photoUrl) => {
+                const previousPhotoUrl = optionsMember.photoUrl;
                 lists.setMembers((current) =>
-                  current.map((m) =>
-                    m.id === optionsMember.id ? { ...m, photoUrl: previousPhotoUrl } : m
-                  )
+                  current.map((m) => (m.id === optionsMember.id ? { ...m, photoUrl } : m))
                 );
-                const message = e instanceof Error && e.message ? e.message : GENERIC_SAVE_ERROR;
-                setStatus({ kind: "error", message });
-                throw e;
-              }
-            }}
-          />
+                setStatus({ kind: "saving" });
+                try {
+                  await updateMemberPhoto(optionsMember.id, photoUrl);
+                  undo.clear();
+                  setStatus({ kind: "saved" });
+                  router.refresh();
+                } catch (e) {
+                  lists.setMembers((current) =>
+                    current.map((m) =>
+                      m.id === optionsMember.id ? { ...m, photoUrl: previousPhotoUrl } : m
+                    )
+                  );
+                  const message = e instanceof Error && e.message ? e.message : GENERIC_SAVE_ERROR;
+                  setStatus({ kind: "error", message });
+                  throw e;
+                }
+              }}
+            />
+          </>
         )}
-      </ItemOptionsDialog>
-
-      <ItemOptionsDialog
-        kind="role"
-        open={lists.roleOptionsId !== null}
-        onClose={lists.closeRoleOptions}
-        itemName={optionsRole?.title ?? ""}
-        index={optionsRole ? lists.roles.findIndex((r) => r.id === optionsRole.id) : 0}
-        total={lists.roles.length}
-        moveBusy={!!optionsRole && lists.listBusy === optionsRole.id}
-        onMove={(direction) => {
-          if (optionsRole) void onMoveRole(optionsRole.id, direction);
-        }}
-        visible={optionsRole?.visible ?? true}
-        visibleBusy={!!optionsRole && lists.listBusy === optionsRole.id}
-        onToggleVisible={() => {
-          if (optionsRole) void lists.toggleRoleVisible(optionsRole.id);
-        }}
-        onRemove={() => (optionsRole ? lists.removeRole(optionsRole.id) : Promise.resolve())}
-      >
-        {optionsRole && (
-          <RoleSignupField
-            role={optionsRole}
-            onSaved={async (signupUrl) => {
-              setStatus({ kind: "saving" });
-              try {
-                await updateRoleSignupUrl(optionsRole.id, signupUrl);
-                lists.setRoles((current) =>
-                  current.map((r) =>
-                    r.id === optionsRole.id ? { ...r, signupUrl: signupUrl.trim() || null } : r
-                  )
-                );
-                undo.clear();
-                setStatus({ kind: "saved" });
-                router.refresh();
-              } catch (e) {
-                const message = e instanceof Error && e.message ? e.message : GENERIC_SAVE_ERROR;
-                setStatus({ kind: "error", message });
-                throw e;
-              }
-            }}
-          />
-        )}
-      </ItemOptionsDialog>
+      </MemberPanel>
 
       {photoDialog}
     </div>

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { auth } from "@/auth";
 import { db } from "@/db";
-import { boardMembers, volunteerRoles } from "@/db/schema";
+import { boardMembers } from "@/db/schema";
 import { getActiveGroups, getUpcomingEvents } from "@/lib/events";
 import { AdminButtonLink } from "@/components/admin/admin-button";
 import { AdminCard } from "@/components/admin/admin-card";
@@ -50,21 +50,15 @@ function SummaryCard({
 
 export default async function AdminDashboard() {
   const session = await auth();
-  const [activeGroups, upcomingEvents, allBoardMembers, allVolunteerRoles] =
-    await Promise.all([
-      getActiveGroups(),
-      getUpcomingEvents(),
-      db.select({ visible: boardMembers.visible }).from(boardMembers),
-      db.select({ visible: volunteerRoles.visible }).from(volunteerRoles),
-    ]);
+  const [activeGroups, upcomingEvents, allBoardMembers] = await Promise.all([
+    getActiveGroups(),
+    getUpcomingEvents(),
+    db.select({ visible: boardMembers.visible }).from(boardMembers),
+  ]);
 
   const boardMemberCounts = {
     showing: allBoardMembers.filter((member) => member.visible).length,
     hidden: allBoardMembers.filter((member) => !member.visible).length,
-  };
-  const volunteerRoleCounts = {
-    showing: allVolunteerRoles.filter((role) => role.visible).length,
-    hidden: allVolunteerRoles.filter((role) => !role.visible).length,
   };
 
   const firstName = session?.user?.name?.trim().split(/\s+/)[0] ?? null;
@@ -149,7 +143,7 @@ export default async function AdminDashboard() {
           viewHref="/#board"
           viewLabel="See it on the website"
         >
-          {`Board members: ${boardMemberCounts.showing} showing, ${boardMemberCounts.hidden} hidden. Ways to help: ${volunteerRoleCounts.showing} showing, ${volunteerRoleCounts.hidden} hidden.`}
+          {`${boardMemberCounts.showing} board ${boardMemberCounts.showing === 1 ? "member is" : "members are"} showing on the home page (${boardMemberCounts.hidden} hidden).`}
         </SummaryCard>
       </div>
     </AdminPageWidth>

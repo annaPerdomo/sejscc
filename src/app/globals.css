@@ -332,16 +332,6 @@ body {
     border-color: var(--color-ink);
   }
 
-  .pill {
-    display: inline-flex;
-    align-items: center;
-    border-radius: var(--radius-full);
-    border: 1px solid var(--color-line);
-    background: var(--color-mist);
-    padding: --spacing(1) --spacing(3);
-    color: var(--color-ink);
-  }
-
   .carousel-button {
     display: flex;
     height: --spacing(10);

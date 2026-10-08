@@ -1,4 +1,4 @@
-import type { BoardMember, VolunteerRole, VolunteerSectionRow } from "@/db/schema";
+import type { BoardMember, VolunteerSectionRow } from "@/db/schema";
 import { isUploadedFileUrl } from "@/lib/format";
 import type { Locale } from "@/lib/i18n";
 
@@ -23,21 +23,11 @@ export type VolunteerSectionView = {
   volunteersNote: string;
   contactNote: string;
   contactLinkLabel: string;
-  waysTitle: string;
-  waysIntro: string;
   members: {
     id: string;
     name: string;
     role: string | null;
     photoUrl: string | null;
-    visible: boolean;
-  }[];
-  roles: {
-    id: string;
-    title: string;
-    description: string;
-    commitment: string | null;
-    signupUrl: string | null;
     visible: boolean;
   }[];
 };
@@ -49,20 +39,9 @@ function checkedPhotoUrl(url: string | null): string | null {
   return url && isUploadedFileUrl(url) ? url : null;
 }
 
-function checkedSignupUrl(url: string | null): string | null {
-  if (!url) return null;
-  try {
-    const protocol = new URL(url).protocol;
-    return protocol === "http:" || protocol === "https:" ? url : null;
-  } catch {
-    return null;
-  }
-}
-
 export function toVolunteerSectionView(
   row: VolunteerSectionRow,
   members: BoardMember[],
-  roles: VolunteerRole[],
   lang: Locale,
   photoSize: { width: number; height: number } | null
 ): VolunteerSectionView {
@@ -81,22 +60,12 @@ export function toVolunteerSectionView(
     volunteersNote: localized(row.volunteersNote, row.volunteersNoteJa, lang),
     contactNote: localized(row.contactNote, row.contactNoteJa, lang),
     contactLinkLabel: localized(row.contactLinkLabel, row.contactLinkLabelJa, lang),
-    waysTitle: localized(row.waysTitle, row.waysTitleJa, lang),
-    waysIntro: localized(row.waysIntro, row.waysIntroJa, lang),
     members: members.map((member) => ({
       id: member.id,
       name: localized(member.name, member.nameJa, lang),
       role: localizedOptional(member.role, member.roleJa, lang),
       photoUrl: checkedPhotoUrl(member.photoUrl),
       visible: member.visible,
-    })),
-    roles: roles.map((role) => ({
-      id: role.id,
-      title: localized(role.title, role.titleJa, lang),
-      description: localized(role.description, role.descriptionJa, lang),
-      commitment: localizedOptional(role.commitment, role.commitmentJa, lang),
-      signupUrl: checkedSignupUrl(role.signupUrl),
-      visible: role.visible,
     })),
   };
 }

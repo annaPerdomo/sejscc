@@ -386,10 +386,7 @@
     "board": {
       "kickerAccent": "運営委員会",
       "kickerCaption": "Our Volunteers",
-      "membersLabel": "Board members",
-      "helpCta": "I can help",
-      "askCta": "Ask about this",
-      "newTab": "(opens in a new tab)"
+      "membersLabel": "Board members"
     },
     "connectKickerAccent": "コミュニティ",
     "connectKickerCaption": "Our Community",
