@@ -13,7 +13,7 @@ export function ConfirmDeleteButton({
   action: () => Promise<void>;
   label: string;
   prompt: string;
-  redirectTo: string;
+  redirectTo?: string;
 }) {
   const router = useRouter();
   const [confirming, setConfirming] = useState(false);
@@ -25,10 +25,14 @@ export function ConfirmDeleteButton({
     setBusy(true);
     try {
       await action();
-      router.push(redirectTo);
+      if (redirectTo) router.push(redirectTo);
       router.refresh();
-    } catch {
-      setError("We couldn’t delete this just now. Please try again.");
+    } catch (e) {
+      setError(
+        e instanceof Error && e.message
+          ? e.message
+          : "We couldn’t delete this just now. Please try again."
+      );
       setBusy(false);
     }
   }
@@ -38,7 +42,7 @@ export function ConfirmDeleteButton({
       <button
         type="button"
         onClick={() => setConfirming(true)}
-        className="rounded-lg border border-line bg-white px-4 py-2.5 text-sm font-medium text-indigo-deep hover:bg-indigo/5"
+        className="min-h-11 rounded-lg border border-line bg-white px-4 py-2.5 text-sm font-medium text-indigo-deep hover:bg-indigo/5"
       >
         {label}
       </button>
@@ -55,7 +59,7 @@ export function ConfirmDeleteButton({
           type="button"
           disabled={busy}
           onClick={confirm}
-          className="rounded-md bg-indigo px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-deep disabled:opacity-50"
+          className="min-h-11 rounded-md bg-indigo px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-deep disabled:opacity-50"
         >
           {busy ? "Deleting…" : "Yes, delete"}
         </button>
@@ -63,7 +67,7 @@ export function ConfirmDeleteButton({
           type="button"
           disabled={busy}
           onClick={() => setConfirming(false)}
-          className="rounded-md px-3 py-2 text-sm font-medium text-ink hover:bg-white"
+          className="min-h-11 rounded-md px-3 py-2 text-sm font-medium text-ink hover:bg-white"
         >
           Keep it
         </button>
