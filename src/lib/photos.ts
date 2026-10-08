@@ -128,7 +128,7 @@ export const schoolPhotos = {
     shigyo: "/photos/month-shigyo.jpg",
     jugyosankan: "/photos/month-jugyosankan-classroom.jpg",
     undokai: "/photos/month-undokai.jpg",
-    shichigosan: "/photos/month-shichigosan-kimono.jpg",
+    shichigosan: "/photos/month-shichigosan-full.jpg",
     toshikoshi: "/photos/month-toshikoshi.jpg",
     oshogatsu: "/photos/month-oshogatsu.jpg",
     setsubun: "/photos/month-setsubun.jpg",
