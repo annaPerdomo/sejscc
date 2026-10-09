@@ -3,24 +3,77 @@
 import { del, list } from "@vercel/blob";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { sitePhotos } from "@/db/schema";
+import { sitePhotos, siteText } from "@/db/schema";
 import { requireUser, revalidateSite } from "@/lib/admin";
 import { getImageSize } from "@/lib/image-size";
+import type { Locale } from "@/lib/i18n";
 import { photoSlot, type PhotoSlot } from "@/lib/photo-slots";
+import { siteTextField } from "@/lib/site-text-fields";
 import { checkedBlobImageUrl } from "@/lib/uploads";
 import { tooLongMessage } from "@/lib/volunteer-fields";
 
-const NOT_REGISTERED_MESSAGE = "That photo spot doesn't exist.";
+const NOT_REGISTERED_MESSAGE = "That sentence can't be changed here.";
+const NOT_REGISTERED_PHOTO_MESSAGE = "That photo spot doesn't exist.";
 const MISSING_ALT_MESSAGE = "Please describe the photo for visitors who can't see it.";
-const NO_OVERRIDE_MESSAGE =
+const NO_OVERRIDE_PHOTO_MESSAGE =
   "This photo is back to the original, so there's no description to change.";
 const ALT_MAX = 600;
 const LIST_PAGE_LIMIT = 500;
 const LIBRARY_LIMIT = 60;
 
+function checkedLang(lang: string): Locale {
+  if (lang !== "en" && lang !== "ja") throw new Error("That language isn't supported.");
+  return lang;
+}
+
+async function setSiteTextColumn(path: string, lang: Locale, value: string | null): Promise<void> {
+  const [existing] = await db.select().from(siteText).where(eq(siteText.path, path));
+
+  const next = {
+    en: lang === "en" ? value : existing?.en ?? null,
+    ja: lang === "ja" ? value : existing?.ja ?? null,
+  };
+
+  if (next.en === null && next.ja === null) {
+    if (existing) await db.delete(siteText).where(eq(siteText.path, path));
+    return;
+  }
+
+  await db
+    .insert(siteText)
+    .values({ path, ...next })
+    .onConflictDoUpdate({ target: siteText.path, set: next });
+}
+
+export async function updateSiteText(path: string, lang: Locale, value: string): Promise<void> {
+  await requireUser();
+
+  const fieldSpec = siteTextField(path);
+  if (!fieldSpec) throw new Error(NOT_REGISTERED_MESSAGE);
+  const checked = checkedLang(lang);
+
+  const trimmed = value.trim();
+  if (trimmed.length > fieldSpec.max) {
+    throw new Error(tooLongMessage(fieldSpec.label, fieldSpec.max));
+  }
+
+  await setSiteTextColumn(path, checked, trimmed || null);
+  revalidateSite();
+}
+
+export async function resetSiteText(path: string, lang: Locale): Promise<void> {
+  await requireUser();
+
+  if (!siteTextField(path)) throw new Error(NOT_REGISTERED_MESSAGE);
+  const checked = checkedLang(lang);
+
+  await setSiteTextColumn(path, checked, null);
+  revalidateSite();
+}
+
 function checkedSlot(slot: string): PhotoSlot {
   const found = photoSlot(slot);
-  if (!found) throw new Error(NOT_REGISTERED_MESSAGE);
+  if (!found) throw new Error(NOT_REGISTERED_PHOTO_MESSAGE);
   return found;
 }
 
@@ -108,7 +161,7 @@ export async function updateSitePhotoDescription(input: {
   const altJa = checkedAltJa(input.altJa);
 
   const [existing] = await db.select().from(sitePhotos).where(eq(sitePhotos.slot, slot.id));
-  if (!existing) throw new Error(NO_OVERRIDE_MESSAGE);
+  if (!existing) throw new Error(NO_OVERRIDE_PHOTO_MESSAGE);
 
   await db.update(sitePhotos).set({ alt, altJa }).where(eq(sitePhotos.slot, slot.id));
   revalidateSite();

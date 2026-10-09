@@ -28,24 +28,24 @@ export function EditBar({
     <div
       id="admin-edit-bar"
       tabIndex={-1}
-      className="sticky top-0 z-20 bg-navy px-4 py-3 text-white outline-none sm:px-6"
+      className="sticky top-0 z-20 border-b border-line bg-paper/95 px-4 py-2 text-ink outline-none backdrop-blur sm:px-6"
     >
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-6 gap-y-3">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
-          <p id={languageLabelId} className="font-display text-sm font-semibold tracking-wide">
+          <p id={languageLabelId} className="font-display text-sm font-semibold tracking-wide text-ink-soft">
             Words shown in
           </p>
           <div
             role="group"
             aria-labelledby={languageLabelId}
-            className="inline-flex rounded-lg border border-white/30 p-1"
+            className="inline-flex rounded-full bg-mist p-1"
           >
             <button
               type="button"
               aria-pressed={lang === "en"}
               onClick={() => onLangChange("en")}
-              className={`min-h-11 rounded-md px-3 text-sm font-semibold ${
-                lang === "en" ? "bg-sky text-navy" : "text-sky"
+              className={`min-h-11 rounded-full px-4 font-display text-sm font-semibold ${
+                lang === "en" ? "bg-navy text-white" : "text-ink-soft hover:text-ink"
               }`}
             >
               English
@@ -54,8 +54,8 @@ export function EditBar({
               type="button"
               aria-pressed={lang === "ja"}
               onClick={() => onLangChange("ja")}
-              className={`min-h-11 rounded-md px-3 text-sm font-semibold ${
-                lang === "ja" ? "bg-sky text-navy" : "text-sky"
+              className={`min-h-11 rounded-full px-4 font-display text-sm font-semibold ${
+                lang === "ja" ? "bg-navy text-white" : "text-ink-soft hover:text-ink"
               }`}
             >
               日本語
@@ -64,23 +64,25 @@ export function EditBar({
         </div>
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
           <p aria-live="polite" className="min-h-6 text-sm font-medium">
-            {status.kind === "saving" && <span className="text-white">Saving…</span>}
+            {status.kind === "saving" && <span className="text-ink-soft">Saving…</span>}
             {status.kind === "saved" && (
-              <span className="text-sky">✓ {status.message ?? "Saved. Live on the website."}</span>
+              <span className="text-indigo-deep">
+                ✓ {status.message ?? "Saved. Live on the website."}
+              </span>
             )}
             {status.kind === "error" && (
-              <span role="alert" className="text-blossom">
+              <span role="alert" className="text-magenta-deep">
                 {status.message}
               </span>
             )}
             {undo && (
-              <span className="text-sky">
+              <span className="text-navy">
                 {" "}
                 <button
                   type="button"
                   onClick={undo.onUndo}
                   aria-disabled={undo.busy}
-                  className="min-h-11 font-semibold underline hover:text-white"
+                  className="min-h-11 font-semibold underline hover:text-indigo-deep"
                 >
                   {undo.busy ? "Undoing…" : "Undo"}
                 </button>
@@ -91,7 +93,7 @@ export function EditBar({
             href={viewHref}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex min-h-11 items-center text-sm font-semibold text-sky underline hover:text-white"
+            className="inline-flex min-h-11 items-center text-sm font-semibold text-navy underline hover:text-indigo-deep"
           >
             View on the website
             <span className="sr-only"> (opens in a new tab)</span>

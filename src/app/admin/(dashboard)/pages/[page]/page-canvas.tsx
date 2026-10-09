@@ -3,18 +3,20 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AdminBadge } from "@/components/admin/admin-badge";
-import { buttonClass } from "@/components/admin/admin-button";
 import { AdminCard } from "@/components/admin/admin-card";
 import { EditBar, type EditBarStatus } from "@/components/admin/inline-edit/edit-bar";
 import { EditableText } from "@/components/admin/inline-edit/editable-text";
+import { PagePreview } from "@/components/admin/inline-edit/page-preview";
+import { PhotoSlotTile, type PhotoTile } from "@/components/admin/inline-edit/photo-slot-tile";
 import { useOpenTarget } from "@/components/admin/inline-edit/use-open-target";
-import { useUndo } from "@/components/admin/inline-edit/use-undo";
+import { useUndo, type UndoEntry } from "@/components/admin/inline-edit/use-undo";
 import { useUnsavedChangesGuard } from "@/components/admin/inline-edit/use-unsaved-changes-guard";
+import type { EditablePage } from "@/lib/editable-pages";
 import type { Dictionary } from "@/lib/dictionaries";
 import type { Locale } from "@/lib/i18n";
 import { readPath } from "@/lib/object-path";
-import { SITE_TEXT_PAGES, type SiteTextField } from "@/lib/site-text-fields";
-import { resetSiteText, updateSiteText } from "./actions";
+import type { SiteTextField } from "@/lib/site-text-fields";
+import { resetSiteText, updateSiteText } from "../actions";
 
 type OverrideValue = { en: string | null; ja: string | null };
 type OverridesRecord = Record<string, OverrideValue>;
@@ -34,19 +36,29 @@ function stringAt(dict: Dictionary, path: string): string {
   return typeof value === "string" ? value : "";
 }
 
-export function WordsCanvas({
+function localizedHref(lang: Locale, href: string): string {
+  return href === "/" ? `/${lang}` : `/${lang}${href}`;
+}
+
+export function PageCanvas({
+  page,
   overrides: initialOverrides,
   en,
   ja,
+  tiles: initialTiles,
 }: {
+  page: EditablePage;
   overrides: OverridesRecord;
   en: Dictionary;
   ja: Dictionary;
+  tiles: Record<string, PhotoTile>;
 }) {
   const router = useRouter();
   const [overrides, setOverrides] = useState(initialOverrides);
+  const [tiles, setTiles] = useState(initialTiles);
   const [lang, setLang] = useState<Locale>("en");
   const [status, setStatus] = useState<EditBarStatus>({ kind: "idle" });
+  const [reloadKey, setReloadKey] = useState(0);
 
   const editState = useOpenTarget();
   const undo = useUndo();
@@ -113,6 +125,7 @@ export function WordsCanvas({
           },
         });
         router.refresh();
+        setReloadKey((k) => k + 1);
       } catch (e) {
         setOverrides(withOverride(fieldSpec.path, lang, previous));
         const message = e instanceof Error && e.message ? e.message : GENERIC_SAVE_ERROR;
@@ -145,6 +158,7 @@ export function WordsCanvas({
           },
         });
         router.refresh();
+        setReloadKey((k) => k + 1);
       } catch (e) {
         setOverrides(withOverride(fieldSpec.path, lang, previous));
         const message = e instanceof Error && e.message ? e.message : GENERIC_SAVE_ERROR;
@@ -187,11 +201,25 @@ export function WordsCanvas({
     );
   }
 
+  function onTileChange(next: PhotoTile) {
+    setTiles((current) => ({ ...current, [next.slot]: next }));
+  }
+
+  function onPhotoSaved(next: PhotoTile, undoEntry?: UndoEntry) {
+    onTileChange(next);
+    if (undoEntry) undo.record(undoEntry);
+    else undo.clear();
+    setReloadKey((k) => k + 1);
+  }
+
   async function onUndo() {
     const error = await undo.runUndo();
     setStatus(error ? { kind: "error", message: error } : { kind: "idle" });
+    setReloadKey((k) => k + 1);
     document.getElementById("admin-edit-bar")?.focus();
   }
+
+  const viewHref = localizedHref(lang, page.href);
 
   return (
     <div>
@@ -199,7 +227,7 @@ export function WordsCanvas({
         lang={lang}
         onLangChange={handleLangChange}
         status={status}
-        viewHref="/"
+        viewHref={viewHref}
         undo={
           undo.entry
             ? { description: undo.entry.description, busy: undo.undoing, onUndo: () => void onUndo() }
@@ -207,39 +235,45 @@ export function WordsCanvas({
         }
       />
 
-      <div className="mt-6 flex flex-wrap gap-3">
-        {SITE_TEXT_PAGES.map((page) => (
-          <a key={page.id} href={`#words-${page.id}`} className={buttonClass("secondary")}>
-            {page.label}
-          </a>
-        ))}
-      </div>
+      <div className="mx-auto max-w-7xl py-8 lg:grid lg:grid-cols-2 lg:items-start lg:gap-8">
+        <div className="space-y-6">
+          {page.sections
+            .filter((section) => section.fields.length > 0 || section.photos.length > 0)
+            .map((section) => (
+              <AdminCard key={section.id}>
+                <h2 className="font-display text-lg text-ink">{section.label}</h2>
+                {section.fields.length > 0 && (
+                  <div className="mt-2">{section.fields.map(renderField)}</div>
+                )}
+                {section.photos.length > 0 && (
+                  <div className="mt-6">
+                    <h3 className="font-display text-base font-semibold text-ink-soft">Photos</h3>
+                    <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                      {section.photos.map((slot) => (
+                        <PhotoSlotTile
+                          key={slot.id}
+                          slot={slot}
+                          tile={tiles[slot.id]}
+                          onSaved={onPhotoSaved}
+                          onTileChange={onTileChange}
+                          onStatus={setStatus}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </AdminCard>
+            ))}
+        </div>
 
-      <div className="mt-8 space-y-12">
-        {SITE_TEXT_PAGES.map((page) => (
-          <section key={page.id} id={`words-${page.id}`}>
-            <div className="flex flex-wrap items-baseline justify-between gap-3">
-              <h2 className="font-display text-2xl text-ink">{page.label}</h2>
-              <a
-                href={page.href}
-                target="_blank"
-                rel="noreferrer"
-                className="text-sm font-semibold text-indigo-deep underline hover:text-indigo"
-              >
-                Open this page<span className="sr-only"> (opens in a new tab)</span>
-              </a>
-            </div>
-
-            <div className="mt-4 space-y-6">
-              {page.sections.map((pageSection) => (
-                <AdminCard key={pageSection.id}>
-                  <h3 className="font-display text-lg text-ink">{pageSection.label}</h3>
-                  <div className="mt-2">{pageSection.fields.map(renderField)}</div>
-                </AdminCard>
-              ))}
-            </div>
-          </section>
-        ))}
+        <div className="hidden lg:sticky lg:top-20 lg:block">
+          <PagePreview
+            src={viewHref}
+            title={`Preview of the ${page.label}`}
+            reloadKey={reloadKey}
+            onReload={() => setReloadKey((k) => k + 1)}
+          />
+        </div>
       </div>
     </div>
   );
