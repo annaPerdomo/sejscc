@@ -7,8 +7,9 @@ import { AdminCard } from "@/components/admin/admin-card";
 import { EditBar, type EditBarStatus } from "@/components/admin/inline-edit/edit-bar";
 import { EditableText } from "@/components/admin/inline-edit/editable-text";
 import { PagePreview } from "@/components/admin/inline-edit/page-preview";
+import { PhotoSlotTile, type PhotoTile } from "@/components/admin/inline-edit/photo-slot-tile";
 import { useOpenTarget } from "@/components/admin/inline-edit/use-open-target";
-import { useUndo } from "@/components/admin/inline-edit/use-undo";
+import { useUndo, type UndoEntry } from "@/components/admin/inline-edit/use-undo";
 import { useUnsavedChangesGuard } from "@/components/admin/inline-edit/use-unsaved-changes-guard";
 import type { EditablePage } from "@/lib/editable-pages";
 import type { Dictionary } from "@/lib/dictionaries";
@@ -44,14 +45,17 @@ export function PageCanvas({
   overrides: initialOverrides,
   en,
   ja,
+  tiles: initialTiles,
 }: {
   page: EditablePage;
   overrides: OverridesRecord;
   en: Dictionary;
   ja: Dictionary;
+  tiles: Record<string, PhotoTile>;
 }) {
   const router = useRouter();
   const [overrides, setOverrides] = useState(initialOverrides);
+  const [tiles, setTiles] = useState(initialTiles);
   const [lang, setLang] = useState<Locale>("en");
   const [status, setStatus] = useState<EditBarStatus>({ kind: "idle" });
   const [reloadKey, setReloadKey] = useState(0);
@@ -197,6 +201,17 @@ export function PageCanvas({
     );
   }
 
+  function onTileChange(next: PhotoTile) {
+    setTiles((current) => ({ ...current, [next.slot]: next }));
+  }
+
+  function onPhotoSaved(next: PhotoTile, undoEntry?: UndoEntry) {
+    onTileChange(next);
+    if (undoEntry) undo.record(undoEntry);
+    else undo.clear();
+    setReloadKey((k) => k + 1);
+  }
+
   async function onUndo() {
     const error = await undo.runUndo();
     setStatus(error ? { kind: "error", message: error } : { kind: "idle" });
@@ -223,11 +238,30 @@ export function PageCanvas({
       <div className="mx-auto max-w-7xl py-8 lg:grid lg:grid-cols-2 lg:items-start lg:gap-8">
         <div className="space-y-6">
           {page.sections
-            .filter((section) => section.fields.length > 0)
+            .filter((section) => section.fields.length > 0 || section.photos.length > 0)
             .map((section) => (
               <AdminCard key={section.id}>
                 <h2 className="font-display text-lg text-ink">{section.label}</h2>
-                <div className="mt-2">{section.fields.map(renderField)}</div>
+                {section.fields.length > 0 && (
+                  <div className="mt-2">{section.fields.map(renderField)}</div>
+                )}
+                {section.photos.length > 0 && (
+                  <div className="mt-6">
+                    <h3 className="font-display text-base font-semibold text-ink-soft">Photos</h3>
+                    <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                      {section.photos.map((slot) => (
+                        <PhotoSlotTile
+                          key={slot.id}
+                          slot={slot}
+                          tile={tiles[slot.id]}
+                          onSaved={onPhotoSaved}
+                          onTileChange={onTileChange}
+                          onStatus={setStatus}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </AdminCard>
             ))}
         </div>

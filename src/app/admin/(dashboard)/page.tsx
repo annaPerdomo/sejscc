@@ -14,6 +14,22 @@ import { AdminPageWidth } from "@/components/admin/admin-page-width";
 
 export const dynamic = "force-dynamic";
 
+function changesSummary(textCount: number, photoCount: number): string {
+  if (textCount === 0 && photoCount === 0) {
+    return "Every word and photo is still the original.";
+  }
+
+  const parts: string[] = [];
+  if (textCount > 0) parts.push(`${textCount} sentence${textCount === 1 ? "" : "s"}`);
+  if (photoCount > 0) parts.push(`${photoCount} photo${photoCount === 1 ? "" : "s"}`);
+
+  const total = textCount + photoCount;
+  const changed = parts.join(" and ");
+  const verb = total === 1 ? "has" : "have";
+  const noun = total === 1 ? "the original" : "the originals";
+  return `${changed} ${verb} been changed from ${noun}.`;
+}
+
 function SummaryCard({
   kanji,
   title,
@@ -195,21 +211,7 @@ export default async function AdminDashboard() {
           viewHref="/"
           viewLabel="See the website"
         >
-          {siteTextOverrides.size > 0
-            ? `${siteTextOverrides.size} sentence${siteTextOverrides.size === 1 ? "" : "s"} ${siteTextOverrides.size === 1 ? "has" : "have"} been changed from the original.`
-            : "Every sentence is still the original."}
-        </SummaryCard>
-        <SummaryCard
-          kanji="写"
-          title="Photos"
-          addHref="/admin/photos"
-          addLabel="Change a photo"
-          viewHref="/"
-          viewLabel="See the website"
-        >
-          {sitePhotos.size > 0
-            ? `${sitePhotos.size} photo${sitePhotos.size === 1 ? "" : "s"} ${sitePhotos.size === 1 ? "has" : "have"} been changed from the originals.`
-            : "Every photo is still the original."}
+          {changesSummary(siteTextOverrides.size, sitePhotos.size)}
         </SummaryCard>
         <SummaryCard
           kanji="級"

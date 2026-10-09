@@ -21,14 +21,6 @@ export type PhotoSlot = {
   shape: PhotoShape;
 };
 
-export const PHOTO_PAGES: { id: PhotoPageId; label: string; href: string }[] = [
-  { id: "home", label: "Home", href: "/" },
-  { id: "school", label: "Japanese School", href: "/school" },
-  { id: "events", label: "Events", href: "/events" },
-  { id: "groups", label: "Sports & Classes", href: "/groups" },
-  { id: "donate", label: "Donate", href: "/payments" },
-];
-
 function slide(n: number): string {
   return `Slide ${n + 1}`;
 }

@@ -7,22 +7,23 @@ import { upload } from "@vercel/blob/client";
 import { AdminAlert } from "@/components/admin/admin-alert";
 import { AdminBadge } from "@/components/admin/admin-badge";
 import { buttonClass, buttonVariantClass } from "@/components/admin/admin-button";
-import { AdminCard } from "@/components/admin/admin-card";
 import { AdminTextArea } from "@/components/admin/admin-field";
 import { AdminImagePicker } from "@/components/admin/admin-image-picker";
+import type { EditBarStatus } from "@/components/admin/inline-edit/edit-bar";
 import { EditDialog } from "@/components/admin/inline-edit/edit-dialog";
-import { useUndo } from "@/components/admin/inline-edit/use-undo";
 import { useUnsavedChangesGuard } from "@/components/admin/inline-edit/use-unsaved-changes-guard";
-import { PHOTO_PAGES, PHOTO_SLOTS, photoSlot, type PhotoShape } from "@/lib/photo-slots";
+import type { PhotoShape, PhotoSlot } from "@/lib/photo-slots";
 import {
   listUploadedPhotos,
   resetSitePhoto,
   updateSitePhoto,
   updateSitePhotoDescription,
-} from "./actions";
+} from "@/app/admin/(dashboard)/pages/actions";
 
 const NO_OVERRIDE_MESSAGE =
   "This photo is back to the original, so there's no description to change.";
+const GENERIC_SAVE_ERROR = "Something went wrong saving this. Please try again.";
+const MISSING_ALT_MESSAGE = "Please describe the photo for visitors who can't see it.";
 const TILE_SIZES = "(max-width: 640px) 50vw, 33vw";
 const LIBRARY_SIZES = "33vw";
 
@@ -33,9 +34,6 @@ export type PhotoTile = {
   isChanged: boolean;
 };
 
-const GENERIC_SAVE_ERROR = "Something went wrong saving this. Please try again.";
-const MISSING_ALT_MESSAGE = "Please describe the photo for visitors who can't see it.";
-
 const SHAPE_CLASS: Record<PhotoShape, string> = {
   wide: "aspect-band",
   photo: "aspect-photo",
@@ -44,158 +42,83 @@ const SHAPE_CLASS: Record<PhotoShape, string> = {
 
 type PickMode = "upload" | "library";
 
-function groupSlots() {
-  return PHOTO_PAGES.map((page) => {
-    const slots = PHOTO_SLOTS.filter((slot) => slot.page === page.id);
-    const groups: { group: string; slots: typeof slots }[] = [];
-    for (const slot of slots) {
-      const existing = groups.find((g) => g.group === slot.group);
-      if (existing) existing.slots.push(slot);
-      else groups.push({ group: slot.group, slots: [slot] });
-    }
-    return { page, groups };
-  });
-}
-
-const PAGE_GROUPS = groupSlots();
-
-export function PhotosCanvas({ tiles: initialTiles }: { tiles: PhotoTile[] }) {
+export function PhotoSlotTile({
+  slot,
+  tile,
+  onSaved,
+  onTileChange,
+  onStatus,
+}: {
+  slot: PhotoSlot;
+  tile: PhotoTile;
+  onSaved: (
+    next: PhotoTile,
+    undo?: { description: string; undo: () => Promise<void> }
+  ) => void;
+  onTileChange: (next: PhotoTile) => void;
+  onStatus: (status: EditBarStatus) => void;
+}) {
   const router = useRouter();
-  const [tiles, setTiles] = useState(initialTiles);
-  const [openSlot, setOpenSlot] = useState<string | null>(null);
-  const [status, setStatus] = useState<{ message: string } | null>(null);
-  const undo = useUndo();
+  const [open, setOpen] = useState(false);
 
-  function tileFor(slot: string): PhotoTile {
-    return tiles.find((t) => t.slot === slot)!;
+  function handleSaved(next: PhotoTile, description: string) {
+    onSaved(
+      next,
+      // Replacing or removing an upload deletes its blob, so only a
+      // change made to the still-original photo can be undone safely.
+      tile.isChanged
+        ? undefined
+        : {
+            description,
+            undo: async () => {
+              await resetSitePhoto(slot.id);
+              onTileChange({ ...tile, isChanged: false });
+              router.refresh();
+            },
+          }
+    );
+    onStatus({ kind: "saved", message: description });
+    router.refresh();
   }
 
-  function setTile(slot: string, next: Pick<PhotoTile, "current" | "isChanged">) {
-    setTiles((current) => current.map((t) => (t.slot === slot ? { ...t, ...next } : t)));
-  }
-
-  async function onUndo() {
-    const error = await undo.runUndo();
-    setStatus(error ? { message: error } : null);
+  function handleReset(originalCurrent: PhotoTile["current"], description: string) {
+    onSaved({ ...tile, current: originalCurrent, isChanged: false });
+    onStatus({ kind: "saved", message: description });
+    router.refresh();
   }
 
   return (
-    <div>
-      <div aria-live="polite" className="mb-6 min-h-6 text-sm font-medium">
-        {status && (
-          <span className="text-indigo-deep">
-            {status.message}
-            {undo.entry && (
-              <>
-                {" "}
-                <button
-                  type="button"
-                  onClick={() => void onUndo()}
-                  aria-disabled={undo.undoing}
-                  className="font-semibold underline hover:text-indigo"
-                >
-                  {undo.undoing ? "Undoing…" : "Undo"}
-                </button>
-              </>
-            )}
-          </span>
-        )}
+    <div className="flex flex-col gap-2">
+      <div className={`relative overflow-clip rounded-lg bg-mist ${SHAPE_CLASS[slot.shape]}`}>
+        <Image
+          src={tile.current.src}
+          alt={tile.current.alt}
+          fill
+          sizes={TILE_SIZES}
+          className="object-cover"
+        />
       </div>
-
-      <div className="flex flex-wrap gap-3">
-        {PHOTO_PAGES.map((page) => (
-          <a key={page.id} href={`#photos-${page.id}`} className={buttonClass("secondary")}>
-            {page.label}
-          </a>
-        ))}
+      <div className="flex items-center gap-2">
+        <span className="text-sm font-semibold text-ink">{slot.label}</span>
+        {tile.isChanged && <AdminBadge tone="pending">Changed</AdminBadge>}
       </div>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-label={`Change ${slot.label}`}
+        className={`min-h-11 w-full ${buttonClass("secondary")}`}
+      >
+        Change
+      </button>
 
-      <div className="mt-8 space-y-12">
-        {PAGE_GROUPS.map(({ page, groups }) => (
-          <section key={page.id} id={`photos-${page.id}`}>
-            <div className="flex flex-wrap items-baseline justify-between gap-3">
-              <h2 className="font-display text-2xl text-ink">{page.label}</h2>
-              <a
-                href={page.href}
-                target="_blank"
-                rel="noreferrer"
-                className="text-sm font-semibold text-indigo-deep underline hover:text-indigo"
-              >
-                Open this page<span className="sr-only"> (opens in a new tab)</span>
-              </a>
-            </div>
-
-            <div className="mt-4 space-y-8">
-              {groups.map(({ group, slots }) => (
-                <AdminCard key={group}>
-                  <h3 className="font-display text-lg text-ink">{group}</h3>
-                  <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3">
-                    {slots.map((slot) => {
-                      const tile = tileFor(slot.id);
-                      return (
-                        <div key={slot.id} className="flex flex-col gap-2">
-                          <div
-                            className={`relative overflow-clip rounded-lg bg-mist ${SHAPE_CLASS[slot.shape]}`}
-                          >
-                            <Image
-                              src={tile.current.src}
-                              alt=""
-                              fill
-                              sizes={TILE_SIZES}
-                              className="object-cover"
-                            />
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-semibold text-ink">{slot.label}</span>
-                            {tile.isChanged && <AdminBadge tone="pending">Changed</AdminBadge>}
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => setOpenSlot(slot.id)}
-                            className={`min-h-11 w-full ${buttonClass("secondary")}`}
-                          >
-                            Change
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </AdminCard>
-              ))}
-            </div>
-          </section>
-        ))}
-      </div>
-
-      {openSlot && (
+      {open && (
         <PhotoDialog
-          tile={tileFor(openSlot)}
-          onClose={() => setOpenSlot(null)}
-          onSaved={(slot, next, previous, description) => {
-            setTile(slot, next);
-            setStatus({ message: description });
-            // Replacing or removing an upload deletes its blob, so only a
-            // change made to the still-original photo can be undone safely.
-            if (previous.isChanged) {
-              undo.clear();
-            } else {
-              undo.record({
-                description,
-                undo: async () => {
-                  await resetSitePhoto(slot);
-                  setTile(slot, { current: previous.current, isChanged: false });
-                  router.refresh();
-                },
-              });
-            }
-            router.refresh();
-          }}
-          onReset={(slot, originalState, description) => {
-            setTile(slot, { current: originalState, isChanged: false });
-            setStatus({ message: description });
-            undo.clear();
-            router.refresh();
-          }}
+          slot={slot}
+          tile={tile}
+          onClose={() => setOpen(false)}
+          onSaved={handleSaved}
+          onReset={handleReset}
+          onStatus={onStatus}
         />
       )}
     </div>
@@ -203,23 +126,21 @@ export function PhotosCanvas({ tiles: initialTiles }: { tiles: PhotoTile[] }) {
 }
 
 function PhotoDialog({
+  slot,
   tile,
   onClose,
   onSaved,
   onReset,
+  onStatus,
 }: {
+  slot: PhotoSlot;
   tile: PhotoTile;
   onClose: () => void;
-  onSaved: (
-    slot: string,
-    next: Pick<PhotoTile, "current" | "isChanged">,
-    previous: PhotoTile,
-    description: string
-  ) => void;
-  onReset: (slot: string, original: PhotoTile["current"], description: string) => void;
+  onSaved: (next: PhotoTile, description: string) => void;
+  onReset: (original: PhotoTile["current"], description: string) => void;
+  onStatus: (status: EditBarStatus) => void;
 }) {
   const router = useRouter();
-  const slot = photoSlot(tile.slot)!;
   const title = `${slot.group} — ${slot.label}`;
   const altOptional = slot.defaultAltPath === null;
 
@@ -290,9 +211,9 @@ function PhotoDialog({
     setAltError(null);
     setError(null);
     setSaving(true);
+    onStatus({ kind: "saving" });
 
     const altJa = altJaDraft.trim();
-    const previous = tile;
 
     try {
       let url = tile.current.src;
@@ -313,15 +234,14 @@ function PhotoDialog({
       }
 
       onSaved(
-        tile.slot,
-        { current: { src: url, alt, altJa }, isChanged: true },
-        previous,
+        { ...tile, current: { src: url, alt, altJa }, isChanged: true },
         `Changed ${slot.group}: ${slot.label}.`
       );
       onClose();
     } catch (e) {
       const message = e instanceof Error && e.message ? e.message : GENERIC_SAVE_ERROR;
       setError(message);
+      onStatus({ kind: "error", message });
       if (message === NO_OVERRIDE_MESSAGE) router.refresh();
     } finally {
       setSaving(false);
@@ -332,12 +252,15 @@ function PhotoDialog({
     if (saving) return;
     setSaving(true);
     setError(null);
+    onStatus({ kind: "saving" });
     try {
       await resetSitePhoto(tile.slot);
-      onReset(tile.slot, tile.original, `Put back the original photo: ${slot.group}, ${slot.label}.`);
+      onReset(tile.original, `Put back the original photo: ${slot.group}, ${slot.label}.`);
       onClose();
     } catch (e) {
-      setError(e instanceof Error && e.message ? e.message : GENERIC_SAVE_ERROR);
+      const message = e instanceof Error && e.message ? e.message : GENERIC_SAVE_ERROR;
+      setError(message);
+      onStatus({ kind: "error", message });
     } finally {
       setSaving(false);
     }
@@ -348,10 +271,15 @@ function PhotoDialog({
     setLibraryUrl(null);
   }
 
+  function closeDialog() {
+    if (error) onStatus({ kind: "idle" });
+    onClose();
+  }
+
   const pickerValue = mode === "upload" ? previewUrl : null;
 
   return (
-    <EditDialog title={title} open busy={saving} onClose={onClose}>
+    <EditDialog title={title} open busy={saving} onClose={closeDialog}>
       <div className="space-y-5">
         <div
           role="group"
@@ -476,7 +404,7 @@ function PhotoDialog({
           <button
             type="button"
             onClick={() => {
-              if (!saving) onClose();
+              if (!saving) closeDialog();
             }}
             aria-disabled={saving}
             className={`min-h-12 ${buttonClass("secondary")}`}
