@@ -18,19 +18,12 @@ import { SitePhoto } from "@/components/site-photo";
 import { SiteVideo } from "@/components/site-video";
 import { WaveDivider } from "@/components/wave-divider";
 import { KanjiWatermark } from "@/components/kanji-watermark";
-import {
-  CENTER_ADDRESS,
-  CENTER_EMAIL,
-  CENTER_PHONE,
-  CENTER_PHONE_HREF,
-  mapsEmbedUrl,
-  mapsUrl,
-} from "@/lib/center";
+import { mapsEmbedUrl, mapsUrl } from "@/lib/center";
 import { getActiveGroups, getUpcomingEvents } from "@/lib/events";
 import { weekDays } from "@/db/schema";
 import { getDictionary, getLocale } from "@/lib/dictionaries";
 import { localePath } from "@/lib/i18n";
-import { getAboutVideoUrls } from "@/lib/site-settings";
+import { getAboutVideoUrls, getCenterContact } from "@/lib/site-settings";
 import { getVolunteerSection } from "@/lib/volunteers";
 import { youtubeVideoId } from "@/lib/video";
 import {
@@ -85,13 +78,14 @@ function ContactIcon({ name }: { name: keyof typeof CONTACT_ICONS }) {
 
 export default async function HomePage() {
   const lang = await getLocale();
-  const [dict, upcoming, groups, aboutVideoUrls, volunteerSection] =
+  const [dict, upcoming, groups, aboutVideoUrls, volunteerSection, contact] =
     await Promise.all([
       getDictionary(),
       getUpcomingEvents(5),
       getActiveGroups(),
       getAboutVideoUrls(),
       getVolunteerSection(lang),
+      getCenterContact(),
     ]);
   const href = (path: string) => localePath(lang, path);
   const aboutVideoIds = aboutVideoUrls
@@ -600,7 +594,7 @@ export default async function HomePage() {
           <div className="reveal-rise mt-10 grid gap-5 lg:grid-cols-[2fr_3fr]">
             <div className="surface-card flex flex-col divide-y divide-line overflow-clip">
               <a
-                href={mapsUrl(CENTER_ADDRESS)}
+                href={mapsUrl(contact.address)}
                 target="_blank"
                 rel="noreferrer"
                 aria-label={dict.home.contact.addressAria}
@@ -612,12 +606,12 @@ export default async function HomePage() {
                     {dict.home.contact.addressLabel}
                   </span>
                   <span className="mt-1 block leading-relaxed text-ink">
-                    {CENTER_ADDRESS}
+                    {contact.address}
                   </span>
                 </span>
               </a>
               <a
-                href={CENTER_PHONE_HREF}
+                href={contact.phoneHref}
                 className="group flex flex-1 items-center gap-4 px-5 py-5 transition-colors hover:bg-mist"
               >
                 <ContactIcon name="phone" />
@@ -626,12 +620,12 @@ export default async function HomePage() {
                     {dict.home.contact.phoneLabel}
                   </span>
                   <span className="mt-1 block leading-relaxed text-ink">
-                    {CENTER_PHONE}
+                    {contact.phone}
                   </span>
                 </span>
               </a>
               <a
-                href={`mailto:${CENTER_EMAIL}`}
+                href={`mailto:${contact.email}`}
                 className="group flex flex-1 items-center gap-4 px-5 py-5 transition-colors hover:bg-mist"
               >
                 <ContactIcon name="mail" />
@@ -640,14 +634,14 @@ export default async function HomePage() {
                     {dict.home.contact.emailLabel}
                   </span>
                   <span className="mt-1 block leading-relaxed break-all text-ink">
-                    {CENTER_EMAIL}
+                    {contact.email}
                   </span>
                 </span>
               </a>
             </div>
             <div className="surface-card relative min-h-64 overflow-clip lg:min-h-0">
               <iframe
-                src={mapsEmbedUrl(CENTER_ADDRESS)}
+                src={mapsEmbedUrl(contact.address)}
                 title={dict.home.contact.mapTitle}
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"

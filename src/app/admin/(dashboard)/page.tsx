@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { db } from "@/db";
 import { boardMembers } from "@/db/schema";
 import { getActiveGroups, getUpcomingEvents } from "@/lib/events";
+import { getAnnouncement } from "@/lib/site-settings";
 import { AdminButtonLink } from "@/components/admin/admin-button";
 import { AdminCard } from "@/components/admin/admin-card";
 import { AdminPageWidth } from "@/components/admin/admin-page-width";
@@ -50,11 +51,13 @@ function SummaryCard({
 
 export default async function AdminDashboard() {
   const session = await auth();
-  const [activeGroups, upcomingEvents, allBoardMembers] = await Promise.all([
-    getActiveGroups(),
-    getUpcomingEvents(),
-    db.select({ visible: boardMembers.visible }).from(boardMembers),
-  ]);
+  const [activeGroups, upcomingEvents, allBoardMembers, announcement] =
+    await Promise.all([
+      getActiveGroups(),
+      getUpcomingEvents(),
+      db.select({ visible: boardMembers.visible }).from(boardMembers),
+      getAnnouncement(),
+    ]);
 
   const boardMemberCounts = {
     showing: allBoardMembers.filter((member) => member.visible).length,
@@ -144,6 +147,18 @@ export default async function AdminDashboard() {
           viewLabel="See it on the website"
         >
           {`${boardMemberCounts.showing} board ${boardMemberCounts.showing === 1 ? "member is" : "members are"} showing on the home page${boardMemberCounts.hidden > 0 ? ` (${boardMemberCounts.hidden} hidden)` : ""}.`}
+        </SummaryCard>
+        <SummaryCard
+          kanji="報"
+          title="Announcement bar"
+          addHref="/admin/announcement"
+          addLabel="Change the announcement"
+          viewHref="/"
+          viewLabel="See it on the website"
+        >
+          {announcement
+            ? `Showing: “${announcement.text}”`
+            : "Not showing. The bar shows the next event."}
         </SummaryCard>
       </div>
     </AdminPageWidth>

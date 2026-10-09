@@ -13,7 +13,10 @@
     "announcementAccent": "次回",
     "announcementLabel": "Next Up",
     "announcementCta": "詳しく見る",
-    "announcementSignup": "申し込む"
+    "announcementSignup": "申し込む",
+    "noticeAccent": "お知らせ",
+    "noticeLabel": "お知らせ",
+    "noticeCta": "詳しく見る"
   },
   "nav": {
     "about": "私たちについて",
@@ -994,9 +997,6 @@
     "donateFrame": "サウスイースト日本語学園への寄付",
     "donateTroubleBefore": "フォームが表示されない場合は ",
     "donateTroubleLink": "Zeffyのページを開く",
-    "donateSoon": "オンライン寄付は準備中です。",
-    "donateSoonBefore": "それまでは、Zelle または小切手（下記参照）にて寄付を受け付けています。ご不明な点は ",
-    "donateSoonAfter": " までご連絡ください。",
     "donateIntro": "皆さまのご支援は、日本語教室、武道、生け花、日本舞踊、琴などの活動を支えています。これらの活動を通じて、日本の豊かな文化と伝統を地域の皆さまにお伝えしています。さらにセンターでは、青少年スポーツ、ソーシャルダンス、フラ、ウクレレ、シニア向けの活動も行っています。当センターはボランティアによって運営されており、いただいたご支援は100％がSEJSCCの目的のために使われます。",
     "impactTitle": "ご寄付の使いみち",
     "mosaicAccent": "この場所を守る",

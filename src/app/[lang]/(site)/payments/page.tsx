@@ -7,11 +7,11 @@ import { PhotoHero } from "@/components/photo-hero";
 import { SectionHeading } from "@/components/section-heading";
 import { SectionKicker } from "@/components/section-kicker";
 import { ZeffyEmbed } from "@/components/zeffy-embed";
-import { CENTER_EMAIL } from "@/lib/center";
 import { getDictionary, getDictionaryFor } from "@/lib/dictionaries";
-import { ZEFFY_DONATION_EMBED_URL, ZEFFY_DONATION_URL } from "@/lib/donate";
+import { ZEFFY_DONATION_URL, ZELLE_FALLBACK_EMAIL } from "@/lib/donate";
 import { hasLocale, localePath } from "@/lib/i18n";
 import { donatePhotos, photoFor } from "@/lib/photos";
+import { getCenterContact, getDonationDetails } from "@/lib/site-settings";
 
 // The layout's announcement bar shows the next upcoming event; without this
 // revalidation a past event would linger there until the next deploy.
@@ -58,14 +58,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-// Set to null to show the fallback message below if the embed ever needs to come down.
-const DONATION_EMBED_URL: string | null = ZEFFY_DONATION_EMBED_URL;
-
-// TODO(launch): the recipient name + email/phone shown in the center's banking app.
-const ZELLE_RECIPIENT: string | null = null;
-
 export default async function PaymentsPage() {
-  const dict = await getDictionary();
+  const [dict, contact, donation] = await Promise.all([
+    getDictionary(),
+    getCenterContact(),
+    getDonationDetails(),
+  ]);
 
   const reasons = dict.payments.donateReasons.map((reason, i) => ({
     ...reason,
@@ -97,40 +95,20 @@ export default async function PaymentsPage() {
         aside={
           <div id="donate" className="scroll-mt-32">
             <div className="overflow-clip rounded-sm bg-white shadow-2xl ring-4 ring-gold/70">
-              {DONATION_EMBED_URL ? (
-                <ZeffyEmbed
-                  title={dict.payments.donateFrame}
-                  src={DONATION_EMBED_URL}
-                  className="h-144 min-h-144 w-full lg:h-136 lg:min-h-136"
-                />
-              ) : (
-                <div className="p-8 text-ink-soft">
-                  <p className="font-display text-xl font-semibold text-ink">
-                    {dict.payments.donateSoon}
-                  </p>
-                  <p className="mt-3 text-lg leading-relaxed">
-                    {dict.payments.donateSoonBefore}
-                    <a
-                      href={`mailto:${CENTER_EMAIL}`}
-                      className="font-semibold text-indigo hover:text-indigo-deep"
-                    >
-                      {CENTER_EMAIL}
-                    </a>
-                    {dict.payments.donateSoonAfter}
-                  </p>
-                </div>
-              )}
-              {DONATION_EMBED_URL && (
-                <p className="border-t border-line px-6 py-4 text-base text-ink-soft">
-                  {dict.payments.donateTroubleBefore}
-                  <ExternalLink
-                    href={ZEFFY_DONATION_URL}
-                    className="font-semibold text-indigo hover:text-indigo-deep"
-                  >
-                    {dict.payments.donateTroubleLink}
-                  </ExternalLink>
-                </p>
-              )}
+              <ZeffyEmbed
+                title={dict.payments.donateFrame}
+                src={donation.donateFormUrl}
+                className="h-144 min-h-144 w-full lg:h-136 lg:min-h-136"
+              />
+              <p className="border-t border-line px-6 py-4 text-base text-ink-soft">
+                {dict.payments.donateTroubleBefore}
+                <ExternalLink
+                  href={ZEFFY_DONATION_URL}
+                  className="font-semibold text-indigo hover:text-indigo-deep"
+                >
+                  {dict.payments.donateTroubleLink}
+                </ExternalLink>
+              </p>
             </div>
           </div>
         }
@@ -230,14 +208,14 @@ export default async function PaymentsPage() {
                 {dict.payments.zelleText}
               </p>
               <p className="mt-3 text-lg leading-relaxed text-ink">
-                {ZELLE_RECIPIENT ?? (
+                {donation.zelleRecipient ?? (
                   <>
                     {dict.payments.zelleBefore}
                     <a
-                      href="mailto:gakuen@sejscc.org"
+                      href={`mailto:${ZELLE_FALLBACK_EMAIL}`}
                       className="font-semibold text-indigo hover:text-indigo-deep"
                     >
-                      gakuen@sejscc.org
+                      {ZELLE_FALLBACK_EMAIL}
                     </a>
                     {dict.payments.zelleAfter}
                   </>
@@ -251,10 +229,10 @@ export default async function PaymentsPage() {
             <p className="mt-10 text-lg leading-relaxed text-ink-soft">
               {dict.payments.questionsBefore}
               <a
-                href={`mailto:${CENTER_EMAIL}`}
+                href={`mailto:${contact.email}`}
                 className="font-semibold text-indigo hover:text-indigo-deep"
               >
-                {CENTER_EMAIL}
+                {contact.email}
               </a>
               {dict.payments.questionsAfter}
             </p>
@@ -269,7 +247,7 @@ export default async function PaymentsPage() {
                   </h3>
                   <p className="mt-2 text-lg leading-relaxed text-ink-soft">
                     {dict.payments.checkBefore}
-                    <strong className="text-ink">SEJSCC</strong>
+                    <strong className="text-ink">{donation.checkPayee}</strong>
                     {dict.payments.checkAfter}
                   </p>
                 </div>
@@ -282,11 +260,24 @@ export default async function PaymentsPage() {
                 </span>
               </div>
               <p className="mx-auto font-display text-2xl leading-relaxed text-ink sm:text-3xl sm:leading-relaxed">
-                SEJSCC
+                {donation.checkPayee}
                 <br />
-                14615 S. Gridley Rd.
-                <br />
-                Norwalk, CA 90650
+                {(() => {
+                  const commaAt = donation.checkAddress.indexOf(", ");
+                  const lines =
+                    commaAt === -1
+                      ? [donation.checkAddress]
+                      : [
+                          donation.checkAddress.slice(0, commaAt),
+                          donation.checkAddress.slice(commaAt + 2),
+                        ];
+                  return lines.map((line, i) => (
+                    <span key={i}>
+                      {i > 0 && <br />}
+                      {line}
+                    </span>
+                  ));
+                })()}
               </p>
               <p className="text-base leading-relaxed text-ink-soft">{dict.payments.checkMemo}</p>
             </div>

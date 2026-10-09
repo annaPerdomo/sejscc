@@ -10,13 +10,7 @@ import { KanjiWatermark } from "@/components/kanji-watermark";
 import { SectionKicker } from "@/components/section-kicker";
 import { WaveDivider } from "@/components/wave-divider";
 import { calendarLinks, calendarOptions } from "@/lib/calendars";
-import {
-  CENTER_EMAIL,
-  CENTER_PHONE,
-  CENTER_PHONE_HREF,
-  isAtCenter,
-  mapsUrl,
-} from "@/lib/center";
+import { isAtCenter, mapsUrl } from "@/lib/center";
 import { getEventBySlug, getUpcomingEventSlugs } from "@/lib/events";
 import { getImageSize } from "@/lib/image-size";
 import {
@@ -36,6 +30,7 @@ import {
 import { getDictionary, getDictionaryFor, getLocale } from "@/lib/dictionaries";
 import { hasLocale, localePath } from "@/lib/i18n";
 import { homePhotos } from "@/lib/photos";
+import { getCenterContact } from "@/lib/site-settings";
 
 export const revalidate = 300;
 
@@ -71,10 +66,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function EventPage({ params }: Props) {
   const { slug } = await params;
-  const [lang, dict, event] = await Promise.all([
+  const [lang, dict, event, contact] = await Promise.all([
     getLocale(),
     getDictionary(),
     getEventBySlug(slug),
+    getCenterContact(),
   ]);
   if (!event) notFound();
 
@@ -304,14 +300,14 @@ export default async function EventPage({ params }: Props) {
                 {dict.eventDetail.questions}
               </h2>
               <p className="mt-3 flex flex-col gap-1 text-lg">
-                <a href={CENTER_PHONE_HREF} className="w-fit py-1 font-semibold text-indigo hover:text-indigo-deep">
-                  {CENTER_PHONE}
+                <a href={contact.phoneHref} className="w-fit py-1 font-semibold text-indigo hover:text-indigo-deep">
+                  {contact.phone}
                 </a>
                 <a
-                  href={`mailto:${CENTER_EMAIL}`}
+                  href={`mailto:${contact.email}`}
                   className="w-fit py-1 font-semibold text-indigo hover:text-indigo-deep"
                 >
-                  {CENTER_EMAIL}
+                  {contact.email}
                 </a>
               </p>
             </div>

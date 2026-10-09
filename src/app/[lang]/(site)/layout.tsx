@@ -7,23 +7,30 @@ import { MobileNav } from "@/components/mobile-nav";
 import { ScrollReset } from "@/components/scroll-reset";
 import { SiteNav } from "@/components/site-nav";
 import { VolunteerSignInLink } from "@/components/volunteer-sign-in-link";
-import { CENTER_ADDRESS, CENTER_EMAIL, CENTER_PHONE, CENTER_PHONE_HREF } from "@/lib/center";
 import { getUpcomingEvents } from "@/lib/events";
 import { formatEventDate } from "@/lib/format";
 import { getDictionary, getLocale } from "@/lib/dictionaries";
 import { localePath } from "@/lib/i18n";
+import { getAnnouncement, getCenterContact } from "@/lib/site-settings";
 
 export default async function SiteLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [lang, dict, [nextEvent]] = await Promise.all([
+  const [lang, dict, contact, announcement, [nextEvent]] = await Promise.all([
     getLocale(),
     getDictionary(),
+    getCenterContact(),
+    getAnnouncement(),
     getUpcomingEvents(1),
   ]);
   const href = (path: string) => localePath(lang, path);
+  const noticeText = announcement
+    ? lang === "ja"
+      ? announcement.textJa ?? announcement.text
+      : announcement.text
+    : null;
 
   const nav = [
     { href: `${href("/")}#history`, label: dict.nav.about },
@@ -42,53 +49,75 @@ export default async function SiteLayout({
         <div className="bg-navy">
           <div className="flex items-center gap-3 px-5 py-2 sm:px-10 lg:px-11">
             <div className="flex min-w-0 flex-1 items-center justify-center gap-2 sm:gap-3">
-              {nextEvent && (
+              {noticeText ? (
                 <>
                   <span className="shrink-0 font-accent text-sm font-bold tracking-[0.1em] text-sky">
-                    {dict.header.announcementAccent}
+                    {dict.header.noticeAccent}
                   </span>
                   <span className="hidden shrink-0 font-display text-[11px] font-bold tracking-[0.18em] text-sky uppercase sm:inline">
-                    {dict.header.announcementLabel}
+                    {dict.header.noticeLabel}
                   </span>
-                  {nextEvent.signupUrl ? (
-                    <>
-                      {/* The sign-up link leaves the site, so the title keeps a
-                          route to the flyer, time and place. */}
-                      <Link
-                        href={href(`/events/${nextEvent.slug}`)}
-                        className="min-w-0 truncate text-xs text-white/85 underline-offset-4 transition-colors hover:text-white hover:underline"
-                      >
-                        {nextEvent.title}
-                        {formatEventDate(nextEvent.startAt, lang) &&
-                          ` · ${formatEventDate(nextEvent.startAt, lang)}`}
-                      </Link>
-                      <ExternalLink
-                        href={nextEvent.signupUrl}
-                        aria-label={dict.events.signupAria.replace(
-                          "{title}",
-                          nextEvent.title
-                        )}
-                        className="shrink-0 font-display text-xs font-bold text-blossom underline-offset-4 hover:text-white hover:underline"
-                      >
-                        {dict.header.announcementSignup}
-                      </ExternalLink>
-                    </>
-                  ) : (
-                    <>
-                      <span className="min-w-0 truncate text-xs text-white/85">
-                        {nextEvent.title}
-                        {formatEventDate(nextEvent.startAt, lang) &&
-                          ` · ${formatEventDate(nextEvent.startAt, lang)}`}
-                      </span>
-                      <Link
-                        href={href(`/events/${nextEvent.slug}`)}
-                        className="shrink-0 font-display text-xs font-bold text-blossom underline-offset-4 hover:text-white hover:underline"
-                      >
-                        {dict.header.announcementCta}
-                      </Link>
-                    </>
+                  <span className="min-w-0 truncate text-xs text-white/85">
+                    {noticeText}
+                  </span>
+                  {announcement?.url && (
+                    <ExternalLink
+                      href={announcement.url}
+                      className="shrink-0 font-display text-xs font-bold text-blossom underline-offset-4 hover:text-white hover:underline"
+                    >
+                      {dict.header.noticeCta}
+                    </ExternalLink>
                   )}
                 </>
+              ) : (
+                nextEvent && (
+                  <>
+                    <span className="shrink-0 font-accent text-sm font-bold tracking-[0.1em] text-sky">
+                      {dict.header.announcementAccent}
+                    </span>
+                    <span className="hidden shrink-0 font-display text-[11px] font-bold tracking-[0.18em] text-sky uppercase sm:inline">
+                      {dict.header.announcementLabel}
+                    </span>
+                    {nextEvent.signupUrl ? (
+                      <>
+                        {/* The sign-up link leaves the site, so the title keeps a
+                            route to the flyer, time and place. */}
+                        <Link
+                          href={href(`/events/${nextEvent.slug}`)}
+                          className="min-w-0 truncate text-xs text-white/85 underline-offset-4 transition-colors hover:text-white hover:underline"
+                        >
+                          {nextEvent.title}
+                          {formatEventDate(nextEvent.startAt, lang) &&
+                            ` · ${formatEventDate(nextEvent.startAt, lang)}`}
+                        </Link>
+                        <ExternalLink
+                          href={nextEvent.signupUrl}
+                          aria-label={dict.events.signupAria.replace(
+                            "{title}",
+                            nextEvent.title
+                          )}
+                          className="shrink-0 font-display text-xs font-bold text-blossom underline-offset-4 hover:text-white hover:underline"
+                        >
+                          {dict.header.announcementSignup}
+                        </ExternalLink>
+                      </>
+                    ) : (
+                      <>
+                        <span className="min-w-0 truncate text-xs text-white/85">
+                          {nextEvent.title}
+                          {formatEventDate(nextEvent.startAt, lang) &&
+                            ` · ${formatEventDate(nextEvent.startAt, lang)}`}
+                        </span>
+                        <Link
+                          href={href(`/events/${nextEvent.slug}`)}
+                          className="shrink-0 font-display text-xs font-bold text-blossom underline-offset-4 hover:text-white hover:underline"
+                        >
+                          {dict.header.announcementCta}
+                        </Link>
+                      </>
+                    )}
+                  </>
+                )
               )}
             </div>
             <LanguageToggle
@@ -154,7 +183,7 @@ export default async function SiteLayout({
               </p>
             </div>
             <p className="mt-4 text-sm leading-relaxed text-white/70">
-              {CENTER_ADDRESS.split(", ").map((line, i) => (
+              {contact.address.split(", ").map((line, i) => (
                 <span key={line}>
                   {i > 0 && <br />}
                   {line}
@@ -167,12 +196,12 @@ export default async function SiteLayout({
               {dict.footer.contact}
             </p>
             <p className="mt-4 text-white/80">
-              <a href={CENTER_PHONE_HREF} className="hover:text-white">
-                {CENTER_PHONE}
+              <a href={contact.phoneHref} className="hover:text-white">
+                {contact.phone}
               </a>
               <br />
-              <a href={`mailto:${CENTER_EMAIL}`} className="hover:text-white">
-                {CENTER_EMAIL}
+              <a href={`mailto:${contact.email}`} className="hover:text-white">
+                {contact.email}
               </a>
             </p>
           </div>

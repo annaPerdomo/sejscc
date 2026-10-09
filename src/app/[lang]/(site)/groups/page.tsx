@@ -9,11 +9,6 @@ import { SectionHeading } from "@/components/section-heading";
 import { SectionKicker } from "@/components/section-kicker";
 import { WaveDivider } from "@/components/wave-divider";
 import { weekDays } from "@/db/schema";
-import {
-  CENTER_EMAIL,
-  CENTER_PHONE,
-  CENTER_PHONE_HREF,
-} from "@/lib/center";
 import { getActiveGroups } from "@/lib/events";
 import {
   FACILITY_USE_FORM_URL,
@@ -24,6 +19,7 @@ import {
 import { getDictionary, getDictionaryFor, getLocale } from "@/lib/dictionaries";
 import { hasLocale, localePath } from "@/lib/i18n";
 import { groupsPhotos } from "@/lib/photos";
+import { getCenterContact } from "@/lib/site-settings";
 
 export const revalidate = 300;
 
@@ -58,10 +54,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function GroupsPage() {
-  const [lang, dict, groups] = await Promise.all([
+  const [lang, dict, groups, contact] = await Promise.all([
     getLocale(),
     getDictionary(),
     getActiveGroups(),
+    getCenterContact(),
   ]);
 
   const week = weekDays.map((day) => ({
@@ -315,17 +312,17 @@ export default async function GroupsPage() {
             <p className="mt-6 text-lg leading-relaxed text-white/90 sm:text-xl">
               {dict.groups.useBefore}
               <a
-                href={`mailto:${CENTER_EMAIL}`}
+                href={`mailto:${contact.email}`}
                 className="font-semibold text-white underline decoration-sky underline-offset-4 hover:text-sky"
               >
-                {CENTER_EMAIL}
+                {contact.email}
               </a>
               {dict.groups.useBetween}
               <a
-                href={CENTER_PHONE_HREF}
+                href={contact.phoneHref}
                 className="font-semibold text-white underline decoration-sky underline-offset-4 hover:text-sky"
               >
-                {CENTER_PHONE}
+                {contact.phone}
               </a>
               {dict.groups.useAfter}
             </p>
@@ -333,13 +330,13 @@ export default async function GroupsPage() {
           </div>
           <div className="reveal-rise flex flex-col gap-3 sm:flex-row">
             <a
-              href={`mailto:${CENTER_EMAIL}`}
+              href={`mailto:${contact.email}`}
               className="button-donate rounded-lg px-8 py-4 text-center font-display text-base font-semibold text-white"
             >
               {dict.groups.useEmailCta}
             </a>
             <a
-              href={CENTER_PHONE_HREF}
+              href={contact.phoneHref}
               className="button-outline-light px-8 py-3.5 text-center text-base"
             >
               {dict.groups.useCallCta}

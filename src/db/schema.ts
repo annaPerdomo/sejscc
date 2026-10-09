@@ -146,6 +146,17 @@ export const siteSettings = pgTable("site_setting", {
   id: text("id").primaryKey().default(SITE_SETTINGS_ID),
   accessRequestEmail: text("access_request_email"),
   aboutVideoUrls: text("about_video_urls").array().notNull().default([]),
+  address: text("address"),
+  phone: text("phone"),
+  email: text("email"),
+  zelleRecipient: text("zelle_recipient"),
+  checkPayee: text("check_payee"),
+  checkAddress: text("check_address"),
+  donateFormUrl: text("donate_form_url"),
+  announcementText: text("announcement_text"),
+  announcementTextJa: text("announcement_text_ja"),
+  announcementUrl: text("announcement_url"),
+  announcementUntil: timestamp("announcement_until", { mode: "date" }),
   updatedAt: timestamp("updated_at", { mode: "date" })
     .notNull()
     .defaultNow()
