@@ -17,6 +17,7 @@ import { getSchoolLevels } from "@/lib/school-levels";
 import { getSitePhotos, slotPhoto } from "@/lib/site-photos";
 import { ADULT_REGISTRATION_URL, YOUTH_REGISTRATION_URL } from "@/lib/school";
 import { buildSchoolYear } from "@/lib/school-year";
+import { getSchoolYearEvents } from "@/lib/school-year-events";
 
 // The layout's announcement bar shows the next upcoming event; without this
 // revalidation a past event would linger there until the next deploy.
@@ -87,14 +88,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function SchoolPage() {
   const localePromise = getLocale();
-  const [dict, lang, photos, levels] = await Promise.all([
+  const [dict, lang, photos, levels, yearEvents] = await Promise.all([
     getDictionary(),
     localePromise,
     getSitePhotos(),
     localePromise.then((locale) => getSchoolLevels(locale)),
+    localePromise.then((locale) => getSchoolYearEvents(locale)),
   ]);
 
-  const year = buildSchoolYear(dict.school.year, schoolPhotos.events, new Date());
+  const year = buildSchoolYear(dict.school.year.seasons, yearEvents, new Date());
 
   const history = dict.school.history;
   const thenPhoto = slotPhoto(photos, "school.then", history.thenPhotoAlt, lang);

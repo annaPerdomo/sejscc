@@ -250,6 +250,39 @@ export const schoolLevels = pgTable("school_level", {
 export type SchoolLevel = typeof schoolLevels.$inferSelect;
 export type SchoolLevelStatus = (typeof schoolLevelStatuses)[number];
 
+export const schoolYearEvents = pgTable("school_year_event", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  key: text("key").notNull().unique(),
+  month: integer("month").notNull(),
+  sortOrder: integer("sort_order").notNull().default(0),
+  title: text("title").notNull(),
+  titleJa: text("title_ja"),
+  label: text("label").notNull(),
+  labelJa: text("label_ja"),
+  when: text("when").notNull(),
+  whenJa: text("when_ja"),
+  description: text("description").notNull(),
+  descriptionJa: text("description_ja"),
+  termJa: text("term_ja").notNull(),
+  gloss: text("gloss").notNull(),
+  glossJa: text("gloss_ja"),
+  abbr: text("abbr").notNull(),
+  abbrJa: text("abbr_ja"),
+  photoUrl: text("photo_url"),
+  photoAlt: text("photo_alt").notNull().default(""),
+  photoAltJa: text("photo_alt_ja"),
+  visible: boolean("visible").notNull().default(true),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: "date" })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
+export type SchoolYearEvent = typeof schoolYearEvents.$inferSelect;
+
 export const sitePhotos = pgTable("site_photo", {
   slot: text("slot").primaryKey(),
   url: text("url").notNull(),

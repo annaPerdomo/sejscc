@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { boardMembers } from "@/db/schema";
 import { getActiveGroups, getUpcomingEvents } from "@/lib/events";
 import { getAllSchoolLevels } from "@/lib/school-levels";
+import { getAllSchoolYearEvents } from "@/lib/school-year-events";
 import { getAnnouncement } from "@/lib/site-settings";
 import { getSitePhotos } from "@/lib/site-photos";
 import { getSiteTextOverrides } from "@/lib/site-text";
@@ -59,6 +60,7 @@ export default async function AdminDashboard() {
     upcomingEvents,
     allBoardMembers,
     allSchoolLevels,
+    allSchoolYearEvents,
     announcement,
     siteTextOverrides,
     sitePhotos,
@@ -67,6 +69,7 @@ export default async function AdminDashboard() {
     getUpcomingEvents(),
     db.select({ visible: boardMembers.visible }).from(boardMembers),
     getAllSchoolLevels(),
+    getAllSchoolYearEvents(),
     getAnnouncement(),
     getSiteTextOverrides(),
     getSitePhotos(),
@@ -80,6 +83,12 @@ export default async function AdminDashboard() {
   const schoolLevelCounts = {
     showing: allSchoolLevels.filter((level) => level.visible).length,
     hidden: allSchoolLevels.filter((level) => !level.visible).length,
+  };
+
+  const schoolYearEventCounts = {
+    showing: allSchoolYearEvents.filter((event) => event.visible && event.photoUrl).length,
+    hidden: allSchoolYearEvents.filter((event) => !event.visible && event.photoUrl).length,
+    pending: allSchoolYearEvents.filter((event) => !event.photoUrl).length,
   };
 
   const firstName = session?.user?.name?.trim().split(/\s+/)[0] ?? null;
@@ -211,6 +220,16 @@ export default async function AdminDashboard() {
           viewLabel="View & edit all levels"
         >
           {`${schoolLevelCounts.showing} class ${schoolLevelCounts.showing === 1 ? "level is" : "levels are"} showing on the school page${schoolLevelCounts.hidden > 0 ? ` (${schoolLevelCounts.hidden} hidden)` : ""}.`}
+        </SummaryCard>
+        <SummaryCard
+          kanji="年"
+          title="School Year"
+          addHref="/admin/school-year/new"
+          addLabel="+ Add an event"
+          viewHref="/admin/school-year"
+          viewLabel="View & edit the year"
+        >
+          {`${schoolYearEventCounts.showing} ${schoolYearEventCounts.showing === 1 ? "event is" : "events are"} showing on the school page (${schoolYearEventCounts.hidden} hidden, ${schoolYearEventCounts.pending} need a photo).`}
         </SummaryCard>
       </div>
     </AdminPageWidth>

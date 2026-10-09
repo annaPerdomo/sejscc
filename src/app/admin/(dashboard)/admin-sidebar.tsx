@@ -26,6 +26,7 @@ const NAV: {
   { href: "/admin/words", label: "Words on the site", kanji: "文" },
   { href: "/admin/photos", label: "Photos", kanji: "写" },
   { href: "/admin/levels", label: "Class Levels", kanji: "級" },
+  { href: "/admin/school-year", label: "School Year", kanji: "年" },
   { href: "/admin/volunteers", label: "Who Can Sign In", kanji: "友", adminOnly: true },
   { href: "/admin/settings", label: "Settings", kanji: "設", adminOnly: true },
 ];
