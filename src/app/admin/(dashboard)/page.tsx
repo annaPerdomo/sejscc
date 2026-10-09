@@ -189,9 +189,9 @@ export default async function AdminDashboard() {
         </SummaryCard>
         <SummaryCard
           kanji="文"
-          title="Words on the site"
-          addHref="/admin/words"
-          addLabel="Change the words"
+          title="Website pages"
+          addHref="/admin/pages/home"
+          addLabel="Change a page"
           viewHref="/"
           viewLabel="See the website"
         >

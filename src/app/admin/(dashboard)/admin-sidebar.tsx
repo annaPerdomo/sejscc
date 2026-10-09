@@ -23,7 +23,7 @@ const NAV: {
   { href: "/admin/contact", label: "Contact details", kanji: "連" },
   { href: "/admin/donations", label: "Donations", kanji: "寄" },
   { href: "/admin/announcement", label: "Announcement bar", kanji: "報" },
-  { href: "/admin/words", label: "Words on the site", kanji: "文" },
+  { href: "/admin/pages", label: "Website pages", kanji: "文" },
   { href: "/admin/photos", label: "Photos", kanji: "写" },
   { href: "/admin/levels", label: "Class Levels", kanji: "級" },
   { href: "/admin/school-year", label: "School Year", kanji: "年" },

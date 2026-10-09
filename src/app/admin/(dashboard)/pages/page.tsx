@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
-export default function WordsPage() {
+export default function PagesIndexPage() {
   redirect("/admin/pages/home");
 }

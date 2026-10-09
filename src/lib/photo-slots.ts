@@ -13,6 +13,7 @@ export type PhotoPageId = "home" | "school" | "events" | "groups" | "donate";
 export type PhotoSlot = {
   id: string;
   page: PhotoPageId;
+  section: string;
   group: string;
   label: string;
   defaultSrc: string;
@@ -40,6 +41,7 @@ export const PHOTO_SLOTS: PhotoSlot[] = [
   {
     id: "home.events-backdrop",
     page: "home",
+    section: "home-top",
     group: "Backdrops",
     label: "Events and history backdrop",
     defaultSrc: homePhotos.eventsBackdrop,
@@ -50,6 +52,7 @@ export const PHOTO_SLOTS: PhotoSlot[] = [
     (defaultSrc, i): PhotoSlot => ({
       id: `home.school-slide.${i}`,
       page: "home",
+      section: "home-japanese-school",
       group: "Japanese School slideshow",
       label: slide(i),
       defaultSrc,
@@ -61,6 +64,7 @@ export const PHOTO_SLOTS: PhotoSlot[] = [
     (defaultSrc, i): PhotoSlot => ({
       id: `home.school-highlight.${i}`,
       page: "home",
+      section: "home-japanese-school",
       group: "Japanese School highlights",
       label: photoN(i),
       defaultSrc,
@@ -71,6 +75,7 @@ export const PHOTO_SLOTS: PhotoSlot[] = [
   {
     id: "home.centennial",
     page: "home",
+    section: "home-history",
     group: "Centennial banner",
     label: "Banner photo",
     defaultSrc: homePhotos.centennial,
@@ -80,6 +85,7 @@ export const PHOTO_SLOTS: PhotoSlot[] = [
   {
     id: "school.hero",
     page: "school",
+    section: "school-top",
     group: "Hero photo",
     label: "Main photo",
     defaultSrc: schoolPhotos.hero,
@@ -90,6 +96,7 @@ export const PHOTO_SLOTS: PhotoSlot[] = [
     (defaultSrc, i): PhotoSlot => ({
       id: `school.hero-rotation.${i}`,
       page: "school",
+      section: "school-top",
       group: "Hero photo",
       label: slide(i),
       defaultSrc,
@@ -100,6 +107,7 @@ export const PHOTO_SLOTS: PhotoSlot[] = [
   {
     id: "school.join",
     page: "school",
+    section: "school-join",
     group: "Join us",
     label: "Photo",
     defaultSrc: schoolPhotos.join,
@@ -109,6 +117,7 @@ export const PHOTO_SLOTS: PhotoSlot[] = [
   {
     id: "school.then",
     page: "school",
+    section: "school-then-now",
     group: "Then & now",
     label: "Then photo",
     defaultSrc: schoolPhotos.then,
@@ -118,6 +127,7 @@ export const PHOTO_SLOTS: PhotoSlot[] = [
   {
     id: "school.now",
     page: "school",
+    section: "school-then-now",
     group: "Then & now",
     label: "Now photo",
     defaultSrc: schoolPhotos.now,
@@ -128,6 +138,7 @@ export const PHOTO_SLOTS: PhotoSlot[] = [
     (defaultSrc, i): PhotoSlot => ({
       id: `events.reel.${i}`,
       page: "events",
+      section: "events-top",
       group: "Photo reel",
       label: photoN(i),
       defaultSrc,
@@ -138,6 +149,7 @@ export const PHOTO_SLOTS: PhotoSlot[] = [
   {
     id: "events.archive",
     page: "events",
+    section: "events-past",
     group: "Past events",
     label: "Hero photo",
     defaultSrc: eventsPhotos.archive,
@@ -147,6 +159,7 @@ export const PHOTO_SLOTS: PhotoSlot[] = [
   {
     id: "groups.hero",
     page: "groups",
+    section: "groups-top",
     group: "Hero photo",
     label: "Main photo",
     defaultSrc: groupsPhotos.hero,
@@ -156,6 +169,7 @@ export const PHOTO_SLOTS: PhotoSlot[] = [
   {
     id: "groups.start",
     page: "groups",
+    section: "groups-start",
     group: "Start a club",
     label: "Photo",
     defaultSrc: groupsPhotos.start,
@@ -165,6 +179,7 @@ export const PHOTO_SLOTS: PhotoSlot[] = [
   {
     id: "donate.hero",
     page: "donate",
+    section: "donate-top",
     group: "Hero photo",
     label: "Main photo",
     defaultSrc: donatePhotos.hero,
@@ -175,6 +190,7 @@ export const PHOTO_SLOTS: PhotoSlot[] = [
     (defaultSrc, i): PhotoSlot => ({
       id: `donate.reason.${i}`,
       page: "donate",
+      section: "donate-reasons",
       group: "Why we need your support",
       label: photoN(i),
       defaultSrc,
@@ -186,6 +202,7 @@ export const PHOTO_SLOTS: PhotoSlot[] = [
     (defaultSrc, i): PhotoSlot => ({
       id: `donate.mosaic.${i}`,
       page: "donate",
+      section: "donate-mosaic",
       group: "Community mosaic",
       label: photoN(i),
       defaultSrc,
