@@ -14,11 +14,13 @@ export function EditBar({
   onLangChange,
   status,
   undo,
+  viewHref,
 }: {
   lang: Locale;
   onLangChange: (lang: Locale) => void;
   status: EditBarStatus;
   undo?: { description: string; busy: boolean; onUndo: () => void };
+  viewHref: string;
 }) {
   const languageLabelId = useId();
 
@@ -86,7 +88,7 @@ export function EditBar({
             )}
           </p>
           <a
-            href="/#board"
+            href={viewHref}
             target="_blank"
             rel="noreferrer"
             className="inline-flex min-h-11 items-center text-sm font-semibold text-sky underline hover:text-white"

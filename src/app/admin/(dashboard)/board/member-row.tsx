@@ -15,7 +15,7 @@ import {
   japaneseMemberValue,
 } from "@/lib/volunteer-fields";
 import { isImeComposing } from "@/components/admin/inline-edit/ime";
-import { focusByKey } from "./open-target";
+import { focusByKey } from "@/components/admin/inline-edit/use-open-target";
 
 type PhotoDraft =
   | { kind: "unchanged" }

@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { boardMembers } from "@/db/schema";
 import { getActiveGroups, getUpcomingEvents } from "@/lib/events";
 import { getAnnouncement } from "@/lib/site-settings";
+import { getSiteTextOverrides } from "@/lib/site-text";
 import { AdminButtonLink } from "@/components/admin/admin-button";
 import { AdminCard } from "@/components/admin/admin-card";
 import { AdminPageWidth } from "@/components/admin/admin-page-width";
@@ -51,12 +52,13 @@ function SummaryCard({
 
 export default async function AdminDashboard() {
   const session = await auth();
-  const [activeGroups, upcomingEvents, allBoardMembers, announcement] =
+  const [activeGroups, upcomingEvents, allBoardMembers, announcement, siteTextOverrides] =
     await Promise.all([
       getActiveGroups(),
       getUpcomingEvents(),
       db.select({ visible: boardMembers.visible }).from(boardMembers),
       getAnnouncement(),
+      getSiteTextOverrides(),
     ]);
 
   const boardMemberCounts = {
@@ -159,6 +161,18 @@ export default async function AdminDashboard() {
           {announcement
             ? `Showing: “${announcement.text}”`
             : "Not showing. The bar shows the next event."}
+        </SummaryCard>
+        <SummaryCard
+          kanji="文"
+          title="Words on the site"
+          addHref="/admin/words"
+          addLabel="Change the words"
+          viewHref="/"
+          viewLabel="See the website"
+        >
+          {siteTextOverrides.size > 0
+            ? `${siteTextOverrides.size} sentence${siteTextOverrides.size === 1 ? "" : "s"} ${siteTextOverrides.size === 1 ? "has" : "have"} been changed from the original.`
+            : "Every sentence is still the original."}
         </SummaryCard>
       </div>
     </AdminPageWidth>

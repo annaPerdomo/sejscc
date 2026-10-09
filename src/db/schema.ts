@@ -208,3 +208,13 @@ export const boardMembers = pgTable("board_member", {
 });
 
 export type BoardMember = typeof boardMembers.$inferSelect;
+
+export const siteText = pgTable("site_text", {
+  path: text("path").primaryKey(),
+  en: text("en"),
+  ja: text("ja"),
+  updatedAt: timestamp("updated_at", { mode: "date" })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});

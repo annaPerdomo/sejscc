@@ -1,6 +1,7 @@
 import { lang } from "next/root-params";
 import { notFound } from "next/navigation";
 import { hasLocale, type Locale } from "@/lib/i18n";
+import { applySiteText, getSiteTextOverrides } from "@/lib/site-text";
 
 const dictionaries = {
   en: () => import("@/dictionaries/en.json").then((m) => m.default),
@@ -17,9 +18,14 @@ export async function getLocale(): Promise<Locale> {
 }
 
 export async function getDictionary() {
-  return dictionaries[await getLocale()]();
+  return getDictionaryFor(await getLocale());
 }
 
-export function getDictionaryFor(locale: Locale) {
+export async function getDictionaryFor(locale: Locale) {
+  const dict = await getBaseDictionaryFor(locale);
+  return applySiteText(dict, locale, await getSiteTextOverrides());
+}
+
+export function getBaseDictionaryFor(locale: Locale) {
   return dictionaries[locale]();
 }

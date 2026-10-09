@@ -14,6 +14,7 @@ import {
   withEnglishMemberValue,
   withJapaneseMemberValue,
 } from "@/lib/volunteer-fields";
+import { focusByKey, type OpenTargetState } from "@/components/admin/inline-edit/use-open-target";
 import {
   addBoardMember,
   deleteBoardMember,
@@ -21,7 +22,6 @@ import {
   setBoardMemberVisible,
   updateMemberFields,
 } from "./actions";
-import { focusByKey, type OpenTargetState } from "./open-target";
 
 const GENERIC_SAVE_ERROR = "Something went wrong saving this. Please try again.";
 
@@ -229,7 +229,7 @@ export function useBoardLists({
         updatedAt: new Date(),
       },
     ]);
-    editState.close({ kind: "add-member" });
+    editState.close("add-member");
     undo.clear();
     setStatus({ kind: "saved", message: `Added ${trimmed} to the page.` });
     router.refresh();
