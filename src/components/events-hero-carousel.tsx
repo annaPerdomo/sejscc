@@ -54,7 +54,7 @@ type Labels = {
 };
 
 const FLYER_SIZES =
-  "(max-width: 640px) 90vw, (max-width: 1024px) 20rem, (max-width: 1280px) 24rem, 30rem";
+  "(max-width: 640px) 90vw, (max-width: 768px) 24rem, (max-width: 1024px) 20rem, (max-width: 1280px) 24rem, 30rem";
 
 const FLYER_FALLBACK_SIZE: ImageSize = { width: 800, height: 1000 };
 
@@ -229,6 +229,31 @@ export function EventsHeroCarousel({
                         <h2 className="mt-4 font-display text-3xl leading-tight font-medium text-white text-pretty sm:text-4xl">
                           {item.title}
                         </h2>
+                        <div
+                          className="flyer-mount seigaiha-rings seigaiha-rings-gold mt-6 flex max-h-144 max-w-sm items-center md:hidden"
+                          style={{ aspectRatio: frameAspect }}
+                        >
+                          {item.flyerUrl ? (
+                            mounted.includes(i) && (
+                              <div className="absolute inset-3.5">
+                                <Image
+                                  src={item.flyerUrl}
+                                  alt={item.flyerAlt}
+                                  fill
+                                  preload={i === 0}
+                                  sizes={FLYER_SIZES}
+                                  className="object-contain"
+                                />
+                              </div>
+                            )
+                          ) : (
+                            <EventDescriptionMedia
+                              description={item.description}
+                              index={i}
+                              className="relative self-stretch"
+                            />
+                          )}
+                        </div>
                         <ul className="mt-6 space-y-3">
                           {eventFacts(item, labels).map((fact) => (
                             <li
@@ -255,7 +280,7 @@ export function EventsHeroCarousel({
                           ))}
                         </ul>
                         {item.summary && (
-                          <p className="mt-6 max-w-lg text-lg leading-relaxed text-white/80">
+                          <p className="mt-6 hidden max-w-lg text-lg leading-relaxed text-white/80 md:block">
                             {item.summary}
                           </p>
                         )}
@@ -284,10 +309,10 @@ export function EventsHeroCarousel({
               </div>
 
               <div
-                className={`flex justify-center xl:min-w-0 xl:flex-1 ${introLate}`}
+                className={`hidden justify-center md:flex xl:min-w-0 xl:flex-1 ${introLate}`}
               >
                 <div
-                  className="grid w-full max-w-sm max-h-150 place-items-center md:w-80 md:max-w-none lg:w-96 xl:box-content xl:h-hero-flyer xl:w-full xl:py-3.5"
+                  className="grid max-h-150 place-items-center md:w-80 lg:w-96 xl:box-content xl:h-hero-flyer xl:w-full xl:py-3.5"
                   style={{ aspectRatio: frameAspect }}
                 >
                   {items.map((item, i) => (
