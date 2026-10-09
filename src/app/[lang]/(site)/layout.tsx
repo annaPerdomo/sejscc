@@ -99,8 +99,8 @@ export default async function SiteLayout({
           </div>
         </div>
         <header className="border-b border-line bg-paper/95 backdrop-blur">
-          <div className="relative flex items-center justify-between gap-4 px-5 py-3 sm:px-10 lg:px-11">
-            <Link href={href("/")} className="group flex min-w-0 items-center gap-2.5 sm:gap-3">
+          <div className="relative flex items-center justify-between gap-3 px-5 py-3 sm:gap-4 sm:px-10 lg:px-11">
+            <Link href={href("/")} className="group flex min-w-0 items-center gap-2 sm:gap-3">
               <Image
                 src="/logo-mark.png"
                 alt=""
@@ -108,9 +108,13 @@ export default async function SiteLayout({
                 height={48}
                 className="h-10 w-10 shrink-0 transition-transform duration-500 ease-out group-hover:rotate-12 sm:h-12 sm:w-12"
               />
-              <span className="min-w-0 font-display text-[11px] leading-snug font-semibold tracking-[0.06em] text-ink uppercase sm:text-sm">
-                <span className="block truncate">{dict.header.orgTop}</span>
-                <span className="block truncate">{dict.header.orgBottom}</span>
+              <span className="min-w-0 font-display text-[11px] leading-tight font-semibold tracking-[0.06em] text-ink uppercase sm:text-sm sm:leading-snug">
+                <span className="block truncate whitespace-normal break-keep sm:whitespace-nowrap">
+                  {dict.header.orgTop}
+                </span>
+                <span className="block truncate whitespace-normal break-keep sm:whitespace-nowrap">
+                  {dict.header.orgBottom}
+                </span>
               </span>
             </Link>
             <div className="flex shrink-0 items-center gap-2 sm:gap-3 lg:gap-5">
@@ -122,7 +126,7 @@ export default async function SiteLayout({
               />
               <Link
                 href={`${localePath(lang, "/payments")}#donate`}
-                className="button-donate rounded-lg px-4 py-2.5 font-display text-sm font-semibold text-white sm:px-5"
+                className="button-donate rounded-lg px-3.5 py-2.5 font-display text-sm font-semibold text-white sm:px-5"
               >
                 {dict.header.donate}
               </Link>
