@@ -18,8 +18,8 @@ import {
 } from "@/lib/groups";
 import { getDictionary, getDictionaryFor, getLocale } from "@/lib/dictionaries";
 import { hasLocale, localePath } from "@/lib/i18n";
-import { groupsPhotos } from "@/lib/photos";
 import { getCenterContact } from "@/lib/site-settings";
+import { getSitePhotos, slotPhoto } from "@/lib/site-photos";
 
 export const revalidate = 300;
 
@@ -54,12 +54,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function GroupsPage() {
-  const [lang, dict, groups, contact] = await Promise.all([
+  const [lang, dict, groups, contact, photos] = await Promise.all([
     getLocale(),
     getDictionary(),
     getActiveGroups(),
     getCenterContact(),
+    getSitePhotos(),
   ]);
+  const heroPhoto = slotPhoto(photos, "groups.hero", dict.groups.heroPhotoAlt, lang);
+  const startPhoto = slotPhoto(photos, "groups.start", dict.groups.usePhotoAlt, lang);
 
   const week = weekDays.map((day) => ({
     day,
@@ -73,8 +76,8 @@ export default async function GroupsPage() {
     <>
       <PhotoHero
         id="groups"
-        photo={groupsPhotos.hero}
-        photoAlt={dict.groups.heroPhotoAlt}
+        photo={heroPhoto.src}
+        photoAlt={heroPhoto.alt}
         accent={dict.groups.kickerAccent}
         caption={dict.groups.kickerCaption}
         titleLine1={dict.groups.titleLine1}
@@ -285,8 +288,8 @@ export default async function GroupsPage() {
       <section id="start" className="relative isolate scroll-mt-28 overflow-clip bg-ink-deep text-white">
         <div className="absolute inset-0 -z-10">
           <Image
-            src={groupsPhotos.start}
-            alt={dict.groups.usePhotoAlt}
+            src={startPhoto.src}
+            alt={startPhoto.alt}
             fill
             sizes="100vw"
             className="ken-burns-out object-cover"

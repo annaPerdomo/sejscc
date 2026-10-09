@@ -24,6 +24,7 @@ import { weekDays } from "@/db/schema";
 import { getDictionary, getLocale } from "@/lib/dictionaries";
 import { localePath } from "@/lib/i18n";
 import { getAboutVideoUrls, getCenterContact } from "@/lib/site-settings";
+import { getSitePhotos, slotPhoto } from "@/lib/site-photos";
 import { getVolunteerSection } from "@/lib/volunteers";
 import { youtubeVideoId } from "@/lib/video";
 import {
@@ -78,7 +79,7 @@ function ContactIcon({ name }: { name: keyof typeof CONTACT_ICONS }) {
 
 export default async function HomePage() {
   const lang = await getLocale();
-  const [dict, upcoming, groups, aboutVideoUrls, volunteerSection, contact] =
+  const [dict, upcoming, groups, aboutVideoUrls, volunteerSection, contact, photos] =
     await Promise.all([
       getDictionary(),
       getUpcomingEvents(5),
@@ -86,6 +87,7 @@ export default async function HomePage() {
       getAboutVideoUrls(),
       getVolunteerSection(lang),
       getCenterContact(),
+      getSitePhotos(),
     ]);
   const href = (path: string) => localePath(lang, path);
   const aboutVideoIds = aboutVideoUrls
@@ -113,9 +115,10 @@ export default async function HomePage() {
     }));
 
   const schoolSlides: SchoolSlide[] = dict.home.japaneseSchool.slides.flatMap(
-    (slide, i) => {
-      const src = homePhotos.schoolSlides[i];
-      return src ? [{ ...slide, src }] : [];
+    (slideText, i) => {
+      if (!homePhotos.schoolSlides[i]) return [];
+      const photo = slotPhoto(photos, `home.school-slide.${i}`, slideText.alt, lang);
+      return [{ ...slideText, src: photo.src, alt: photo.alt }];
     },
   );
 
@@ -147,6 +150,13 @@ export default async function HomePage() {
     const image = historyCentennialPhotos[item.id];
     return image ? [{ image, alt: item.photoAlt }] : [];
   });
+
+  const centennialPhoto = slotPhoto(
+    photos,
+    "home.centennial",
+    dict.home.centennialPhotoAlt,
+    lang
+  );
 
   const founders: Founder[] = dict.home.history.founders.flatMap((founder) => {
     const image = historyFounderPhotos[founder.id];
@@ -312,7 +322,7 @@ export default async function HomePage() {
               <li key={item.title} className="reveal-bloom">
                 <figure className="relative aspect-square overflow-clip rounded-sm sm:aspect-card">
                   <SitePhoto
-                    photo={photoFor(homePhotos.highlights[i], item.photoAlt)}
+                    photo={slotPhoto(photos, `home.school-highlight.${i}`, item.photoAlt, lang)}
                     dark
                     sizes="(max-width: 1024px) 50vw, 24rem"
                     placeholderLabel={dict.home.photoSoon}
@@ -408,7 +418,7 @@ export default async function HomePage() {
           >
             <div className="parallax-drift absolute inset-x-0 -inset-y-16">
               <Image
-                src={homePhotos.eventsBackdrop}
+                src={slotPhoto(photos, "home.events-backdrop", "", lang).src}
                 alt=""
                 fill
                 sizes="100vw"
@@ -553,10 +563,10 @@ export default async function HomePage() {
         }
       >
         <Image
-          src={homePhotos.centennial}
-          alt={dict.home.centennialPhotoAlt}
-          width={2000}
-          height={405}
+          src={centennialPhoto.src}
+          alt={centennialPhoto.alt}
+          width={centennialPhoto.width ?? 2000}
+          height={centennialPhoto.height ?? 405}
           sizes="100vw"
           className="ken-burns-in block h-auto min-h-64 w-full object-cover object-bottom sm:min-h-80 lg:min-h-0"
         />

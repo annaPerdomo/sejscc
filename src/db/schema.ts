@@ -218,3 +218,16 @@ export const siteText = pgTable("site_text", {
     .defaultNow()
     .$onUpdate(() => new Date()),
 });
+
+export const sitePhotos = pgTable("site_photo", {
+  slot: text("slot").primaryKey(),
+  url: text("url").notNull(),
+  alt: text("alt").notNull(),
+  altJa: text("alt_ja"),
+  width: integer("width"),
+  height: integer("height"),
+  updatedAt: timestamp("updated_at", { mode: "date" })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});

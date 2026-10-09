@@ -7,11 +7,11 @@ import { PhotoHero } from "@/components/photo-hero";
 import { SectionHeading } from "@/components/section-heading";
 import { SectionKicker } from "@/components/section-kicker";
 import { ZeffyEmbed } from "@/components/zeffy-embed";
-import { getDictionary, getDictionaryFor } from "@/lib/dictionaries";
+import { getDictionary, getDictionaryFor, getLocale } from "@/lib/dictionaries";
 import { ZEFFY_DONATION_URL, ZELLE_FALLBACK_EMAIL } from "@/lib/donate";
 import { hasLocale, localePath } from "@/lib/i18n";
-import { donatePhotos, photoFor } from "@/lib/photos";
 import { getCenterContact, getDonationDetails } from "@/lib/site-settings";
+import { getSitePhotos, slotPhoto } from "@/lib/site-photos";
 
 // The layout's announcement bar shows the next upcoming event; without this
 // revalidation a past event would linger there until the next deploy.
@@ -59,26 +59,29 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function PaymentsPage() {
-  const [dict, contact, donation] = await Promise.all([
+  const [dict, lang, contact, donation, photos] = await Promise.all([
     getDictionary(),
+    getLocale(),
     getCenterContact(),
     getDonationDetails(),
+    getSitePhotos(),
   ]);
 
+  const heroPhoto = slotPhoto(photos, "donate.hero", dict.payments.heroPhotoAlt, lang);
   const reasons = dict.payments.donateReasons.map((reason, i) => ({
     ...reason,
-    photo: donatePhotos.reasons[i],
+    photo: slotPhoto(photos, `donate.reason.${i}`, reason.photoAlt, lang),
   }));
-  const mosaicPhotos = donatePhotos.mosaic.map((src, i) =>
-    photoFor(src, dict.payments.mosaicPhotoAlts[i] ?? ""),
+  const mosaicPhotos = dict.payments.mosaicPhotoAlts.map((alt, i) =>
+    slotPhoto(photos, `donate.mosaic.${i}`, alt ?? "", lang),
   );
 
   return (
     <>
       <PhotoHero
         id="payments"
-        photo={donatePhotos.hero}
-        photoAlt={dict.payments.heroPhotoAlt}
+        photo={heroPhoto.src}
+        photoAlt={heroPhoto.alt}
         accent={dict.payments.kickerAccent}
         caption={dict.payments.kickerCaption}
         titleLine1={dict.payments.titleLine1}
@@ -128,8 +131,8 @@ export default async function PaymentsPage() {
             >
               {reason.photo && (
                 <Image
-                  src={reason.photo}
-                  alt={reason.photoAlt}
+                  src={reason.photo.src}
+                  alt={reason.photo.alt}
                   fill
                   sizes="100vw"
                   className="-z-10 object-cover"

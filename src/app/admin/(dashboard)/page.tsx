@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { boardMembers } from "@/db/schema";
 import { getActiveGroups, getUpcomingEvents } from "@/lib/events";
 import { getAnnouncement } from "@/lib/site-settings";
+import { getSitePhotos } from "@/lib/site-photos";
 import { getSiteTextOverrides } from "@/lib/site-text";
 import { AdminButtonLink } from "@/components/admin/admin-button";
 import { AdminCard } from "@/components/admin/admin-card";
@@ -52,14 +53,21 @@ function SummaryCard({
 
 export default async function AdminDashboard() {
   const session = await auth();
-  const [activeGroups, upcomingEvents, allBoardMembers, announcement, siteTextOverrides] =
-    await Promise.all([
-      getActiveGroups(),
-      getUpcomingEvents(),
-      db.select({ visible: boardMembers.visible }).from(boardMembers),
-      getAnnouncement(),
-      getSiteTextOverrides(),
-    ]);
+  const [
+    activeGroups,
+    upcomingEvents,
+    allBoardMembers,
+    announcement,
+    siteTextOverrides,
+    sitePhotos,
+  ] = await Promise.all([
+    getActiveGroups(),
+    getUpcomingEvents(),
+    db.select({ visible: boardMembers.visible }).from(boardMembers),
+    getAnnouncement(),
+    getSiteTextOverrides(),
+    getSitePhotos(),
+  ]);
 
   const boardMemberCounts = {
     showing: allBoardMembers.filter((member) => member.visible).length,
@@ -173,6 +181,18 @@ export default async function AdminDashboard() {
           {siteTextOverrides.size > 0
             ? `${siteTextOverrides.size} sentence${siteTextOverrides.size === 1 ? "" : "s"} ${siteTextOverrides.size === 1 ? "has" : "have"} been changed from the original.`
             : "Every sentence is still the original."}
+        </SummaryCard>
+        <SummaryCard
+          kanji="写"
+          title="Photos"
+          addHref="/admin/photos"
+          addLabel="Change a photo"
+          viewHref="/"
+          viewLabel="See the website"
+        >
+          {sitePhotos.size > 0
+            ? `${sitePhotos.size} photo${sitePhotos.size === 1 ? "" : "s"} ${sitePhotos.size === 1 ? "has" : "have"} been changed from the originals.`
+            : "Every photo is still the original."}
         </SummaryCard>
       </div>
     </AdminPageWidth>

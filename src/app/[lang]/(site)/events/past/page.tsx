@@ -6,7 +6,7 @@ import { PhotoHero } from "@/components/photo-hero";
 import { getPastEvents, type Event } from "@/lib/events";
 import { getDictionary, getDictionaryFor, getLocale } from "@/lib/dictionaries";
 import { hasLocale, localePath } from "@/lib/i18n";
-import { eventsPhotos } from "@/lib/photos";
+import { getSitePhotos, slotPhoto } from "@/lib/site-photos";
 
 export const revalidate = 300;
 
@@ -46,20 +46,22 @@ function groupByYear(events: Event[]) {
 }
 
 export default async function PastEventsPage() {
-  const [lang, dict, past] = await Promise.all([
+  const [lang, dict, past, photos] = await Promise.all([
     getLocale(),
     getDictionary(),
     getPastEvents(ARCHIVE_LIMIT),
+    getSitePhotos(),
   ]);
   const archive = dict.events.archive;
   const years = groupByYear(past);
+  const archivePhoto = slotPhoto(photos, "events.archive", archive.heroPhotoAlt, lang);
 
   return (
     <>
       <PhotoHero
         id="past-events"
-        photo={eventsPhotos.archive}
-        photoAlt={archive.heroPhotoAlt}
+        photo={archivePhoto.src}
+        photoAlt={archivePhoto.alt}
         accent={dict.events.pastAccent}
         caption={dict.events.pastCaption}
         titleLine1={archive.titleLine1}

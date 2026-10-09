@@ -10,9 +10,10 @@ import { SectionHeading } from "@/components/section-heading";
 import { SectionKicker } from "@/components/section-kicker";
 import { SitePhoto } from "@/components/site-photo";
 import { WaveDivider } from "@/components/wave-divider";
-import { getDictionary, getDictionaryFor } from "@/lib/dictionaries";
+import { getDictionary, getDictionaryFor, getLocale } from "@/lib/dictionaries";
 import { hasLocale, localePath } from "@/lib/i18n";
 import { photoFor, schoolPhotos } from "@/lib/photos";
+import { getSitePhotos, slotPhoto } from "@/lib/site-photos";
 import { ADULT_REGISTRATION_URL, YOUTH_REGISTRATION_URL } from "@/lib/school";
 import { buildSchoolYear } from "@/lib/school-year";
 
@@ -84,7 +85,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function SchoolPage() {
-  const dict = await getDictionary();
+  const [dict, lang, photos] = await Promise.all([
+    getDictionary(),
+    getLocale(),
+    getSitePhotos(),
+  ]);
 
   const levels = dict.school.classes.levels.map((level, i) => ({
     ...level,
@@ -94,20 +99,23 @@ export default async function SchoolPage() {
   const year = buildSchoolYear(dict.school.year, schoolPhotos.events, new Date());
 
   const history = dict.school.history;
-  const thenPhoto = photoFor(schoolPhotos.then, history.thenPhotoAlt);
-  const nowPhoto = photoFor(schoolPhotos.now, history.nowPhotoAlt);
+  const thenPhoto = slotPhoto(photos, "school.then", history.thenPhotoAlt, lang);
+  const nowPhoto = slotPhoto(photos, "school.now", history.nowPhotoAlt, lang);
+  const heroPhoto = slotPhoto(photos, "school.hero", dict.school.heroPhotoAlt, lang);
+  const joinPhoto = slotPhoto(photos, "school.join", dict.school.join.photoAlt, lang);
 
-  const heroPhotos = schoolPhotos.heroRotation.flatMap((src, i) => {
+  const heroPhotos = schoolPhotos.heroRotation.flatMap((_src, i) => {
     const alt = dict.school.heroRotationAlts[i];
-    return alt ? [{ src, alt }] : [];
+    if (!alt) return [];
+    return [slotPhoto(photos, `school.hero-rotation.${i}`, alt, lang)];
   });
 
   return (
     <>
       <PhotoHero
         id="school"
-        photo={schoolPhotos.hero}
-        photoAlt={dict.school.heroPhotoAlt}
+        photo={heroPhoto.src}
+        photoAlt={heroPhoto.alt}
         photos={heroPhotos}
         rotationLabels={{
           pause: dict.school.heroPause,
@@ -393,8 +401,8 @@ export default async function SchoolPage() {
       <section className="relative isolate overflow-clip bg-ink-deep text-white">
         <div className="absolute inset-0 -z-10">
           <Image
-            src={schoolPhotos.join}
-            alt={dict.school.join.photoAlt}
+            src={joinPhoto.src}
+            alt={joinPhoto.alt}
             fill
             sizes="100vw"
             className="ken-burns-in object-cover"

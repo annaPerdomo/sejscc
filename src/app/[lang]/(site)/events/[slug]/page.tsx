@@ -29,8 +29,8 @@ import {
 } from "@/lib/recurrence";
 import { getDictionary, getDictionaryFor, getLocale } from "@/lib/dictionaries";
 import { hasLocale, localePath } from "@/lib/i18n";
-import { homePhotos } from "@/lib/photos";
 import { getCenterContact } from "@/lib/site-settings";
+import { getSitePhotos, slotPhoto } from "@/lib/site-photos";
 
 export const revalidate = 300;
 
@@ -66,15 +66,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function EventPage({ params }: Props) {
   const { slug } = await params;
-  const [lang, dict, event, contact] = await Promise.all([
+  const [lang, dict, event, contact, photos] = await Promise.all([
     getLocale(),
     getDictionary(),
     getEventBySlug(slug),
     getCenterContact(),
+    getSitePhotos(),
   ]);
   if (!event) notFound();
 
   const flyerSize = event.flyerUrl ? await getImageSize(event.flyerUrl) : null;
+  const backdropSrc = slotPhoto(photos, "home.events-backdrop", "", lang).src;
   const now = wallClockNow();
   const nextDates = upcomingOccurrences(event, now, DATES_SHOWN);
   // Lists file a finished series under its last date, so this page has to agree.
@@ -149,7 +151,7 @@ export default async function EventPage({ params }: Props) {
       <section className="edge-flush relative isolate overflow-clip bg-ink-deep text-white">
         <div aria-hidden="true" className="absolute inset-0 -z-10">
           <Image
-            src={event.flyerUrl ?? homePhotos.eventsBackdrop}
+            src={event.flyerUrl ?? backdropSrc}
             alt=""
             fill
             sizes="50vw"
