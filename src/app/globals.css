@@ -1194,7 +1194,7 @@ body {
     }
 
     .hero-progress {
-      --tab-progress: 8s;
+      --tab-progress: 6s;
     }
 
     .groups-progress {
