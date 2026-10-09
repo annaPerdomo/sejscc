@@ -3,7 +3,11 @@
 import { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useMountedAround, useRotation } from "@/components/carousel-hooks";
+import {
+  useMountedAround,
+  useRotation,
+  useSwipeStrip,
+} from "@/components/carousel-hooks";
 import { CarouselDots } from "@/components/carousel-dots";
 import { CarouselPlayToggle } from "@/components/carousel-play-toggle";
 import { EventMeta } from "@/components/event-meta";
@@ -114,6 +118,9 @@ export function GroupsShowcase({
   const show = (group: number, photo: number) =>
     rotation.show(slides.findIndex((s) => s.group === group) + photo);
 
+  const stripRef = useRef<HTMLDivElement>(null);
+  const holdForSwipe = useSwipeStrip(stripRef, active, rotation);
+
   return (
     <div {...rotation.focusProps}>
       <div className="reveal-rise mb-8 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between lg:gap-10">
@@ -150,7 +157,7 @@ export function GroupsShowcase({
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-12 lg:gap-8">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
         <div className="asanoha-frame lg:col-span-7">
           <div
             ref={stageRef}
@@ -250,16 +257,21 @@ export function GroupsShowcase({
         </div>
 
         <div
+          ref={stripRef}
           role="tablist"
           aria-label={labels.list}
-          aria-orientation="vertical"
-          className="grid content-start gap-3 sm:grid-cols-2 lg:col-span-5 lg:grid-cols-1 xl:grid-cols-2"
+          onPointerDown={holdForSwipe}
+          className="relative -mx-5 flex gap-3 overflow-x-auto px-5 py-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:content-start sm:overflow-visible sm:p-0 lg:col-span-5 lg:grid-cols-1 xl:grid-cols-2"
         >
           {items.map((item, i) => {
             const isOpen = i === active;
             const cover = item.photoUrls[0] ?? item.imageUrl;
             return (
-              <div key={item.id} role="none" className="relative isolate">
+              <div
+                key={item.id}
+                role="none"
+                className="relative isolate w-72 shrink-0 sm:w-auto"
+              >
                 {isOpen && (
                   <span
                     aria-hidden="true"
