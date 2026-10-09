@@ -269,7 +269,7 @@ export function SectionCanvas({
         }
       />
 
-      <div className="section-wash-history relative overflow-clip py-10 sm:py-14">
+      <div className="section-wash-history relative overflow-clip pb-10 sm:pb-14">
         <div className="preview-static">
           <VolunteerSection
             view={view}
@@ -314,22 +314,8 @@ export function SectionCanvas({
           if (optionsMember) void lists.toggleMemberVisible(optionsMember.id);
         }}
         onRemove={() => (optionsMember ? lists.removeMember(optionsMember.id) : Promise.resolve())}
-      >
-        {optionsMember && (
-          <>
-            <MemberFieldsForm
-              key={`${optionsMember.id}-${lang}`}
-              member={optionsMember}
-              lang={lang}
-              onSave={async (name, role) => {
-                await lists.saveMemberFields(optionsMember, lang, { name, role });
-                lists.closeMemberOptions();
-              }}
-              onDirtyChange={(dirty) => {
-                memberFieldsDirtyRef.current = dirty;
-              }}
-              onSavingChange={setMemberFieldsSaving}
-            />
+        photo={
+          optionsMember && (
             <MemberPhotoField
               member={optionsMember}
               onSaved={async (photoUrl) => {
@@ -355,7 +341,23 @@ export function SectionCanvas({
                 }
               }}
             />
-          </>
+          )
+        }
+      >
+        {optionsMember && (
+          <MemberFieldsForm
+            key={`${optionsMember.id}-${lang}`}
+            member={optionsMember}
+            lang={lang}
+            onSave={async (name, role) => {
+              await lists.saveMemberFields(optionsMember, lang, { name, role });
+              lists.closeMemberOptions();
+            }}
+            onDirtyChange={(dirty) => {
+              memberFieldsDirtyRef.current = dirty;
+            }}
+            onSavingChange={setMemberFieldsSaving}
+          />
         )}
       </MemberPanel>
 

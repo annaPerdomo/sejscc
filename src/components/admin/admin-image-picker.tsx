@@ -20,6 +20,7 @@ export function AdminImagePicker({
   onFileChosen,
   onRemove,
   previewShape = "rect",
+  layout = "dropzone",
   disabled = false,
 }: {
   label: string;
@@ -29,6 +30,7 @@ export function AdminImagePicker({
   onFileChosen: (file: File | null) => void;
   onRemove?: () => void;
   previewShape?: "rect" | "circle";
+  layout?: "dropzone" | "compact";
   disabled?: boolean;
 }) {
   const [error, setError] = useState<string | null>(null);
@@ -59,61 +61,92 @@ export function AdminImagePicker({
 
   const preview = value ?? fallbackSrc ?? null;
   const previewRounding = previewShape === "circle" ? "rounded-full" : "rounded-lg";
+  const compact = layout === "compact";
+
+  const chooseButton = (
+    <label
+      className={`flex min-h-11 cursor-pointer items-center justify-center rounded-lg px-5 py-3 whitespace-nowrap focus-within:ring-2 focus-within:ring-indigo focus-within:ring-offset-2 ${buttonVariantClass(
+        compact ? "secondary" : "primary"
+      )} ${disabled ? "pointer-events-none opacity-50" : ""}`}
+    >
+      {preview && value ? "Choose a different photo" : "Choose a photo"}
+      <input
+        type="file"
+        accept={ACCEPTED_TYPES.join(",")}
+        className="sr-only"
+        disabled={disabled}
+        onChange={(event) => {
+          chooseFile(event.target.files?.[0]);
+          event.target.value = "";
+        }}
+      />
+    </label>
+  );
+
+  const removeButton = onRemove && preview && (
+    <button
+      type="button"
+      onClick={onRemove}
+      disabled={disabled}
+      className="min-h-11 text-sm font-medium text-indigo-deep hover:underline disabled:opacity-50"
+    >
+      Remove photo
+    </button>
+  );
 
   return (
-    <div>
+    <div className="@container">
       <span className="block font-semibold text-ink">{label}</span>
       {hint && <p className="mt-1 text-sm text-stone">{hint}</p>}
-      <div
-        onDragOver={(event) => {
-          event.preventDefault();
-          if (!disabled) setDragging(true);
-        }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={onDrop}
-        className={`mt-3 flex min-h-48 flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed p-6 text-center sm:flex-row sm:text-left ${
-          dragging ? "border-indigo bg-mist" : "border-line bg-mist"
-        }`}
-      >
-        {preview && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={preview}
-            alt=""
-            className={`aspect-photo w-full max-w-xs shrink-0 border border-line bg-white object-cover shadow-sm ${previewRounding}`}
-          />
-        )}
-        <div className="flex flex-col items-center gap-3 sm:items-start">
-          <p className="text-sm text-stone">Drag a photo here, or</p>
-          <label
-            className={`flex min-h-11 cursor-pointer items-center justify-center rounded-lg px-5 py-3 focus-within:ring-2 focus-within:ring-indigo focus-within:ring-offset-2 ${buttonVariantClass(
-              "primary"
-            )} ${disabled ? "pointer-events-none opacity-50" : ""}`}
-          >
-            Choose a photo
-            <input
-              type="file"
-              accept={ACCEPTED_TYPES.join(",")}
-              className="sr-only"
-              disabled={disabled}
-              onChange={(event) => {
-                chooseFile(event.target.files?.[0]);
-                event.target.value = "";
-              }}
+      {compact ? (
+        <div className="mt-3 flex flex-wrap items-center gap-4">
+          {preview ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={preview}
+              alt=""
+              className={`size-16 shrink-0 border border-line bg-white object-cover ${previewRounding}`}
             />
-          </label>
-          {onRemove && preview && (
-            <button
-              type="button"
-              onClick={onRemove}
-              disabled={disabled}
-              className="min-h-11 text-sm font-medium text-indigo-deep hover:underline disabled:opacity-50"
+          ) : (
+            <span
+              aria-hidden="true"
+              className={`flex size-16 shrink-0 items-center justify-center border border-dashed border-line bg-mist font-display text-xs text-stone ${previewRounding}`}
             >
-              Remove photo
-            </button>
+              None
+            </span>
           )}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+            {chooseButton}
+            {removeButton}
+          </div>
         </div>
-      </div>
+      ) : (
+        <div
+          onDragOver={(event) => {
+            event.preventDefault();
+            if (!disabled) setDragging(true);
+          }}
+          onDragLeave={() => setDragging(false)}
+          onDrop={onDrop}
+          className={`mt-3 flex min-h-48 flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed p-6 text-center @2xl:flex-row @2xl:text-left ${
+            dragging ? "border-indigo bg-mist" : "border-line bg-mist"
+          }`}
+        >
+          {preview && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={preview}
+              alt=""
+              className={`aspect-photo w-full max-w-xs shrink-0 border border-line bg-white object-cover shadow-sm ${previewRounding}`}
+            />
+          )}
+          <div className="flex flex-col items-center gap-3 @2xl:items-start">
+            <p className="text-sm text-stone">Drag a photo here, or</p>
+            {chooseButton}
+            {removeButton}
+          </div>
+        </div>
+      )}
       {error && (
         <p role="alert" className="mt-2 text-sm font-medium text-magenta-deep">
           {error}

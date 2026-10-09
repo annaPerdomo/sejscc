@@ -375,13 +375,15 @@ export function MemberPhotoField({
     draft.kind === "file" ? draft.previewUrl : draft.kind === "removed" ? null : member.photoUrl;
 
   return (
-    <div className="space-y-3 border-t border-line pt-4">
+    <div className="space-y-3">
       <AdminImagePicker
-        label={member.photoUrl ? "Change photo" : "Add a photo"}
+        label="Photo"
+        hint="Optional. Shows as a small circle next to the name."
         value={photoValue}
         onFileChosen={onFileChosen}
         onRemove={photoValue ? onRemove : undefined}
         previewShape="circle"
+        layout="compact"
         disabled={saving}
       />
       {error && <AdminAlert>{error}</AdminAlert>}

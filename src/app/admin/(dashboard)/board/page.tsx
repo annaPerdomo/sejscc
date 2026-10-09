@@ -30,10 +30,10 @@ export default async function BoardAdminPage() {
       <AdminPageWidth>
         <h1 className="font-display text-3xl text-ink">Board of Directors</h1>
         <p className="mt-1 mb-6 max-w-2xl text-stone">
-          Below is the board section exactly as it appears on the home page.
-          Click any words, the photo, or a person&apos;s name to change it. Each
-          change goes live on the website as soon as you press Save, and you can
-          undo the last one.
+          Below is the board section as it appears on the home page. Anything
+          with a dotted outline can be changed: tap the words, the photo, or a
+          person&apos;s name. Each change goes live on the website as soon as
+          you press Save, and you can undo the last one.
         </p>
       </AdminPageWidth>
 

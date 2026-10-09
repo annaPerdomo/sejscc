@@ -126,7 +126,7 @@ export function useSectionPhotoDialog({
         <button
           type="button"
           onClick={openDialog}
-          className={`absolute right-4 bottom-4 inline-flex min-h-12 items-center gap-2 rounded-lg px-5 text-sm font-semibold tracking-[0.04em] uppercase ${buttonClass(
+          className={`absolute right-4 bottom-4 inline-flex min-h-12 items-center gap-2 rounded-lg px-5 text-base font-semibold ${buttonClass(
             "primary"
           )}`}
         >

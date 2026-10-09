@@ -119,7 +119,7 @@ export function EditableText({
     const displayValue = value || fallback || placeholder || "";
     const isFallback = !value && !!fallback;
     return (
-      <span ref={containerRef} className="inline-flex flex-wrap items-center gap-2">
+      <span ref={containerRef} className="inline">
         <button
           ref={buttonRef}
           type="button"
@@ -133,7 +133,11 @@ export function EditableText({
             ✎ Change
           </span>
         </button>
-        {isFallback && <AdminBadge tone="muted">Not translated yet</AdminBadge>}
+        {isFallback && (
+          <span className="ml-2 align-middle">
+            <AdminBadge tone="muted">Not translated yet</AdminBadge>
+          </span>
+        )}
         {blocked && (
           <span role="alert" className="block w-full text-sm font-medium text-magenta-deep">
             {blocked}
@@ -170,7 +174,7 @@ export function EditableText({
           {error}
         </span>
       )}
-      <span className="mt-3 flex flex-wrap gap-3">
+      <span className="mt-3 flex flex-wrap gap-3 font-sans text-base tracking-normal">
         <button
           type="button"
           onClick={() => void handleSave()}

@@ -1610,6 +1610,7 @@ body {
     letter-spacing: inherit;
     text-align: inherit;
     border-radius: var(--radius-sm);
+    outline: 1.5px dashed --alpha(var(--color-indigo) / 45%);
     outline-offset: 4px;
   }
 
@@ -1670,15 +1671,21 @@ body {
     padding: 0;
   }
 
+  .edit-dialog[open] {
+    display: flex;
+    flex-direction: column;
+  }
+
   .edit-dialog::backdrop {
     background: --alpha(var(--color-ink-deep) / 60%);
   }
 
   @media (width >= 40rem) {
     .edit-dialog {
-      width: auto;
+      width: 100%;
       height: auto;
       max-width: 32rem;
+      max-height: calc(100dvh - --spacing(16));
       margin: auto;
       border-radius: var(--radius-xl);
     }
