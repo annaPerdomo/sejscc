@@ -10,13 +10,7 @@ import { KanjiWatermark } from "@/components/kanji-watermark";
 import { SectionKicker } from "@/components/section-kicker";
 import { WaveDivider } from "@/components/wave-divider";
 import { calendarLinks, calendarOptions } from "@/lib/calendars";
-import {
-  CENTER_EMAIL,
-  CENTER_PHONE,
-  CENTER_PHONE_HREF,
-  isAtCenter,
-  mapsUrl,
-} from "@/lib/center";
+import { isAtCenter, mapsUrl } from "@/lib/center";
 import { getEventBySlug, getUpcomingEventSlugs } from "@/lib/events";
 import { getImageSize } from "@/lib/image-size";
 import {
@@ -35,7 +29,8 @@ import {
 } from "@/lib/recurrence";
 import { getDictionary, getDictionaryFor, getLocale } from "@/lib/dictionaries";
 import { hasLocale, localePath } from "@/lib/i18n";
-import { homePhotos } from "@/lib/photos";
+import { getCenterContact } from "@/lib/site-settings";
+import { getSitePhotos, slotPhoto } from "@/lib/site-photos";
 
 export const revalidate = 300;
 
@@ -71,14 +66,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function EventPage({ params }: Props) {
   const { slug } = await params;
-  const [lang, dict, event] = await Promise.all([
+  const [lang, dict, event, contact, photos] = await Promise.all([
     getLocale(),
     getDictionary(),
     getEventBySlug(slug),
+    getCenterContact(),
+    getSitePhotos(),
   ]);
   if (!event) notFound();
 
   const flyerSize = event.flyerUrl ? await getImageSize(event.flyerUrl) : null;
+  const backdropSrc = slotPhoto(photos, "home.events-backdrop", "", lang).src;
   const now = wallClockNow();
   const nextDates = upcomingOccurrences(event, now, DATES_SHOWN);
   // Lists file a finished series under its last date, so this page has to agree.
@@ -153,7 +151,7 @@ export default async function EventPage({ params }: Props) {
       <section className="edge-flush relative isolate overflow-clip bg-ink-deep text-white">
         <div aria-hidden="true" className="absolute inset-0 -z-10">
           <Image
-            src={event.flyerUrl ?? homePhotos.eventsBackdrop}
+            src={event.flyerUrl ?? backdropSrc}
             alt=""
             fill
             sizes="50vw"
@@ -304,14 +302,14 @@ export default async function EventPage({ params }: Props) {
                 {dict.eventDetail.questions}
               </h2>
               <p className="mt-3 flex flex-col gap-1 text-lg">
-                <a href={CENTER_PHONE_HREF} className="w-fit py-1 font-semibold text-indigo hover:text-indigo-deep">
-                  {CENTER_PHONE}
+                <a href={contact.phoneHref} className="w-fit py-1 font-semibold text-indigo hover:text-indigo-deep">
+                  {contact.phone}
                 </a>
                 <a
-                  href={`mailto:${CENTER_EMAIL}`}
+                  href={`mailto:${contact.email}`}
                   className="w-fit py-1 font-semibold text-indigo hover:text-indigo-deep"
                 >
-                  {CENTER_EMAIL}
+                  {contact.email}
                 </a>
               </p>
             </div>

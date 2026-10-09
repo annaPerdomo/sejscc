@@ -13,6 +13,7 @@ import { getPastEvents, getUpcomingEvents } from "@/lib/events";
 import { getDictionary, getDictionaryFor, getLocale } from "@/lib/dictionaries";
 import { hasLocale, localePath } from "@/lib/i18n";
 import { eventsPhotos } from "@/lib/photos";
+import { getSitePhotos, slotPhoto } from "@/lib/site-photos";
 
 export const revalidate = 300;
 
@@ -42,17 +43,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function EventsPage() {
-  const [dict, locale, upcoming, past] = await Promise.all([
+  const [dict, locale, upcoming, past, photos] = await Promise.all([
     getDictionary(),
     getLocale(),
     getUpcomingEvents(),
     getPastEvents(PAST_PREVIEW),
+    getSitePhotos(),
   ]);
   const [next, ...later] = upcoming;
   const reel = dict.events.reel;
-  const reelPhotos = eventsPhotos.reel.flatMap((src, i) => {
+  const reelPhotos = eventsPhotos.reel.flatMap((_src, i) => {
     const photo = reel.photos[i];
-    return photo ? [{ src, ...photo }] : [];
+    if (!photo) return [];
+    const slotted = slotPhoto(photos, `events.reel.${i}`, photo.alt, locale);
+    return [{ ...photo, ...slotted }];
   });
 
   return (

@@ -48,6 +48,7 @@ export function MemberPanel({
   visibleBusy,
   onToggleVisible,
   onRemove,
+  photo,
   children,
 }: {
   open: boolean;
@@ -62,6 +63,7 @@ export function MemberPanel({
   visibleBusy: boolean;
   onToggleVisible: () => void;
   onRemove: () => Promise<void>;
+  photo?: ReactNode;
   children?: ReactNode;
 }) {
   return (
@@ -102,6 +104,8 @@ export function MemberPanel({
             </p>
           </div>
         </div>
+
+        {photo && <div className="border-t border-line pt-4">{photo}</div>}
 
         <div className="border-t border-line pt-4">
           <p className="mb-2 text-sm text-stone">Photo changes and removals can&apos;t be undone.</p>

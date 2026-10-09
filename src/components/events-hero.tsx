@@ -17,14 +17,14 @@ import {
 import { getDictionary, getLocale } from "@/lib/dictionaries";
 import { localePath } from "@/lib/i18n";
 import { getImageSize } from "@/lib/image-size";
-import { homePhotos } from "@/lib/photos";
 import { describeRepeat } from "@/lib/recurrence";
+import { getSitePhotos, slotPhoto } from "@/lib/site-photos";
 
 // Half-width cells; three lines beside the flyer at the widest the column gets.
 const SUMMARY_MAX_CELLS = 220;
 
 export async function EventsHero({ events }: { events: Event[] }) {
-  const [lang, dict, flyerSizes] = await Promise.all([
+  const [lang, dict, flyerSizes, photos] = await Promise.all([
     getLocale(),
     getDictionary(),
     Promise.all(
@@ -32,8 +32,10 @@ export async function EventsHero({ events }: { events: Event[] }) {
         event.flyerUrl ? getImageSize(event.flyerUrl) : null,
       ),
     ),
+    getSitePhotos(),
   ]);
   const copy = dict.home.eventsHero;
+  const backdropSrc = slotPhoto(photos, "home.events-backdrop", "", lang).src;
 
   const items: EventsHeroItem[] = events.map((event, i) => ({
     id: event.id,
@@ -74,7 +76,7 @@ export async function EventsHero({ events }: { events: Event[] }) {
     <section className="edge-flush relative overflow-clip bg-navy">
       <EventsHeroCarousel
         items={items}
-        backdropSrc={homePhotos.eventsBackdrop}
+        backdropSrc={backdropSrc}
         viewAllHref={localePath(lang, "/events")}
         labels={{
           kickerAccent: copy.kickerAccent,

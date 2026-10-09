@@ -2,15 +2,15 @@ import Image from "next/image";
 import { EventMeta } from "@/components/event-meta";
 import { ExternalLink } from "@/components/external-link";
 import { PhotoPlaceholder } from "@/components/photo-placeholder";
-import { CENTER_EMAIL } from "@/lib/center";
 import { getDictionary } from "@/lib/dictionaries";
 import type { Group } from "@/lib/events";
+import { getCenterContact } from "@/lib/site-settings";
 import { weekDays } from "@/db/schema";
 
 const SIZES = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 30rem";
 
 export async function GroupPortrait({ group }: { group: Group }) {
-  const dict = await getDictionary();
+  const [dict, contact] = await Promise.all([getDictionary(), getCenterContact()]);
   const muted = group.status !== "meeting";
   const statusLabel =
     group.status === "paused"
@@ -124,7 +124,7 @@ export async function GroupPortrait({ group }: { group: Group }) {
           ) : (
             !group.websiteUrl && (
               <a
-                href={`mailto:${CENTER_EMAIL}`}
+                href={`mailto:${contact.email}`}
                 className="link-arrow py-1 text-indigo hover:text-indigo-deep"
               >
                 {dict.groups.askCta}

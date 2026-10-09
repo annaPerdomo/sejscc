@@ -7,6 +7,7 @@ import { EditableLink } from "@/components/admin/inline-edit/editable-link";
 import { EditableText } from "@/components/admin/inline-edit/editable-text";
 import { useUndo } from "@/components/admin/inline-edit/use-undo";
 import { useUnsavedChangesGuard } from "@/components/admin/inline-edit/use-unsaved-changes-guard";
+import { focusByKey, useOpenTarget } from "@/components/admin/inline-edit/use-open-target";
 import {
   VolunteerSection,
   type SectionTextField,
@@ -28,7 +29,6 @@ import { toVolunteerSectionView } from "@/lib/volunteers-view";
 import { updateContactLink, updateMemberPhoto, updateSectionText } from "./actions";
 import { MemberPanel } from "./item-options-dialog";
 import { AddMemberRow, MemberButton, MemberFieldsForm, MemberPhotoField } from "./member-row";
-import { focusByKey, useOpenTarget } from "./open-target";
 import { useSectionPhotoDialog } from "./section-photo-dialog";
 import { useBoardLists } from "./use-board-lists";
 
@@ -108,7 +108,7 @@ export function SectionCanvas({
         multiline={FIELD_MULTILINE[field]}
         maxLength={SECTION_TEXT_FIELDS[field].max}
         required={lang === "en"}
-        {...editState.fieldProps({ kind: "section", field })}
+        {...editState.fieldProps(`section:${field}`)}
         onSave={async (next) => {
           const previousRaw = lang === "en" ? englishText : japaneseSectionValue(section, field);
           const previousSection = section;
@@ -182,7 +182,7 @@ export function SectionCanvas({
         url={section.contactLinkUrl}
         maxLength={SECTION_TEXT_FIELDS[field].max}
         required={lang === "en"}
-        {...editState.fieldProps({ kind: "section", field })}
+        {...editState.fieldProps(`section:${field}`)}
         onSave={async (words, url) => {
           const previousSection = section;
           const previousUrlForEditing = contactLinkUrlForEditing(section.contactLinkUrl);
@@ -262,6 +262,7 @@ export function SectionCanvas({
         lang={lang}
         onLangChange={handleLangChange}
         status={status}
+        viewHref="/#board"
         undo={
           undo.entry
             ? { description: undo.entry.description, busy: undo.undoing, onUndo: () => void onUndo() }
@@ -269,7 +270,7 @@ export function SectionCanvas({
         }
       />
 
-      <div className="section-wash-history relative overflow-clip py-10 sm:py-14">
+      <div className="section-wash-history relative overflow-clip pb-10 sm:pb-14">
         <div className="preview-static">
           <VolunteerSection
             view={view}
@@ -288,7 +289,7 @@ export function SectionCanvas({
               ),
               afterMembers: (
                 <AddMemberRow
-                  {...editState.fieldProps({ kind: "add-member" })}
+                  {...editState.fieldProps("add-member")}
                   onAdd={lists.addMember}
                 />
               ),
@@ -314,22 +315,8 @@ export function SectionCanvas({
           if (optionsMember) void lists.toggleMemberVisible(optionsMember.id);
         }}
         onRemove={() => (optionsMember ? lists.removeMember(optionsMember.id) : Promise.resolve())}
-      >
-        {optionsMember && (
-          <>
-            <MemberFieldsForm
-              key={`${optionsMember.id}-${lang}`}
-              member={optionsMember}
-              lang={lang}
-              onSave={async (name, role) => {
-                await lists.saveMemberFields(optionsMember, lang, { name, role });
-                lists.closeMemberOptions();
-              }}
-              onDirtyChange={(dirty) => {
-                memberFieldsDirtyRef.current = dirty;
-              }}
-              onSavingChange={setMemberFieldsSaving}
-            />
+        photo={
+          optionsMember && (
             <MemberPhotoField
               member={optionsMember}
               onSaved={async (photoUrl) => {
@@ -355,7 +342,23 @@ export function SectionCanvas({
                 }
               }}
             />
-          </>
+          )
+        }
+      >
+        {optionsMember && (
+          <MemberFieldsForm
+            key={`${optionsMember.id}-${lang}`}
+            member={optionsMember}
+            lang={lang}
+            onSave={async (name, role) => {
+              await lists.saveMemberFields(optionsMember, lang, { name, role });
+              lists.closeMemberOptions();
+            }}
+            onDirtyChange={(dirty) => {
+              memberFieldsDirtyRef.current = dirty;
+            }}
+            onSavingChange={setMemberFieldsSaving}
+          />
         )}
       </MemberPanel>
 

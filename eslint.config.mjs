@@ -14,6 +14,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Vendored pdf.js worker served as a static asset.
     "public/pdf.worker.min.mjs",
+    // Claude Code worktrees carry their own .next output and node_modules.
+    ".claude/**",
   ]),
 ]);
 

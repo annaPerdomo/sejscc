@@ -146,6 +146,17 @@ export const siteSettings = pgTable("site_setting", {
   id: text("id").primaryKey().default(SITE_SETTINGS_ID),
   accessRequestEmail: text("access_request_email"),
   aboutVideoUrls: text("about_video_urls").array().notNull().default([]),
+  address: text("address"),
+  phone: text("phone"),
+  email: text("email"),
+  zelleRecipient: text("zelle_recipient"),
+  checkPayee: text("check_payee"),
+  checkAddress: text("check_address"),
+  donateFormUrl: text("donate_form_url"),
+  announcementText: text("announcement_text"),
+  announcementTextJa: text("announcement_text_ja"),
+  announcementUrl: text("announcement_url"),
+  announcementUntil: timestamp("announcement_until", { mode: "date" }),
   updatedAt: timestamp("updated_at", { mode: "date" })
     .notNull()
     .defaultNow()
@@ -197,3 +208,90 @@ export const boardMembers = pgTable("board_member", {
 });
 
 export type BoardMember = typeof boardMembers.$inferSelect;
+
+export const siteText = pgTable("site_text", {
+  path: text("path").primaryKey(),
+  en: text("en"),
+  ja: text("ja"),
+  updatedAt: timestamp("updated_at", { mode: "date" })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
+export const schoolLevelStatuses = ["open", "unavailable"] as const;
+
+export const schoolLevels = pgTable("school_level", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  sortOrder: integer("sort_order").notNull().default(0),
+  name: text("name").notNull(),
+  nameJa: text("name_ja"),
+  kanji: text("kanji"),
+  summary: text("summary").notNull(),
+  summaryJa: text("summary_ja"),
+  status: text("status", { enum: schoolLevelStatuses }).notNull().default("open"),
+  description: text("description").notNull(),
+  descriptionJa: text("description_ja"),
+  points: text("points").array().notNull().default([]),
+  pointsJa: text("points_ja").array().notNull().default([]),
+  photoUrl: text("photo_url"),
+  photoAlt: text("photo_alt").notNull().default(""),
+  photoAltJa: text("photo_alt_ja"),
+  visible: boolean("visible").notNull().default(true),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: "date" })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
+export type SchoolLevel = typeof schoolLevels.$inferSelect;
+export type SchoolLevelStatus = (typeof schoolLevelStatuses)[number];
+
+export const schoolYearEvents = pgTable("school_year_event", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  key: text("key").notNull().unique(),
+  month: integer("month").notNull(),
+  sortOrder: integer("sort_order").notNull().default(0),
+  title: text("title").notNull(),
+  titleJa: text("title_ja"),
+  label: text("label").notNull(),
+  labelJa: text("label_ja"),
+  when: text("when").notNull(),
+  whenJa: text("when_ja"),
+  description: text("description").notNull(),
+  descriptionJa: text("description_ja"),
+  termJa: text("term_ja").notNull(),
+  gloss: text("gloss").notNull(),
+  glossJa: text("gloss_ja"),
+  abbr: text("abbr").notNull(),
+  abbrJa: text("abbr_ja"),
+  photoUrl: text("photo_url"),
+  photoAlt: text("photo_alt").notNull().default(""),
+  photoAltJa: text("photo_alt_ja"),
+  visible: boolean("visible").notNull().default(true),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: "date" })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
+export type SchoolYearEvent = typeof schoolYearEvents.$inferSelect;
+
+export const sitePhotos = pgTable("site_photo", {
+  slot: text("slot").primaryKey(),
+  url: text("url").notNull(),
+  alt: text("alt").notNull(),
+  altJa: text("alt_ja"),
+  width: integer("width"),
+  height: integer("height"),
+  updatedAt: timestamp("updated_at", { mode: "date" })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});

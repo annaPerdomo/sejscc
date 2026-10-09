@@ -3,6 +3,11 @@ import { auth } from "@/auth";
 import { db } from "@/db";
 import { boardMembers } from "@/db/schema";
 import { getActiveGroups, getUpcomingEvents } from "@/lib/events";
+import { getAllSchoolLevels } from "@/lib/school-levels";
+import { getAllSchoolYearEvents } from "@/lib/school-year-events";
+import { getAnnouncement } from "@/lib/site-settings";
+import { getSitePhotos } from "@/lib/site-photos";
+import { getSiteTextOverrides } from "@/lib/site-text";
 import { AdminButtonLink } from "@/components/admin/admin-button";
 import { AdminCard } from "@/components/admin/admin-card";
 import { AdminPageWidth } from "@/components/admin/admin-page-width";
@@ -50,15 +55,40 @@ function SummaryCard({
 
 export default async function AdminDashboard() {
   const session = await auth();
-  const [activeGroups, upcomingEvents, allBoardMembers] = await Promise.all([
+  const [
+    activeGroups,
+    upcomingEvents,
+    allBoardMembers,
+    allSchoolLevels,
+    allSchoolYearEvents,
+    announcement,
+    siteTextOverrides,
+    sitePhotos,
+  ] = await Promise.all([
     getActiveGroups(),
     getUpcomingEvents(),
     db.select({ visible: boardMembers.visible }).from(boardMembers),
+    getAllSchoolLevels(),
+    getAllSchoolYearEvents(),
+    getAnnouncement(),
+    getSiteTextOverrides(),
+    getSitePhotos(),
   ]);
 
   const boardMemberCounts = {
     showing: allBoardMembers.filter((member) => member.visible).length,
     hidden: allBoardMembers.filter((member) => !member.visible).length,
+  };
+
+  const schoolLevelCounts = {
+    showing: allSchoolLevels.filter((level) => level.visible).length,
+    hidden: allSchoolLevels.filter((level) => !level.visible).length,
+  };
+
+  const schoolYearEventCounts = {
+    showing: allSchoolYearEvents.filter((event) => event.visible && event.photoUrl).length,
+    hidden: allSchoolYearEvents.filter((event) => !event.visible && event.photoUrl).length,
+    pending: allSchoolYearEvents.filter((event) => !event.photoUrl).length,
   };
 
   const firstName = session?.user?.name?.trim().split(/\s+/)[0] ?? null;
@@ -144,6 +174,62 @@ export default async function AdminDashboard() {
           viewLabel="See it on the website"
         >
           {`${boardMemberCounts.showing} board ${boardMemberCounts.showing === 1 ? "member is" : "members are"} showing on the home page${boardMemberCounts.hidden > 0 ? ` (${boardMemberCounts.hidden} hidden)` : ""}.`}
+        </SummaryCard>
+        <SummaryCard
+          kanji="報"
+          title="Announcement bar"
+          addHref="/admin/announcement"
+          addLabel="Change the announcement"
+          viewHref="/"
+          viewLabel="See it on the website"
+        >
+          {announcement
+            ? `Showing: “${announcement.text}”`
+            : "Not showing. The bar shows the next event."}
+        </SummaryCard>
+        <SummaryCard
+          kanji="文"
+          title="Words on the site"
+          addHref="/admin/words"
+          addLabel="Change the words"
+          viewHref="/"
+          viewLabel="See the website"
+        >
+          {siteTextOverrides.size > 0
+            ? `${siteTextOverrides.size} sentence${siteTextOverrides.size === 1 ? "" : "s"} ${siteTextOverrides.size === 1 ? "has" : "have"} been changed from the original.`
+            : "Every sentence is still the original."}
+        </SummaryCard>
+        <SummaryCard
+          kanji="写"
+          title="Photos"
+          addHref="/admin/photos"
+          addLabel="Change a photo"
+          viewHref="/"
+          viewLabel="See the website"
+        >
+          {sitePhotos.size > 0
+            ? `${sitePhotos.size} photo${sitePhotos.size === 1 ? "" : "s"} ${sitePhotos.size === 1 ? "has" : "have"} been changed from the originals.`
+            : "Every photo is still the original."}
+        </SummaryCard>
+        <SummaryCard
+          kanji="級"
+          title="Class Levels"
+          addHref="/admin/levels/new"
+          addLabel="+ Add a class level"
+          viewHref="/admin/levels"
+          viewLabel="View & edit all levels"
+        >
+          {`${schoolLevelCounts.showing} class ${schoolLevelCounts.showing === 1 ? "level is" : "levels are"} showing on the school page${schoolLevelCounts.hidden > 0 ? ` (${schoolLevelCounts.hidden} hidden)` : ""}.`}
+        </SummaryCard>
+        <SummaryCard
+          kanji="年"
+          title="School Year"
+          addHref="/admin/school-year/new"
+          addLabel="+ Add an event"
+          viewHref="/admin/school-year"
+          viewLabel="View & edit the year"
+        >
+          {`${schoolYearEventCounts.showing} ${schoolYearEventCounts.showing === 1 ? "event is" : "events are"} showing on the school page (${schoolYearEventCounts.hidden} hidden, ${schoolYearEventCounts.pending} need a photo).`}
         </SummaryCard>
       </div>
     </AdminPageWidth>

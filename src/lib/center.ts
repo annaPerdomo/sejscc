@@ -1,7 +1,14 @@
 export const CENTER_ADDRESS = "14615 S. Gridley Rd., Norwalk, CA 90650";
 export const CENTER_PHONE = "(562) 863-5996";
-export const CENTER_PHONE_HREF = "tel:+15628635996";
 export const CENTER_EMAIL = "info@sejscc.org";
+
+export function phoneHref(phone: string): string {
+  const raw = phone.replace(/\D/g, "");
+  const digits = raw.length === 11 && raw.startsWith("1") ? raw.slice(1) : raw;
+  return digits.length === 10 ? `tel:+1${digits}` : `tel:${digits}`;
+}
+
+export const CENTER_PHONE_HREF = phoneHref(CENTER_PHONE);
 
 export function isAtCenter(location: string | null): boolean {
   return location === CENTER_ADDRESS;

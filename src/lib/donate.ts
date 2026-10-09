@@ -7,3 +7,5 @@ export const ZEFFY_DONATION_URL =
 const DEFAULT_DONATION_AMOUNT = 300;
 
 export const ZEFFY_DONATION_EMBED_URL = `https://www.zeffy.com/embed/donation-form/donation-to-southeast-japanese-school-and-community-center?amount=${DEFAULT_DONATION_AMOUNT}`;
+
+export const ZELLE_FALLBACK_EMAIL = "gakuen@sejscc.org";

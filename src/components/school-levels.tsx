@@ -1,30 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { SitePhoto, type SitePhotoSource } from "@/components/site-photo";
-
-export type SchoolLevel = {
-  name: string;
-  nameJa: string;
-  summary: string;
-  /** Empty unless the class is on hold — then the notice to show. */
-  status: string;
-  description: string;
-  points: string[];
-  photo?: SitePhotoSource;
-};
+import { SitePhoto } from "@/components/site-photo";
+import type { SchoolLevelView } from "@/lib/school-levels";
 
 export function SchoolLevels({
   levels,
   tablistLabel,
   photoLabel,
+  unavailableLabel,
 }: {
-  levels: SchoolLevel[];
+  levels: SchoolLevelView[];
   tablistLabel: string;
   photoLabel: string;
+  unavailableLabel: string;
 }) {
   const [active, setActive] = useState(0);
   const level = levels[active];
+  const notice = level.status === "unavailable" ? unavailableLabel : "";
 
   return (
     <div className="grid gap-10 lg:grid-cols-12 lg:items-start lg:gap-14">
@@ -37,9 +30,10 @@ export function SchoolLevels({
         {levels.map((item, i) => {
           const current = i === active;
           const climbed = i <= active;
+          const itemNotice = item.status === "unavailable" ? unavailableLabel : "";
           return (
             <button
-              key={item.name}
+              key={item.id}
               type="button"
               role="tab"
               id={`school-level-tab-${i}`}
@@ -69,24 +63,26 @@ export function SchoolLevels({
               <span className="flex min-w-0 flex-1 flex-col gap-1 py-4">
                 <span
                   className={`font-display text-lg leading-snug font-semibold ${
-                    current ? "text-indigo-deep" : item.status ? "text-ink-soft" : "text-ink"
+                    current ? "text-indigo-deep" : itemNotice ? "text-ink-soft" : "text-ink"
                   }`}
                 >
                   {item.name}
                 </span>
                 <span className="text-base leading-snug text-ink-soft">
-                  {item.status || item.summary}
+                  {itemNotice || item.summary}
                 </span>
               </span>
-              <span
-                lang="ja"
-                aria-hidden="true"
-                className={`self-center font-accent text-2xl font-bold transition-colors ${
-                  current ? "text-magenta" : "text-indigo"
-                }`}
-              >
-                {item.nameJa}
-              </span>
+              {item.kanji && (
+                <span
+                  lang="ja"
+                  aria-hidden="true"
+                  className={`self-center font-accent text-2xl font-bold transition-colors ${
+                    current ? "text-magenta" : "text-indigo"
+                  }`}
+                >
+                  {item.kanji}
+                </span>
+              )}
             </button>
           );
         })}
@@ -107,20 +103,22 @@ export function SchoolLevels({
             placeholderLabel={photoLabel}
             className="aspect-photo w-full rounded-sm shadow-xl"
           />
-          <p
-            lang="ja"
-            aria-hidden="true"
-            className="school-plaque absolute -top-4 right-4 font-accent text-xl font-bold tracking-[0.2em] sm:right-6 sm:text-2xl"
-          >
-            {level.nameJa}
-          </p>
+          {level.kanji && (
+            <p
+              lang="ja"
+              aria-hidden="true"
+              className="school-plaque absolute -top-4 right-4 font-accent text-xl font-bold tracking-[0.2em] sm:right-6 sm:text-2xl"
+            >
+              {level.kanji}
+            </p>
+          )}
         </div>
         <h3 className="mt-7 font-display text-3xl leading-tight font-normal text-ink sm:text-4xl">
           {level.name}
         </h3>
-        {level.status && (
+        {notice && (
           <p className="mt-4 w-fit rounded-xs bg-magenta px-4 py-2 font-display text-base font-semibold text-white">
-            {level.status}
+            {notice}
           </p>
         )}
         <p className="mt-4 text-lg leading-relaxed text-ink-soft">{level.description}</p>

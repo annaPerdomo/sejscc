@@ -11,7 +11,9 @@
     "backfill-allowed-emails": "node --env-file-if-exists=.env.local scripts/backfill-allowed-emails.mts",
     "seed-demo-events": "node --env-file-if-exists=.env.local scripts/seed-demo-events.mts",
     "seed-demo-group-photos": "node --env-file-if-exists=.env.local scripts/seed-demo-group-photos.mts",
-    "seed-volunteer-section": "node --env-file-if-exists=.env.local scripts/seed-volunteer-section.mts"
+    "seed-volunteer-section": "node --env-file-if-exists=.env.local scripts/seed-volunteer-section.mts",
+    "seed-school-levels": "node --env-file-if-exists=.env.local scripts/seed-school-levels.mts",
+    "seed-school-year-events": "node --env-file-if-exists=.env.local scripts/seed-school-year-events.mts"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.3",
