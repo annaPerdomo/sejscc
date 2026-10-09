@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { db } from "@/db";
 import { boardMembers } from "@/db/schema";
 import { getActiveGroups, getUpcomingEvents } from "@/lib/events";
+import { getAllSchoolLevels } from "@/lib/school-levels";
 import { getAnnouncement } from "@/lib/site-settings";
 import { getSitePhotos } from "@/lib/site-photos";
 import { getSiteTextOverrides } from "@/lib/site-text";
@@ -57,6 +58,7 @@ export default async function AdminDashboard() {
     activeGroups,
     upcomingEvents,
     allBoardMembers,
+    allSchoolLevels,
     announcement,
     siteTextOverrides,
     sitePhotos,
@@ -64,6 +66,7 @@ export default async function AdminDashboard() {
     getActiveGroups(),
     getUpcomingEvents(),
     db.select({ visible: boardMembers.visible }).from(boardMembers),
+    getAllSchoolLevels(),
     getAnnouncement(),
     getSiteTextOverrides(),
     getSitePhotos(),
@@ -72,6 +75,11 @@ export default async function AdminDashboard() {
   const boardMemberCounts = {
     showing: allBoardMembers.filter((member) => member.visible).length,
     hidden: allBoardMembers.filter((member) => !member.visible).length,
+  };
+
+  const schoolLevelCounts = {
+    showing: allSchoolLevels.filter((level) => level.visible).length,
+    hidden: allSchoolLevels.filter((level) => !level.visible).length,
   };
 
   const firstName = session?.user?.name?.trim().split(/\s+/)[0] ?? null;
@@ -193,6 +201,16 @@ export default async function AdminDashboard() {
           {sitePhotos.size > 0
             ? `${sitePhotos.size} photo${sitePhotos.size === 1 ? "" : "s"} ${sitePhotos.size === 1 ? "has" : "have"} been changed from the originals.`
             : "Every photo is still the original."}
+        </SummaryCard>
+        <SummaryCard
+          kanji="級"
+          title="Class Levels"
+          addHref="/admin/levels/new"
+          addLabel="+ Add a class level"
+          viewHref="/admin/levels"
+          viewLabel="View & edit all levels"
+        >
+          {`${schoolLevelCounts.showing} class ${schoolLevelCounts.showing === 1 ? "level is" : "levels are"} showing on the school page${schoolLevelCounts.hidden > 0 ? ` (${schoolLevelCounts.hidden} hidden)` : ""}.`}
         </SummaryCard>
       </div>
     </AdminPageWidth>

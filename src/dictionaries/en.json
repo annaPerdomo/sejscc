@@ -668,6 +668,7 @@
       "titleRest": "to fluent conversation",
       "lede": "The school includes a kindergarten program for children who are five years old. The regular program is recommended for children six years and older, and adult classes meet online.",
       "tablistLabel": "Class levels",
+      "statusUnavailable": "Currently unavailable",
       "levels": [
         {
           "name": "Kindergarten Program",
