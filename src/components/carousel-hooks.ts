@@ -3,6 +3,7 @@ import {
   useState,
   type AnimationEvent,
   type FocusEvent,
+  type PointerEvent,
   type RefObject,
 } from "react";
 
@@ -50,6 +51,32 @@ export function useMountedAround(active: number, count: number) {
     setMounted(Array.from(new Set([...mounted, active, next])));
   }
   return mounted;
+}
+
+export function useSwipeStrip(
+  stripRef: RefObject<HTMLElement | null>,
+  active: number,
+  {
+    reduceMotion,
+    restart,
+  }: Pick<ReturnType<typeof useRotation>, "reduceMotion" | "restart">,
+) {
+  useEffect(() => {
+    const strip = stripRef.current;
+    const tab = strip?.children[active];
+    if (!strip || !(tab instanceof HTMLElement)) return;
+    if (strip.scrollWidth <= strip.clientWidth) return;
+    strip.scrollTo({
+      left: tab.offsetLeft - (strip.clientWidth - tab.offsetWidth) / 2,
+      behavior: reduceMotion ? "auto" : "smooth",
+    });
+  }, [stripRef, active, reduceMotion]);
+
+  // A swipe along the strip starts the interval over, so the next advance
+  // doesn't scroll the strip back out from under the reader's finger.
+  return (e: PointerEvent<HTMLElement>) => {
+    if (e.pointerType === "touch") restart();
+  };
 }
 
 // No hover hold: phones never send mouseleave after a tap, and Chrome keeps

@@ -1,8 +1,12 @@
 "use client";
 
-import { useEffect, useRef, type PointerEvent } from "react";
+import { useRef } from "react";
 import Image from "next/image";
-import { useMountedAround, useRotation } from "@/components/carousel-hooks";
+import {
+  useMountedAround,
+  useRotation,
+  useSwipeStrip,
+} from "@/components/carousel-hooks";
 import { CarouselPlayToggle } from "@/components/carousel-play-toggle";
 import { RotationProgress } from "@/components/rotation-progress";
 import type { SchoolEvent, SeasonId } from "@/lib/school-year";
@@ -31,26 +35,12 @@ export function SchoolYear({
     viewRef: stageRef,
     start: currentIndex,
   });
-  const { active, reduceMotion } = rotation;
+  const { active } = rotation;
   const mounted = useMountedAround(active, events.length);
 
-  useEffect(() => {
-    const strip = stripRef.current;
-    const tab = strip?.querySelectorAll<HTMLElement>("[role=tab]")[active];
-    if (!strip || !tab || strip.scrollWidth <= strip.clientWidth) return;
-    strip.scrollTo({
-      left: tab.offsetLeft - (strip.clientWidth - tab.offsetWidth) / 2,
-      behavior: reduceMotion ? "auto" : "smooth",
-    });
-  }, [active, reduceMotion]);
+  const holdForSwipe = useSwipeStrip(stripRef, active, rotation);
 
   if (events.length === 0) return null;
-
-  // A swipe along the strip starts the interval over, so the next advance
-  // doesn't scroll the strip back out from under the reader's finger.
-  const holdForSwipe = (e: PointerEvent<HTMLDivElement>) => {
-    if (e.pointerType === "touch") rotation.restart();
-  };
 
   return (
     <div
