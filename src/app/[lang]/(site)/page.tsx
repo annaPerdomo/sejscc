@@ -225,7 +225,7 @@ export default async function HomePage() {
         <div className="relative mx-auto max-w-wide px-4 pt-6 pb-20 sm:px-6 sm:pb-24 lg:px-10 lg:pb-28">
           <div className="grid gap-10 lg:grid-cols-12 lg:items-center lg:gap-14">
             <div className="reveal-rise lg:col-span-5">
-              <div className="flex items-start justify-between gap-5">
+              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-5">
                 <div>
                   <SectionKicker
                     accent={dict.home.japaneseSchool.kickerAccent}
@@ -244,11 +244,8 @@ export default async function HomePage() {
                   <p className="mt-5 font-display text-xl font-semibold text-sky">
                     {dict.home.japaneseSchool.subheading}
                   </p>
-                  <p className="mt-5 max-w-lg text-lg leading-relaxed text-white/80">
-                    {dict.home.japaneseSchool.body}
-                  </p>
                 </div>
-                <div className="relative shrink-0">
+                <div className="relative mb-12 sm:row-span-2 sm:mb-0">
                   <p
                     lang="ja"
                     className="school-plaque font-accent text-lg font-bold tracking-[0.16em] sm:text-xl"
@@ -262,6 +259,9 @@ export default async function HomePage() {
                     className="reveal-pop z-10"
                   />
                 </div>
+                <p className="col-span-2 mt-5 max-w-lg text-lg leading-relaxed text-white/80 sm:col-span-1">
+                  {dict.home.japaneseSchool.body}
+                </p>
               </div>
               <ul
                 aria-label={dict.home.japaneseSchool.skillsLabel}

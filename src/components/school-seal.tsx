@@ -1,5 +1,5 @@
 const SIZES = {
-  sm: { stamp: "-mt-3 size-18 sm:size-20", year: "text-lg sm:text-xl" },
+  sm: { stamp: "-mt-3 size-16 sm:size-20", year: "text-base sm:text-xl" },
   lg: { stamp: "-mt-4 size-22", year: "text-2xl" },
 };
 
