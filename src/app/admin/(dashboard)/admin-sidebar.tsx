@@ -3,31 +3,61 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { AdminUserIdentity } from "@/components/admin/admin-user-identity";
 import { KanjiWatermark } from "@/components/kanji-watermark";
 import { SectionKicker } from "@/components/section-kicker";
 import type { UserRole } from "@/db/schema";
 import { signOutAction } from "./sign-out-action";
 
-const NAV: {
-  href: string;
-  label: string;
-  kanji: string;
-  adminOnly?: boolean;
-}[] = [
-  { href: "/admin", label: "Dashboard", kanji: "家" },
-  { href: "/admin/events", label: "Events", kanji: "祭" },
-  { href: "/admin/groups", label: "Sports & Classes", kanji: "部" },
-  { href: "/admin/board", label: "Board of Directors", kanji: "志" },
-  { href: "/admin/contact", label: "Contact details", kanji: "連" },
-  { href: "/admin/donations", label: "Donations", kanji: "寄" },
-  { href: "/admin/announcement", label: "Announcement bar", kanji: "報" },
-  { href: "/admin/pages", label: "Website pages", kanji: "文" },
-  { href: "/admin/levels", label: "Class Levels", kanji: "級" },
-  { href: "/admin/school-year", label: "School Year", kanji: "年" },
-  { href: "/admin/volunteers", label: "Who Can Sign In", kanji: "友", adminOnly: true },
-  { href: "/admin/settings", label: "Settings", kanji: "設", adminOnly: true },
+type NavItem = { href: string; label: string; kanji: string; adminOnly?: boolean };
+type NavGroup = { heading: string | null; items: NavItem[] };
+
+const NAV_GROUPS: NavGroup[] = [
+  {
+    heading: null,
+    items: [{ href: "/admin", label: "Dashboard", kanji: "家" }],
+  },
+  {
+    heading: "What's on",
+    items: [
+      { href: "/admin/events", label: "Events", kanji: "祭" },
+      { href: "/admin/groups", label: "Sports & Classes", kanji: "部" },
+      { href: "/admin/board", label: "Board of Directors", kanji: "志" },
+    ],
+  },
+  {
+    heading: "Japanese School",
+    items: [
+      { href: "/admin/pages/school", label: "School page", kanji: "文" },
+      { href: "/admin/levels", label: "Class Levels", kanji: "級" },
+      { href: "/admin/school-year", label: "School Year", kanji: "年" },
+    ],
+  },
+  {
+    heading: "Website pages",
+    items: [
+      { href: "/admin/pages/home", label: "Home page", kanji: "家" },
+      { href: "/admin/pages/events", label: "Events page", kanji: "祭" },
+      { href: "/admin/pages/groups", label: "Sports & Classes page", kanji: "部" },
+      { href: "/admin/pages/donate", label: "Donations page", kanji: "寄" },
+    ],
+  },
+  {
+    heading: "Site-wide",
+    items: [
+      { href: "/admin/announcement", label: "Announcement bar", kanji: "報" },
+      { href: "/admin/contact", label: "Contact details", kanji: "連" },
+      { href: "/admin/donations", label: "Donations", kanji: "寄" },
+    ],
+  },
+  {
+    heading: "Admin only",
+    items: [
+      { href: "/admin/volunteers", label: "Who Can Sign In", kanji: "友", adminOnly: true },
+      { href: "/admin/settings", label: "Settings", kanji: "設", adminOnly: true },
+    ],
+  },
 ];
 
 function isActiveHref(pathname: string, href: string) {
@@ -41,6 +71,7 @@ export function AdminSidebar({
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const navGroupBaseId = useId();
 
   return (
     <header className="section-navy-scene relative isolate overflow-clip text-white lg:sticky lg:top-0 lg:flex lg:h-dvh lg:w-72 lg:shrink-0 lg:flex-col lg:self-start">
@@ -106,33 +137,56 @@ export function AdminSidebar({
             tone="sky"
             className="mb-4"
           />
-          <nav aria-label="Admin sections" className="flex flex-col gap-1">
-            {NAV.filter(
-              (item) => !item.adminOnly || user.role === "admin"
-            ).map((item) => {
-              const active = isActiveHref(pathname, item.href);
+          <nav aria-label="Admin sections" className="flex flex-col">
+            {NAV_GROUPS.map((group, index) => {
+              const items = group.items.filter(
+                (item) => !item.adminOnly || user.role === "admin"
+              );
+              if (items.length === 0) return null;
+              const headingId = `${navGroupBaseId}-${index}`;
               return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setOpen(false)}
-                  aria-current={active ? "page" : undefined}
-                  className={`flex items-center gap-3 rounded-md border-l-2 px-3 py-3 font-display text-sm font-semibold tracking-wide ${
-                    active
-                      ? "border-sky text-white"
-                      : "border-transparent text-white/70 hover:text-white"
-                  }`}
-                >
-                  <span
-                    aria-hidden="true"
-                    className={`font-accent text-sm font-bold ${
-                      active ? "text-sky" : "text-sky/60"
-                    }`}
+                <div key={group.heading ?? "root"}>
+                  {group.heading && (
+                    <p
+                      id={headingId}
+                      className="mt-6 mb-1 px-3 font-display text-xs font-semibold tracking-widest text-sky uppercase"
+                    >
+                      {group.heading}
+                    </p>
+                  )}
+                  <ul
+                    aria-labelledby={group.heading ? headingId : undefined}
+                    className="flex flex-col gap-1"
                   >
-                    {item.kanji}
-                  </span>
-                  {item.label}
-                </Link>
+                    {items.map((item) => {
+                      const active = isActiveHref(pathname, item.href);
+                      return (
+                        <li key={item.href}>
+                          <Link
+                            href={item.href}
+                            onClick={() => setOpen(false)}
+                            aria-current={active ? "page" : undefined}
+                            className={`flex items-center gap-3 rounded-md border-l-2 px-3 py-3 font-display text-sm font-semibold tracking-wide ${
+                              active
+                                ? "border-sky text-white"
+                                : "border-transparent text-white/70 hover:text-white"
+                            }`}
+                          >
+                            <span
+                              aria-hidden="true"
+                              className={`font-accent text-sm font-bold ${
+                                active ? "text-sky" : "text-sky/60"
+                              }`}
+                            >
+                              {item.kanji}
+                            </span>
+                            {item.label}
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
               );
             })}
           </nav>
