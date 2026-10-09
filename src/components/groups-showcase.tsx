@@ -1,17 +1,14 @@
 "use client";
 
-import { useRef, useState, type AnimationEvent } from "react";
+import { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  useInView,
-  useMountedAround,
-  useReducedMotion,
-} from "@/components/carousel-hooks";
+import { useMountedAround, useRotation } from "@/components/carousel-hooks";
 import { CarouselDots } from "@/components/carousel-dots";
 import { CarouselPlayToggle } from "@/components/carousel-play-toggle";
 import { EventMeta } from "@/components/event-meta";
 import { ExternalLink } from "@/components/external-link";
+import { RotationProgress } from "@/components/rotation-progress";
 import { SectionHeading } from "@/components/section-heading";
 import { SectionKicker } from "@/components/section-kicker";
 
@@ -107,58 +104,18 @@ export function GroupsShowcase({
   ctaHref: string;
   labels: Labels;
 }) {
-  const [active, setActive] = useState(0);
-  const [slide, setSlide] = useState(0);
-  const [cycle, setCycle] = useState(0);
-  const [stopped, setStopped] = useState(false);
-  const [pinned, setPinned] = useState(false);
-  const [hoverPaused, setHoverPaused] = useState(false);
-  const [focusPaused, setFocusPaused] = useState(false);
+  const slides = items.flatMap((item, group) =>
+    Array.from({ length: slideCount(item) }, (_, photo) => ({ group, photo })),
+  );
   const stageRef = useRef<HTMLDivElement>(null);
-  const inView = useInView(stageRef, 0.6);
-  const reduceMotion = useReducedMotion();
+  const rotation = useRotation({ count: slides.length, viewRef: stageRef });
+  const { group: active, photo: slide } = slides[rotation.active];
 
-  const canRotate =
-    !reduceMotion && (items.length > 1 || slideCount(items[0]) > 1);
-  const rotating = canRotate && !stopped;
-  const paused = hoverPaused || focusPaused || !inView;
-
-  const advance = (event: AnimationEvent<HTMLSpanElement>) => {
-    if (event.animationName !== "tab-progress") return;
-    if (slide + 1 < slideCount(items[active])) {
-      setSlide(slide + 1);
-    } else {
-      setSlide(0);
-      if (!pinned) setActive((active + 1) % items.length);
-    }
-    setCycle((c) => c + 1);
-  };
-
-  const show = (group: number, photo: number) => {
-    setActive(group);
-    setSlide(photo);
-    setPinned(true);
-    setCycle((c) => c + 1);
-  };
-
-  // Play clears the hover and focus holds too: the pointer is still inside,
-  // and no mouseleave is coming to release them.
-  const toggle = () => {
-    if (stopped) {
-      setHoverPaused(false);
-      setFocusPaused(false);
-      setPinned(false);
-    }
-    setStopped(!stopped);
-  };
+  const show = (group: number, photo: number) =>
+    rotation.show(slides.findIndex((s) => s.group === group) + photo);
 
   return (
-    <div
-      onMouseEnter={() => setHoverPaused(true)}
-      onMouseLeave={() => setHoverPaused(false)}
-      onFocus={() => setFocusPaused(true)}
-      onBlur={() => setFocusPaused(false)}
-    >
+    <div {...rotation.focusProps}>
       <div className="reveal-rise mb-8 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between lg:gap-10">
         <div>
           <SectionKicker
@@ -181,10 +138,10 @@ export function GroupsShowcase({
               {labels.cta}
             </Link>
           </div>
-          {canRotate && (
+          {rotation.canRotate && (
             <CarouselPlayToggle
-              stopped={stopped}
-              onToggle={toggle}
+              stopped={rotation.stopped}
+              onToggle={rotation.toggle}
               pauseLabel={labels.pause}
               playLabel={labels.play}
               className="h-11 w-11 shrink-0 border-navy/40 bg-transparent text-navy hover:bg-navy hover:text-white"
@@ -226,13 +183,10 @@ export function GroupsShowcase({
                             <CarouselDots
                               count={slideCount(item)}
                               active={slide}
-                              cycle={cycle}
-                              rotating={rotating}
-                              paused={paused}
-                              progressClassName={`groups-progress groups-progress-${slideCount(item)}`}
+                              rotation={rotation}
+                              intervalClassName={`groups-progress groups-progress-${slideCount(item)}`}
                               tone="sky"
                               onShow={(n) => show(i, n)}
-                              onAdvance={advance}
                               itemAriaLabel={(n) =>
                                 labels.photo
                                   .replace("{n}", String(n + 1))
@@ -242,14 +196,11 @@ export function GroupsShowcase({
                           </div>
                         </>
                       )}
-                      {slideCount(item) === 1 && rotating && (
-                        <span
-                          key={cycle}
-                          aria-hidden="true"
-                          onAnimationEnd={advance}
-                          className={`tab-progress groups-progress invisible absolute ${
-                            paused ? "tab-progress-paused" : ""
-                          }`}
+                      {slideCount(item) === 1 && (
+                        <RotationProgress
+                          rotation={rotation}
+                          intervalClassName="groups-progress"
+                          className="invisible absolute"
                         />
                       )}
                       <div className="enter-stagger absolute inset-x-0 bottom-0 z-10 p-5 text-white sm:p-7 lg:p-9">

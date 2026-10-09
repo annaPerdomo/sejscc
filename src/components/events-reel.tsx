@@ -1,14 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { useRef, useState, type AnimationEvent, type ReactNode } from "react";
-import {
-  useInView,
-  useMountedAround,
-  useReducedMotion,
-} from "@/components/carousel-hooks";
+import { useRef, useState, type ReactNode } from "react";
+import { useMountedAround, useRotation } from "@/components/carousel-hooks";
 import { BrushEdge } from "@/components/brush-edge";
 import { CarouselPlayToggle } from "@/components/carousel-play-toggle";
+import { RotationProgress } from "@/components/rotation-progress";
 import { SectionKicker } from "@/components/section-kicker";
 
 export type ReelPhoto = {
@@ -49,57 +46,21 @@ export function EventsReel({
   /** Without the azure list below, the paper calendars continue this surface. */
   settlesIntoAzure: boolean;
 }) {
-  const [active, setActive] = useState(0);
-  const [previous, setPrevious] = useState<number | null>(null);
-  const [cycle, setCycle] = useState(0);
-  const [stopped, setStopped] = useState(false);
-  const [hoverPaused, setHoverPaused] = useState(false);
-  const [focusPaused, setFocusPaused] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
-  const inView = useInView(sectionRef);
-  const reduceMotion = useReducedMotion();
+  const rotation = useRotation({ count: photos.length, viewRef: sectionRef });
+  const { active } = rotation;
+  const [shown, setShown] = useState({ active, previous: -1 });
+  if (shown.active !== active) setShown({ active, previous: shown.active });
+  const { previous } = shown;
   const mounted = useMountedAround(active, photos.length);
-
-  const canRotate = photos.length > 1 && !reduceMotion;
-  const rotating = canRotate && !stopped;
-  const paused = hoverPaused || focusPaused || !inView;
   const current = photos[active];
-
-  const goTo = (index: number) => {
-    setPrevious(active);
-    setActive(index);
-    setCycle((c) => c + 1);
-  };
-
-  const advance = (event: AnimationEvent<HTMLSpanElement>) => {
-    if (event.animationName !== "tab-progress") return;
-    goTo((active + 1) % photos.length);
-  };
-
-  const show = (index: number) => {
-    if (index !== active) goTo(index);
-    setStopped(true);
-  };
-
-  // Play clears the hover and focus holds too: the pointer is still inside,
-  // and no mouseleave is coming to release them.
-  const toggleRotation = () => {
-    if (stopped) {
-      setHoverPaused(false);
-      setFocusPaused(false);
-    }
-    setStopped(!stopped);
-  };
 
   if (!current) return null;
 
   return (
     <section
       ref={sectionRef}
-      onMouseEnter={() => setHoverPaused(true)}
-      onMouseLeave={() => setHoverPaused(false)}
-      onFocus={() => setFocusPaused(true)}
-      onBlur={() => setFocusPaused(false)}
+      {...rotation.focusProps}
       className="edge-flush relative isolate overflow-clip bg-paper"
     >
       <div className="relative -z-10 h-64 overflow-clip sm:h-96 lg:absolute lg:inset-0 lg:h-auto">
@@ -120,7 +81,11 @@ export function EventsReel({
                 sizes="100vw"
                 className={`object-cover ${
                   i === active || i === previous ? "reel-zoom" : ""
-                } ${i === active && (paused || stopped) ? "reel-zoom-paused" : ""}`}
+                } ${
+                  i === active && (rotation.paused || rotation.stopped)
+                    ? "reel-zoom-paused"
+                    : ""
+                }`}
               />
             </div>
           ) : null,
@@ -168,10 +133,10 @@ export function EventsReel({
                 </span>
                 <span className="mt-0.5 block text-base leading-snug">{current.title}</span>
               </p>
-              {canRotate && (
+              {rotation.canRotate && (
                 <CarouselPlayToggle
-                  stopped={stopped}
-                  onToggle={toggleRotation}
+                  stopped={rotation.stopped}
+                  onToggle={rotation.toggle}
                   pauseLabel={labels.pause}
                   playLabel={labels.play}
                   className="h-11 w-11 border-white/60 bg-transparent text-white hover:bg-white hover:text-navy"
@@ -189,19 +154,17 @@ export function EventsReel({
                   type="button"
                   aria-current={i === active}
                   aria-label={`${photo.year}: ${photo.title}`}
-                  onClick={() => show(i)}
+                  onClick={() => rotation.show(i)}
                   className={`relative -mt-px py-3 font-display text-sm font-semibold tabular-nums transition-colors focus-visible:outline-2 focus-visible:outline-sky ${
                     i === active ? "text-white" : "text-white/75 hover:text-white"
                   }`}
                 >
                   <span aria-hidden="true" className="absolute inset-x-0 top-0 h-0.5 overflow-clip">
                     {i === active && (
-                      <span
-                        key={cycle}
-                        onAnimationEnd={advance}
-                        className={`block h-full bg-sky ${
-                          rotating ? "tab-progress reel-progress" : ""
-                        } ${rotating && paused ? "tab-progress-paused" : ""}`}
+                      <RotationProgress
+                        rotation={rotation}
+                        intervalClassName="reel-progress"
+                        className="block h-full bg-sky"
                       />
                     )}
                   </span>

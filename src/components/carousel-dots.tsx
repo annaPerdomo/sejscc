@@ -1,6 +1,7 @@
 "use client";
 
-import type { AnimationEvent } from "react";
+import type { Rotation } from "@/components/carousel-hooks";
+import { RotationProgress } from "@/components/rotation-progress";
 
 const TONES = {
   white: { track: "bg-white/35 group-hover:bg-white/60", fill: "bg-white" },
@@ -10,27 +11,20 @@ const TONES = {
 export function CarouselDots({
   count,
   active,
-  cycle,
-  rotating,
-  paused,
-  progressClassName,
+  rotation,
+  intervalClassName,
   tone = "white",
   onShow,
-  onAdvance,
   ariaLabel,
   itemAriaLabel,
   className = "",
 }: {
   count: number;
   active: number;
-  cycle: number;
-  rotating: boolean;
-  paused: boolean;
-  /** Class setting `--tab-progress` to this carousel's rotation interval. */
-  progressClassName: string;
+  rotation: Rotation;
+  intervalClassName: string;
   tone?: keyof typeof TONES;
   onShow: (index: number) => void;
-  onAdvance: (event: AnimationEvent<HTMLSpanElement>) => void;
   ariaLabel?: string;
   itemAriaLabel: (index: number) => string;
   className?: string;
@@ -49,13 +43,12 @@ export function CarouselDots({
           className="group flex-1 rounded-xs py-3 focus-visible:outline-2 focus-visible:outline-sky"
         >
           <span className={`block h-1 overflow-clip rounded-xs transition-colors ${palette.track}`}>
-            {i <= active && (
-              <span
-                key={i === active ? cycle : undefined}
-                onAnimationEnd={i === active ? onAdvance : undefined}
-                className={`block h-full ${palette.fill} ${
-                  i === active && rotating ? `tab-progress ${progressClassName}` : ""
-                } ${i === active && rotating && paused ? "tab-progress-paused" : ""}`}
+            {i < active && <span className={`block h-full ${palette.fill}`} />}
+            {i === active && (
+              <RotationProgress
+                rotation={rotation}
+                intervalClassName={intervalClassName}
+                className={`block h-full ${palette.fill}`}
               />
             )}
           </span>

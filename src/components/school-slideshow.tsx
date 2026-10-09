@@ -1,12 +1,8 @@
 "use client";
 
-import { useRef, useState, type AnimationEvent } from "react";
+import { useRef } from "react";
 import Image from "next/image";
-import {
-  useInView,
-  useMountedAround,
-  useReducedMotion,
-} from "@/components/carousel-hooks";
+import { useMountedAround, useRotation } from "@/components/carousel-hooks";
 import { CarouselDots } from "@/components/carousel-dots";
 import { CarouselPlayToggle } from "@/components/carousel-play-toggle";
 
@@ -28,51 +24,18 @@ export function SchoolSlideshow({
   labels: { region: string; pause: string; play: string; show: string };
   className?: string;
 }) {
-  const [active, setActive] = useState(0);
-  const [cycle, setCycle] = useState(0);
-  const [stopped, setStopped] = useState(false);
-  const [hoverPaused, setHoverPaused] = useState(false);
-  const [focusPaused, setFocusPaused] = useState(false);
   const stageRef = useRef<HTMLDivElement>(null);
-  const inView = useInView(stageRef, 0.5);
-  const reduceMotion = useReducedMotion();
+  const rotation = useRotation({ count: slides.length, viewRef: stageRef });
+  const { active } = rotation;
   const mounted = useMountedAround(active, slides.length);
-
-  const canRotate = !reduceMotion && slides.length > 1;
-  const rotating = canRotate && !stopped;
-  const paused = hoverPaused || focusPaused || !inView;
   const slide = slides[active];
-
-  const advance = (event: AnimationEvent<HTMLSpanElement>) => {
-    if (event.animationName !== "tab-progress") return;
-    setActive((active + 1) % slides.length);
-    setCycle((c) => c + 1);
-  };
-
-  const show = (index: number) => {
-    setActive(index);
-    setCycle((c) => c + 1);
-  };
-
-  // Play clears the hover and focus holds too: the pointer is still inside,
-  // and no mouseleave is coming to release them.
-  const toggle = () => {
-    if (stopped) {
-      setHoverPaused(false);
-      setFocusPaused(false);
-    }
-    setStopped(!stopped);
-  };
 
   return (
     <div
       role="region"
       aria-roledescription="carousel"
       aria-label={labels.region}
-      onMouseEnter={() => setHoverPaused(true)}
-      onMouseLeave={() => setHoverPaused(false)}
-      onFocus={() => setFocusPaused(true)}
-      onBlur={() => setFocusPaused(false)}
+      {...rotation.focusProps}
       className={`byobu-frame ${className}`}
     >
       <div
@@ -103,12 +66,9 @@ export function SchoolSlideshow({
           <CarouselDots
             count={slides.length}
             active={active}
-            cycle={cycle}
-            rotating={rotating}
-            paused={paused}
-            progressClassName="school-progress"
-            onShow={show}
-            onAdvance={advance}
+            rotation={rotation}
+            intervalClassName="school-progress"
+            onShow={rotation.show}
             itemAriaLabel={(i) => labels.show.replace("{label}", slides[i].label)}
           />
         </div>
@@ -122,10 +82,10 @@ export function SchoolSlideshow({
               {slide.caption}
             </span>
           </p>
-          {canRotate && (
+          {rotation.canRotate && (
             <CarouselPlayToggle
-              stopped={stopped}
-              onToggle={toggle}
+              stopped={rotation.stopped}
+              onToggle={rotation.toggle}
               pauseLabel={labels.pause}
               playLabel={labels.play}
               className="h-11 w-11 border-white/50 bg-ink-deep/40 text-white hover:bg-white hover:text-ink-deep"

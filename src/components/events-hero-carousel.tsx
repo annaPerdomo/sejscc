@@ -1,16 +1,13 @@
 "use client";
 
-import { useRef, useState, type AnimationEvent } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { AddToCalendar } from "@/components/add-to-calendar";
-import {
-  useInView,
-  useMountedAround,
-  useReducedMotion,
-} from "@/components/carousel-hooks";
+import { useMountedAround, useRotation } from "@/components/carousel-hooks";
 import { CarouselPlayToggle } from "@/components/carousel-play-toggle";
 import { EventDescriptionMedia } from "@/components/event-media";
+import { RotationProgress } from "@/components/rotation-progress";
 import { SectionKicker } from "@/components/section-kicker";
 import type { CalendarOption } from "@/lib/calendars";
 import type { ImageSize } from "@/lib/image-size";
@@ -111,52 +108,59 @@ export function EventsHeroCarousel({
   viewAllHref: string;
   labels: Labels;
 }) {
-  const [active, setActive] = useState(0);
-  const [cycle, setCycle] = useState(0);
-  const [stopped, setStopped] = useState(false);
-  const [hoverPaused, setHoverPaused] = useState(false);
-  const [focusPaused, setFocusPaused] = useState(false);
   const [introDone, setIntroDone] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
-  const inView = useInView(rootRef);
-  const reduceMotion = useReducedMotion();
+  const introRef = useRef<HTMLDivElement>(null);
+  const rotation = useRotation({
+    count: items.length,
+    viewRef: rootRef,
+    held: !introDone || menuOpen,
+  });
+  const { active } = rotation;
+
+  // The intro starts when the server HTML is parsed, so on a slow phone it can
+  // end before hydration, and React never replays a missed animationend.
+  useEffect(() => {
+    const intro = introRef.current;
+    if (!intro) return;
+    let cancelled = false;
+    const animations = intro
+      .getAnimations({ subtree: true })
+      .filter(
+        (animation) =>
+          animation instanceof CSSAnimation &&
+          animation.animationName === "hero-intro",
+      );
+    Promise.allSettled(animations.map((animation) => animation.finished)).then(
+      () => {
+        if (!cancelled) setIntroDone(true);
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Choosing another event from the keyboard sends no pointerdown, so a menu
+  // left open in the now-hidden panel would hold rotation until the next click.
+  useEffect(() => {
+    rootRef.current
+      ?.querySelectorAll<HTMLDetailsElement>("[inert] details[open]")
+      .forEach((menu) => {
+        menu.open = false;
+      });
+  }, [active]);
   const mounted = useMountedAround(active, items.length);
 
-  const rotating = items.length > 1 && !stopped && !reduceMotion;
   const introLate = introDone ? "" : "hero-intro-late";
-  const paused =
-    hoverPaused || focusPaused || !inView || (!introDone && !reduceMotion);
 
   // The tallest flyer sets the frame, so one mounting later never moves the
   // strip below it.
   const frameAspect = Math.min(...items.map(flyerAspect));
 
-  // Keying the bar on the cycle restarts it when the strip wraps back to the
-  // event it started on.
-  const advance = (event: AnimationEvent<HTMLSpanElement>) => {
-    if (event.animationName !== "tab-progress") return;
-    setActive((i) => (i + 1) % items.length);
-    setCycle((c) => c + 1);
-  };
-
-  // Play clears the hover and focus holds too: the pointer is still inside,
-  // and no mouseleave is coming to release them.
-  const resume = () => {
-    if (stopped) {
-      setHoverPaused(false);
-      setFocusPaused(false);
-    }
-    setStopped(!stopped);
-  };
-
   return (
-    <div
-      ref={rootRef}
-      onMouseEnter={() => setHoverPaused(true)}
-      onMouseLeave={() => setHoverPaused(false)}
-      onFocus={() => setFocusPaused(true)}
-      onBlur={() => setFocusPaused(false)}
-    >
+    <div ref={rootRef} {...rotation.focusProps}>
       <div aria-hidden="true" className="absolute inset-0">
         <Image
           src={backdropSrc}
@@ -182,9 +186,7 @@ export function EventsHeroCarousel({
 
       {/* The bottom padding keeps the strip above the wave divider underneath. */}
       <div
-        onAnimationEnd={(event) => {
-          if (event.animationName === "hero-intro") setIntroDone(true);
-        }}
+        ref={introRef}
         className={`relative mx-auto max-w-wide px-5 pt-8 pb-24 sm:px-10 sm:pt-10 lg:px-16 lg:pt-10 ${
           introDone ? "" : "hero-intro"
         }`}
@@ -271,6 +273,7 @@ export function EventsHeroCarousel({
                               label={labels.addToCalendar}
                               menuLabel={labels.chooseCalendar}
                               options={item.calendar}
+                              onOpenChange={setMenuOpen}
                             />
                           )}
                         </div>
@@ -327,10 +330,10 @@ export function EventsHeroCarousel({
                   <span className="font-display text-sm font-semibold tracking-[0.2em] text-sky uppercase">
                     {labels.panelTitle}
                   </span>
-                  {items.length > 1 && !reduceMotion && (
+                  {rotation.canRotate && (
                     <CarouselPlayToggle
-                      stopped={stopped}
-                      onToggle={resume}
+                      stopped={rotation.stopped}
+                      onToggle={rotation.toggle}
                       pauseLabel={labels.pause}
                       playLabel={labels.play}
                       className="h-11 w-11 border-white/50 bg-transparent text-white hover:bg-white hover:text-navy"
@@ -350,22 +353,16 @@ export function EventsHeroCarousel({
                       role="tab"
                       aria-selected={i === active}
                       aria-controls={`hero-event-${item.id}`}
-                      onClick={() => {
-                        setActive(i);
-                        setStopped(true);
-                      }}
+                      onClick={() => rotation.show(i)}
                       className={`relative grid grid-cols-[auto_minmax(0,1fr)] items-start gap-3 overflow-clip rounded-sm px-3 py-3 text-left transition-colors lg:pt-4 ${
                         i === active ? "bg-white/10" : "hover:bg-white/10"
                       }`}
                     >
                       {i === active && (
-                        <span
-                          key={cycle}
-                          aria-hidden="true"
-                          onAnimationEnd={advance}
-                          className={`absolute inset-x-0 top-0 h-1 bg-sky ${
-                            rotating ? "tab-progress hero-progress" : ""
-                          } ${rotating && paused ? "tab-progress-paused" : ""}`}
+                        <RotationProgress
+                          rotation={rotation}
+                          intervalClassName="hero-progress"
+                          className="absolute inset-x-0 top-0 h-1 bg-sky"
                         />
                       )}
                       <span className="flex min-w-18 flex-col leading-none whitespace-nowrap">

@@ -127,7 +127,7 @@ be built from these tokens via Tailwind utility classes.
   `tab-progress` (with a per-strip duration
   class, `hero-progress`, `groups-progress`, `school-progress`, `school-hero-progress`, `year-progress`, `reel-progress`, and
   `tab-progress-paused` to
-  hold the strip while the reader is hovering or focused inside it; the
+  hold the strip while keyboard focus is inside it; the
   strip advances on the bar's `animationend`, so the CSS duration is the
   rotation interval),
   `between-waves`, `card-stretch`,
@@ -168,10 +168,15 @@ be built from these tokens via Tailwind utility classes.
 - `between-waves` masks a texture to the wave lines above and below it — its
   `--wave-cap` / `--wave-tail` must stay in step with `wave-divider.tsx`.
 - Anything that auto-advances on a timer (carousel, spotlight) needs a
-  visible pause control, not just hover and focus pausing — WCAG 2.2.2 is a
-  Level A criterion. Use the shared
-  [carousel-play-toggle](src/components/carousel-play-toggle.tsx), and keep
-  honoring `prefers-reduced-motion`.
+  visible pause control — WCAG 2.2.2 is a Level A criterion. Build it on
+  `useRotation()` in [carousel-hooks](src/components/carousel-hooks.ts) with
+  `RotationProgress` (or `CarouselDots`) and the shared
+  [carousel-play-toggle](src/components/carousel-play-toggle.tsx), so every
+  rotation behaves the same: picking a slide jumps to it and restarts the
+  interval, only keyboard focus, being off screen and the hook's `held`
+  option (for a carousel's own reasons, like an open menu) hold it, and
+  `prefers-reduced-motion` turns it off. Don't pause on hover — a mouse
+  resting on a full-screen hero, or a tap on a phone, holds it indefinitely.
 
 ## Built for a non-technical admin
 

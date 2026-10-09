@@ -19,6 +19,7 @@ export function AddToCalendar({
   options,
   tone,
   placement = "below",
+  onOpenChange,
   className = "",
 }: {
   label: string;
@@ -27,6 +28,7 @@ export function AddToCalendar({
   tone: keyof typeof SUMMARY_TONES;
   /** "above" for a menu near the bottom of a clipped section. */
   placement?: keyof typeof MENU_PLACEMENTS;
+  onOpenChange?: (open: boolean) => void;
   className?: string;
 }) {
   const ref = useRef<HTMLDetailsElement>(null);
@@ -53,7 +55,11 @@ export function AddToCalendar({
   }, []);
 
   return (
-    <details ref={ref} className={`calendar-menu relative ${className}`}>
+    <details
+      ref={ref}
+      onToggle={(event) => onOpenChange?.(event.currentTarget.open)}
+      className={`calendar-menu relative ${className}`}
+    >
       <summary
         className={`block cursor-pointer px-7 py-3.5 text-center font-display text-base font-semibold tracking-[0.03em] transition-colors ${SUMMARY_TONES[tone]}`}
       >

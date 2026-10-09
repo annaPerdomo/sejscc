@@ -1,12 +1,8 @@
 "use client";
 
 import Image, { type StaticImageData } from "next/image";
-import { useRef, useState, type AnimationEvent, type ReactNode } from "react";
-import {
-  useInView,
-  useMountedAround,
-  useReducedMotion,
-} from "@/components/carousel-hooks";
+import { useRef, type ReactNode } from "react";
+import { useMountedAround, useRotation } from "@/components/carousel-hooks";
 import { CarouselDots } from "@/components/carousel-dots";
 import { CarouselPlayToggle } from "@/components/carousel-play-toggle";
 import { SectionKicker } from "@/components/section-kicker";
@@ -76,42 +72,14 @@ export function PhotoHero({
   const asideAtStart = aside && asideAt === "start";
   const asideAtEnd = aside && asideAt === "end";
 
-  const [active, setActive] = useState(0);
-  const [cycle, setCycle] = useState(0);
-  const [stopped, setStopped] = useState(false);
-  const [hoverPaused, setHoverPaused] = useState(false);
-  const [focusPaused, setFocusPaused] = useState(false);
-  const sectionRef = useRef<HTMLElement>(null);
-  const inView = useInView(sectionRef);
-  const reduceMotion = useReducedMotion();
-  const mounted = useMountedAround(active, photos?.length ?? 1);
-
   const isRotating = Boolean(photos && photos.length > 1 && rotationLabels);
-  const canRotate = isRotating && !reduceMotion;
-  const rotating = canRotate && !stopped;
-  const paused = hoverPaused || focusPaused || !inView;
-
-  const advance = (event: AnimationEvent<HTMLSpanElement>) => {
-    if (!photos || event.animationName !== "tab-progress") return;
-    setActive((i) => (i + 1) % photos.length);
-    setCycle((c) => c + 1);
-  };
-
-  const show = (index: number) => {
-    setActive(index);
-    setStopped(true);
-    setCycle((c) => c + 1);
-  };
-
-  // Play clears the hover and focus holds too: the pointer is still inside,
-  // and no mouseleave is coming to release them.
-  const toggleRotation = () => {
-    if (stopped) {
-      setHoverPaused(false);
-      setFocusPaused(false);
-    }
-    setStopped(!stopped);
-  };
+  const sectionRef = useRef<HTMLElement>(null);
+  const rotation = useRotation({
+    count: isRotating && photos ? photos.length : 1,
+    viewRef: sectionRef,
+  });
+  const { active } = rotation;
+  const mounted = useMountedAround(active, photos?.length ?? 1);
 
   const text = (
     <div
@@ -153,12 +121,9 @@ export function PhotoHero({
           <CarouselDots
             count={photos.length}
             active={active}
-            cycle={cycle}
-            rotating={rotating}
-            paused={paused}
-            progressClassName="school-hero-progress"
-            onShow={show}
-            onAdvance={advance}
+            rotation={rotation}
+            intervalClassName="school-hero-progress"
+            onShow={rotation.show}
             ariaLabel={rotationLabels.list}
             itemAriaLabel={(i) =>
               rotationLabels.photo
@@ -167,10 +132,10 @@ export function PhotoHero({
             }
             className="w-56 sm:w-72"
           />
-          {canRotate && (
+          {rotation.canRotate && (
             <CarouselPlayToggle
-              stopped={stopped}
-              onToggle={toggleRotation}
+              stopped={rotation.stopped}
+              onToggle={rotation.toggle}
               pauseLabel={rotationLabels.pause}
               playLabel={rotationLabels.play}
               className="h-10 w-10 shrink-0 border-white/50 bg-transparent text-white hover:bg-white hover:text-navy"
@@ -186,10 +151,7 @@ export function PhotoHero({
   return (
     <section
       ref={sectionRef}
-      onMouseEnter={() => setHoverPaused(true)}
-      onMouseLeave={() => setHoverPaused(false)}
-      onFocus={() => setFocusPaused(true)}
-      onBlur={() => setFocusPaused(false)}
+      {...rotation.focusProps}
       className="edge-flush relative isolate overflow-clip bg-ink-deep text-white"
     >
       <div className="absolute inset-0 -z-10">

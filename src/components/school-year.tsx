@@ -1,13 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState, type AnimationEvent, type PointerEvent } from "react";
+import { useEffect, useRef, type PointerEvent } from "react";
 import Image from "next/image";
-import {
-  useInView,
-  useMountedAround,
-  useReducedMotion,
-} from "@/components/carousel-hooks";
+import { useMountedAround, useRotation } from "@/components/carousel-hooks";
 import { CarouselPlayToggle } from "@/components/carousel-play-toggle";
+import { RotationProgress } from "@/components/rotation-progress";
 import type { SchoolEvent, SeasonId } from "@/lib/school-year";
 
 // Fills and rules only: on navy, gold and sand are not text colors.
@@ -27,20 +24,15 @@ export function SchoolYear({
   currentIndex: number;
   labels: { list: string; current: string; pause: string; play: string };
 }) {
-  const [active, setActive] = useState(currentIndex);
-  const [cycle, setCycle] = useState(0);
-  const [stopped, setStopped] = useState(false);
-  const [hoverPaused, setHoverPaused] = useState(false);
-  const [focusPaused, setFocusPaused] = useState(false);
   const stageRef = useRef<HTMLDivElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
-  const inView = useInView(stageRef, 0.5);
-  const reduceMotion = useReducedMotion();
+  const rotation = useRotation({
+    count: events.length,
+    viewRef: stageRef,
+    start: currentIndex,
+  });
+  const { active, reduceMotion } = rotation;
   const mounted = useMountedAround(active, events.length);
-
-  const canRotate = !reduceMotion && events.length > 1;
-  const rotating = canRotate && !stopped;
-  const paused = hoverPaused || focusPaused || !inView;
 
   useEffect(() => {
     const strip = stripRef.current;
@@ -54,40 +46,15 @@ export function SchoolYear({
 
   if (events.length === 0) return null;
 
-  const advance = (e: AnimationEvent<HTMLSpanElement>) => {
-    if (e.animationName !== "tab-progress") return;
-    setActive((active + 1) % events.length);
-    setCycle((c) => c + 1);
-  };
-
-  const show = (index: number) => {
-    setActive(index);
-    setStopped(true);
-    setCycle((c) => c + 1);
-  };
-
-  // A touch never fires mouseleave, so a swipe holds rotation until Play;
-  // otherwise the next advance would scroll the strip back mid-swipe.
+  // A swipe along the strip starts the interval over, so the next advance
+  // doesn't scroll the strip back out from under the reader's finger.
   const holdForSwipe = (e: PointerEvent<HTMLDivElement>) => {
-    if (e.pointerType === "touch") setHoverPaused(true);
-  };
-
-  // Play clears the hover and focus holds too: the pointer is still inside,
-  // and no mouseleave is coming to release them.
-  const toggle = () => {
-    if (stopped) {
-      setHoverPaused(false);
-      setFocusPaused(false);
-    }
-    setStopped(!stopped);
+    if (e.pointerType === "touch") rotation.restart();
   };
 
   return (
     <div
-      onMouseEnter={() => setHoverPaused(true)}
-      onMouseLeave={() => setHoverPaused(false)}
-      onFocus={() => setFocusPaused(true)}
-      onBlur={() => setFocusPaused(false)}
+      {...rotation.focusProps}
       className="grid gap-8 lg:grid-cols-12 lg:items-center lg:gap-x-12 lg:gap-y-8"
     >
       <div className="asanoha-frame lg:col-span-6 lg:self-stretch">
@@ -113,10 +80,10 @@ export function SchoolYear({
               </div>
             ) : null
           )}
-          {canRotate && (
+          {rotation.canRotate && (
             <CarouselPlayToggle
-              stopped={stopped}
-              onToggle={toggle}
+              stopped={rotation.stopped}
+              onToggle={rotation.toggle}
               pauseLabel={labels.pause}
               playLabel={labels.play}
               className="absolute right-3 bottom-3 z-10 h-11 w-11 border-white/50 bg-ink-deep/50 text-white hover:bg-white hover:text-ink-deep"
@@ -181,7 +148,7 @@ export function SchoolYear({
               role="tab"
               aria-selected={selected}
               aria-controls={`school-year-panel-${item.id}`}
-              onClick={() => show(i)}
+              onClick={() => rotation.show(i)}
               className="group flex w-32 shrink-0 flex-col items-start rounded-xs pt-1 pb-2 text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky lg:w-auto lg:min-w-0 lg:flex-1"
             >
               <span className="flex h-7 items-baseline gap-2">
@@ -200,12 +167,10 @@ export function SchoolYear({
               </span>
               <span className={`mt-2 block h-1 w-full overflow-clip rounded-xs ${bar.track}`}>
                 {selected && (
-                  <span
-                    key={cycle}
-                    onAnimationEnd={advance}
-                    className={`block h-full ${bar.fill} ${rotating ? "tab-progress year-progress" : ""} ${
-                      rotating && paused ? "tab-progress-paused" : ""
-                    }`}
+                  <RotationProgress
+                    rotation={rotation}
+                    intervalClassName="year-progress"
+                    className={`block h-full ${bar.fill}`}
                   />
                 )}
               </span>
