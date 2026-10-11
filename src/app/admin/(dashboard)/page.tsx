@@ -166,21 +166,20 @@ export default async function AdminDashboard() {
         className="relative isolate -mx-5 -mt-8 overflow-clip sm:-mx-8 lg:-mx-10 lg:-mt-10"
       >
         <div aria-hidden="true" className="section-wash-history absolute inset-0 -z-10 mask-b-from-70%">
-          {/* Kept at the photo's own shape: stretched across the wide band, cover
-              cropped it to a strip that cut through the school sign. */}
-          <div className="absolute inset-y-0 right-0 aspect-video max-w-full mask-b-from-60% mask-l-from-60%">
+          {/* The copy starts where this strip ends, so no text ever sits on the
+              photo and a board member can swap in any picture. */}
+          <div className="absolute inset-x-0 top-0 h-64 mask-b-from-50% sm:h-80 lg:h-96">
             <Image
               src={slotPhoto(sitePhotos, "home.events-backdrop", "", "en").src}
               alt=""
               fill
               preload
-              sizes="(min-width: 1024px) 50vw, 100vw"
-              className="object-cover object-right"
+              sizes="(min-width: 1024px) calc(100vw - 18rem), 100vw"
+              className="object-cover object-right-top"
             />
-            <div className="absolute inset-0 bg-paper/88" />
           </div>
         </div>
-        <div className="px-5 pt-12 pb-20 sm:px-8 sm:pt-16 sm:pb-24 lg:px-10">
+        <div className="px-5 pt-64 pb-12 sm:px-8 sm:pt-80 sm:pb-14 lg:px-10 lg:pt-96">
           <div className="enter-rise mx-auto max-w-5xl">
             <SectionKicker accent="おかえりなさい" caption={`${weekday}, ${date}`} tone="magenta" size="lg" entrance="load" />
             <h1
