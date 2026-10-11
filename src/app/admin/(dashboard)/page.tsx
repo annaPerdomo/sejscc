@@ -166,14 +166,16 @@ export default async function AdminDashboard() {
         className="relative isolate -mx-5 -mt-8 overflow-clip sm:-mx-8 lg:-mx-10 lg:-mt-10"
       >
         <div aria-hidden="true" className="section-wash-history absolute inset-0 -z-10 mask-b-from-70%">
-          <div className="absolute inset-0 mask-b-from-40%">
+          {/* Kept at the photo's own shape: stretched across the wide band, cover
+              cropped it to a strip that cut through the school sign. */}
+          <div className="absolute inset-y-0 right-0 aspect-video max-w-full mask-b-from-60% mask-l-from-60%">
             <Image
               src={slotPhoto(sitePhotos, "home.events-backdrop", "", "en").src}
               alt=""
               fill
               preload
-              sizes="100vw"
-              className="object-cover"
+              sizes="(min-width: 1024px) 50vw, 100vw"
+              className="object-cover object-right"
             />
             <div className="absolute inset-0 bg-paper/88" />
           </div>
