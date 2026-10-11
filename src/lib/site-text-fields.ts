@@ -119,7 +119,7 @@ export const SITE_TEXT_PAGES: SiteTextPage[] = [
         field("school.history.mission", "Mission statement", "body"),
       ]),
       section("school-join", [
-        field("school.join.leadBefore", "Opening sentence", "body"),
+        field("school.join.leadBefore", "Opening sentence (the school's email address follows it)", "body"),
         field("school.join.note", "Note", "short"),
       ]),
     ],
@@ -148,7 +148,7 @@ export const SITE_TEXT_PAGES: SiteTextPage[] = [
         field("payments.zelleText", "Zelle paragraph", "body"),
         field("payments.zelleMemo", "Zelle memo note", "body"),
         field("payments.checkMemo", "Check memo note", "body"),
-        field("payments.questionsBefore", "Closing sentence", "body"),
+        field("payments.questionsBefore", "Closing sentence (the center's email address follows it)", "body"),
       ]),
     ],
   },
@@ -165,7 +165,7 @@ export const SITE_TEXT_PAGES: SiteTextPage[] = [
     sections: [
       section("events-top", [
         field("events.titleLine1", "Heading", "heading"),
-        field("events.lede", "Opening sentence", "body"),
+        field("events.lede", "Opening sentence (shown when no event is coming up)", "body"),
       ]),
     ],
   },

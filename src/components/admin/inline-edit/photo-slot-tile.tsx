@@ -12,7 +12,10 @@ import { AdminTextArea } from "@/components/admin/admin-field";
 import { AdminImagePicker } from "@/components/admin/admin-image-picker";
 import type { EditBarStatus } from "@/components/admin/inline-edit/edit-bar";
 import { EditDialog } from "@/components/admin/inline-edit/edit-dialog";
-import { useUnsavedChangesGuard } from "@/components/admin/inline-edit/use-unsaved-changes-guard";
+import {
+  confirmDiscardChanges,
+  useUnsavedChangesGuard,
+} from "@/components/admin/inline-edit/use-unsaved-changes-guard";
 import type { PhotoShape, PhotoSlot } from "@/lib/photo-slots";
 import {
   listUploadedPhotos,
@@ -25,6 +28,7 @@ const NO_OVERRIDE_MESSAGE =
   "This photo is back to the original, so there's no description to change.";
 const GENERIC_SAVE_ERROR = "Something went wrong saving this. Please try again.";
 const MISSING_ALT_MESSAGE = "Please describe the photo for visitors who can't see it.";
+const NOTHING_CHOSEN_MESSAGE = "Choose a new photo first, then press Save.";
 const TILE_SIZES = "(max-width: 640px) 50vw, 33vw";
 const LIBRARY_SIZES = "33vw";
 
@@ -156,6 +160,7 @@ function PhotoDialog({
   const [altJaDraft, setAltJaDraft] = useState(tile.current.altJa);
   const [altError, setAltError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [preparing, setPreparing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -176,6 +181,7 @@ function PhotoDialog({
     setFile(chosen);
     setPreviewUrl(URL.createObjectURL(chosen));
     setLibraryUrl(null);
+    setError(null);
   }
 
   async function openLibrary() {
@@ -196,18 +202,22 @@ function PhotoDialog({
 
   function pickFromLibrary(url: string) {
     setLibraryUrl(url);
+    setError(null);
     setFile(null);
     setPreviewUrl(null);
   }
 
   async function save() {
-    if (saving) return;
+    if (saving || preparing) return;
+    if (!hasNewPhoto && !tile.isChanged) {
+      setError(NOTHING_CHOSEN_MESSAGE);
+      return;
+    }
     const alt = altDraft.trim();
     if (!alt && !altOptional) {
       setAltError(MISSING_ALT_MESSAGE);
       return;
     }
-    if (!hasNewPhoto && !tile.isChanged) return;
 
     setAltError(null);
     setError(null);
@@ -280,7 +290,7 @@ function PhotoDialog({
   const pickerValue = mode === "upload" ? previewUrl : null;
 
   return (
-    <EditDialog title={title} open busy={saving} onClose={closeDialog}>
+    <EditDialog title={title} open busy={saving} dirty={dirty} onClose={closeDialog}>
       <div className="space-y-5">
         <div
           role="group"
@@ -290,8 +300,9 @@ function PhotoDialog({
           <button
             type="button"
             aria-pressed={mode === "upload"}
+            disabled={preparing}
             onClick={chooseUploadMode}
-            className={`min-h-11 rounded-md px-4 text-sm font-semibold ${
+            className={`min-h-11 rounded-md px-4 text-sm font-semibold disabled:opacity-50 ${
               mode === "upload" ? buttonVariantClass("primary") : "text-ink-soft"
             }`}
           >
@@ -300,8 +311,9 @@ function PhotoDialog({
           <button
             type="button"
             aria-pressed={mode === "library"}
+            disabled={preparing}
             onClick={() => void openLibrary()}
-            className={`min-h-11 rounded-md px-4 text-sm font-semibold ${
+            className={`min-h-11 rounded-md px-4 text-sm font-semibold disabled:opacity-50 ${
               mode === "library" ? buttonVariantClass("primary") : "text-ink-soft"
             }`}
           >
@@ -315,6 +327,7 @@ function PhotoDialog({
             value={pickerValue}
             fallbackSrc={tile.current.src}
             onFileChosen={onFileChosen}
+            onPreparingChange={setPreparing}
             disabled={saving}
           />
         ) : (
@@ -397,7 +410,7 @@ function PhotoDialog({
           <button
             type="button"
             onClick={() => void save()}
-            aria-disabled={saving || (!hasNewPhoto && !tile.isChanged)}
+            aria-disabled={saving || preparing}
             className={`min-h-12 ${buttonClass("primary")}`}
           >
             {saving ? "Saving…" : "Save"}
@@ -405,7 +418,7 @@ function PhotoDialog({
           <button
             type="button"
             onClick={() => {
-              if (!saving) closeDialog();
+              if (!saving && confirmDiscardChanges(dirty)) closeDialog();
             }}
             aria-disabled={saving}
             className={`min-h-12 ${buttonClass("secondary")}`}

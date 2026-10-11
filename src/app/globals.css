@@ -1628,17 +1628,16 @@ body {
     background: var(--color-indigo);
     padding: --spacing(0.5) --spacing(2);
     font-family: var(--font-display);
-    font-size: var(--text-xs);
+    font-size: var(--text-sm);
     font-weight: 600;
+    letter-spacing: normal;
     color: var(--color-white);
     vertical-align: middle;
-    opacity: 0;
-    transition: opacity 150ms ease;
   }
 
   .inline-edit-target:hover .inline-edit-chip,
   .inline-edit-target:focus-visible .inline-edit-chip {
-    opacity: 1;
+    background: var(--color-indigo-deep);
   }
 
   .inline-edit-field {

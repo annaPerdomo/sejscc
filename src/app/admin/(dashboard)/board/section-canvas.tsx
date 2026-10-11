@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { expectOk } from "@/lib/action-result";
 import { EditBar, type EditBarStatus } from "@/components/admin/inline-edit/edit-bar";
@@ -67,7 +67,7 @@ export function SectionCanvas({
   const [lang, setLang] = useState<Locale>("en");
   const [status, setStatus] = useState<EditBarStatus>({ kind: "idle" });
   const [memberFieldsSaving, setMemberFieldsSaving] = useState(false);
-  const memberFieldsDirtyRef = useRef(false);
+  const [memberFieldsDirty, setMemberFieldsDirty] = useState(false);
 
   const editState = useOpenTarget();
   const undo = useUndo();
@@ -227,14 +227,13 @@ export function SectionCanvas({
   }
 
   function openMemberPanel(id: string) {
-    memberFieldsDirtyRef.current = false;
+    setMemberFieldsDirty(false);
     setMemberFieldsSaving(false);
     lists.openMemberOptions(id);
   }
 
-  function requestCloseMemberPanel() {
-    if (memberFieldsSaving) return;
-    if (memberFieldsDirtyRef.current && !confirm("Leave without saving your changes?")) return;
+  function closeMemberPanel() {
+    setMemberFieldsDirty(false);
     lists.closeMemberOptions();
   }
 
@@ -301,8 +300,9 @@ export function SectionCanvas({
 
       <MemberPanel
         open={lists.memberOptionsId !== null}
-        onClose={requestCloseMemberPanel}
+        onClose={closeMemberPanel}
         busy={memberFieldsSaving}
+        dirty={memberFieldsDirty}
         memberName={optionsMember?.name ?? ""}
         index={optionsMember ? lists.members.findIndex((m) => m.id === optionsMember.id) : 0}
         total={lists.members.length}
@@ -355,9 +355,7 @@ export function SectionCanvas({
               await lists.saveMemberFields(optionsMember, lang, { name, role });
               lists.closeMemberOptions();
             }}
-            onDirtyChange={(dirty) => {
-              memberFieldsDirtyRef.current = dirty;
-            }}
+            onDirtyChange={setMemberFieldsDirty}
             onSavingChange={setMemberFieldsSaving}
           />
         )}

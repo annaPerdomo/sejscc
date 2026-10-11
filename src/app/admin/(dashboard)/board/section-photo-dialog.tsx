@@ -10,6 +10,7 @@ import { AdminTextArea } from "@/components/admin/admin-field";
 import { AdminImagePicker } from "@/components/admin/admin-image-picker";
 import type { EditBarStatus } from "@/components/admin/inline-edit/edit-bar";
 import { EditDialog } from "@/components/admin/inline-edit/edit-dialog";
+import { confirmDiscardChanges } from "@/components/admin/inline-edit/use-unsaved-changes-guard";
 import type { UndoState } from "@/components/admin/inline-edit/use-undo";
 import type { VolunteerSectionRow } from "@/db/schema";
 import { boardPhoto } from "@/lib/photos";
@@ -40,6 +41,7 @@ export function useSectionPhotoDialog({
   const [altJaDraft, setAltJaDraft] = useState(section.photoAltJa ?? "");
   const [altError, setAltError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [preparing, setPreparing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const previewUrl = draft.kind === "file" ? draft.previewUrl : null;
@@ -68,7 +70,7 @@ export function useSectionPhotoDialog({
   }
 
   async function save() {
-    if (saving) return;
+    if (saving || preparing) return;
     if (!altDraft.trim()) {
       setAltError("Please fill in the English photo description.");
       return;
@@ -145,11 +147,22 @@ export function useSectionPhotoDialog({
     );
   }
 
+  const dirty =
+    draft.kind !== "unchanged" ||
+    altDraft !== section.photoAlt ||
+    altJaDraft !== (section.photoAltJa ?? "");
+
   const photoValue =
     draft.kind === "file" ? draft.previewUrl : draft.kind === "removed" ? null : section.photoUrl;
 
   const dialog = (
-    <EditDialog title="Change the photo" open={open} busy={saving} onClose={() => setOpen(false)}>
+    <EditDialog
+      title="Change the photo"
+      open={open}
+      busy={saving}
+      dirty={dirty}
+      onClose={() => setOpen(false)}
+    >
       <div className="space-y-5">
         <AdminImagePicker
           label="Photo"
@@ -157,6 +170,7 @@ export function useSectionPhotoDialog({
           value={photoValue}
           fallbackSrc={boardPhoto.src}
           onFileChosen={onFileChosen}
+          onPreparingChange={setPreparing}
           disabled={saving}
         />
         {(draft.kind === "file" || (draft.kind === "unchanged" && section.photoUrl !== null)) && (
@@ -200,7 +214,7 @@ export function useSectionPhotoDialog({
           <button
             type="button"
             onClick={() => void save()}
-            aria-disabled={saving}
+            aria-disabled={saving || preparing}
             className={`min-h-12 ${buttonClass("primary")}`}
           >
             {saving ? "Saving…" : "Save"}
@@ -208,7 +222,7 @@ export function useSectionPhotoDialog({
           <button
             type="button"
             onClick={() => {
-              if (!saving) setOpen(false);
+              if (!saving && confirmDiscardChanges(dirty)) setOpen(false);
             }}
             aria-disabled={saving}
             className={`min-h-12 ${buttonClass("secondary")}`}

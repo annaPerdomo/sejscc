@@ -5,6 +5,7 @@ import { AdminBadge } from "@/components/admin/admin-badge";
 import { buttonClass } from "@/components/admin/admin-button";
 import { AdminCharacterCount } from "@/components/admin/admin-field";
 import {
+  asOneParagraph,
   contactLinkUrlForEditing,
   normalizeContactLinkUrl,
   requiredMessage,
@@ -148,7 +149,7 @@ export function EditableLink({
           className="inline-edit-target"
         >
           <span>{displayValue}</span>
-          <span aria-hidden="true" className="inline-edit-chip pointer-coarse:opacity-100">
+          <span aria-hidden="true" className="inline-edit-chip">
             ✎ Change link
           </span>
         </button>
@@ -157,22 +158,17 @@ export function EditableLink({
             <AdminBadge tone="muted">Not translated yet</AdminBadge>
           </span>
         )}
-        {blocked && (
-          <span role="alert" className="block w-full text-sm font-medium text-magenta-deep">
-            {blocked}
-          </span>
-        )}
       </span>
     );
   }
 
   return (
-    <span ref={containerRef} className="block">
-      <label htmlFor={wordsId} className="block font-display text-sm text-ink">
+    <span ref={containerRef} data-inline-edit-open className="block">
+      <label htmlFor={wordsId} className="block font-display text-base text-ink">
         {label}
       </label>
-      {required === false && fallback !== undefined && !value && (
-        <span className="mt-1 block text-sm text-stone">English: {fallback}</span>
+      {fallback !== undefined && !value && (
+        <span className="mt-1 block text-base text-ink-soft">English: {fallback}</span>
       )}
       <textarea
         id={wordsId}
@@ -182,8 +178,9 @@ export function EditableLink({
         readOnly={saving}
         aria-busy={saving}
         onChange={(event) => {
-          setWords(event.target.value);
-          markDirty(event.target.value, destination);
+          const next = asOneParagraph(event.target.value);
+          setWords(next);
+          markDirty(next, destination);
         }}
         onKeyDown={handleKeyDown}
         rows={1}
@@ -192,15 +189,15 @@ export function EditableLink({
       />
       <AdminCharacterCount as="span" value={words} max={maxLength} />
       {wordsError && (
-        <span id={`${wordsId}-error`} role="alert" className="mt-1 block text-sm font-medium text-magenta-deep">
+        <span id={`${wordsId}-error`} role="alert" className="mt-1 block text-base font-medium text-magenta-deep">
           {wordsError}
         </span>
       )}
 
-      <label htmlFor={urlId} className="mt-4 block font-display text-sm text-ink">
+      <label htmlFor={urlId} className="mt-4 block font-display text-base text-ink">
         Where the link goes
       </label>
-      <span id={`${urlId}-help`} className="mt-1 block text-sm text-stone">
+      <span id={`${urlId}-help`} className="mt-1 block text-base text-ink-soft">
         {DESTINATION_HELP}
       </span>
       <input
@@ -220,14 +217,19 @@ export function EditableLink({
         className="inline-edit-field mt-2 text-base font-normal"
       />
       {urlError && (
-        <span id={`${urlId}-error`} role="alert" className="mt-1 block text-sm font-medium text-magenta-deep">
+        <span id={`${urlId}-error`} role="alert" className="mt-1 block text-base font-medium text-magenta-deep">
           {urlError}
         </span>
       )}
 
       {saveError && (
-        <span role="alert" className="mt-3 block text-sm font-medium text-magenta-deep">
+        <span role="alert" className="mt-3 block text-base font-medium text-magenta-deep">
           {saveError}
+        </span>
+      )}
+      {blocked && (
+        <span role="alert" className="mt-3 block rounded-lg bg-cream px-3 py-2 font-sans text-base font-medium tracking-normal text-ink">
+          {blocked}
         </span>
       )}
       <span className="mt-3 flex flex-wrap gap-3 font-sans text-base tracking-normal">

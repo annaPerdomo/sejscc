@@ -23,6 +23,8 @@ type OverrideValue = { en: string | null; ja: string | null };
 type OverridesRecord = Record<string, OverrideValue>;
 
 const GENERIC_SAVE_ERROR = "Something went wrong saving this. Please try again.";
+const EMPTY_FIELD_MESSAGE =
+  "This spot on the website can't be left empty. Please type something, or press Cancel to keep the words as they are.";
 
 const NO_OVERRIDE: OverrideValue = { en: null, ja: null };
 
@@ -60,6 +62,7 @@ export function PageCanvas({
   const [lang, setLang] = useState<Locale>("en");
   const [status, setStatus] = useState<EditBarStatus>({ kind: "idle" });
   const [reloadKey, setReloadKey] = useState(0);
+  const [previewAnchor, setPreviewAnchor] = useState<string | null>(null);
 
   const editState = useOpenTarget();
   const undo = useUndo();
@@ -86,7 +89,12 @@ export function PageCanvas({
     return { ...overrides, [path]: { ...current, [forLang]: value } };
   }
 
-  function renderField(fieldSpec: SiteTextField) {
+  function refreshPreviewAt(anchor: string | undefined) {
+    setPreviewAnchor(anchor ?? null);
+    setReloadKey((k) => k + 1);
+  }
+
+  function renderField(fieldSpec: SiteTextField, anchor: string | undefined) {
     const current = overrideFor(fieldSpec.path);
     const overrideValue = lang === "en" ? current.en : current.ja;
     const changed = overrideValue !== null;
@@ -99,7 +107,7 @@ export function PageCanvas({
 
     async function save(next: string) {
       const trimmed = next.trim();
-      const toStore = trimmed === dictValue ? "" : trimmed;
+      const toStore = trimmed === dictValue.trim() ? "" : trimmed;
       const previous = current[lang];
       setOverrides(withOverride(fieldSpec.path, lang, toStore || null));
       setStatus({ kind: "saving" });
@@ -126,7 +134,7 @@ export function PageCanvas({
           },
         });
         router.refresh();
-        setReloadKey((k) => k + 1);
+        refreshPreviewAt(anchor);
       } catch (e) {
         setOverrides(withOverride(fieldSpec.path, lang, previous));
         const message = e instanceof Error && e.message ? e.message : GENERIC_SAVE_ERROR;
@@ -159,7 +167,7 @@ export function PageCanvas({
           },
         });
         router.refresh();
-        setReloadKey((k) => k + 1);
+        refreshPreviewAt(anchor);
       } catch (e) {
         setOverrides(withOverride(fieldSpec.path, lang, previous));
         const message = e instanceof Error && e.message ? e.message : GENERIC_SAVE_ERROR;
@@ -181,7 +189,8 @@ export function PageCanvas({
             fallback={fallback}
             multiline={fieldSpec.kind !== "heading"}
             maxLength={fieldSpec.max}
-            required={false}
+            required
+            emptyMessage={EMPTY_FIELD_MESSAGE}
             {...editState.fieldProps(fieldSpec.path)}
             onSave={save}
           />
@@ -206,11 +215,11 @@ export function PageCanvas({
     setTiles((current) => ({ ...current, [next.slot]: next }));
   }
 
-  function onPhotoSaved(next: PhotoTile, undoEntry?: UndoEntry) {
+  function onPhotoSaved(next: PhotoTile, anchor: string | undefined, undoEntry?: UndoEntry) {
     onTileChange(next);
     if (undoEntry) undo.record(undoEntry);
     else undo.clear();
-    setReloadKey((k) => k + 1);
+    refreshPreviewAt(anchor);
   }
 
   async function onUndo() {
@@ -221,6 +230,9 @@ export function PageCanvas({
   }
 
   const viewHref = localizedHref(lang, page.href);
+  const sections = page.sections.filter(
+    (section) => section.fields.length > 0 || section.photos.length > 0
+  );
 
   return (
     <div>
@@ -238,13 +250,11 @@ export function PageCanvas({
 
       <div className="mx-auto max-w-7xl py-8 lg:grid lg:grid-cols-2 lg:items-start lg:gap-8">
         <div className="space-y-6">
-          {page.sections
-            .filter((section) => section.fields.length > 0 || section.photos.length > 0)
-            .map((section) => (
+          {sections.map((section) => (
               <AdminCard key={section.id}>
                 <h2 className="font-display text-lg text-ink">{section.label}</h2>
                 {section.fields.length > 0 && (
-                  <div className="mt-2">{section.fields.map(renderField)}</div>
+                  <div className="mt-2">{section.fields.map((fieldSpec) => renderField(fieldSpec, section.anchor))}</div>
                 )}
                 {section.photos.length > 0 && (
                   <div className="mt-6">
@@ -255,7 +265,7 @@ export function PageCanvas({
                           key={slot.id}
                           slot={slot}
                           tile={tiles[slot.id]}
-                          onSaved={onPhotoSaved}
+                          onSaved={(next, undoEntry) => onPhotoSaved(next, section.anchor, undoEntry)}
                           onTileChange={onTileChange}
                           onStatus={setStatus}
                         />
@@ -269,7 +279,7 @@ export function PageCanvas({
 
         <div className="hidden lg:sticky lg:top-20 lg:block">
           <PagePreview
-            src={viewHref}
+            src={previewAnchor ? `${viewHref}#${previewAnchor}` : viewHref}
             title={`Preview of the ${page.label}`}
             reloadKey={reloadKey}
             onReload={() => setReloadKey((k) => k + 1)}

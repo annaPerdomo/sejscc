@@ -2,6 +2,10 @@
 
 import { useEffect } from "react";
 
+export function confirmDiscardChanges(dirty: boolean): boolean {
+  return !dirty || window.confirm("You have unsaved changes. Leave without saving?");
+}
+
 export function useUnsavedChangesGuard(active: boolean) {
   useEffect(() => {
     if (!active) return;
@@ -17,7 +21,7 @@ export function useUnsavedChangesGuard(active: boolean) {
       if (!(target instanceof Element)) return;
       const anchor = target.closest("a[href]");
       if (!anchor || anchor.getAttribute("target") === "_blank") return;
-      if (!window.confirm("You have unsaved changes. Leave without saving?")) {
+      if (!confirmDiscardChanges(true)) {
         event.preventDefault();
         event.stopPropagation();
       }

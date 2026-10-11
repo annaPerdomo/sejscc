@@ -53,7 +53,7 @@ export function MemberButton({
       </span>
       <span
         aria-hidden="true"
-        className="inline-edit-chip pointer-coarse:opacity-100 absolute -top-3 right-0 ml-0 pointer-coarse:static pointer-coarse:mt-1"
+        className="inline-edit-chip mt-1 ml-0"
       >
         ✎ Change
       </span>
@@ -249,18 +249,13 @@ export function AddMemberRow({
         >
           + Add a name
         </button>
-        {blocked && (
-          <p role="alert" className="mt-1 text-sm font-medium text-magenta-deep">
-            {blocked}
-          </p>
-        )}
       </li>
     );
   }
 
   return (
-    <li className="col-span-2 rounded-xl border border-line bg-white p-4">
-      <label className="block font-display text-sm text-ink" htmlFor="new-board-member-name">
+    <li data-inline-edit-open className="col-span-2 rounded-xl border border-line bg-white p-4">
+      <label className="block font-display text-base text-ink" htmlFor="new-board-member-name">
         New board member&apos;s name
       </label>
       <textarea
@@ -286,6 +281,11 @@ export function AddMemberRow({
       {error && (
         <p role="alert" className="mt-1 text-sm font-medium text-magenta-deep">
           {error}
+        </p>
+      )}
+      {blocked && (
+        <p role="alert" className="mt-3 rounded-lg bg-cream px-3 py-2 text-base font-medium text-ink">
+          {blocked}
         </p>
       )}
       <span className="mt-3 flex flex-wrap gap-3">

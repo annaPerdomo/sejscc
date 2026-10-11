@@ -1,17 +1,21 @@
 "use client";
 
 import { useEffect, useRef, type ReactNode } from "react";
+import { isImeComposing } from "./ime";
+import { confirmDiscardChanges } from "./use-unsaved-changes-guard";
 
 export function EditDialog({
   title,
   open,
   busy = false,
+  dirty = false,
   onClose,
   children,
 }: {
   title: string;
   open: boolean;
   busy?: boolean;
+  dirty?: boolean;
   onClose: () => void;
   children: ReactNode;
 }) {
@@ -28,7 +32,7 @@ export function EditDialog({
   }, [open]);
 
   function requestClose() {
-    if (busy) return;
+    if (busy || !confirmDiscardChanges(dirty)) return;
     onClose();
   }
 
@@ -37,10 +41,24 @@ export function EditDialog({
       ref={ref}
       className="edit-dialog"
       aria-label={title}
-      onClose={onClose}
-      onCancel={(event) => {
+      onKeyDown={(event) => {
+        if (event.key !== "Escape" || isImeComposing(event)) return;
         event.preventDefault();
         requestClose();
+      }}
+      onCancel={(event) => {
+        if (!event.cancelable) return;
+        event.preventDefault();
+        requestClose();
+      }}
+      onClose={() => {
+        if (!open) return;
+        // The browser closed it on its own, e.g. an Android back gesture.
+        if (busy || !confirmDiscardChanges(dirty)) {
+          ref.current?.showModal();
+          return;
+        }
+        onClose();
       }}
     >
       <div className="flex min-h-0 flex-1 flex-col">

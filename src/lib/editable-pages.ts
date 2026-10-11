@@ -9,9 +9,17 @@ const EDITABLE_PAGE_IDS = ["home", "school", "events", "groups", "donate"] as co
 
 export type EditablePageId = (typeof EDITABLE_PAGE_IDS)[number];
 
+export type ManagedElsewhere = {
+  href: string;
+  description: string;
+  action: string;
+};
+
 export type EditableSection = {
   id: string;
   label: string;
+  anchor?: string;
+  manage?: ManagedElsewhere;
   fields: SiteTextField[];
   photos: PhotoSlot[];
 };
@@ -31,35 +39,99 @@ const PAGE_LABELS: Record<EditablePageId, string> = {
   donate: "Donations page",
 };
 
-const SECTION_ORDER: Record<EditablePageId, { id: string; label: string }[]> = {
+const EVENTS_LIST: ManagedElsewhere = {
+  href: "/admin/events",
+  description: "The events shown here come from your list of events.",
+  action: "Add or change events",
+};
+
+const GROUPS_LIST: ManagedElsewhere = {
+  href: "/admin/groups",
+  description: "The groups shown here come from your list of sports and classes.",
+  action: "Add or change groups",
+};
+
+type SectionSpec = { id: string; label: string; anchor?: string; manage?: ManagedElsewhere };
+
+// `anchor` must match an id on the public page; the live preview scrolls to it.
+const SECTION_ORDER: Record<EditablePageId, SectionSpec[]> = {
   home: [
-    { id: "home-top", label: "Top of the page" },
-    { id: "home-japanese-school", label: "Japanese School" },
-    { id: "home-sports-clubs", label: "Sports, Clubs & Classes" },
-    { id: "home-history", label: "Our History" },
-    { id: "home-connect", label: "Our Community" },
+    { id: "home-top", label: "Top of the page", manage: EVENTS_LIST },
+    { id: "home-japanese-school", label: "Japanese School", anchor: "school" },
+    { id: "home-sports-clubs", label: "Sports, Clubs & Classes", anchor: "groups", manage: GROUPS_LIST },
+    { id: "home-history", label: "Our History", anchor: "history" },
+    {
+      id: "home-board",
+      label: "Board of Directors",
+      anchor: "board",
+      manage: {
+        href: "/admin/board",
+        description: "The board section has its own editor, where you can change the names, photo and wording.",
+        action: "Change the board section",
+      },
+    },
+    {
+      id: "home-connect",
+      label: "Our Community",
+      anchor: "contact",
+      manage: {
+        href: "/admin/contact",
+        description: "The address, phone number and email here are the contact details, which show on every page.",
+        action: "Change contact details",
+      },
+    },
   ],
   school: [
     { id: "school-top", label: "Top of the page" },
-    { id: "school-classes", label: "Class descriptions" },
-    { id: "school-tuition", label: "Tuition & dues" },
+    {
+      id: "school-classes",
+      label: "Class descriptions",
+      anchor: "classes",
+      manage: {
+        href: "/admin/levels",
+        description: "Each class is one of your class levels.",
+        action: "Add or change class levels",
+      },
+    },
+    {
+      id: "school-year",
+      label: "The school year",
+      anchor: "year",
+      manage: {
+        href: "/admin/school-year",
+        description: "The seasons and events of the school year come from their own list.",
+        action: "Change the school year",
+      },
+    },
+    { id: "school-tuition", label: "Tuition & dues", anchor: "tuition" },
     { id: "school-then-now", label: "Then & now" },
     { id: "school-history", label: "History of the school" },
-    { id: "school-join", label: "Join us" },
+    { id: "school-join", label: "Join us", anchor: "school-join-top" },
   ],
   events: [
     { id: "events-top", label: "Top of the page" },
-    { id: "events-past", label: "Past events" },
+    { id: "events-upcoming", label: "Upcoming events", anchor: "upcoming", manage: EVENTS_LIST },
+    { id: "events-past", label: "Past events", anchor: "past" },
   ],
   groups: [
     { id: "groups-top", label: "Top of the page" },
-    { id: "groups-start", label: "Start a club" },
+    { id: "groups-directory", label: "Every group at the center", manage: GROUPS_LIST },
+    { id: "groups-start", label: "Start a club", anchor: "start" },
   ],
   donate: [
     { id: "donate-top", label: "Top of the page" },
     { id: "donate-reasons", label: "Why we need your support" },
     { id: "donate-mosaic", label: "A Century of Gathering" },
-    { id: "donate-other", label: "More Ways to Give" },
+    {
+      id: "donate-other",
+      label: "More Ways to Give",
+      anchor: "other-ways",
+      manage: {
+        href: "/admin/donations",
+        description: "The online donation form, who receives Zelle payments, and where to mail a check.",
+        action: "Change donation details",
+      },
+    },
   ],
 };
 
@@ -82,9 +154,11 @@ export const EDITABLE_PAGES: EditablePage[] = EDITABLE_PAGE_IDS.map((pageId) => 
   id: pageId,
   label: PAGE_LABELS[pageId],
   href: hrefFor(pageId),
-  sections: SECTION_ORDER[pageId].map(({ id, label }) => ({
+  sections: SECTION_ORDER[pageId].map(({ id, label, anchor, manage }) => ({
     id,
     label,
+    anchor,
+    manage,
     fields: fieldsFor(pageId, id),
     photos: photosFor(pageId, id),
   })),
@@ -101,12 +175,14 @@ export function assertEditablePagesRegistry(en: unknown): void {
 
   const emptySections = EDITABLE_PAGES.flatMap((page) =>
     page.sections
-      .filter((section) => section.fields.length === 0 && section.photos.length === 0)
+      .filter(
+        (section) => !section.manage && section.fields.length === 0 && section.photos.length === 0
+      )
       .map((section) => `${page.id}:${section.id}`)
   );
   if (emptySections.length > 0) {
     throw new Error(
-      `The page-editors registry declares sections with no fields and no photos: ${emptySections.join(", ")}`
+      `The page-editors registry declares sections with nothing to edit: ${emptySections.join(", ")}`
     );
   }
 

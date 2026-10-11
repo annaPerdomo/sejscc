@@ -2,7 +2,15 @@
 
 import { useState } from "react";
 
-export const BLOCKED_MESSAGE = "Save or cancel your change first.";
+export const BLOCKED_MESSAGE =
+  "You're still changing something else on this page. Save or cancel that first.";
+
+function revealOpenField() {
+  const open = document.querySelector<HTMLElement>("[data-inline-edit-open]");
+  if (!open) return;
+  open.scrollIntoView({ block: "center" });
+  open.querySelector<HTMLElement>("textarea, input")?.focus({ preventScroll: true });
+}
 
 export function useOpenTarget() {
   const [openKey, setOpenKey] = useState<string | null>(null);
@@ -19,7 +27,8 @@ export function useOpenTarget() {
 
   function attemptOpen(key: string) {
     if (openKey !== null && openKey !== key && dirty) {
-      setBlocked({ key, message: BLOCKED_MESSAGE });
+      setBlocked({ key: openKey, message: BLOCKED_MESSAGE });
+      revealOpenField();
       return;
     }
     setBlocked(null);
@@ -52,7 +61,11 @@ export function useOpenTarget() {
     close,
     fieldProps,
     isDirty: dirty,
-    blockLanguageSwitch: () => (openKey !== null && dirty ? BLOCKED_MESSAGE : null),
+    blockLanguageSwitch: () => {
+      if (openKey === null || !dirty) return null;
+      revealOpenField();
+      return BLOCKED_MESSAGE;
+    },
     closeForLanguageSwitch: () => {
       setOpenKey(null);
       setDirty(false);

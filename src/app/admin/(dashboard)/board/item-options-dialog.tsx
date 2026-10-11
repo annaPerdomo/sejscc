@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { buttonClass } from "@/components/admin/admin-button";
 import { ConfirmDeleteButton } from "@/components/admin/confirm-delete-button";
 import { EditDialog } from "@/components/admin/inline-edit/edit-dialog";
+import { confirmDiscardChanges } from "@/components/admin/inline-edit/use-unsaved-changes-guard";
 
 const OPTION_BUTTON_CLASS =
   "flex min-h-14 w-full items-center gap-3 rounded-lg border border-line bg-white px-4 text-left text-base font-semibold text-ink hover:bg-mist aria-disabled:cursor-not-allowed aria-disabled:bg-mist aria-disabled:text-stone";
@@ -39,6 +40,7 @@ export function MemberPanel({
   open,
   onClose,
   busy = false,
+  dirty = false,
   memberName,
   index,
   total,
@@ -54,6 +56,7 @@ export function MemberPanel({
   open: boolean;
   onClose: () => void;
   busy?: boolean;
+  dirty?: boolean;
   memberName: string;
   index: number;
   total: number;
@@ -67,7 +70,7 @@ export function MemberPanel({
   children?: ReactNode;
 }) {
   return (
-    <EditDialog title={memberName} open={open} busy={busy} onClose={onClose}>
+    <EditDialog title={memberName} open={open} busy={busy} dirty={dirty} onClose={onClose}>
       <div className="space-y-6">
         {children}
 
@@ -124,7 +127,7 @@ export function MemberPanel({
         <button
           type="button"
           onClick={() => {
-            if (!busy) onClose();
+            if (!busy && confirmDiscardChanges(dirty)) onClose();
           }}
           aria-disabled={busy}
           className={`min-h-11 ${buttonClass("secondary")}`}
