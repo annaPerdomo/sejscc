@@ -8,6 +8,7 @@ import { expectOk } from "@/lib/action-result";
 import { CENTER_ADDRESS, venueLabel } from "@/lib/center";
 import { normalizeWebsiteUrl } from "@/lib/format";
 import { pdfFirstPageToPng } from "@/lib/pdf-preview";
+import { MAX_UPLOAD_BYTES, PHOTO_UNREADABLE_MESSAGE, asUploadablePhoto } from "@/lib/photo-upload";
 import {
   describeRepeat,
   upcomingOccurrences,
@@ -111,15 +112,30 @@ export function EventForm({
   const [flyerRemoved, setFlyerRemoved] = useState(false);
 
   const [busy, setBusy] = useState<"draft" | "published" | null>(null);
+  const [preparing, setPreparing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const missing = title.trim() ? [] : ["an event title"];
 
-  async function onPickFlyer(file: File | undefined) {
+  async function onPickFlyer(picked: File | undefined) {
     setError(null);
-    if (!file) return;
-    if (file.size > 10 * 1024 * 1024) {
-      setError("That file is larger than 10MB. Try exporting a smaller one.");
+    if (!picked || preparing) return;
+    const isPdf = picked.type === "application/pdf";
+    if (isPdf && picked.size > MAX_UPLOAD_BYTES) {
+      setError("That PDF is larger than 10 MB. Try saving a smaller one, or use a photo of the flyer.");
+      return;
+    }
+    setPreparing(true);
+    try {
+      await prepareFlyer(isPdf ? picked : await asUploadablePhoto(picked));
+    } finally {
+      setPreparing(false);
+    }
+  }
+
+  async function prepareFlyer(file: File | null) {
+    if (!file) {
+      setError(PHOTO_UNREADABLE_MESSAGE);
       return;
     }
     setFlyerFile(file);
@@ -173,6 +189,7 @@ export function EventForm({
   }
 
   async function save(status: "draft" | "published") {
+    if (busy !== null || preparing) return;
     setError(null);
     if (!title.trim()) {
       setError("Please enter an event title.");
@@ -370,13 +387,23 @@ export function EventForm({
             <div className="flex flex-col items-start gap-2">
               <button
                 type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="flex min-h-40 w-40 flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-line p-4 text-center text-sm text-stone hover:border-indigo hover:text-indigo"
+                onClick={() => {
+                  if (!preparing) fileInputRef.current?.click();
+                }}
+                aria-disabled={preparing}
+                className="flex min-h-40 w-40 flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-line p-4 text-center text-sm text-stone hover:border-indigo hover:text-indigo aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
               >
                 <span className="text-2xl">↑</span>
-                {previewUrl ? "Replace flyer" : "Upload flyer"}
-                <span className="text-xs">PDF, JPG, or PNG · up to 10MB</span>
+                {preparing
+                  ? "Getting your flyer ready…"
+                  : previewUrl
+                    ? "Replace flyer"
+                    : "Upload flyer"}
+                <span className="text-xs">A PDF up to 10 MB, or a JPG or PNG photo of any size</span>
               </button>
+              <p role="status" className="sr-only">
+                {preparing ? "Getting your flyer ready…" : ""}
+              </p>
               {previewUrl && (
                 <button
                   type="button"
@@ -505,12 +532,15 @@ export function EventForm({
           <AdminButton onClick={() => router.push("/admin/events")}>
             Cancel
           </AdminButton>
-          <AdminButton disabled={busy !== null} onClick={() => save("draft")}>
+          <AdminButton
+            aria-disabled={busy !== null || preparing}
+            onClick={() => save("draft")}
+          >
             {busy === "draft" ? "Saving…" : "Save Draft"}
           </AdminButton>
           <AdminButton
             variant="primary"
-            disabled={busy !== null}
+            aria-disabled={busy !== null || preparing}
             onClick={() => save("published")}
           >
             {busy === "published" ? "Publishing…" : "Publish Event"}

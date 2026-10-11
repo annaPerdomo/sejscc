@@ -22,6 +22,7 @@ import { weekDays, type GroupStatus, type WeekDay } from "@/db/schema";
 import { expectOk } from "@/lib/action-result";
 import { normalizeContactEmail, normalizeWebsiteUrl } from "@/lib/format";
 import { MAX_GROUP_PHOTOS } from "@/lib/groups";
+import { PHOTO_UNREADABLE_MESSAGE, asUploadablePhoto } from "@/lib/photo-upload";
 import { createGroup, updateGroup, type GroupInput } from "./actions";
 import { GROUP_STATUS_OPTIONS } from "./status";
 
@@ -45,6 +46,11 @@ type PendingPhoto = { key: string; preview: string } & (
   | { url: string; file?: undefined }
   | { url?: undefined; file: File }
 );
+
+const PREPARING_LABEL = "Getting your photo ready…";
+
+const PICK_BUTTON_CLASS =
+  "flex h-28 w-28 flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-line p-3 text-center text-sm text-stone hover:border-indigo hover:text-indigo aria-disabled:cursor-not-allowed aria-disabled:opacity-50";
 
 const DAY_LABELS: Record<WeekDay, string> = {
   mon: "Monday",
@@ -86,6 +92,7 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
   );
 
   const [busy, setBusy] = useState(false);
+  const [preparing, setPreparing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const missing = name.trim() ? [] : ["a group name"];
@@ -98,11 +105,14 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
     );
   }
 
-  function onPickImage(file: File | undefined) {
+  async function onPickImage(picked: File | undefined) {
     setError(null);
-    if (!file) return;
-    if (file.size > 10 * 1024 * 1024) {
-      setError("That image is larger than 10MB. Try exporting a smaller one.");
+    if (!picked || preparing) return;
+    setPreparing(true);
+    const file = await asUploadablePhoto(picked);
+    setPreparing(false);
+    if (!file) {
+      setError(PHOTO_UNREADABLE_MESSAGE);
       return;
     }
     setImageFile(file);
@@ -117,16 +127,13 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
-  function onPickPhotos(files: FileList | null) {
+  async function onPickPhotos(files: FileList | null) {
     setError(null);
-    if (!files) return;
-    const picked = Array.from(files);
-    if (picked.some((file) => file.size > 10 * 1024 * 1024)) {
-      setError("One of those photos is larger than 10MB. Try exporting a smaller one.");
-      return;
-    }
+    if (!files || preparing) return;
+    const chosen = Array.from(files);
+    if (photoInputRef.current) photoInputRef.current.value = "";
     const room = MAX_GROUP_PHOTOS - photos.length;
-    if (picked.length > room) {
+    if (chosen.length > room) {
       setError(
         room === 0
           ? `This group already has ${MAX_GROUP_PHOTOS} photos. Remove one to add another.`
@@ -134,15 +141,31 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
       );
       return;
     }
+
+    // One at a time: decoding several full-size phone photos at once can
+    // crash iOS Safari.
+    setPreparing(true);
+    const picked: File[] = [];
+    for (const file of chosen) {
+      const uploadable = await asUploadablePhoto(file);
+      if (!uploadable) break;
+      picked.push(uploadable);
+    }
+    setPreparing(false);
+    if (picked.length < chosen.length) {
+      setError(PHOTO_UNREADABLE_MESSAGE);
+      return;
+    }
+
+    const added = picked.map((file) => ({
+      key: crypto.randomUUID(),
+      preview: URL.createObjectURL(file),
+      file,
+    }));
     setPhotos((current) => [
       ...current,
-      ...picked.map((file) => ({
-        key: crypto.randomUUID(),
-        preview: URL.createObjectURL(file),
-        file,
-      })),
+      ...added.slice(0, MAX_GROUP_PHOTOS - current.length),
     ]);
-    if (photoInputRef.current) photoInputRef.current.value = "";
   }
 
   function removePhoto(removed: PendingPhoto) {
@@ -177,7 +200,7 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (busy) return;
+    if (busy || preparing) return;
     setError(null);
     if (!name.trim()) {
       setError("Please enter a group name.");
@@ -272,11 +295,14 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
           <div className="flex flex-col items-start gap-2">
             <button
               type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="flex h-28 w-28 flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-line p-3 text-center text-sm text-stone hover:border-indigo hover:text-indigo"
+              onClick={() => {
+                if (!preparing) fileInputRef.current?.click();
+              }}
+              aria-disabled={preparing}
+              className={PICK_BUTTON_CLASS}
             >
               <span className="text-2xl">↑</span>
-              {previewUrl ? "Replace" : "Upload"}
+              {preparing ? PREPARING_LABEL : previewUrl ? "Replace" : "Upload"}
               <span className="text-xs">JPG, PNG, or WebP</span>
             </button>
             {previewUrl && (
@@ -349,11 +375,14 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
           {photos.length < MAX_GROUP_PHOTOS && (
             <button
               type="button"
-              onClick={() => photoInputRef.current?.click()}
-              className="flex h-28 w-28 flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-line p-3 text-center text-sm text-stone hover:border-indigo hover:text-indigo"
+              onClick={() => {
+                if (!preparing) photoInputRef.current?.click();
+              }}
+              aria-disabled={preparing}
+              className={PICK_BUTTON_CLASS}
             >
               <span className="text-2xl">↑</span>
-              Add photos
+              {preparing ? PREPARING_LABEL : "Add photos"}
               <span className="text-xs">JPG, PNG, or WebP</span>
             </button>
           )}
@@ -492,6 +521,9 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
       </AdminCard>
 
       <div className="space-y-4">
+        <p role="status" className="sr-only">
+          {preparing ? PREPARING_LABEL : ""}
+        </p>
         {error && <AdminAlert>{error}</AdminAlert>}
         {missing.length > 0 && (
           <AdminRequirements missing={missing} action="save this group" />
@@ -500,7 +532,11 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
           <AdminButton onClick={() => router.push("/admin/groups")}>
             Cancel
           </AdminButton>
-          <AdminButton type="submit" variant="primary" disabled={busy}>
+          <AdminButton
+            type="submit"
+            variant="primary"
+            aria-disabled={busy || preparing}
+          >
             {busy ? "Saving…" : "Save Group"}
           </AdminButton>
         </AdminFormActions>

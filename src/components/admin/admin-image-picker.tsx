@@ -2,13 +2,7 @@
 
 import { useState, type DragEvent } from "react";
 import { buttonVariantClass } from "@/components/admin/admin-button";
-
-const MAX_FILE_BYTES = 10 * 1024 * 1024;
-const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
-
-function megabytes(bytes: number) {
-  return (bytes / (1024 * 1024)).toFixed(1);
-}
+import { PHOTO_TYPES, PHOTO_UNREADABLE_MESSAGE, asUploadablePhoto } from "@/lib/photo-upload";
 
 // This component never creates or revokes `value`'s object URL — the caller
 // owns that lifetime since it reuses the same URL for the live preview too.
@@ -19,6 +13,7 @@ export function AdminImagePicker({
   fallbackSrc,
   onFileChosen,
   onRemove,
+  onPreparingChange,
   previewShape = "rect",
   layout = "dropzone",
   disabled = false,
@@ -29,34 +24,41 @@ export function AdminImagePicker({
   fallbackSrc?: string;
   onFileChosen: (file: File | null) => void;
   onRemove?: () => void;
+  onPreparingChange?: (preparing: boolean) => void;
   previewShape?: "rect" | "circle";
   layout?: "dropzone" | "compact";
   disabled?: boolean;
 }) {
   const [error, setError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
+  const [preparing, setPreparing] = useState(false);
 
-  function chooseFile(file: File | undefined | null) {
+  async function chooseFile(file: File | undefined | null) {
     setError(null);
     if (!file) return;
-    if (!ACCEPTED_TYPES.includes(file.type)) {
-      setError("Please choose a JPG, PNG, or WebP photo.");
+    if (!file.type.startsWith("image/") && file.type !== "") {
+      setError("That file isn't a photo. Please choose a JPG, PNG, or WebP photo.");
       return;
     }
-    if (file.size > MAX_FILE_BYTES) {
-      setError(
-        `That file is ${megabytes(file.size)} MB. Please choose a photo under 10 MB.`
-      );
+    setPreparing(true);
+    onPreparingChange?.(true);
+    const uploadable = await asUploadablePhoto(file);
+    setPreparing(false);
+    onPreparingChange?.(false);
+    if (!uploadable) {
+      setError(PHOTO_UNREADABLE_MESSAGE);
       return;
     }
-    onFileChosen(file);
+    onFileChosen(uploadable);
   }
+
+  const pickerDisabled = disabled || preparing;
 
   function onDrop(event: DragEvent<HTMLDivElement>) {
     event.preventDefault();
     setDragging(false);
-    if (disabled) return;
-    chooseFile(event.dataTransfer.files?.[0]);
+    if (pickerDisabled) return;
+    void chooseFile(event.dataTransfer.files?.[0]);
   }
 
   const preview = value ?? fallbackSrc ?? null;
@@ -67,16 +69,20 @@ export function AdminImagePicker({
     <label
       className={`flex min-h-11 cursor-pointer items-center justify-center rounded-lg px-5 py-3 whitespace-nowrap focus-within:ring-2 focus-within:ring-indigo focus-within:ring-offset-2 ${buttonVariantClass(
         compact ? "secondary" : "primary"
-      )} ${disabled ? "pointer-events-none opacity-50" : ""}`}
+      )} ${pickerDisabled ? "pointer-events-none opacity-50" : ""}`}
     >
-      {preview && value ? "Choose a different photo" : "Choose a photo"}
+      {preparing
+        ? "Getting your photo ready…"
+        : preview && value
+          ? "Choose a different photo"
+          : "Choose a photo"}
       <input
         type="file"
-        accept={ACCEPTED_TYPES.join(",")}
+        accept={PHOTO_TYPES.join(",")}
         className="sr-only"
-        disabled={disabled}
+        disabled={pickerDisabled}
         onChange={(event) => {
-          chooseFile(event.target.files?.[0]);
+          void chooseFile(event.target.files?.[0]);
           event.target.value = "";
         }}
       />
@@ -124,7 +130,7 @@ export function AdminImagePicker({
         <div
           onDragOver={(event) => {
             event.preventDefault();
-            if (!disabled) setDragging(true);
+            if (!pickerDisabled) setDragging(true);
           }}
           onDragLeave={() => setDragging(false)}
           onDrop={onDrop}

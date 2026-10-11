@@ -46,6 +46,7 @@ export function LevelForm({ level }: { level?: SchoolLevel }) {
   const [photoRemoved, setPhotoRemoved] = useState(false);
 
   const [busy, setBusy] = useState(false);
+  const [preparing, setPreparing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const hasPhoto = previewUrl !== null;
@@ -83,7 +84,7 @@ export function LevelForm({ level }: { level?: SchoolLevel }) {
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (busy) return;
+    if (busy || preparing) return;
     setError(null);
     if (missing.length > 0) {
       setError("Please fill in every required field before saving.");
@@ -254,6 +255,7 @@ export function LevelForm({ level }: { level?: SchoolLevel }) {
             label="Photo"
             value={photoRemoved ? null : previewUrl}
             onFileChosen={onPickPhoto}
+            onPreparingChange={setPreparing}
             onRemove={previewUrl ? removePhoto : undefined}
             layout="dropzone"
           />
@@ -316,7 +318,7 @@ export function LevelForm({ level }: { level?: SchoolLevel }) {
           <AdminButton onClick={() => router.push("/admin/levels")}>
             Cancel
           </AdminButton>
-          <AdminButton type="submit" variant="primary" disabled={busy}>
+          <AdminButton type="submit" variant="primary" disabled={busy} aria-disabled={preparing}>
             {busy ? "Saving…" : "Save"}
           </AdminButton>
         </AdminFormActions>

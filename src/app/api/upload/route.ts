@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { requireUser } from "@/lib/admin";
+import { MAX_UPLOAD_BYTES, PHOTO_TYPES } from "@/lib/photo-upload";
 
 // Flyers go browser → Blob directly to stay under the serverless body limit.
 export async function POST(request: Request) {
@@ -13,13 +14,8 @@ export async function POST(request: Request) {
       onBeforeGenerateToken: async () => {
         await requireUser();
         return {
-          allowedContentTypes: [
-            "image/jpeg",
-            "image/png",
-            "image/webp",
-            "application/pdf",
-          ],
-          maximumSizeInBytes: 10 * 1024 * 1024,
+          allowedContentTypes: [...PHOTO_TYPES, "application/pdf"],
+          maximumSizeInBytes: MAX_UPLOAD_BYTES,
           addRandomSuffix: true,
         };
       },
