@@ -3,8 +3,10 @@ import { initialsFrom, ROLE_LABELS } from "@/lib/format";
 
 export function AdminUserIdentity({
   user,
+  caption = ROLE_LABELS[user.role],
 }: {
   user: { name: string | null; email: string | null; role: UserRole };
+  caption?: string;
 }) {
   const displayName = user.name?.trim() || user.email || "Volunteer";
 
@@ -18,7 +20,7 @@ export function AdminUserIdentity({
           {displayName}
         </span>
         <span className="block truncate text-xs text-sky">
-          {ROLE_LABELS[user.role]}
+          {caption}
         </span>
       </span>
     </div>

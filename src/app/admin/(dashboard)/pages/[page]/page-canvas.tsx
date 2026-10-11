@@ -252,8 +252,7 @@ export function PageCanvas({
       <div className="mx-auto max-w-7xl py-8 lg:grid lg:grid-cols-2 lg:items-start lg:gap-8">
         <div className="space-y-6">
           {sections.map((section) => (
-            <div key={section.id} id={section.id} className="scroll-mt-24">
-              <AdminCard>
+              <AdminCard key={section.id}>
                 <h2 className="font-display text-lg text-ink">{section.label}</h2>
                 {section.manage && (
                   <div className="mt-3 flex flex-col gap-3 rounded-lg bg-mist p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -284,7 +283,6 @@ export function PageCanvas({
                   </div>
                 )}
               </AdminCard>
-            </div>
             ))}
         </div>
 

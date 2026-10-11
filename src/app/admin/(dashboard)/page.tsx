@@ -4,15 +4,14 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { db } from "@/db";
 import { boardMembers, volunteerSection } from "@/db/schema";
-import { EDITABLE_PAGES, type EditablePage, type EditablePageId } from "@/lib/editable-pages";
+import { EDITABLE_PAGES, type EditablePage } from "@/lib/editable-pages";
 import { getActiveGroups, getUpcomingEvents } from "@/lib/events";
-import { isUploadedFileUrl } from "@/lib/format";
+import { excerpt, formatEventDate, isUploadedFileUrl } from "@/lib/format";
 import { boardPhoto } from "@/lib/photos";
 import { getAllSchoolLevels } from "@/lib/school-levels";
 import { getAllSchoolYearEvents } from "@/lib/school-year-events";
 import { getAnnouncement, getCenterContact } from "@/lib/site-settings";
 import { getSitePhotos } from "@/lib/site-photos";
-import { getSiteTextOverrides } from "@/lib/site-text";
 import { AdminButtonLink } from "@/components/admin/admin-button";
 import { AdminCard } from "@/components/admin/admin-card";
 import { byAdminPageOrder, PAGE_TONES } from "@/components/admin/admin-page-tone";
@@ -20,124 +19,91 @@ import { AdminPageWidth } from "@/components/admin/admin-page-width";
 
 export const dynamic = "force-dynamic";
 
-type PageLink = { href: string; label: string };
-type SectionPreview = { id: string; label: string; href: string; photo: ImageProps["src"] | null };
+type PhotoSrc = ImageProps["src"];
+
+const PREVIEW_COUNT = 3;
 
 function firstUploaded(urls: (string | null)[]): string | null {
   return urls.find((url): url is string => url !== null && isUploadedFileUrl(url)) ?? null;
+}
+
+function sectionsSummary(page: EditablePage): string {
+  const labels = page.sections
+    .filter((section) => section.fields.length > 0 || section.photos.length > 0)
+    .map((section) => section.label);
+  const shown = labels.slice(0, 3).join(", ");
+  return labels.length > 3 ? `${shown} and more` : shown;
 }
 
 function plural(count: number, one: string, many: string): string {
   return `${count} ${count === 1 ? one : many}`;
 }
 
-function changesSummary(textCount: number, photoCount: number): string {
-  if (textCount === 0 && photoCount === 0) {
-    return "Every word and photo is still the original.";
-  }
-
-  const parts: string[] = [];
-  if (textCount > 0) parts.push(plural(textCount, "sentence", "sentences"));
-  if (photoCount > 0) parts.push(plural(photoCount, "photo", "photos"));
-
-  const total = textCount + photoCount;
-  const changed = parts.join(" and ");
-  const verb = total === 1 ? "has" : "have";
-  const noun = total === 1 ? "the original" : "the originals";
-  return `${changed} ${verb} been changed from ${noun}.`;
-}
-
-function SectionStrip({ sections, kanji }: { sections: SectionPreview[]; kanji: string }) {
+function DashboardRow({
+  href,
+  photo,
+  title,
+  detail,
+}: {
+  href: string;
+  photo: PhotoSrc | null;
+  title: string;
+  detail?: string;
+}) {
   return (
-    <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-      {sections.map((section) => (
-        <li key={section.id}>
-          <Link href={section.href} className="group block rounded-lg">
-            <div className="relative aspect-photo overflow-clip rounded-lg border border-ink/10 bg-white group-hover:border-indigo">
-              {section.photo ? (
-                <Image
-                  src={section.photo}
-                  alt=""
-                  fill
-                  sizes="(min-width: 768px) 10rem, (min-width: 640px) 30vw, 45vw"
-                  className="object-cover"
-                />
-              ) : (
-                <span
-                  aria-hidden="true"
-                  className="flex h-full items-center justify-center font-accent text-2xl font-bold text-ink-soft"
-                >
-                  {kanji}
-                </span>
-              )}
-            </div>
-            <span className="mt-1 block text-sm leading-snug text-ink group-hover:underline">
-              {section.label}
-            </span>
-          </Link>
-        </li>
-      ))}
-    </ul>
+    <li>
+      <Link
+        href={href}
+        className="group flex items-center gap-4 rounded-lg border border-ink/10 bg-white p-3 hover:border-indigo"
+      >
+        {photo && (
+          <span className="relative aspect-photo w-16 shrink-0 overflow-clip rounded-md bg-mist sm:w-24">
+            <Image src={photo} alt="" fill sizes="(min-width: 640px) 6rem, 4rem" className="object-cover" />
+          </span>
+        )}
+        <span className="min-w-0 flex-1">
+          <span className="block font-semibold text-ink group-hover:underline">{title}</span>
+          {detail && <span className="mt-0.5 block text-sm text-ink-soft">{detail}</span>}
+        </span>
+        <span aria-hidden="true" className="shrink-0 text-2xl text-indigo">
+          ›
+        </span>
+      </Link>
+    </li>
   );
 }
 
-function PageCard({
-  page,
-  sections,
-  status,
-  primary,
-  others,
-}: {
-  page: EditablePage;
-  sections: SectionPreview[];
-  status: string[];
-  primary: PageLink;
-  others: PageLink[];
-}) {
-  const tone = PAGE_TONES[page.id];
+function RowList({ heading, children }: { heading?: string; children: ReactNode }) {
+  return (
+    <div>
+      {heading && (
+        <h4 className="mb-2 font-display text-base font-semibold text-ink-soft">{heading}</h4>
+      )}
+      <ul className="flex flex-col gap-2">{children}</ul>
+    </div>
+  );
+}
+
+function PageCard({ page, children }: { page: EditablePage; children: ReactNode }) {
   const headingId = `page-card-${page.id}`;
 
   return (
     <section
       aria-labelledby={headingId}
-      className={`flex flex-col rounded-xl border border-ink/10 p-6 ${tone.surface}`}
+      className={`flex flex-col gap-5 rounded-xl border border-ink/10 p-6 ${PAGE_TONES[page.id].surface}`}
     >
-      <div className="flex items-center gap-4">
-        <span
-          aria-hidden="true"
-          className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-white font-accent text-2xl font-bold text-ink"
-        >
-          {tone.kanji}
-        </span>
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h3 id={headingId} className="font-display text-2xl text-ink">
           {page.label}
         </h3>
-      </div>
-
-      <ul className="mt-4 space-y-1 text-base text-ink">
-        {status.map((line) => (
-          <li key={line}>{line}</li>
-        ))}
-      </ul>
-      <h4 className="mt-5 mb-2 font-display text-base font-semibold text-ink-soft">
-        On this page, from top to bottom
-      </h4>
-      <SectionStrip sections={sections} kanji={tone.kanji} />
-
-      <div className="mt-6 flex flex-1 flex-col justify-end gap-3">
-        <AdminButtonLink href={primary.href}>{primary.label}</AdminButtonLink>
-        {others.map((link) => (
-          <AdminButtonLink key={link.href} href={link.href} variant="secondary">
-            {link.label}
-          </AdminButtonLink>
-        ))}
         <Link
           href={page.href}
-          className="inline-flex min-h-11 items-center self-start font-semibold text-ink underline underline-offset-4 hover:text-indigo-deep"
+          className="inline-flex min-h-11 items-center text-sm font-semibold text-ink underline underline-offset-4 hover:text-indigo-deep"
         >
-          See this page on the website
+          See it on the website
         </Link>
       </div>
+      {children}
     </section>
   );
 }
@@ -203,7 +169,6 @@ export default async function AdminDashboard() {
     allSchoolLevels,
     allSchoolYearEvents,
     announcement,
-    siteTextOverrides,
     sitePhotos,
     contact,
   ] = await Promise.all([
@@ -214,121 +179,135 @@ export default async function AdminDashboard() {
     getAllSchoolLevels(),
     getAllSchoolYearEvents(),
     getAnnouncement(),
-    getSiteTextOverrides(),
     getSitePhotos(),
     getCenterContact(),
   ]);
 
-  const boardMemberCounts = {
-    showing: allBoardMembers.filter((member) => member.visible).length,
-    hidden: allBoardMembers.filter((member) => !member.visible).length,
-  };
+  const hiddenNote = (hidden: number) => (hidden > 0 ? ` (${hidden} hidden)` : "");
 
-  const schoolLevelCounts = {
-    showing: allSchoolLevels.filter((level) => level.visible).length,
-    hidden: allSchoolLevels.filter((level) => !level.visible).length,
-  };
+  const boardShowing = allBoardMembers.filter((member) => member.visible).length;
+  const boardHidden = allBoardMembers.length - boardShowing;
 
-  const schoolYearEventCounts = {
-    showing: allSchoolYearEvents.filter((event) => event.visible && event.photoUrl).length,
-    hidden: allSchoolYearEvents.filter((event) => !event.visible && event.photoUrl).length,
-    pending: allSchoolYearEvents.filter((event) => !event.photoUrl).length,
-  };
+  const visibleLevels = allSchoolLevels.filter((level) => level.visible);
+  const levelsHidden = allSchoolLevels.length - visibleLevels.length;
 
-  function changesOn(page: EditablePage): string {
-    const paths = page.sections.flatMap((section) => section.fields.map((field) => field.path));
-    const slots = page.sections.flatMap((section) => section.photos.map((photo) => photo.id));
-    return changesSummary(
-      paths.filter((path) => siteTextOverrides.has(path)).length,
-      slots.filter((slot) => sitePhotos.has(slot)).length
+  const yearShowing = allSchoolYearEvents.filter((event) => event.visible && event.photoUrl);
+  const yearNeedPhoto = allSchoolYearEvents.filter((event) => !event.photoUrl).length;
+
+  function pagePhoto(page: EditablePage): PhotoSrc | null {
+    const slot = page.sections.flatMap((section) => section.photos)[0];
+    return slot ? (sitePhotos.get(slot.id)?.url ?? slot.defaultSrc) : null;
+  }
+
+  function wordsAndPhotosRow(page: EditablePage) {
+    return (
+      <DashboardRow
+        href={`/admin/pages/${page.id}`}
+        photo={pagePhoto(page)}
+        title="Words & photos"
+        detail={sectionsSummary(page)}
+      />
     );
   }
 
-  const groupPhoto = firstUploaded(
-    activeGroups.flatMap((group) => [...group.photoUrls, group.imageIsLogo ? null : group.imageUrl])
-  );
-  const photosFromLists: Record<string, ImageProps["src"] | null> = {
-    "home-board": firstUploaded(boardSections.map((section) => section.photoUrl)) ?? boardPhoto,
-    "home-sports-clubs": groupPhoto,
-    "groups-directory": groupPhoto,
-    "events-upcoming": firstUploaded(upcomingEvents.map((event) => event.flyerUrl)),
-    "school-classes": firstUploaded(
-      allSchoolLevels.filter((level) => level.visible).map((level) => level.photoUrl)
-    ),
-    "school-year": firstUploaded(
-      allSchoolYearEvents.filter((event) => event.visible).map((event) => event.photoUrl)
-    ),
-  };
-
-  function sectionPreviews(page: EditablePage): SectionPreview[] {
-    return page.sections.map((section) => {
-      const slot = section.photos[0];
-      return {
-        id: section.id,
-        label: section.label,
-        href: `/admin/pages/${page.id}#${section.id}`,
-        photo: slot
-          ? (sitePhotos.get(slot.id)?.url ?? slot.defaultSrc)
-          : (photosFromLists[section.id] ?? null),
-      };
-    });
+  function groupPhoto(group: (typeof activeGroups)[number]): string | null {
+    return firstUploaded([...group.photoUrls, group.imageIsLogo ? null : group.imageUrl]);
   }
 
-  const orderedPages = [...EDITABLE_PAGES].sort(byAdminPageOrder);
-  const hiddenNote = (hidden: number) => (hidden > 0 ? ` (${hidden} hidden)` : "");
-  const wordsAndPhotos = (id: EditablePageId) => ({
-    href: `/admin/pages/${id}`,
-    label: "Change the words & photos",
-  });
-
-  const pageCards: Record<
-    EditablePageId,
-    { status: string[]; primary: PageLink; others: PageLink[] }
-  > = {
-    home: {
-      status: [
-        `${plural(boardMemberCounts.showing, "board member is", "board members are")} showing${hiddenNote(boardMemberCounts.hidden)}.`
-      ],
-      primary: wordsAndPhotos("home"),
-      others: [{ href: "/admin/board", label: "Board of Directors" }],
-    },
-    school: {
-      status: [
-        `${plural(schoolLevelCounts.showing, "class level is", "class levels are")} showing${hiddenNote(schoolLevelCounts.hidden)}.`,
-        `${plural(schoolYearEventCounts.showing, "school-year event is", "school-year events are")} showing${hiddenNote(schoolYearEventCounts.hidden)}${schoolYearEventCounts.pending > 0 ? ` (${schoolYearEventCounts.pending} still need a photo)` : ""}.`
-      ],
-      primary: wordsAndPhotos("school"),
-      others: [
-        { href: "/admin/levels", label: "Class levels" },
-        { href: "/admin/school-year", label: "The school year" },
-      ],
-    },
-    events: {
-      status: [
-        `${plural(upcomingEvents.length, "event is", "events are")} coming up.`
-      ],
-      primary: { href: "/admin/events/new", label: "+ Add a new event" },
-      others: [
-        { href: "/admin/events", label: "Change or remove an event" },
-        wordsAndPhotos("events"),
-      ],
-    },
-    groups: {
-      status: [
-        `${plural(activeGroups.length, "group is", "groups are")} listed.`
-      ],
-      primary: { href: "/admin/groups/new", label: "+ Add a new group" },
-      others: [
-        { href: "/admin/groups", label: "Change or remove a group" },
-        wordsAndPhotos("groups"),
-      ],
-    },
-    donate: {
-      status: [],
-      primary: wordsAndPhotos("donate"),
-      others: [{ href: "/admin/donations", label: "Donation details" }],
-    },
-  };
+  function pageContent(page: EditablePage): ReactNode {
+    switch (page.id) {
+      case "events":
+        return (
+          <>
+            <AdminButtonLink href="/admin/events/new">+ Add a new event</AdminButtonLink>
+            {upcomingEvents.length > 0 ? (
+              <RowList heading="Coming up next">
+                {upcomingEvents.slice(0, PREVIEW_COUNT).map((event) => (
+                  <DashboardRow
+                    key={event.id}
+                    href={`/admin/events/${event.id}`}
+                    photo={firstUploaded([event.flyerUrl])}
+                    title={event.title}
+                    detail={formatEventDate(event.startAt) ?? undefined}
+                  />
+                ))}
+              </RowList>
+            ) : (
+              <p className="text-base text-ink">No events are coming up.</p>
+            )}
+            <AdminButtonLink href="/admin/events" variant="secondary">
+              See all events
+            </AdminButtonLink>
+            <RowList heading="Also on this page">{wordsAndPhotosRow(page)}</RowList>
+          </>
+        );
+      case "groups":
+        return (
+          <>
+            <AdminButtonLink href="/admin/groups/new">+ Add a new group</AdminButtonLink>
+            {activeGroups.length > 0 && (
+              <RowList heading="Some of the groups">
+                {activeGroups.slice(0, PREVIEW_COUNT).map((group) => (
+                  <DashboardRow
+                    key={group.id}
+                    href={`/admin/groups/${group.id}`}
+                    photo={groupPhoto(group)}
+                    title={group.name}
+                    detail={group.description ? excerpt(group.description, 60) : undefined}
+                  />
+                ))}
+              </RowList>
+            )}
+            <AdminButtonLink href="/admin/groups" variant="secondary">
+              See all groups
+            </AdminButtonLink>
+            <RowList heading="Also on this page">{wordsAndPhotosRow(page)}</RowList>
+          </>
+        );
+      case "home":
+        return (
+          <RowList>
+            <DashboardRow
+              href="/admin/board"
+              photo={firstUploaded(boardSections.map((section) => section.photoUrl)) ?? boardPhoto}
+              title="Board of Directors"
+              detail={`${plural(boardShowing, "member", "members")} showing${hiddenNote(boardHidden)}`}
+            />
+            {wordsAndPhotosRow(page)}
+          </RowList>
+        );
+      case "donate":
+        return (
+          <RowList>
+            <DashboardRow
+              href="/admin/donations"
+              photo={null}
+              title="Ways to donate"
+              detail="The online form, Zelle and the mailing address for checks"
+            />
+            {wordsAndPhotosRow(page)}
+          </RowList>
+        );
+      case "school":
+        return (
+          <RowList>
+            <DashboardRow
+              href="/admin/levels"
+              photo={firstUploaded(visibleLevels.map((level) => level.photoUrl))}
+              title="Classes"
+              detail={`${plural(visibleLevels.length, "class", "classes")} showing${hiddenNote(levelsHidden)}`}
+            />
+            <DashboardRow
+              href="/admin/school-year"
+              photo={firstUploaded(yearShowing.map((event) => event.photoUrl))}
+              title="The school year"
+              detail={`${plural(yearShowing.length, "event", "events")} showing${yearNeedPhoto > 0 ? `, ${yearNeedPhoto} still need a photo` : ""}`}
+            />
+            {wordsAndPhotosRow(page)}
+          </RowList>
+        );
+    }
+  }
 
   const firstName = session?.user?.name?.trim().split(/\s+/)[0] ?? null;
   const today = new Date();
@@ -336,19 +315,15 @@ export default async function AdminDashboard() {
   return (
     <AdminPageWidth>
       <div className="flex flex-wrap items-end justify-between gap-6">
-        <div>
-          <h1 className="font-display text-3xl text-ink sm:text-4xl">
-            {firstName ? (
-              <>
-                Welcome back,{" "}
-                <span className="text-indigo">{firstName.toUpperCase()}</span>
-              </>
-            ) : (
-              "Welcome back"
-            )}
-          </h1>
-          <p className="mt-2 text-stone">What would you like to do today?</p>
-        </div>
+        <h1 className="font-display text-3xl text-ink sm:text-4xl">
+          {firstName ? (
+            <>
+              Welcome back, <span className="text-indigo">{firstName.toUpperCase()}</span>
+            </>
+          ) : (
+            "Welcome back"
+          )}
+        </h1>
         <div className="text-right">
           <p className="font-display text-xs font-semibold tracking-[0.14em] text-stone uppercase">
             {today.toLocaleDateString("en-US", {
@@ -383,19 +358,11 @@ export default async function AdminDashboard() {
         <h2 id="dashboard-pages" className="font-display text-2xl text-ink">
           Pages of the website
         </h2>
-        <p className="mt-1 text-lg text-ink-soft">
-          Find the page you want to change. Each page has its own color, and
-          the menu uses the same colors.
-        </p>
-        <div className="mt-6 grid gap-6 md:grid-cols-2">
-          {orderedPages.map((page) => (
-            <PageCard
-              key={page.id}
-              page={page}
-              sections={sectionPreviews(page)}
-              {...pageCards[page.id]}
-              status={[...pageCards[page.id].status, changesOn(page)]}
-            />
+        <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+          {[...EDITABLE_PAGES].sort(byAdminPageOrder).map((page) => (
+            <PageCard key={page.id} page={page}>
+              {pageContent(page)}
+            </PageCard>
           ))}
         </div>
       </section>
@@ -404,9 +371,6 @@ export default async function AdminDashboard() {
         <h2 id="dashboard-shared" className="font-display text-2xl text-ink">
           Top &amp; bottom of every page
         </h2>
-        <p className="mt-1 text-lg text-ink-soft">
-          These show on every page, so you only change them once.
-        </p>
         <div className="mt-6 grid gap-6 md:grid-cols-2">
           <SharedPartCard
             title="Top banner"
@@ -420,11 +384,11 @@ export default async function AdminDashboard() {
               : "No message right now, so the banner shows the next event."}
           </SharedPartCard>
           <SharedPartCard
-            title="Phone, email & address"
+            title="Contact info"
             highlight="bottom"
             where="At the bottom of every page, and on the home and donations pages."
             href="/admin/contact"
-            action="Change phone, email or address"
+            action="Change the contact info"
           >
             <p>{contact.phone}</p>
             <p>{contact.email}</p>
