@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/admin";
 import { MadeWithLove } from "@/components/made-with-love";
+import { ScrollReset } from "@/components/scroll-reset";
 import { AdminSidebar } from "./admin-sidebar";
 
 export default async function AdminLayout({
@@ -15,6 +16,7 @@ export default async function AdminLayout({
 
   return (
     <>
+      <ScrollReset />
       <div className="flex flex-1 flex-col lg:flex-row">
         <AdminSidebar
           user={{
