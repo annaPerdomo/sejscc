@@ -10,6 +10,7 @@ import { AdminBadge } from "@/components/admin/admin-badge";
 import { buttonClass } from "@/components/admin/admin-button";
 import { adminPanel } from "@/components/admin/admin-card";
 import { PhotoPlaceholder } from "@/components/photo-placeholder";
+import { expectOk } from "@/lib/action-result";
 import { monthOrderInSeason, seasonIdForMonth } from "@/lib/school-year";
 import { setSchoolYearEventVisible } from "./actions";
 import { MONTH_NAMES, SEASON_LABELS, SEASON_ORDER } from "./months";
@@ -40,9 +41,13 @@ export function EventList({ events }: { events: SchoolYearEvent[] }) {
     setBusyId(event.id);
     startTransition(async () => {
       try {
-        await setSchoolYearEventVisible(event.id, !event.visible);
-      } catch {
-        setError("Something went wrong saving this. Please try again.");
+        expectOk(await setSchoolYearEventVisible(event.id, !event.visible));
+      } catch (e) {
+        setError(
+          e instanceof Error && e.message
+            ? e.message
+            : "Something went wrong saving this. Please try again."
+        );
       }
       setBusyId(null);
       router.refresh();

@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { VOLUNTEER_SECTION_ID, boardMembers, volunteerSection } from "@/db/schema";
 import type { SectionTextField } from "@/components/volunteer-section";
+import { AdminError, runAction, type ActionResult } from "@/lib/action-result";
 import { requireUser, revalidateSite } from "@/lib/admin";
 import { isUploadedFileUrl } from "@/lib/format";
 import type { Locale } from "@/lib/i18n";
@@ -13,6 +14,7 @@ import {
   LONG_MAX,
   MEMBER_TEXT_FIELDS,
   SECTION_TEXT_FIELDS,
+  asOneParagraph,
   isSectionTextField,
   memberTextPatch,
   normalizeContactLinkUrl,
@@ -23,11 +25,11 @@ import {
 } from "@/lib/volunteer-fields";
 
 function tooLong(label: string, max: number): never {
-  throw new Error(tooLongMessage(label, max));
+  throw new AdminError(tooLongMessage(label, max));
 }
 
 function required(label: string): never {
-  throw new Error(requiredMessage(label));
+  throw new AdminError(requiredMessage(label));
 }
 
 function requiredField(en: string, ja: string, label: string, max: number) {
@@ -68,14 +70,14 @@ function isStringArray(value: unknown): value is string[] {
 }
 
 function checkedOrder(ids: unknown, existingIds: string[]): string[] {
-  if (!isStringArray(ids)) throw new Error(STALE_ORDER_MESSAGE);
+  if (!isStringArray(ids)) throw new AdminError(STALE_ORDER_MESSAGE);
   const unique = new Set(ids);
   if (
     unique.size !== ids.length ||
     unique.size !== existingIds.length ||
     existingIds.some((id) => !unique.has(id))
   ) {
-    throw new Error(STALE_ORDER_MESSAGE);
+    throw new AdminError(STALE_ORDER_MESSAGE);
   }
   return ids;
 }
@@ -84,104 +86,110 @@ export async function updateSectionText(
   field: SectionTextField,
   lang: Locale,
   value: string
-): Promise<void> {
-  await requireUser();
+): Promise<ActionResult> {
+  return runAction(async () => {
+    await requireUser();
 
-  if (!isSectionTextField(field)) {
-    throw new Error("That field doesn't exist.");
-  }
-  if (lang !== "en" && lang !== "ja") {
-    throw new Error("That language isn't supported.");
-  }
+    if (!isSectionTextField(field)) {
+      throw new AdminError("That field doesn't exist.");
+    }
+    if (lang !== "en" && lang !== "ja") {
+      throw new AdminError("That language isn't supported.");
+    }
 
-  const { label, max } = SECTION_TEXT_FIELDS[field];
-  const trimmed = value.trim();
+    const { label, max } = SECTION_TEXT_FIELDS[field];
+    const trimmed = asOneParagraph(value).trim();
 
-  if (lang === "en") {
-    if (!trimmed) required(label);
-    if (trimmed.length > max) tooLong(label, max);
-  } else {
-    if (trimmed.length > max) tooLong(`Japanese ${label}`, max);
-  }
+    if (lang === "en") {
+      if (!trimmed) required(label);
+      if (trimmed.length > max) tooLong(label, max);
+    } else {
+      if (trimmed.length > max) tooLong(`Japanese ${label}`, max);
+    }
 
-  const patch = sectionTextPatch(field, lang, lang === "en" ? trimmed : trimmed || null);
+    const patch = sectionTextPatch(field, lang, lang === "en" ? trimmed : trimmed || null);
 
-  await db
-    .update(volunteerSection)
-    .set(patch as Partial<typeof volunteerSection.$inferInsert>)
-    .where(eq(volunteerSection.id, VOLUNTEER_SECTION_ID));
+    await db
+      .update(volunteerSection)
+      .set(patch as Partial<typeof volunteerSection.$inferInsert>)
+      .where(eq(volunteerSection.id, VOLUNTEER_SECTION_ID));
 
-  revalidateSite();
+    revalidateSite();
+  });
 }
 
 export async function updateContactLink(
   lang: Locale,
   label: string,
   url: string
-): Promise<void> {
-  await requireUser();
+): Promise<ActionResult> {
+  return runAction(async () => {
+    await requireUser();
 
-  if (lang !== "en" && lang !== "ja") {
-    throw new Error("That language isn't supported.");
-  }
+    if (lang !== "en" && lang !== "ja") {
+      throw new AdminError("That language isn't supported.");
+    }
 
-  const spec = SECTION_TEXT_FIELDS.contactLinkLabel;
-  const trimmed = label.trim();
-  validateText(lang, spec.label, spec.max, true, trimmed);
-  const contactLinkUrl = normalizeContactLinkUrl(url);
+    const spec = SECTION_TEXT_FIELDS.contactLinkLabel;
+    const trimmed = asOneParagraph(label).trim();
+    validateText(lang, spec.label, spec.max, true, trimmed);
+    const contactLinkUrl = normalizeContactLinkUrl(url);
 
-  await db
-    .update(volunteerSection)
-    .set(
-      lang === "en"
-        ? { contactLinkLabel: trimmed, contactLinkUrl }
-        : { contactLinkLabelJa: trimmed || null, contactLinkUrl }
-    )
-    .where(eq(volunteerSection.id, VOLUNTEER_SECTION_ID));
+    await db
+      .update(volunteerSection)
+      .set(
+        lang === "en"
+          ? { contactLinkLabel: trimmed, contactLinkUrl }
+          : { contactLinkLabelJa: trimmed || null, contactLinkUrl }
+      )
+      .where(eq(volunteerSection.id, VOLUNTEER_SECTION_ID));
 
-  revalidateSite();
+    revalidateSite();
+  });
 }
 
 export async function updateSectionPhoto(input: {
   photoUrl: string | null;
   photoAlt: string;
   photoAltJa: string;
-}): Promise<void> {
-  await requireUser();
+}): Promise<ActionResult> {
+  return runAction(async () => {
+    await requireUser();
 
-  // Required even with no custom photo, since the bundled fallback still
-  // needs alt text for visitors who can't see it.
-  const photoAlt = requiredField(
-    input.photoAlt,
-    input.photoAltJa,
-    "photo description",
-    LONG_MAX
-  );
-  const photoUrl = checkedBlobImageUrl(input.photoUrl);
+    // Required even with no custom photo, since the bundled fallback still
+    // needs alt text for visitors who can't see it.
+    const photoAlt = requiredField(
+      input.photoAlt,
+      input.photoAltJa,
+      "photo description",
+      LONG_MAX
+    );
+    const photoUrl = checkedBlobImageUrl(input.photoUrl);
 
-  const [existing] = await db
-    .select({ photoUrl: volunteerSection.photoUrl })
-    .from(volunteerSection)
-    .where(eq(volunteerSection.id, VOLUNTEER_SECTION_ID));
+    const [existing] = await db
+      .select({ photoUrl: volunteerSection.photoUrl })
+      .from(volunteerSection)
+      .where(eq(volunteerSection.id, VOLUNTEER_SECTION_ID));
 
-  await db
-    .update(volunteerSection)
-    .set({ photoUrl, photoAlt: photoAlt.en, photoAltJa: photoAlt.ja })
-    .where(eq(volunteerSection.id, VOLUNTEER_SECTION_ID));
+    await db
+      .update(volunteerSection)
+      .set({ photoUrl, photoAlt: photoAlt.en, photoAltJa: photoAlt.ja })
+      .where(eq(volunteerSection.id, VOLUNTEER_SECTION_ID));
 
-  if (
-    existing?.photoUrl &&
-    existing.photoUrl !== photoUrl &&
-    isUploadedFileUrl(existing.photoUrl)
-  ) {
-    try {
-      await del(existing.photoUrl);
-    } catch (error) {
-      console.error("Failed to delete the previous board photo blob:", error);
+    if (
+      existing?.photoUrl &&
+      existing.photoUrl !== photoUrl &&
+      isUploadedFileUrl(existing.photoUrl)
+    ) {
+      try {
+        await del(existing.photoUrl);
+      } catch (error) {
+        console.error("Failed to delete the previous board photo blob:", error);
+      }
     }
-  }
 
-  revalidateSite();
+    revalidateSite();
+  });
 }
 
 async function deleteBlobBestEffort(url: string | null, label: string) {
@@ -197,112 +205,124 @@ export async function updateMemberFields(
   id: string,
   lang: Locale,
   values: { name: string; role: string }
-): Promise<void> {
-  await requireUser();
+): Promise<ActionResult> {
+  return runAction(async () => {
+    await requireUser();
 
-  if (lang !== "en" && lang !== "ja") throw new Error("That language isn't supported.");
+    if (lang !== "en" && lang !== "ja") throw new AdminError("That language isn't supported.");
 
-  const nameSpec = MEMBER_TEXT_FIELDS.name;
-  const roleSpec = MEMBER_TEXT_FIELDS.role;
-  const trimmedName = values.name.trim();
-  const trimmedRole = values.role.trim();
-  validateText(lang, nameSpec.label, nameSpec.max, nameSpec.required, trimmedName);
-  validateText(lang, roleSpec.label, roleSpec.max, roleSpec.required, trimmedRole);
+    const nameSpec = MEMBER_TEXT_FIELDS.name;
+    const roleSpec = MEMBER_TEXT_FIELDS.role;
+    const trimmedName = values.name.trim();
+    const trimmedRole = values.role.trim();
+    validateText(lang, nameSpec.label, nameSpec.max, nameSpec.required, trimmedName);
+    validateText(lang, roleSpec.label, roleSpec.max, roleSpec.required, trimmedRole);
 
-  const namePatch = memberTextPatch("name", lang, textFieldValue(nameSpec.required, lang, trimmedName));
-  const rolePatch = memberTextPatch("role", lang, textFieldValue(roleSpec.required, lang, trimmedRole));
+    const namePatch = memberTextPatch("name", lang, textFieldValue(nameSpec.required, lang, trimmedName));
+    const rolePatch = memberTextPatch("role", lang, textFieldValue(roleSpec.required, lang, trimmedRole));
 
-  const result = await db
-    .update(boardMembers)
-    .set({ ...namePatch, ...rolePatch } as Partial<typeof boardMembers.$inferInsert>)
-    .where(eq(boardMembers.id, id))
-    .returning({ id: boardMembers.id });
-  if (result.length === 0) throw new Error(NOT_FOUND_MESSAGE);
+    const result = await db
+      .update(boardMembers)
+      .set({ ...namePatch, ...rolePatch } as Partial<typeof boardMembers.$inferInsert>)
+      .where(eq(boardMembers.id, id))
+      .returning({ id: boardMembers.id });
+    if (result.length === 0) throw new AdminError(NOT_FOUND_MESSAGE);
 
-  revalidateSite();
+    revalidateSite();
+  });
 }
 
 export async function updateMemberPhoto(
   id: string,
   photoUrl: string | null
-): Promise<void> {
-  await requireUser();
+): Promise<ActionResult> {
+  return runAction(async () => {
+    await requireUser();
 
-  const [existing] = await db
-    .select({ photoUrl: boardMembers.photoUrl })
-    .from(boardMembers)
-    .where(eq(boardMembers.id, id));
-  if (!existing) throw new Error(NOT_FOUND_MESSAGE);
+    const [existing] = await db
+      .select({ photoUrl: boardMembers.photoUrl })
+      .from(boardMembers)
+      .where(eq(boardMembers.id, id));
+    if (!existing) throw new AdminError(NOT_FOUND_MESSAGE);
 
-  const checkedUrl = checkedBlobImageUrl(photoUrl);
-  await db.update(boardMembers).set({ photoUrl: checkedUrl }).where(eq(boardMembers.id, id));
+    const checkedUrl = checkedBlobImageUrl(photoUrl);
+    await db.update(boardMembers).set({ photoUrl: checkedUrl }).where(eq(boardMembers.id, id));
 
-  if (existing.photoUrl && existing.photoUrl !== checkedUrl) {
-    await deleteBlobBestEffort(existing.photoUrl, "previous board member photo");
-  }
+    if (existing.photoUrl && existing.photoUrl !== checkedUrl) {
+      await deleteBlobBestEffort(existing.photoUrl, "previous board member photo");
+    }
 
-  revalidateSite();
+    revalidateSite();
+  });
 }
 
-export async function addBoardMember(name: string): Promise<{ id: string }> {
-  await requireUser();
+export async function addBoardMember(name: string): Promise<ActionResult<{ id: string }>> {
+  return runAction(async () => {
+    await requireUser();
 
-  const trimmed = name.trim();
-  const { label, max } = MEMBER_TEXT_FIELDS.name;
-  validateText("en", label, max, true, trimmed);
+    const trimmed = name.trim();
+    const { label, max } = MEMBER_TEXT_FIELDS.name;
+    validateText("en", label, max, true, trimmed);
 
-  const sortOrder = await nextSortOrder(boardMembers);
-  const [row] = await db
-    .insert(boardMembers)
-    .values({ name: trimmed, sortOrder })
-    .returning({ id: boardMembers.id });
+    const sortOrder = await nextSortOrder(boardMembers);
+    const [row] = await db
+      .insert(boardMembers)
+      .values({ name: trimmed, sortOrder })
+      .returning({ id: boardMembers.id });
 
-  revalidateSite();
-  return { id: row.id };
+    revalidateSite();
+    return { id: row.id };
+  });
 }
 
-export async function deleteBoardMember(id: string): Promise<void> {
-  await requireUser();
-  const [existing] = await db
-    .select()
-    .from(boardMembers)
-    .where(eq(boardMembers.id, id));
-  if (!existing) throw new Error(NOT_FOUND_MESSAGE);
+export async function deleteBoardMember(id: string): Promise<ActionResult> {
+  return runAction(async () => {
+    await requireUser();
+    const [existing] = await db
+      .select()
+      .from(boardMembers)
+      .where(eq(boardMembers.id, id));
+    if (!existing) throw new AdminError(NOT_FOUND_MESSAGE);
 
-  await db.delete(boardMembers).where(eq(boardMembers.id, id));
-  await deleteBlobBestEffort(existing.photoUrl, "board member photo");
+    await db.delete(boardMembers).where(eq(boardMembers.id, id));
+    await deleteBlobBestEffort(existing.photoUrl, "board member photo");
 
-  revalidateSite();
+    revalidateSite();
+  });
 }
 
 export async function setBoardMemberVisible(
   id: string,
   visible: boolean
-): Promise<void> {
-  await requireUser();
-  const result = await db
-    .update(boardMembers)
-    .set({ visible })
-    .where(eq(boardMembers.id, id))
-    .returning({ id: boardMembers.id });
-  if (result.length === 0) throw new Error(NOT_FOUND_MESSAGE);
+): Promise<ActionResult> {
+  return runAction(async () => {
+    await requireUser();
+    const result = await db
+      .update(boardMembers)
+      .set({ visible })
+      .where(eq(boardMembers.id, id))
+      .returning({ id: boardMembers.id });
+    if (result.length === 0) throw new AdminError(NOT_FOUND_MESSAGE);
 
-  revalidateSite();
+    revalidateSite();
+  });
 }
 
-export async function reorderBoardMembers(orderedIds: string[]): Promise<void> {
-  await requireUser();
-  const existing = await db.select({ id: boardMembers.id }).from(boardMembers);
-  const ids = checkedOrder(
-    orderedIds,
-    existing.map((row) => row.id)
-  );
+export async function reorderBoardMembers(orderedIds: string[]): Promise<ActionResult> {
+  return runAction(async () => {
+    await requireUser();
+    const existing = await db.select({ id: boardMembers.id }).from(boardMembers);
+    const ids = checkedOrder(
+      orderedIds,
+      existing.map((row) => row.id)
+    );
 
-  const [firstUpdate, ...restUpdates] = ids.map((id, index) =>
-    db.update(boardMembers).set({ sortOrder: index }).where(eq(boardMembers.id, id))
-  );
-  if (!firstUpdate) return;
-  await db.batch([firstUpdate, ...restUpdates]);
+    const [firstUpdate, ...restUpdates] = ids.map((id, index) =>
+      db.update(boardMembers).set({ sortOrder: index }).where(eq(boardMembers.id, id))
+    );
+    if (!firstUpdate) return;
+    await db.batch([firstUpdate, ...restUpdates]);
 
-  revalidateSite();
+    revalidateSite();
+  });
 }

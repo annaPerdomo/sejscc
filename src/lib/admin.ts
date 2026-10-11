@@ -3,6 +3,8 @@ import { eq } from "drizzle-orm";
 import { auth } from "@/auth";
 import { db } from "@/db";
 import { allowedEmails, users } from "@/db/schema";
+import { SIGN_IN_AGAIN_MESSAGE } from "@/lib/admin-messages";
+import { AdminError } from "@/lib/action-result";
 
 // A JWT session outlives removal and carries a stale role, so access is
 // re-read here rather than trusted from the cookie.
@@ -19,14 +21,14 @@ export async function getCurrentUser() {
 
 export async function requireUser() {
   const user = await getCurrentUser();
-  if (!user) throw new Error("Please sign in again to make this change.");
+  if (!user) throw new AdminError(SIGN_IN_AGAIN_MESSAGE);
   return user;
 }
 
 export async function requireAdmin() {
   const user = await requireUser();
   if (user.role !== "admin") {
-    throw new Error("Only administrators can manage who has access.");
+    throw new AdminError("Only administrators can manage who has access.");
   }
   return user;
 }

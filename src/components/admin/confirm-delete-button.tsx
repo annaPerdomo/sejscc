@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { expectOk, type ActionResult } from "@/lib/action-result";
 import { AdminAlert } from "./admin-alert";
 
 export function ConfirmDeleteButton({
@@ -13,7 +14,7 @@ export function ConfirmDeleteButton({
   cancelLabel = "Keep it",
   busyLabel = "Deleting…",
 }: {
-  action: () => Promise<void>;
+  action: () => Promise<ActionResult | void>;
   label: string;
   prompt: string;
   redirectTo?: string;
@@ -30,7 +31,8 @@ export function ConfirmDeleteButton({
     setError(null);
     setBusy(true);
     try {
-      await action();
+      const result = await action();
+      if (result) expectOk(result);
       if (redirectTo) router.push(redirectTo);
       router.refresh();
     } catch (e) {

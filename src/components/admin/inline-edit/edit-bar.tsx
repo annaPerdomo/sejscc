@@ -1,6 +1,7 @@
 "use client";
 
 import { useId } from "react";
+import { SIGN_IN_AGAIN_MESSAGE } from "@/lib/admin-messages";
 import type { Locale } from "@/lib/i18n";
 
 export type EditBarStatus =
@@ -32,7 +33,7 @@ export function EditBar({
     >
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-6 gap-y-3">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
-          <p id={languageLabelId} className="font-display text-sm font-semibold tracking-wide text-ink-soft">
+          <p id={languageLabelId} className="font-display text-base font-semibold tracking-wide text-ink-soft">
             Words shown in
           </p>
           <div
@@ -44,7 +45,7 @@ export function EditBar({
               type="button"
               aria-pressed={lang === "en"}
               onClick={() => onLangChange("en")}
-              className={`min-h-11 rounded-full px-4 font-display text-sm font-semibold ${
+              className={`min-h-11 rounded-full px-4 font-display text-base font-semibold ${
                 lang === "en" ? "bg-navy text-white" : "text-ink-soft hover:text-ink"
               }`}
             >
@@ -54,7 +55,7 @@ export function EditBar({
               type="button"
               aria-pressed={lang === "ja"}
               onClick={() => onLangChange("ja")}
-              className={`min-h-11 rounded-full px-4 font-display text-sm font-semibold ${
+              className={`min-h-11 rounded-full px-4 font-display text-base font-semibold ${
                 lang === "ja" ? "bg-navy text-white" : "text-ink-soft hover:text-ink"
               }`}
             >
@@ -63,7 +64,7 @@ export function EditBar({
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-          <p aria-live="polite" className="min-h-6 text-sm font-medium">
+          <p aria-live="polite" className="min-h-6 text-base font-medium">
             {status.kind === "saving" && <span className="text-ink-soft">Saving…</span>}
             {status.kind === "saved" && (
               <span className="text-indigo-deep">
@@ -73,6 +74,20 @@ export function EditBar({
             {status.kind === "error" && (
               <span role="alert" className="text-magenta-deep">
                 {status.message}
+                {status.message === SIGN_IN_AGAIN_MESSAGE && (
+                  <>
+                    {" "}
+                    <a
+                      href="/admin/login"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex min-h-11 items-center font-semibold text-navy underline"
+                    >
+                      Sign in again
+                      <span className="sr-only"> (opens in a new tab)</span>
+                    </a>
+                  </>
+                )}
               </span>
             )}
             {undo && (
@@ -84,7 +99,7 @@ export function EditBar({
                   aria-disabled={undo.busy}
                   className="min-h-11 font-semibold underline hover:text-indigo-deep"
                 >
-                  {undo.busy ? "Undoing…" : "Undo"}
+                  {undo.busy ? "Undoing…" : "Undo this change"}
                 </button>
               </span>
             )}
@@ -93,7 +108,7 @@ export function EditBar({
             href={viewHref}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex min-h-11 items-center text-sm font-semibold text-navy underline hover:text-indigo-deep"
+            className="inline-flex min-h-11 items-center text-base font-semibold text-navy underline hover:text-indigo-deep"
           >
             View on the website
             <span className="sr-only"> (opens in a new tab)</span>

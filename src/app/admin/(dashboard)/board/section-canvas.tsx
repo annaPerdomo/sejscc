@@ -2,6 +2,7 @@
 
 import { useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import { expectOk } from "@/lib/action-result";
 import { EditBar, type EditBarStatus } from "@/components/admin/inline-edit/edit-bar";
 import { EditableLink } from "@/components/admin/inline-edit/editable-link";
 import { EditableText } from "@/components/admin/inline-edit/editable-text";
@@ -119,7 +120,7 @@ export function SectionCanvas({
           );
           setStatus({ kind: "saving" });
           try {
-            await updateSectionText(field, lang, next);
+            expectOk(await updateSectionText(field, lang, next));
             setStatus({ kind: "saved", message: description });
             undo.record({
               description,
@@ -130,7 +131,7 @@ export function SectionCanvas({
                     : withJapaneseSectionValue(previousSection, field, previousRaw || null)
                 );
                 try {
-                  await updateSectionText(field, lang, previousRaw);
+                  expectOk(await updateSectionText(field, lang, previousRaw));
                   router.refresh();
                 } catch (e) {
                   setSection(
@@ -190,14 +191,14 @@ export function SectionCanvas({
           setSection(withLink(section, words, nextUrl));
           setStatus({ kind: "saving" });
           try {
-            await updateContactLink(lang, words, url);
+            expectOk(await updateContactLink(lang, words, url));
             setStatus({ kind: "saved", message: description });
             undo.record({
               description,
               undo: async () => {
                 setSection(previousSection);
                 try {
-                  await updateContactLink(lang, value, previousUrlForEditing);
+                  expectOk(await updateContactLink(lang, value, previousUrlForEditing));
                   router.refresh();
                 } catch (e) {
                   setSection(withLink(previousSection, words, nextUrl));
@@ -326,7 +327,7 @@ export function SectionCanvas({
                 );
                 setStatus({ kind: "saving" });
                 try {
-                  await updateMemberPhoto(optionsMember.id, photoUrl);
+                  expectOk(await updateMemberPhoto(optionsMember.id, photoUrl));
                   undo.clear();
                   setStatus({ kind: "saved" });
                   router.refresh();

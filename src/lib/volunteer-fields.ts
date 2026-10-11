@@ -1,10 +1,17 @@
 import type { SectionTextField } from "@/components/volunteer-section";
 import type { BoardMember, VolunteerSectionRow } from "@/db/schema";
 import type { Locale } from "@/lib/i18n";
+import { AdminError } from "@/lib/action-result";
 
 export const SHORT_MAX = 80;
 export const LINK_MAX = 40;
 export const LONG_MAX = 600;
+
+// The public pages render these fields as single paragraphs, where a typed
+// line break would silently collapse into a space anyway.
+export function asOneParagraph(value: string): string {
+  return value.replace(/\s*[\r\n]+\s*/g, " ");
+}
 
 export const SECTION_TEXT_FIELDS: Record<
   SectionTextField,
@@ -167,7 +174,7 @@ export function normalizeContactLinkUrl(input: string): string | null {
   const trimmed = input.trim();
   if (!trimmed) return null;
   if (trimmed.length > CONTACT_LINK_URL_MAX) {
-    throw new Error(tooLongMessage("link address", CONTACT_LINK_URL_MAX));
+    throw new AdminError(tooLongMessage("link address", CONTACT_LINK_URL_MAX));
   }
 
   const email = trimmed.replace(/^mailto:/i, "");
@@ -178,10 +185,10 @@ export function normalizeContactLinkUrl(input: string): string | null {
   try {
     url = new URL(withScheme);
   } catch {
-    throw new Error(CONTACT_LINK_URL_MESSAGE);
+    throw new AdminError(CONTACT_LINK_URL_MESSAGE);
   }
   if (url.protocol !== "https:" && url.protocol !== "http:") {
-    throw new Error(CONTACT_LINK_URL_MESSAGE);
+    throw new AdminError(CONTACT_LINK_URL_MESSAGE);
   }
   return url.href;
 }

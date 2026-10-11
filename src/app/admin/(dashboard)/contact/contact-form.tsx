@@ -6,6 +6,7 @@ import { AdminAlert } from "@/components/admin/admin-alert";
 import { AdminButton, AdminFormActions } from "@/components/admin/admin-button";
 import { AdminCard } from "@/components/admin/admin-card";
 import { AdminTextField } from "@/components/admin/admin-field";
+import { expectOk } from "@/lib/action-result";
 import type { CenterContact } from "@/lib/site-settings";
 import { updateContactDetails } from "../settings/actions";
 
@@ -29,7 +30,7 @@ export function ContactDetailsForm({
     setSaved("");
     setBusy(true);
     try {
-      await updateContactDetails({ address, phone, email });
+      expectOk(await updateContactDetails({ address, phone, email }));
       setSaved("Saved — the website now shows these contact details.");
       router.refresh();
     } catch (e) {

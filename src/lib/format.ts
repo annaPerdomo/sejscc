@@ -1,5 +1,6 @@
 import type { UserRole } from "@/db/schema";
 import type { Locale } from "@/lib/i18n";
+import { AdminError } from "@/lib/action-result";
 
 // Event times are stored as LA wall-clock behind a fake UTC marker (4:00 PM in
 // Norwalk is stored as 16:00Z), so every formatter must read them back in UTC.
@@ -118,7 +119,7 @@ export function slugify(title: string) {
 const MAX_URL_LENGTH = 2048;
 
 const websiteError = (label: string) =>
-  new Error(
+  new AdminError(
     `The ${label} doesn’t look like a web address. Try something like example.org.`
   );
 
@@ -170,7 +171,7 @@ export function normalizeUploadedFileUrl(
   const trimmed = raw?.trim();
   if (!trimmed) return null;
   if (!isUploadedFileUrl(trimmed)) {
-    throw new Error(
+    throw new AdminError(
       `The ${label} didn’t upload correctly. Try adding it again.`
     );
   }
@@ -186,7 +187,7 @@ export function normalizeContactEmail(raw: string): string | null {
     trimmed.length > MAX_EMAIL_LENGTH ||
     !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)
   ) {
-    throw new Error(
+    throw new AdminError(
       "The contact email doesn’t look right. It should be something like name@example.org."
     );
   }

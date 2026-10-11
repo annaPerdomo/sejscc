@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { upload } from "@vercel/blob/client";
 import type { EventRepeat } from "@/db/schema";
+import { expectOk } from "@/lib/action-result";
 import { CENTER_ADDRESS, venueLabel } from "@/lib/center";
 import { normalizeWebsiteUrl } from "@/lib/format";
 import { pdfFirstPageToPng } from "@/lib/pdf-preview";
@@ -195,9 +196,9 @@ export function EventForm({
         ...flyer,
       };
       if (event) {
-        await updateEvent(event.id, input);
+        expectOk(await updateEvent(event.id, input));
       } else {
-        await createEvent(input);
+        expectOk(await createEvent(input));
       }
       router.push("/admin/events");
       router.refresh();

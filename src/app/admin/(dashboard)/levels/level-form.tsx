@@ -16,6 +16,7 @@ import {
 } from "@/components/admin/admin-field";
 import { AdminImagePicker } from "@/components/admin/admin-image-picker";
 import type { SchoolLevel, SchoolLevelStatus } from "@/db/schema";
+import { expectOk } from "@/lib/action-result";
 import { createSchoolLevel, updateSchoolLevel, type LevelInput, type PhotoUrlInput } from "./actions";
 import { SCHOOL_LEVEL_STATUS_OPTIONS } from "./status";
 
@@ -107,9 +108,9 @@ export function LevelForm({ level }: { level?: SchoolLevel }) {
       };
 
       if (level) {
-        await updateSchoolLevel(level.id, input, photoUrl);
+        expectOk(await updateSchoolLevel(level.id, input, photoUrl));
       } else {
-        await createSchoolLevel(input, photoUrl === "unchanged" ? null : photoUrl);
+        expectOk(await createSchoolLevel(input, photoUrl === "unchanged" ? null : photoUrl));
       }
 
       router.push("/admin/levels");

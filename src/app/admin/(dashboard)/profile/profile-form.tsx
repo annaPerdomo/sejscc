@@ -11,6 +11,7 @@ import {
 } from "@/components/admin/admin-field";
 import { AdminUserIdentity } from "@/components/admin/admin-user-identity";
 import type { UserRole } from "@/db/schema";
+import { expectOk } from "@/lib/action-result";
 import { updateProfileName } from "./actions";
 
 export function ProfileForm({
@@ -39,7 +40,7 @@ export function ProfileForm({
     }
     setBusy(true);
     try {
-      await updateProfileName(name);
+      expectOk(await updateProfileName(name));
       setSaved(true);
       router.refresh();
     } catch (e) {

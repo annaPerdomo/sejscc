@@ -4,6 +4,7 @@ import { del } from "@vercel/blob";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { eventRepeats, events, type EventRepeat } from "@/db/schema";
+import { AdminError, runAction, type ActionResult } from "@/lib/action-result";
 import { requireUser, revalidateSite } from "@/lib/admin";
 import {
   normalizeUploadedFileUrl,
@@ -40,20 +41,20 @@ function checkedRepeat(input: EventInput) {
 
   const firstDay = toWallClock(input.date, "");
   if (!firstDay) {
-    throw new Error(
+    throw new AdminError(
       "Give the event a date before choosing how often it repeats."
     );
   }
   const repeatUntil = toWallClock(input.repeatUntil, "");
   if (repeatUntil && repeatUntil < firstDay) {
-    throw new Error("The last date can’t come before the event’s first date.");
+    throw new AdminError("The last date can’t come before the event’s first date.");
   }
   return { repeat, repeatUntil };
 }
 
 function eventValues(input: EventInput, userId?: string) {
   const title = input.title.trim();
-  if (!title) throw new Error("An event title is required.");
+  if (!title) throw new AdminError("An event title is required.");
   return {
     title,
     description: input.description.trim() || null,
@@ -69,55 +70,61 @@ function eventValues(input: EventInput, userId?: string) {
   };
 }
 
-export async function createEvent(input: EventInput) {
-  const user = await requireUser();
-  const slug = `${slugify(input.title) || "event"}-${crypto
-    .randomUUID()
-    .slice(0, 6)}`;
-  await db.insert(events).values({ ...eventValues(input, user.id), slug });
-  revalidateSite();
+export async function createEvent(input: EventInput): Promise<ActionResult> {
+  return runAction(async () => {
+    const user = await requireUser();
+    const slug = `${slugify(input.title) || "event"}-${crypto
+      .randomUUID()
+      .slice(0, 6)}`;
+    await db.insert(events).values({ ...eventValues(input, user.id), slug });
+    revalidateSite();
+  });
 }
 
-export async function updateEvent(id: string, input: EventInput) {
-  await requireUser();
-  const [existing] = await db.select().from(events).where(eq(events.id, id));
-  if (!existing) throw new Error("Event not found.");
-  const values = eventValues(input);
-  await db.update(events).set(values).where(eq(events.id, id));
+export async function updateEvent(id: string, input: EventInput): Promise<ActionResult> {
+  return runAction(async () => {
+    await requireUser();
+    const [existing] = await db.select().from(events).where(eq(events.id, id));
+    if (!existing) throw new AdminError("Event not found.");
+    const values = eventValues(input);
+    await db.update(events).set(values).where(eq(events.id, id));
 
-  // Best-effort cleanup of flyers this update dropped or replaced.
-  const kept = new Set([values.flyerUrl, values.flyerDownloadUrl]);
-  const orphans = [existing.flyerUrl, existing.flyerDownloadUrl].filter(
-    (url): url is string => Boolean(url) && !kept.has(url)
-  );
-  if (orphans.length) {
-    try {
-      await del(orphans);
-    } catch (error) {
-      console.error("Failed to delete flyer blobs:", error);
+    // Best-effort cleanup of flyers this update dropped or replaced.
+    const kept = new Set([values.flyerUrl, values.flyerDownloadUrl]);
+    const orphans = [existing.flyerUrl, existing.flyerDownloadUrl].filter(
+      (url): url is string => Boolean(url) && !kept.has(url)
+    );
+    if (orphans.length) {
+      try {
+        await del(orphans);
+      } catch (error) {
+        console.error("Failed to delete flyer blobs:", error);
+      }
     }
-  }
 
-  revalidateSite();
+    revalidateSite();
+  });
 }
 
-export async function deleteEvent(id: string) {
-  await requireUser();
-  const [existing] = await db.select().from(events).where(eq(events.id, id));
-  if (!existing) return;
-  await db.delete(events).where(eq(events.id, id));
+export async function deleteEvent(id: string): Promise<ActionResult> {
+  return runAction(async () => {
+    await requireUser();
+    const [existing] = await db.select().from(events).where(eq(events.id, id));
+    if (!existing) return;
+    await db.delete(events).where(eq(events.id, id));
 
-  // Best-effort cleanup of uploaded flyers; the event row is already gone.
-  const blobs = [existing.flyerUrl, existing.flyerDownloadUrl].filter(
-    (url): url is string => Boolean(url)
-  );
-  if (blobs.length) {
-    try {
-      await del(blobs);
-    } catch (error) {
-      console.error("Failed to delete flyer blobs:", error);
+    // Best-effort cleanup of uploaded flyers; the event row is already gone.
+    const blobs = [existing.flyerUrl, existing.flyerDownloadUrl].filter(
+      (url): url is string => Boolean(url)
+    );
+    if (blobs.length) {
+      try {
+        await del(blobs);
+      } catch (error) {
+        console.error("Failed to delete flyer blobs:", error);
+      }
     }
-  }
 
-  revalidateSite();
+    revalidateSite();
+  });
 }

@@ -6,6 +6,7 @@ import { AdminAlert } from "@/components/admin/admin-alert";
 import { AdminButton } from "@/components/admin/admin-button";
 import { AdminCard } from "@/components/admin/admin-card";
 import { AdminTextField } from "@/components/admin/admin-field";
+import { expectOk } from "@/lib/action-result";
 import { addAllowedEmail } from "./actions";
 
 export function AddVolunteerForm() {
@@ -22,7 +23,7 @@ export function AddVolunteerForm() {
     setAdded("");
     setBusy(true);
     try {
-      const result = await addAllowedEmail(email);
+      const result = expectOk(await addAllowedEmail(email));
       setAdded(
         result.alreadyListed
           ? `${result.email} was already on the list.`

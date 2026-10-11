@@ -6,6 +6,7 @@ import { AdminAlert } from "@/components/admin/admin-alert";
 import { AdminButton, AdminFormActions } from "@/components/admin/admin-button";
 import { AdminCard, AdminCardHeading } from "@/components/admin/admin-card";
 import { AdminCharacterCount, AdminOptional, AdminTextField } from "@/components/admin/admin-field";
+import { expectOk } from "@/lib/action-result";
 import { updateAnnouncement } from "../settings/actions";
 
 const TEXT_MAX = 140;
@@ -62,7 +63,7 @@ export function AnnouncementForm({
     setSaved("");
     setBusy(kind);
     try {
-      await updateAnnouncement(values);
+      expectOk(await updateAnnouncement(values));
       if (kind === "clear" || !values.text.trim()) {
         setText("");
         setTextJa("");

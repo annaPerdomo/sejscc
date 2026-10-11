@@ -4,6 +4,7 @@ import { del } from "@vercel/blob";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { schoolLevels, schoolLevelStatuses, type SchoolLevelStatus } from "@/db/schema";
+import { AdminError, runAction, type ActionResult } from "@/lib/action-result";
 import { requireUser, revalidateSite } from "@/lib/admin";
 import { isUploadedFileUrl } from "@/lib/format";
 import { checkedBlobImageUrl } from "@/lib/uploads";
@@ -47,37 +48,37 @@ function linesOf(value: string): string[] {
 
 function levelValues(input: LevelInput, requirePhotoAlt: boolean) {
   const name = input.name.trim();
-  if (!name) throw new Error("Please enter a name for this class level.");
+  if (!name) throw new AdminError("Please enter a name for this class level.");
   if (name.length > NAME_MAX) {
-    throw new Error(`The name is too long — please keep it under ${NAME_MAX} characters.`);
+    throw new AdminError(`The name is too long — please keep it under ${NAME_MAX} characters.`);
   }
 
   const summary = input.summary.trim();
-  if (!summary) throw new Error("Please enter a one-line summary.");
+  if (!summary) throw new AdminError("Please enter a one-line summary.");
   if (summary.length > SUMMARY_MAX) {
-    throw new Error(`The summary is too long — please keep it under ${SUMMARY_MAX} characters.`);
+    throw new AdminError(`The summary is too long — please keep it under ${SUMMARY_MAX} characters.`);
   }
 
   const description = input.description.trim();
-  if (!description) throw new Error("Please enter a description.");
+  if (!description) throw new AdminError("Please enter a description.");
   if (description.length > DESCRIPTION_MAX) {
-    throw new Error(
+    throw new AdminError(
       `The description is too long — please keep it under ${DESCRIPTION_MAX} characters.`
     );
   }
 
   if (!schoolLevelStatuses.includes(input.status)) {
-    throw new Error("Please choose a valid status.");
+    throw new AdminError("Please choose a valid status.");
   }
 
   const kanji = input.kanji.trim();
   if (kanji.length > KANJI_MAX) {
-    throw new Error(`The plaque kanji is too long — please keep it under ${KANJI_MAX} characters.`);
+    throw new AdminError(`The plaque kanji is too long — please keep it under ${KANJI_MAX} characters.`);
   }
 
   const photoAlt = input.photoAlt.trim();
   if (requirePhotoAlt && !photoAlt) {
-    throw new Error("Please describe the photo for people who can't see it.");
+    throw new AdminError("Please describe the photo for people who can't see it.");
   }
 
   return {
@@ -113,96 +114,111 @@ async function deleteBlobBestEffort(url: string | null) {
 export async function createSchoolLevel(
   input: LevelInput,
   photoUrl: string | null
-): Promise<{ id: string }> {
-  await requireUser();
-  const checkedPhotoUrl = checkedBlobImageUrl(photoUrl);
-  const values = levelValues(input, checkedPhotoUrl !== null);
-  const sortOrder = await nextSortOrder();
+): Promise<ActionResult<{ id: string }>> {
+  return runAction(async () => {
+    await requireUser();
+    const checkedPhotoUrl = checkedBlobImageUrl(photoUrl);
+    const values = levelValues(input, checkedPhotoUrl !== null);
+    const sortOrder = await nextSortOrder();
 
-  const [row] = await db
-    .insert(schoolLevels)
-    .values({ ...values, photoUrl: checkedPhotoUrl, sortOrder })
-    .returning({ id: schoolLevels.id });
+    const [row] = await db
+      .insert(schoolLevels)
+      .values({ ...values, photoUrl: checkedPhotoUrl, sortOrder })
+      .returning({ id: schoolLevels.id });
 
-  revalidateSite();
-  return { id: row.id };
+    revalidateSite();
+    return { id: row.id };
+  });
 }
 
 export async function updateSchoolLevel(
   id: string,
   input: LevelInput,
   photoUrl: PhotoUrlInput
-): Promise<void> {
-  await requireUser();
-  const [existing] = await db.select().from(schoolLevels).where(eq(schoolLevels.id, id));
-  if (!existing) throw new Error(NOT_FOUND_MESSAGE);
+): Promise<ActionResult> {
+  return runAction(async () => {
+    await requireUser();
+    const [existing] = await db.select().from(schoolLevels).where(eq(schoolLevels.id, id));
+    if (!existing) throw new AdminError(NOT_FOUND_MESSAGE);
 
-  const nextPhotoUrl =
-    photoUrl === "unchanged" ? existing.photoUrl : checkedBlobImageUrl(photoUrl);
-  const values = levelValues(input, nextPhotoUrl !== null);
+    const nextPhotoUrl =
+      photoUrl === "unchanged" ? existing.photoUrl : checkedBlobImageUrl(photoUrl);
+    const values = levelValues(input, nextPhotoUrl !== null);
 
-  await db
-    .update(schoolLevels)
-    .set({ ...values, photoUrl: nextPhotoUrl })
-    .where(eq(schoolLevels.id, id));
+    await db
+      .update(schoolLevels)
+      .set({ ...values, photoUrl: nextPhotoUrl })
+      .where(eq(schoolLevels.id, id));
 
-  if (existing.photoUrl && existing.photoUrl !== nextPhotoUrl) {
+    if (existing.photoUrl && existing.photoUrl !== nextPhotoUrl) {
+      await deleteBlobBestEffort(existing.photoUrl);
+    }
+
+    revalidateSite();
+  });
+}
+
+export async function deleteSchoolLevel(id: string): Promise<ActionResult> {
+  return runAction(async () => {
+    await requireUser();
+    const [existing] = await db.select().from(schoolLevels).where(eq(schoolLevels.id, id));
+    if (!existing) return;
+
+    await db.delete(schoolLevels).where(eq(schoolLevels.id, id));
     await deleteBlobBestEffort(existing.photoUrl);
-  }
 
-  revalidateSite();
+    revalidateSite();
+  });
 }
 
-export async function deleteSchoolLevel(id: string): Promise<void> {
-  await requireUser();
-  const [existing] = await db.select().from(schoolLevels).where(eq(schoolLevels.id, id));
-  if (!existing) return;
+export async function setSchoolLevelVisible(
+  id: string,
+  visible: boolean
+): Promise<ActionResult> {
+  return runAction(async () => {
+    await requireUser();
+    const result = await db
+      .update(schoolLevels)
+      .set({ visible })
+      .where(eq(schoolLevels.id, id))
+      .returning({ id: schoolLevels.id });
+    if (result.length === 0) throw new AdminError(NOT_FOUND_MESSAGE);
 
-  await db.delete(schoolLevels).where(eq(schoolLevels.id, id));
-  await deleteBlobBestEffort(existing.photoUrl);
-
-  revalidateSite();
-}
-
-export async function setSchoolLevelVisible(id: string, visible: boolean): Promise<void> {
-  await requireUser();
-  const result = await db
-    .update(schoolLevels)
-    .set({ visible })
-    .where(eq(schoolLevels.id, id))
-    .returning({ id: schoolLevels.id });
-  if (result.length === 0) throw new Error(NOT_FOUND_MESSAGE);
-
-  revalidateSite();
+    revalidateSite();
+  });
 }
 
 export type ReorderResult = { ok: true } | { ok: false; reason: "stale" };
 
-export async function reorderSchoolLevels(orderedIds: string[]): Promise<ReorderResult> {
-  await requireUser();
-  const existing = await db
-    .select({ id: schoolLevels.id, sortOrder: schoolLevels.sortOrder })
-    .from(schoolLevels);
+export async function reorderSchoolLevels(
+  orderedIds: string[]
+): Promise<ActionResult<ReorderResult>> {
+  return runAction(async () => {
+    await requireUser();
+    const existing = await db
+      .select({ id: schoolLevels.id, sortOrder: schoolLevels.sortOrder })
+      .from(schoolLevels);
 
-  const ids = Array.isArray(orderedIds) ? orderedIds : [];
-  const unique = new Set(ids);
-  if (
-    unique.size !== ids.length ||
-    unique.size !== existing.length ||
-    existing.some((level) => !unique.has(level.id))
-  ) {
-    return { ok: false, reason: "stale" };
-  }
+    const ids = Array.isArray(orderedIds) ? orderedIds : [];
+    const unique = new Set(ids);
+    if (
+      unique.size !== ids.length ||
+      unique.size !== existing.length ||
+      existing.some((level) => !unique.has(level.id))
+    ) {
+      return { ok: false, reason: "stale" };
+    }
 
-  const current = new Map(existing.map((level) => [level.id, level.sortOrder]));
-  if (ids.every((id, index) => current.get(id) === index)) return { ok: true };
+    const current = new Map(existing.map((level) => [level.id, level.sortOrder]));
+    if (ids.every((id, index) => current.get(id) === index)) return { ok: true };
 
-  const [firstUpdate, ...restUpdates] = ids.map((id, index) =>
-    db.update(schoolLevels).set({ sortOrder: index }).where(eq(schoolLevels.id, id))
-  );
-  if (!firstUpdate) return { ok: true };
-  await db.batch([firstUpdate, ...restUpdates]);
+    const [firstUpdate, ...restUpdates] = ids.map((id, index) =>
+      db.update(schoolLevels).set({ sortOrder: index }).where(eq(schoolLevels.id, id))
+    );
+    if (!firstUpdate) return { ok: true };
+    await db.batch([firstUpdate, ...restUpdates]);
 
-  revalidateSite();
-  return { ok: true };
+    revalidateSite();
+    return { ok: true };
+  });
 }

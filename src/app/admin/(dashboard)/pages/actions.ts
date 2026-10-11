@@ -4,13 +4,16 @@ import { del, list } from "@vercel/blob";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { sitePhotos, siteText } from "@/db/schema";
+import { AdminError, runAction, type ActionResult } from "@/lib/action-result";
 import { requireUser, revalidateSite } from "@/lib/admin";
+import { getBaseDictionaryFor } from "@/lib/dictionaries";
 import { getImageSize } from "@/lib/image-size";
 import type { Locale } from "@/lib/i18n";
+import { readPath } from "@/lib/object-path";
 import { photoSlot, type PhotoSlot } from "@/lib/photo-slots";
 import { siteTextField } from "@/lib/site-text-fields";
 import { checkedBlobImageUrl } from "@/lib/uploads";
-import { tooLongMessage } from "@/lib/volunteer-fields";
+import { asOneParagraph, tooLongMessage } from "@/lib/volunteer-fields";
 
 const NOT_REGISTERED_MESSAGE = "That sentence can't be changed here.";
 const NOT_REGISTERED_PHOTO_MESSAGE = "That photo spot doesn't exist.";
@@ -22,7 +25,7 @@ const LIST_PAGE_LIMIT = 500;
 const LIBRARY_LIMIT = 60;
 
 function checkedLang(lang: string): Locale {
-  if (lang !== "en" && lang !== "ja") throw new Error("That language isn't supported.");
+  if (lang !== "en" && lang !== "ja") throw new AdminError("That language isn't supported.");
   return lang;
 }
 
@@ -45,35 +48,46 @@ async function setSiteTextColumn(path: string, lang: Locale, value: string | nul
     .onConflictDoUpdate({ target: siteText.path, set: next });
 }
 
-export async function updateSiteText(path: string, lang: Locale, value: string): Promise<void> {
-  await requireUser();
+export async function updateSiteText(path: string, lang: Locale, value: string): Promise<ActionResult> {
+  return runAction(async () => {
+    await requireUser();
 
-  const fieldSpec = siteTextField(path);
-  if (!fieldSpec) throw new Error(NOT_REGISTERED_MESSAGE);
-  const checked = checkedLang(lang);
+    const fieldSpec = siteTextField(path);
+    if (!fieldSpec) throw new AdminError(NOT_REGISTERED_MESSAGE);
+    const checked = checkedLang(lang);
 
-  const trimmed = value.trim();
-  if (trimmed.length > fieldSpec.max) {
-    throw new Error(tooLongMessage(fieldSpec.label, fieldSpec.max));
-  }
+    const trimmed = asOneParagraph(value).trim();
+    if (trimmed.length > fieldSpec.max) {
+      throw new AdminError(tooLongMessage(fieldSpec.label, fieldSpec.max));
+    }
 
-  await setSiteTextColumn(path, checked, trimmed || null);
-  revalidateSite();
+    await setSiteTextColumn(path, checked, trimmed ? await withOriginalSpacing(path, checked, trimmed) : null);
+    revalidateSite();
+  });
 }
 
-export async function resetSiteText(path: string, lang: Locale): Promise<void> {
-  await requireUser();
+// Some sentences run straight into a link, so the original ends in a space
+// that trimming would otherwise glue the link onto.
+async function withOriginalSpacing(path: string, lang: Locale, trimmed: string): Promise<string> {
+  const original = readPath(await getBaseDictionaryFor(lang), path);
+  return typeof original === "string" && /\s$/.test(original) ? `${trimmed} ` : trimmed;
+}
 
-  if (!siteTextField(path)) throw new Error(NOT_REGISTERED_MESSAGE);
-  const checked = checkedLang(lang);
+export async function resetSiteText(path: string, lang: Locale): Promise<ActionResult> {
+  return runAction(async () => {
+    await requireUser();
 
-  await setSiteTextColumn(path, checked, null);
-  revalidateSite();
+    if (!siteTextField(path)) throw new AdminError(NOT_REGISTERED_MESSAGE);
+    const checked = checkedLang(lang);
+
+    await setSiteTextColumn(path, checked, null);
+    revalidateSite();
+  });
 }
 
 function checkedSlot(slot: string): PhotoSlot {
   const found = photoSlot(slot);
-  if (!found) throw new Error(NOT_REGISTERED_PHOTO_MESSAGE);
+  if (!found) throw new AdminError(NOT_REGISTERED_PHOTO_MESSAGE);
   return found;
 }
 
@@ -81,9 +95,9 @@ function checkedAlt(alt: string, slot: PhotoSlot): string {
   const trimmed = alt.trim();
   if (!trimmed) {
     if (slot.defaultAltPath === null) return "";
-    throw new Error(MISSING_ALT_MESSAGE);
+    throw new AdminError(MISSING_ALT_MESSAGE);
   }
-  if (trimmed.length > ALT_MAX) throw new Error(tooLongMessage("photo description", ALT_MAX));
+  if (trimmed.length > ALT_MAX) throw new AdminError(tooLongMessage("photo description", ALT_MAX));
   return trimmed;
 }
 
@@ -91,7 +105,7 @@ function checkedAltJa(altJa: string): string | null {
   const trimmed = altJa.trim();
   if (!trimmed) return null;
   if (trimmed.length > ALT_MAX) {
-    throw new Error(tooLongMessage("Japanese photo description", ALT_MAX));
+    throw new AdminError(tooLongMessage("Japanese photo description", ALT_MAX));
   }
   return trimmed;
 }
@@ -117,82 +131,90 @@ export async function updateSitePhoto(input: {
   url: string;
   alt: string;
   altJa: string;
-}): Promise<void> {
-  await requireUser();
-  const slot = checkedSlot(input.slot);
-  const url = checkedBlobImageUrl(input.url);
-  if (!url) throw new Error("That photo didn't upload correctly. Please try again.");
-  const alt = checkedAlt(input.alt, slot);
-  const altJa = checkedAltJa(input.altJa);
+}): Promise<ActionResult> {
+  return runAction(async () => {
+    await requireUser();
+    const slot = checkedSlot(input.slot);
+    const url = checkedBlobImageUrl(input.url);
+    if (!url) throw new AdminError("That photo didn't upload correctly. Please try again.");
+    const alt = checkedAlt(input.alt, slot);
+    const altJa = checkedAltJa(input.altJa);
 
-  const [existing] = await db.select().from(sitePhotos).where(eq(sitePhotos.slot, slot.id));
-  const size = await getImageSize(url);
+    const [existing] = await db.select().from(sitePhotos).where(eq(sitePhotos.slot, slot.id));
+    const size = await getImageSize(url);
 
-  await db
-    .insert(sitePhotos)
-    .values({
-      slot: slot.id,
-      url,
-      alt,
-      altJa,
-      width: size?.width ?? null,
-      height: size?.height ?? null,
-    })
-    .onConflictDoUpdate({
-      target: sitePhotos.slot,
-      set: { url, alt, altJa, width: size?.width ?? null, height: size?.height ?? null },
-    });
+    await db
+      .insert(sitePhotos)
+      .values({
+        slot: slot.id,
+        url,
+        alt,
+        altJa,
+        width: size?.width ?? null,
+        height: size?.height ?? null,
+      })
+      .onConflictDoUpdate({
+        target: sitePhotos.slot,
+        set: { url, alt, altJa, width: size?.width ?? null, height: size?.height ?? null },
+      });
 
-  if (existing && existing.url !== url) {
-    await deleteOrphanedBlob(existing.url);
-  }
+    if (existing && existing.url !== url) {
+      await deleteOrphanedBlob(existing.url);
+    }
 
-  revalidateSite();
+    revalidateSite();
+  });
 }
 
 export async function updateSitePhotoDescription(input: {
   slot: string;
   alt: string;
   altJa: string;
-}): Promise<void> {
-  await requireUser();
-  const slot = checkedSlot(input.slot);
-  const alt = checkedAlt(input.alt, slot);
-  const altJa = checkedAltJa(input.altJa);
+}): Promise<ActionResult> {
+  return runAction(async () => {
+    await requireUser();
+    const slot = checkedSlot(input.slot);
+    const alt = checkedAlt(input.alt, slot);
+    const altJa = checkedAltJa(input.altJa);
 
-  const [existing] = await db.select().from(sitePhotos).where(eq(sitePhotos.slot, slot.id));
-  if (!existing) throw new Error(NO_OVERRIDE_PHOTO_MESSAGE);
+    const [existing] = await db.select().from(sitePhotos).where(eq(sitePhotos.slot, slot.id));
+    if (!existing) throw new AdminError(NO_OVERRIDE_PHOTO_MESSAGE);
 
-  await db.update(sitePhotos).set({ alt, altJa }).where(eq(sitePhotos.slot, slot.id));
-  revalidateSite();
+    await db.update(sitePhotos).set({ alt, altJa }).where(eq(sitePhotos.slot, slot.id));
+    revalidateSite();
+  });
 }
 
-export async function resetSitePhoto(slotId: string): Promise<void> {
-  await requireUser();
-  const slot = checkedSlot(slotId);
+export async function resetSitePhoto(slotId: string): Promise<ActionResult> {
+  return runAction(async () => {
+    await requireUser();
+    const slot = checkedSlot(slotId);
 
-  const [existing] = await db.select().from(sitePhotos).where(eq(sitePhotos.slot, slot.id));
-  if (!existing) return;
+    const [existing] = await db.select().from(sitePhotos).where(eq(sitePhotos.slot, slot.id));
+    if (!existing) return;
 
-  await db.delete(sitePhotos).where(eq(sitePhotos.slot, slot.id));
-  await deleteOrphanedBlob(existing.url);
+    await db.delete(sitePhotos).where(eq(sitePhotos.slot, slot.id));
+    await deleteOrphanedBlob(existing.url);
 
-  revalidateSite();
+    revalidateSite();
+  });
 }
 
-export async function listUploadedPhotos(): Promise<{ url: string; uploadedAt: string }[]> {
-  await requireUser();
+export async function listUploadedPhotos(): Promise<ActionResult<{ url: string; uploadedAt: string }[]>> {
+  return runAction(async () => {
+    await requireUser();
 
-  const blobs: { url: string; uploadedAt: Date }[] = [];
-  let cursor: string | undefined;
-  do {
-    const page = await list({ prefix: "site/", cursor });
-    blobs.push(...page.blobs);
-    cursor = page.hasMore ? page.cursor : undefined;
-  } while (cursor && blobs.length < LIST_PAGE_LIMIT);
+    const blobs: { url: string; uploadedAt: Date }[] = [];
+    let cursor: string | undefined;
+    do {
+      const page = await list({ prefix: "site/", cursor });
+      blobs.push(...page.blobs);
+      cursor = page.hasMore ? page.cursor : undefined;
+    } while (cursor && blobs.length < LIST_PAGE_LIMIT);
 
-  return blobs
-    .sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime())
-    .slice(0, LIBRARY_LIMIT)
-    .map((blob) => ({ url: blob.url, uploadedAt: blob.uploadedAt.toISOString() }));
+    return blobs
+      .sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime())
+      .slice(0, LIBRARY_LIMIT)
+      .map((blob) => ({ url: blob.url, uploadedAt: blob.uploadedAt.toISOString() }));
+  });
 }

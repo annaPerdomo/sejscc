@@ -16,6 +16,7 @@ import {
 } from "@/components/admin/admin-field";
 import { AdminImagePicker } from "@/components/admin/admin-image-picker";
 import type { SchoolYearEvent } from "@/db/schema";
+import { expectOk } from "@/lib/action-result";
 import {
   createSchoolYearEvent,
   updateSchoolYearEvent,
@@ -129,9 +130,9 @@ export function EventForm({ event }: { event?: SchoolYearEvent }) {
       };
 
       if (event) {
-        await updateSchoolYearEvent(event.id, input, photoUrl);
+        expectOk(await updateSchoolYearEvent(event.id, input, photoUrl));
       } else {
-        await createSchoolYearEvent(input, photoUrl === "unchanged" ? null : photoUrl);
+        expectOk(await createSchoolYearEvent(input, photoUrl === "unchanged" ? null : photoUrl));
       }
 
       router.push("/admin/school-year");

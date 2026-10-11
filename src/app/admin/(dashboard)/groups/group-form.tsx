@@ -19,6 +19,7 @@ import {
   AdminTextField,
 } from "@/components/admin/admin-field";
 import { weekDays, type GroupStatus, type WeekDay } from "@/db/schema";
+import { expectOk } from "@/lib/action-result";
 import { normalizeContactEmail, normalizeWebsiteUrl } from "@/lib/format";
 import { MAX_GROUP_PHOTOS } from "@/lib/groups";
 import { createGroup, updateGroup, type GroupInput } from "./actions";
@@ -201,9 +202,9 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
         photoUrls: await uploadPhotos(),
       };
       if (group) {
-        await updateGroup(group.id, input);
+        expectOk(await updateGroup(group.id, input));
       } else {
-        await createGroup(input);
+        expectOk(await createGroup(input));
       }
       router.push("/admin/groups");
       router.refresh();

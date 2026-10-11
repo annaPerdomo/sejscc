@@ -11,6 +11,7 @@ import { AdminButton } from "@/components/admin/admin-button";
 import { adminPanel } from "@/components/admin/admin-card";
 import { AdminListRow } from "@/components/admin/admin-list-row";
 import { PhotoPlaceholder } from "@/components/photo-placeholder";
+import { expectOk } from "@/lib/action-result";
 import { reorderGroups, type ReorderResult } from "./actions";
 import { GROUP_STATUS_LABELS } from "./status";
 
@@ -148,9 +149,11 @@ export function GroupList({ groups }: { groups: Group[] }) {
     startSaving(async () => {
       let result: ReorderResult;
       try {
-        result = await reorderGroups(draft.map((group) => group.id));
-      } catch {
-        setError({ message: SAVE_FAILED_MESSAGE });
+        result = expectOk(await reorderGroups(draft.map((group) => group.id)));
+      } catch (e) {
+        setError({
+          message: e instanceof Error && e.message ? e.message : SAVE_FAILED_MESSAGE,
+        });
         return;
       }
       if (!result.ok) {

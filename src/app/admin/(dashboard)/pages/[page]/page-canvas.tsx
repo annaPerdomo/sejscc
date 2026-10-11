@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { expectOk } from "@/lib/action-result";
 import { AdminBadge } from "@/components/admin/admin-badge";
 import { AdminCard } from "@/components/admin/admin-card";
 import { EditBar, type EditBarStatus } from "@/components/admin/inline-edit/edit-bar";
@@ -103,7 +104,7 @@ export function PageCanvas({
       setOverrides(withOverride(fieldSpec.path, lang, toStore || null));
       setStatus({ kind: "saving" });
       try {
-        await updateSiteText(fieldSpec.path, lang, toStore);
+        expectOk(await updateSiteText(fieldSpec.path, lang, toStore));
         setStatus({ kind: "saved", message: description });
         undo.record({
           description,
@@ -111,9 +112,9 @@ export function PageCanvas({
             setOverrides(withOverride(fieldSpec.path, lang, previous));
             try {
               if (previous === null) {
-                await resetSiteText(fieldSpec.path, lang);
+                expectOk(await resetSiteText(fieldSpec.path, lang));
               } else {
-                await updateSiteText(fieldSpec.path, lang, previous);
+                expectOk(await updateSiteText(fieldSpec.path, lang, previous));
               }
               router.refresh();
             } catch (e) {
@@ -140,14 +141,14 @@ export function PageCanvas({
       setOverrides(withOverride(fieldSpec.path, lang, null));
       setStatus({ kind: "saving" });
       try {
-        await resetSiteText(fieldSpec.path, lang);
+        expectOk(await resetSiteText(fieldSpec.path, lang));
         setStatus({ kind: "saved", message: resetDescription });
         undo.record({
           description: resetDescription,
           undo: async () => {
             setOverrides(withOverride(fieldSpec.path, lang, previous));
             try {
-              await updateSiteText(fieldSpec.path, lang, previous ?? "");
+              expectOk(await updateSiteText(fieldSpec.path, lang, previous ?? ""));
               router.refresh();
             } catch (e) {
               setOverrides(withOverride(fieldSpec.path, lang, null));

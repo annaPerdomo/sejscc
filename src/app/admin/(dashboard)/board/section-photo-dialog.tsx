@@ -3,6 +3,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { upload } from "@vercel/blob/client";
+import { expectOk } from "@/lib/action-result";
 import { AdminAlert } from "@/components/admin/admin-alert";
 import { buttonClass } from "@/components/admin/admin-button";
 import { AdminTextArea } from "@/components/admin/admin-field";
@@ -103,7 +104,7 @@ export function useSectionPhotoDialog({
       setSection({ ...section, photoUrl, photoAlt, photoAltJa: photoAltJa || null });
       setStatus({ kind: "saving" });
 
-      await updateSectionPhoto({ photoUrl, photoAlt, photoAltJa });
+      expectOk(await updateSectionPhoto({ photoUrl, photoAlt, photoAltJa }));
 
       undo.clear();
       setStatus({ kind: "saved" });

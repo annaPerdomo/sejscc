@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { upload } from "@vercel/blob/client";
+import { expectOk } from "@/lib/action-result";
 import { AdminAlert } from "@/components/admin/admin-alert";
 import { AdminBadge } from "@/components/admin/admin-badge";
 import { buttonClass, buttonVariantClass } from "@/components/admin/admin-button";
@@ -71,7 +72,7 @@ export function PhotoSlotTile({
         : {
             description,
             undo: async () => {
-              await resetSitePhoto(slot.id);
+              expectOk(await resetSitePhoto(slot.id));
               onTileChange({ ...tile, isChanged: false });
               router.refresh();
             },
@@ -183,7 +184,7 @@ function PhotoDialog({
     setLibraryLoading(true);
     setLibraryError(null);
     try {
-      setLibrary(await listUploadedPhotos());
+      setLibrary(expectOk(await listUploadedPhotos()));
     } catch (e) {
       setLibraryError(
         e instanceof Error && e.message ? e.message : "Couldn't load your uploaded photos."
@@ -228,9 +229,9 @@ function PhotoDialog({
       }
 
       if (hasNewPhoto) {
-        await updateSitePhoto({ slot: tile.slot, url, alt, altJa });
+        expectOk(await updateSitePhoto({ slot: tile.slot, url, alt, altJa }));
       } else {
-        await updateSitePhotoDescription({ slot: tile.slot, alt, altJa });
+        expectOk(await updateSitePhotoDescription({ slot: tile.slot, alt, altJa }));
       }
 
       onSaved(
@@ -254,7 +255,7 @@ function PhotoDialog({
     setError(null);
     onStatus({ kind: "saving" });
     try {
-      await resetSitePhoto(tile.slot);
+      expectOk(await resetSitePhoto(tile.slot));
       onReset(tile.original, `Put back the original photo: ${slot.group}, ${slot.label}.`);
       onClose();
     } catch (e) {

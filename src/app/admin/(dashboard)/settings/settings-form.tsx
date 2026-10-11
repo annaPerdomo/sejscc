@@ -6,6 +6,7 @@ import { AdminAlert } from "@/components/admin/admin-alert";
 import { AdminButton } from "@/components/admin/admin-button";
 import { AdminCard } from "@/components/admin/admin-card";
 import { AdminTextArea, AdminTextField } from "@/components/admin/admin-field";
+import { expectOk } from "@/lib/action-result";
 import { updateAboutVideoUrls, updateAccessRequestEmail } from "./actions";
 
 export function AccessRequestEmailForm({ initialEmail }: { initialEmail: string }) {
@@ -22,7 +23,7 @@ export function AccessRequestEmailForm({ initialEmail }: { initialEmail: string 
     setSaved("");
     setBusy(true);
     try {
-      const stored = await updateAccessRequestEmail(email);
+      const stored = expectOk(await updateAccessRequestEmail(email));
       setEmail(stored ?? "");
       setSaved(
         stored
@@ -95,7 +96,7 @@ export function AboutVideoForm({ initialUrls }: { initialUrls: string[] }) {
     setSaved("");
     setBusy(true);
     try {
-      const stored = await updateAboutVideoUrls(text);
+      const stored = expectOk(await updateAboutVideoUrls(text));
       setText(stored.join("\n"));
       setSaved(
         stored.length > 0

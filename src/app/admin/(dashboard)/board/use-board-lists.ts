@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { expectOk } from "@/lib/action-result";
 import type { EditBarStatus } from "@/components/admin/inline-edit/edit-bar";
 import type { UndoState } from "@/components/admin/inline-edit/use-undo";
 import type { BoardMember } from "@/db/schema";
@@ -85,7 +86,7 @@ export function useBoardLists({
     );
     setStatus({ kind: "saving" });
     try {
-      await updateMemberFields(member.id, fieldLang, { name: values.name, role: values.role });
+      expectOk(await updateMemberFields(member.id, fieldLang, { name: values.name, role: values.role }));
       setStatus({ kind: "saved", message: description });
       undo.record({
         description,
@@ -94,10 +95,10 @@ export function useBoardLists({
             current.map((m) => (m.id === member.id ? apply(m, previousName, previousRole) : m))
           );
           try {
-            await updateMemberFields(member.id, fieldLang, {
+            expectOk(await updateMemberFields(member.id, fieldLang, {
               name: previousName,
               role: previousRole,
-            });
+            }));
             router.refresh();
           } catch (e) {
             setMembers((current) =>
@@ -135,7 +136,7 @@ export function useBoardLists({
     setListBusy(id);
     setStatus({ kind: "saving" });
     try {
-      await reorderBoardMembers(postChangeOrder);
+      expectOk(await reorderBoardMembers(postChangeOrder));
       const name = next[to].name;
       setStatus({ kind: "saved", message: `${name} is now number ${to + 1} of ${next.length}.` });
       undo.record({
@@ -143,7 +144,7 @@ export function useBoardLists({
         undo: async () => {
           setMembers((current) => reorderById(current, previousOrder));
           try {
-            await reorderBoardMembers(previousOrder);
+            expectOk(await reorderBoardMembers(previousOrder));
             router.refresh();
           } catch (e) {
             setMembers((current) => reorderById(current, postChangeOrder));
@@ -171,7 +172,7 @@ export function useBoardLists({
     setListBusy(id);
     setStatus({ kind: "saving" });
     try {
-      await setBoardMemberVisible(id, next);
+      expectOk(await setBoardMemberVisible(id, next));
       setStatus({
         kind: "saved",
         message: `${member.name} is now ${next ? "showing on the website" : "hidden"}.`,
@@ -181,7 +182,7 @@ export function useBoardLists({
         undo: async () => {
           setMembers((current) => current.map((m) => (m.id === id ? { ...m, visible: !next } : m)));
           try {
-            await setBoardMemberVisible(id, !next);
+            expectOk(await setBoardMemberVisible(id, !next));
             router.refresh();
           } catch (e) {
             setMembers((current) => current.map((m) => (m.id === id ? { ...m, visible: next } : m)));
@@ -203,7 +204,7 @@ export function useBoardLists({
     const index = members.findIndex((m) => m.id === id);
     const removed = members[index];
     const neighbor = members[index + 1] ?? members[index - 1];
-    await deleteBoardMember(id);
+    expectOk(await deleteBoardMember(id));
     setMembers((current) => current.filter((m) => m.id !== id));
     closeMemberOptions();
     undo.clear();
@@ -213,7 +214,7 @@ export function useBoardLists({
 
   async function addMember(name: string) {
     const trimmed = name.trim();
-    const { id } = await addBoardMember(trimmed);
+    const { id } = expectOk(await addBoardMember(trimmed));
     setMembers((current) => [
       ...current,
       {

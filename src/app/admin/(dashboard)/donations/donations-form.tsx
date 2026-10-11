@@ -6,6 +6,7 @@ import { AdminAlert } from "@/components/admin/admin-alert";
 import { AdminButton, AdminFormActions } from "@/components/admin/admin-button";
 import { AdminCard } from "@/components/admin/admin-card";
 import { AdminTextField } from "@/components/admin/admin-field";
+import { expectOk } from "@/lib/action-result";
 import { ZELLE_FALLBACK_EMAIL } from "@/lib/donate";
 import { updateDonationDetails } from "../settings/actions";
 
@@ -43,12 +44,14 @@ export function DonationDetailsForm({
     setSaved("");
     setBusy(true);
     try {
-      await updateDonationDetails({
-        zelleRecipient,
-        checkPayee,
-        checkAddress,
-        donateFormUrl,
-      });
+      expectOk(
+        await updateDonationDetails({
+          zelleRecipient,
+          checkPayee,
+          checkAddress,
+          donateFormUrl,
+        })
+      );
       setSaved("Saved — the donation page now shows these details.");
       router.refresh();
     } catch (e) {

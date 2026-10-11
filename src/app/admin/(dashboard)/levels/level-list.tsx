@@ -10,6 +10,7 @@ import { AdminBadge } from "@/components/admin/admin-badge";
 import { buttonClass } from "@/components/admin/admin-button";
 import { adminPanel } from "@/components/admin/admin-card";
 import { PhotoPlaceholder } from "@/components/photo-placeholder";
+import { expectOk } from "@/lib/action-result";
 import { reorderSchoolLevels, setSchoolLevelVisible, type ReorderResult } from "./actions";
 
 type Direction = "up" | "down";
@@ -54,9 +55,9 @@ export function LevelList({ levels }: { levels: SchoolLevel[] }) {
     startTransition(async () => {
       let result: ReorderResult;
       try {
-        result = await reorderSchoolLevels(next.map((item) => item.id));
-      } catch {
-        setError(SAVE_FAILED_MESSAGE);
+        result = expectOk(await reorderSchoolLevels(next.map((item) => item.id)));
+      } catch (e) {
+        setError(e instanceof Error && e.message ? e.message : SAVE_FAILED_MESSAGE);
         setBusyId(null);
         return;
       }
@@ -71,9 +72,13 @@ export function LevelList({ levels }: { levels: SchoolLevel[] }) {
     setBusyId(level.id);
     startTransition(async () => {
       try {
-        await setSchoolLevelVisible(level.id, !level.visible);
-      } catch {
-        setError("Something went wrong saving this. Please try again.");
+        expectOk(await setSchoolLevelVisible(level.id, !level.visible));
+      } catch (e) {
+        setError(
+          e instanceof Error && e.message
+            ? e.message
+            : "Something went wrong saving this. Please try again."
+        );
       }
       setBusyId(null);
       router.refresh();
