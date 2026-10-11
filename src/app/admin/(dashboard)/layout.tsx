@@ -16,7 +16,7 @@ export default async function AdminLayout({
 
   return (
     <>
-      <ScrollReset />
+      <ScrollReset resetOnReload />
       <div className="flex flex-1 flex-col lg:flex-row">
         <AdminSidebar
           user={{
