@@ -156,6 +156,7 @@ export const siteSettings = pgTable("site_setting", {
   announcementText: text("announcement_text"),
   announcementTextJa: text("announcement_text_ja"),
   announcementUrl: text("announcement_url"),
+  announcementLinkLabel: text("announcement_link_label"),
   announcementUntil: timestamp("announcement_until", { mode: "date" }),
   updatedAt: timestamp("updated_at", { mode: "date" })
     .notNull()

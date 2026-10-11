@@ -65,7 +65,7 @@ export default async function SiteLayout({
                       href={announcement.url}
                       className="shrink-0 font-display text-xs font-bold text-blossom underline-offset-4 hover:text-white hover:underline"
                     >
-                      {dict.header.noticeCta}
+                      {lang === "ja" ? dict.header.noticeCta : (announcement.linkLabel ?? dict.header.noticeCta)}
                     </ExternalLink>
                   )}
                 </>

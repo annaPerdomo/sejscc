@@ -167,10 +167,12 @@ export type AnnouncementInput = {
   text: string;
   textJa: string;
   url: string;
+  linkLabel: string;
   until: string;
 };
 
 const ANNOUNCEMENT_TEXT_MAX = 140;
+const ANNOUNCEMENT_LINK_LABEL_MAX = 30;
 
 function parseAnnouncementUntil(raw: string): Date | null {
   const trimmed = raw.trim();
@@ -201,6 +203,7 @@ export async function updateAnnouncement(input: AnnouncementInput): Promise<Acti
         announcementText: null,
         announcementTextJa: null,
         announcementUrl: null,
+        announcementLinkLabel: null,
         announcementUntil: null,
       });
       revalidateSite();
@@ -217,12 +220,17 @@ export async function updateAnnouncement(input: AnnouncementInput): Promise<Acti
       );
     }
     const url = normalizeContactLinkUrl(input.url);
+    const linkLabel = url ? (input.linkLabel ?? "").trim() || null : null;
+    if (linkLabel && linkLabel.length > ANNOUNCEMENT_LINK_LABEL_MAX) {
+      throw new AdminError(tooLongMessage("link text", ANNOUNCEMENT_LINK_LABEL_MAX));
+    }
     const until = parseAnnouncementUntil(input.until);
 
     await upsertSiteSettings({
       announcementText: text,
       announcementTextJa: textJa,
       announcementUrl: url,
+      announcementLinkLabel: linkLabel,
       announcementUntil: until,
     });
     revalidateSite();

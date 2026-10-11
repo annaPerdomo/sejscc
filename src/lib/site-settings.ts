@@ -75,6 +75,7 @@ export type Announcement = {
   text: string;
   textJa: string | null;
   url: string | null;
+  linkLabel: string | null;
 };
 
 export const getAnnouncement = cache(async function getAnnouncement(): Promise<Announcement | null> {
@@ -87,5 +88,6 @@ export const getAnnouncement = cache(async function getAnnouncement(): Promise<A
     text: settings.announcementText,
     textJa: settings.announcementTextJa,
     url: settings.announcementUrl,
+    linkLabel: settings.announcementLinkLabel,
   };
 });
