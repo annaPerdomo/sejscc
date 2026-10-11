@@ -136,7 +136,8 @@ be built from these tokens via Tailwind utility classes.
   no scroll timeline to drive them), `inline-edit-target` / `inline-edit-chip` /
   `inline-edit-field` (click-to-edit text on the admin canvas: the button that
   inherits the page's typography, its "Change" chip, and the textarea that
-  replaces it), `edit-dialog` (a native `<dialog>` that is a full-screen sheet
+  replaces it), `admin-disclosure` (a `<details>` in the admin whose summary
+  draws its own Show/Hide label instead of the browser's triangle), `edit-dialog` (a native `<dialog>` that is a full-screen sheet
   on phones and a centred panel from 40rem), and the
   `section-wash-*` backgrounds, and the three dark
   scenes, `section-navy-scene`, `section-midnight-scene` (ink-deep, for the

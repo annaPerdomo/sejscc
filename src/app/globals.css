@@ -1658,6 +1658,15 @@ body {
     outline-offset: 2px;
   }
 
+  .admin-disclosure > summary {
+    list-style: none;
+    cursor: pointer;
+  }
+
+  .admin-disclosure > summary::-webkit-details-marker {
+    display: none;
+  }
+
   .edit-dialog {
     width: 100%;
     max-width: 100%;

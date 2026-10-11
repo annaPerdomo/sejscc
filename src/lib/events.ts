@@ -114,6 +114,30 @@ export const getPastEvents = cache(async (limit = 12) => {
     .map(({ event, start }) => atOccurrence(event, start));
 });
 
+export type DatedEvent = { event: Event; date: Date | null };
+
+export function splitByComingUp(rows: Event[]): { comingUp: DatedEvent[]; past: DatedEvent[] } {
+  const now = wallClockNow();
+  const comingUp: DatedEvent[] = [];
+  const past: DatedEvent[] = [];
+
+  for (const event of rows) {
+    if (!event.startAt) {
+      (event.status === "archived" ? past : comingUp).push({ event, date: null });
+      continue;
+    }
+    const since = stillRunningSince(event, now);
+    const [next] = upcomingOccurrences(event, since, 1);
+    if (next && event.status !== "archived") comingUp.push({ event, date: next });
+    else past.push({ event, date: next ?? latestOccurrence(event, since) });
+  }
+
+  const time = (item: DatedEvent) => item.date?.getTime() ?? 0;
+  comingUp.sort((a, b) => time(a) - time(b));
+  past.sort((a, b) => time(b) - time(a));
+  return { comingUp, past };
+}
+
 export const getEventBySlug = cache(async (slug: string) => {
   const rows = await failSoft(
     db.select().from(events).where(eq(events.slug, slug)).limit(1),
