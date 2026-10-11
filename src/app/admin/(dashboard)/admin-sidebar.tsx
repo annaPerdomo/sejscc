@@ -10,45 +10,45 @@ import { SectionKicker } from "@/components/section-kicker";
 import type { UserRole } from "@/db/schema";
 import { signOutAction } from "./sign-out-action";
 
-type NavItem = { href: string; label: string; kanji: string; adminOnly?: boolean };
+type NavItem = {
+  href: string;
+  label: string;
+  kanji: string;
+  adminOnly?: boolean;
+  alsoActiveFor?: string[];
+};
 type NavGroup = { heading: string | null; items: NavItem[] };
 
 const NAV_GROUPS: NavGroup[] = [
   {
     heading: null,
-    items: [{ href: "/admin", label: "Dashboard", kanji: "家" }],
+    items: [{ href: "/admin", label: "Dashboard", kanji: "始" }],
   },
   {
-    heading: "What's on",
+    heading: "Your website",
     items: [
-      { href: "/admin/events", label: "Events", kanji: "祭" },
-      { href: "/admin/groups", label: "Sports & Classes", kanji: "部" },
-      { href: "/admin/board", label: "Board of Directors", kanji: "志" },
+      { href: "/admin/pages/home", label: "Home", kanji: "家", alsoActiveFor: ["/admin/board"] },
+      {
+        href: "/admin/pages/school",
+        label: "Japanese School",
+        kanji: "文",
+        alsoActiveFor: ["/admin/levels", "/admin/school-year"],
+      },
+      { href: "/admin/events", label: "Events", kanji: "祭", alsoActiveFor: ["/admin/pages/events"] },
+      {
+        href: "/admin/groups",
+        label: "Sports & Classes",
+        kanji: "部",
+        alsoActiveFor: ["/admin/pages/groups"],
+      },
+      { href: "/admin/pages/donate", label: "Donate", kanji: "寄", alsoActiveFor: ["/admin/donations"] },
     ],
   },
   {
-    heading: "Japanese School",
-    items: [
-      { href: "/admin/pages/school", label: "School page", kanji: "文" },
-      { href: "/admin/levels", label: "Class Levels", kanji: "級" },
-      { href: "/admin/school-year", label: "School Year", kanji: "年" },
-    ],
-  },
-  {
-    heading: "Website pages",
-    items: [
-      { href: "/admin/pages/home", label: "Home page", kanji: "家" },
-      { href: "/admin/pages/events", label: "Events page", kanji: "祭" },
-      { href: "/admin/pages/groups", label: "Sports & Classes page", kanji: "部" },
-      { href: "/admin/pages/donate", label: "Donations page", kanji: "寄" },
-    ],
-  },
-  {
-    heading: "Site-wide",
+    heading: "On every page",
     items: [
       { href: "/admin/announcement", label: "Announcement bar", kanji: "報" },
       { href: "/admin/contact", label: "Contact details", kanji: "連" },
-      { href: "/admin/donations", label: "Donations", kanji: "寄" },
     ],
   },
   {
@@ -60,8 +60,9 @@ const NAV_GROUPS: NavGroup[] = [
   },
 ];
 
-function isActiveHref(pathname: string, href: string) {
-  return href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
+function isActive(pathname: string, item: NavItem) {
+  if (item.href === "/admin") return pathname === "/admin";
+  return [item.href, ...(item.alsoActiveFor ?? [])].some((href) => pathname.startsWith(href));
 }
 
 export function AdminSidebar({
@@ -100,10 +101,10 @@ export function AdminSidebar({
           type="button"
           aria-expanded={open}
           aria-controls="admin-sidebar-panel"
-          aria-label={open ? "Close admin menu" : "Open admin menu"}
           onClick={() => setOpen((v) => !v)}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-white hover:bg-white/10 lg:hidden"
+          className="flex min-h-11 shrink-0 items-center gap-2 rounded-md px-3 font-display text-base font-semibold text-white hover:bg-white/10 lg:hidden"
         >
+          {open ? "Close" : "Menu"}
           <svg viewBox="0 0 24 24" className="h-6 w-6" aria-hidden="true">
             {open ? (
               <path
@@ -149,7 +150,7 @@ export function AdminSidebar({
                   {group.heading && (
                     <p
                       id={headingId}
-                      className="mt-6 mb-1 px-3 font-display text-xs font-semibold tracking-widest text-sky uppercase"
+                      className="mt-6 mb-1 px-3 font-display text-sm font-semibold tracking-widest text-sky uppercase"
                     >
                       {group.heading}
                     </p>
@@ -159,14 +160,14 @@ export function AdminSidebar({
                     className="flex flex-col gap-1"
                   >
                     {items.map((item) => {
-                      const active = isActiveHref(pathname, item.href);
+                      const active = isActive(pathname, item);
                       return (
                         <li key={item.href}>
                           <Link
                             href={item.href}
                             onClick={() => setOpen(false)}
                             aria-current={active ? "page" : undefined}
-                            className={`flex items-center gap-3 rounded-md border-l-2 px-3 py-3 font-display text-sm font-semibold tracking-wide ${
+                            className={`flex items-center gap-3 rounded-md border-l-2 px-3 py-3 font-display text-base font-semibold tracking-wide ${
                               active
                                 ? "border-sky text-white"
                                 : "border-transparent text-white/70 hover:text-white"
@@ -174,7 +175,7 @@ export function AdminSidebar({
                           >
                             <span
                               aria-hidden="true"
-                              className={`font-accent text-sm font-bold ${
+                              className={`font-accent text-base font-bold ${
                                 active ? "text-sky" : "text-sky/60"
                               }`}
                             >
@@ -194,19 +195,19 @@ export function AdminSidebar({
 
         <div className="mt-6 border-t border-white/15 pt-5 lg:mt-auto">
           <AdminUserIdentity user={user} />
-          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-semibold tracking-wide">
-            <Link href="/" className="text-white/70 hover:text-white">
+          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-1 text-sm font-semibold tracking-wide">
+            <Link href="/" className="inline-flex min-h-11 items-center text-white/80 hover:text-white">
               View website
             </Link>
             <Link
               href="/admin/profile"
               onClick={() => setOpen(false)}
-              className="text-white/70 hover:text-white"
+              className="inline-flex min-h-11 items-center text-white/80 hover:text-white"
             >
-              Edit profile
+              Your profile
             </Link>
             <form action={signOutAction}>
-              <button type="submit" className="text-white/70 hover:text-white">
+              <button type="submit" className="inline-flex min-h-11 items-center text-white/80 hover:text-white">
                 Sign out
               </button>
             </form>

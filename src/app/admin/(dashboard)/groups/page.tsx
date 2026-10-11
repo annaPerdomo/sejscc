@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { asc } from "drizzle-orm";
 import { db } from "@/db";
 import { groups } from "@/db/schema";
@@ -27,6 +28,14 @@ export default async function AdminGroupsPage() {
           + Add New Group
         </AdminButtonLink>
       </div>
+      <p className="mt-3">
+        <Link
+          href="/admin/pages/groups"
+          className="inline-flex min-h-11 items-center text-base font-semibold text-indigo-deep hover:underline"
+        >
+          Change the words and photos on the Sports &amp; Classes page →
+        </Link>
+      </p>
 
       {allGroups.length === 0 ? (
         <AdminEmptyState title="No groups yet">

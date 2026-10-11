@@ -55,12 +55,11 @@ export default async function EditablePagePage({
     <>
       <div className="mx-auto max-w-7xl">
         <h1 className="font-display text-3xl text-ink">{page.label}</h1>
-        <p className="mt-1 mb-8 max-w-xl text-stone">
-          Below are the words and photos on this page, in the order a visitor
-          reads them. Tap a sentence or a photo to change it. The preview on
-          the right shows the real page and updates after every save. Each
-          change goes live on the website as soon as you press Save, and you
-          can undo the last one.
+        <p className="mt-1 mb-8 max-w-xl text-lg text-ink-soft">
+          Everything on this page, in the order a visitor sees it. Tap any
+          sentence or photo to change it. Parts that come from a list, like
+          events, have a button that takes you to that list. Each change goes
+          live as soon as you press Save, and you can undo the last one.
         </p>
       </div>
       <PageCanvas

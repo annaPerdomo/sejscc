@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { expectOk } from "@/lib/action-result";
 import { AdminBadge } from "@/components/admin/admin-badge";
+import { AdminButtonLink } from "@/components/admin/admin-button";
 import { AdminCard } from "@/components/admin/admin-card";
 import { EditBar, type EditBarStatus } from "@/components/admin/inline-edit/edit-bar";
 import { EditableText } from "@/components/admin/inline-edit/editable-text";
@@ -231,7 +232,7 @@ export function PageCanvas({
 
   const viewHref = localizedHref(lang, page.href);
   const sections = page.sections.filter(
-    (section) => section.fields.length > 0 || section.photos.length > 0
+    (section) => section.manage || section.fields.length > 0 || section.photos.length > 0
   );
 
   return (
@@ -253,6 +254,14 @@ export function PageCanvas({
           {sections.map((section) => (
               <AdminCard key={section.id}>
                 <h2 className="font-display text-lg text-ink">{section.label}</h2>
+                {section.manage && (
+                  <div className="mt-3 flex flex-col gap-3 rounded-lg bg-mist p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-base text-ink-soft">{section.manage.description}</p>
+                    <div className="shrink-0">
+                      <AdminButtonLink href={section.manage.href}>{section.manage.action}</AdminButtonLink>
+                    </div>
+                  </div>
+                )}
                 {section.fields.length > 0 && (
                   <div className="mt-2">{section.fields.map((fieldSpec) => renderField(fieldSpec, section.anchor))}</div>
                 )}

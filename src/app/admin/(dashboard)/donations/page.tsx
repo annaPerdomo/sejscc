@@ -9,7 +9,7 @@ export default async function DonationsPage() {
 
   return (
     <AdminPageWidth>
-      <h1 className="font-display text-3xl text-ink">Donations</h1>
+      <h1 className="font-display text-3xl text-ink">Donation details</h1>
       <p className="mt-1 mb-8 max-w-xl text-stone">
         Details shown on the donation page for giving outside the online
         donation form.
