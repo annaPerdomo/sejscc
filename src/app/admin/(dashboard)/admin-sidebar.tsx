@@ -7,8 +7,9 @@ import { useId, useState } from "react";
 import { AdminUserIdentity } from "@/components/admin/admin-user-identity";
 import { KanjiWatermark } from "@/components/kanji-watermark";
 import { SectionKicker } from "@/components/section-kicker";
-import { PAGE_TONES } from "@/components/admin/admin-page-tone";
+import { byAdminPageOrder, PAGE_TONES } from "@/components/admin/admin-page-tone";
 import type { UserRole } from "@/db/schema";
+import type { EditablePageId } from "@/lib/editable-pages";
 import { signOutAction } from "./sign-out-action";
 
 type NavItem = {
@@ -22,6 +23,47 @@ type NavItem = {
 };
 type NavGroup = { heading: string | null; items: NavItem[] };
 
+const PAGE_NAV_ITEMS: Record<
+  EditablePageId,
+  Omit<NavItem, "kanji" | "surface"> & { id: EditablePageId }
+> = {
+  events: {
+    id: "events",
+    href: "/admin/events",
+    label: "Events page",
+    hint: "Add or change an event",
+    alsoActiveFor: ["/admin/pages/events"],
+  },
+  groups: {
+    id: "groups",
+    href: "/admin/groups",
+    label: "Sports & Classes page",
+    hint: "Add or change a group",
+    alsoActiveFor: ["/admin/pages/groups"],
+  },
+  home: {
+    id: "home",
+    href: "/admin/pages/home",
+    label: "Home page",
+    hint: "Board, history, community",
+    alsoActiveFor: ["/admin/board"],
+  },
+  donate: {
+    id: "donate",
+    href: "/admin/pages/donate",
+    label: "Donations page",
+    hint: "Ways to give",
+    alsoActiveFor: ["/admin/donations"],
+  },
+  school: {
+    id: "school",
+    href: "/admin/pages/school",
+    label: "Japanese School page",
+    hint: "Classes, school year, tuition",
+    alsoActiveFor: ["/admin/levels", "/admin/school-year"],
+  },
+};
+
 const NAV_GROUPS: NavGroup[] = [
   {
     heading: null,
@@ -29,43 +71,13 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     heading: "Pages of the website",
-    items: [
-      {
-        href: "/admin/pages/home",
-        label: "Home page",
-        hint: "Board, history, community",
-        ...PAGE_TONES.home,
-        alsoActiveFor: ["/admin/board"],
-      },
-      {
-        href: "/admin/pages/school",
-        label: "Japanese School page",
-        hint: "Classes, school year, tuition",
-        ...PAGE_TONES.school,
-        alsoActiveFor: ["/admin/levels", "/admin/school-year"],
-      },
-      {
-        href: "/admin/events",
-        label: "Events page",
-        hint: "Add or change an event",
-        ...PAGE_TONES.events,
-        alsoActiveFor: ["/admin/pages/events"],
-      },
-      {
-        href: "/admin/groups",
-        label: "Sports & Classes page",
-        hint: "Add or change a group",
-        ...PAGE_TONES.groups,
-        alsoActiveFor: ["/admin/pages/groups"],
-      },
-      {
-        href: "/admin/pages/donate",
-        label: "Donations page",
-        hint: "Ways to give",
-        ...PAGE_TONES.donate,
-        alsoActiveFor: ["/admin/donations"],
-      },
-    ],
+    items: Object.values(PAGE_NAV_ITEMS)
+      .sort(byAdminPageOrder)
+      .map(({ id, ...item }) => ({
+        ...item,
+        kanji: PAGE_TONES[id].kanji,
+        surface: PAGE_TONES[id].surface,
+      })),
   },
   {
     heading: "Top & bottom of every page",

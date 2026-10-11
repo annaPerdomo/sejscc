@@ -1,10 +1,13 @@
 import type { ReactNode } from "react";
+import Image, { type ImageProps } from "next/image";
 import Link from "next/link";
 import { auth } from "@/auth";
 import { db } from "@/db";
-import { boardMembers } from "@/db/schema";
+import { boardMembers, volunteerSection } from "@/db/schema";
 import { EDITABLE_PAGES, type EditablePage, type EditablePageId } from "@/lib/editable-pages";
 import { getActiveGroups, getUpcomingEvents } from "@/lib/events";
+import { isUploadedFileUrl } from "@/lib/format";
+import { boardPhoto } from "@/lib/photos";
 import { getAllSchoolLevels } from "@/lib/school-levels";
 import { getAllSchoolYearEvents } from "@/lib/school-year-events";
 import { getAnnouncement, getCenterContact } from "@/lib/site-settings";
@@ -12,12 +15,17 @@ import { getSitePhotos } from "@/lib/site-photos";
 import { getSiteTextOverrides } from "@/lib/site-text";
 import { AdminButtonLink } from "@/components/admin/admin-button";
 import { AdminCard } from "@/components/admin/admin-card";
-import { PAGE_TONES } from "@/components/admin/admin-page-tone";
+import { byAdminPageOrder, PAGE_TONES } from "@/components/admin/admin-page-tone";
 import { AdminPageWidth } from "@/components/admin/admin-page-width";
 
 export const dynamic = "force-dynamic";
 
 type PageLink = { href: string; label: string };
+type SectionPreview = { id: string; label: string; href: string; photo: ImageProps["src"] | null };
+
+function firstUploaded(urls: (string | null)[]): string | null {
+  return urls.find((url): url is string => url !== null && isUploadedFileUrl(url)) ?? null;
+}
 
 function plural(count: number, one: string, many: string): string {
   return `${count} ${count === 1 ? one : many}`;
@@ -39,13 +47,49 @@ function changesSummary(textCount: number, photoCount: number): string {
   return `${changed} ${verb} been changed from ${noun}.`;
 }
 
+function SectionStrip({ sections, kanji }: { sections: SectionPreview[]; kanji: string }) {
+  return (
+    <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+      {sections.map((section) => (
+        <li key={section.id}>
+          <Link href={section.href} className="group block rounded-lg">
+            <div className="relative aspect-photo overflow-clip rounded-lg border border-ink/10 bg-white group-hover:border-indigo">
+              {section.photo ? (
+                <Image
+                  src={section.photo}
+                  alt=""
+                  fill
+                  sizes="(min-width: 768px) 10rem, (min-width: 640px) 30vw, 45vw"
+                  className="object-cover"
+                />
+              ) : (
+                <span
+                  aria-hidden="true"
+                  className="flex h-full items-center justify-center font-accent text-2xl font-bold text-ink-soft"
+                >
+                  {kanji}
+                </span>
+              )}
+            </div>
+            <span className="mt-1 block text-sm leading-snug text-ink group-hover:underline">
+              {section.label}
+            </span>
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 function PageCard({
   page,
+  sections,
   status,
   primary,
   others,
 }: {
   page: EditablePage;
+  sections: SectionPreview[];
   status: string[];
   primary: PageLink;
   others: PageLink[];
@@ -75,10 +119,10 @@ function PageCard({
           <li key={line}>{line}</li>
         ))}
       </ul>
-      <p className="mt-3 text-sm leading-relaxed text-ink-soft">
-        <span className="font-semibold">On this page:</span>{" "}
-        {page.sections.map((section) => section.label).join(" · ")}
-      </p>
+      <h4 className="mt-5 mb-2 font-display text-base font-semibold text-ink-soft">
+        On this page, from top to bottom
+      </h4>
+      <SectionStrip sections={sections} kanji={tone.kanji} />
 
       <div className="mt-6 flex flex-1 flex-col justify-end gap-3">
         <AdminButtonLink href={primary.href}>{primary.label}</AdminButtonLink>
@@ -155,6 +199,7 @@ export default async function AdminDashboard() {
     activeGroups,
     upcomingEvents,
     allBoardMembers,
+    boardSections,
     allSchoolLevels,
     allSchoolYearEvents,
     announcement,
@@ -165,6 +210,7 @@ export default async function AdminDashboard() {
     getActiveGroups(),
     getUpcomingEvents(),
     db.select({ visible: boardMembers.visible }).from(boardMembers),
+    db.select({ photoUrl: volunteerSection.photoUrl }).from(volunteerSection),
     getAllSchoolLevels(),
     getAllSchoolYearEvents(),
     getAnnouncement(),
@@ -198,6 +244,37 @@ export default async function AdminDashboard() {
     );
   }
 
+  const groupPhoto = firstUploaded(
+    activeGroups.flatMap((group) => [...group.photoUrls, group.imageIsLogo ? null : group.imageUrl])
+  );
+  const photosFromLists: Record<string, ImageProps["src"] | null> = {
+    "home-board": firstUploaded(boardSections.map((section) => section.photoUrl)) ?? boardPhoto,
+    "home-sports-clubs": groupPhoto,
+    "groups-directory": groupPhoto,
+    "events-upcoming": firstUploaded(upcomingEvents.map((event) => event.flyerUrl)),
+    "school-classes": firstUploaded(
+      allSchoolLevels.filter((level) => level.visible).map((level) => level.photoUrl)
+    ),
+    "school-year": firstUploaded(
+      allSchoolYearEvents.filter((event) => event.visible).map((event) => event.photoUrl)
+    ),
+  };
+
+  function sectionPreviews(page: EditablePage): SectionPreview[] {
+    return page.sections.map((section) => {
+      const slot = section.photos[0];
+      return {
+        id: section.id,
+        label: section.label,
+        href: `/admin/pages/${page.id}#${section.id}`,
+        photo: slot
+          ? (sitePhotos.get(slot.id)?.url ?? slot.defaultSrc)
+          : (photosFromLists[section.id] ?? null),
+      };
+    });
+  }
+
+  const orderedPages = [...EDITABLE_PAGES].sort(byAdminPageOrder);
   const hiddenNote = (hidden: number) => (hidden > 0 ? ` (${hidden} hidden)` : "");
   const wordsAndPhotos = (id: EditablePageId) => ({
     href: `/admin/pages/${id}`,
@@ -311,10 +388,11 @@ export default async function AdminDashboard() {
           the menu uses the same colors.
         </p>
         <div className="mt-6 grid gap-6 md:grid-cols-2">
-          {EDITABLE_PAGES.map((page) => (
+          {orderedPages.map((page) => (
             <PageCard
               key={page.id}
               page={page}
+              sections={sectionPreviews(page)}
               {...pageCards[page.id]}
               status={[...pageCards[page.id].status, changesOn(page)]}
             />
