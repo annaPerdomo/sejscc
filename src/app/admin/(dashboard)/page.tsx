@@ -3,9 +3,11 @@ import Image, { type ImageProps } from "next/image";
 import Link from "next/link";
 import { auth } from "@/auth";
 import { EDITABLE_PAGES, type EditablePage } from "@/lib/editable-pages";
+import { getUpcomingEvents } from "@/lib/events";
 import { getAnnouncement, getCenterContact } from "@/lib/site-settings";
 import { getSitePhotos } from "@/lib/site-photos";
 import { buttonClass } from "@/components/admin/admin-button";
+import { BallIcon, CalendarPlusIcon, MegaphoneIcon } from "@/components/admin/admin-icons";
 import { ADMIN_PAGES, type AdminPage } from "@/components/admin/admin-pages";
 import { AdminPageWidth } from "@/components/admin/admin-page-width";
 
@@ -16,9 +18,27 @@ type PhotoSrc = ImageProps["src"];
 const CENTER_TIME_ZONE = "America/Los_Angeles";
 
 const QUICK_ACTIONS = [
-  { href: "/admin/events/new", label: "Add a new event" },
-  { href: "/admin/announcement", label: "Change the top banner" },
-  { href: "/admin/groups/new", label: "Add a sport or class" },
+  {
+    href: "/admin/events/new",
+    label: "Add a new event",
+    detail: "Post the date, place and flyer.",
+    icon: CalendarPlusIcon,
+    surface: "bg-peach",
+  },
+  {
+    href: "/admin/groups/new",
+    label: "Add a sport or class",
+    detail: "Put a new group on the list.",
+    icon: BallIcon,
+    surface: "bg-lilac",
+  },
+  {
+    href: "/admin/announcement",
+    label: "Change the top banner",
+    detail: "The message at the top of every page.",
+    icon: MegaphoneIcon,
+    surface: "bg-azure",
+  },
 ];
 
 function DashboardHeading({ id, children }: { id: string; children: ReactNode }) {
@@ -79,10 +99,11 @@ function Tile({
 
 export default async function AdminDashboard() {
   const session = await auth();
-  const [announcement, sitePhotos, contact] = await Promise.all([
+  const [announcement, sitePhotos, contact, [nextEvent]] = await Promise.all([
     getAnnouncement(),
     getSitePhotos(),
     getCenterContact(),
+    getUpcomingEvents(1),
   ]);
 
   const pagesById = new Map(EDITABLE_PAGES.map((page) => [page.id, page]));
@@ -122,47 +143,62 @@ export default async function AdminDashboard() {
 
   return (
     <AdminPageWidth>
-      <section
-        aria-labelledby="dashboard-welcome"
-        className="section-navy-scene seigaiha-rings seigaiha-rings-sky enter-rise rounded-2xl px-6 py-8 text-white sm:px-10 sm:py-10"
-      >
+      <section aria-labelledby="dashboard-welcome" className="enter-rise">
         <p className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <span lang="ja" className="font-accent text-sm font-bold tracking-[0.2em] text-sky">
+          <span lang="ja" className="font-accent text-sm font-bold tracking-[0.2em] text-indigo">
             おかえりなさい
           </span>
-          <span aria-hidden="true" className="enter-rule h-px w-9 bg-sky" />
-          <span className="font-display text-xs font-semibold tracking-[0.2em] text-sky uppercase">
+          <span aria-hidden="true" className="enter-rule h-px w-9 bg-indigo" />
+          <span className="font-display text-xs font-semibold tracking-[0.2em] text-stone uppercase">
             {weekday}, {date}
           </span>
         </p>
-        <h1 id="dashboard-welcome" className="mt-4 font-display text-4xl sm:text-5xl">
+        <h1 id="dashboard-welcome" className="mt-4 font-display text-4xl text-ink sm:text-5xl">
           {firstName ? `Welcome back, ${firstName}` : "Welcome back"}
         </h1>
-        <p className="mt-3 max-w-xl text-lg leading-relaxed text-sky">
-          Everything on the website can be changed from here. Pick a page below, or
-          start with one of these.
+        <p className="mt-3 max-w-xl text-lg leading-relaxed text-ink-soft">
+          Everything on the website can be changed from here.
         </p>
-        <ul className="mt-6 flex flex-wrap gap-3">
-          {QUICK_ACTIONS.map((action) => (
-            <li key={action.href}>
-              <Link
-                href={action.href}
-                className="button-light inline-flex min-h-12 items-center px-5 text-base"
-              >
-                {action.label}
-              </Link>
-            </li>
-          ))}
-        </ul>
         {!firstName && (
-          <p className="mt-6 text-base text-sky">
+          <p className="mt-3 text-base text-ink-soft">
             We don’t have your name yet.{" "}
-            <Link href="/admin/profile" className="font-semibold text-white underline underline-offset-4">
+            <Link href="/admin/profile" className="font-semibold text-indigo-deep underline underline-offset-4">
               Add your name
             </Link>{" "}
             so we can greet you properly.
           </p>
         )}
+      </section>
+
+      <section aria-labelledby="dashboard-quick" className="mt-10">
+        <h2
+          id="dashboard-quick"
+          className="font-display text-sm font-semibold tracking-[0.18em] text-stone uppercase"
+        >
+          The most common jobs
+        </h2>
+        <ul className="enter-stagger mt-4 grid gap-4 sm:grid-cols-3">
+          {QUICK_ACTIONS.map((action) => (
+            <li key={action.href} className="flex">
+              <article
+                className={`surface-card surface-card-link relative flex w-full items-center gap-4 p-5 sm:flex-col sm:items-start sm:gap-5 sm:p-6 ${action.surface}`}
+              >
+                <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white text-ink shadow-sm">
+                  <action.icon className="h-8 w-8" />
+                </span>
+                <span className="min-w-0">
+                  <Link
+                    href={action.href}
+                    className="card-stretch block font-display text-xl font-semibold text-ink"
+                  >
+                    {action.label}
+                  </Link>
+                  <span className="mt-1 block text-base text-ink-soft">{action.detail}</span>
+                </span>
+              </article>
+            </li>
+          ))}
+        </ul>
       </section>
 
       <section aria-labelledby="dashboard-pages" className="mt-12">
@@ -192,8 +228,12 @@ export default async function AdminDashboard() {
               <>
                 Showing now: <q className="text-ink">{announcement.text}</q>
               </>
+            ) : nextEvent ? (
+              <>
+                Showing the next event automatically: <q className="text-ink">{nextEvent.title}</q>
+              </>
             ) : (
-              "No message right now, so the banner shows the next event."
+              "Set to show the next event automatically, but no events are coming up, so the bar is empty."
             )}
           </Tile>
           <Tile
