@@ -1,18 +1,27 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { auth } from "@/auth";
 import { db } from "@/db";
 import { boardMembers } from "@/db/schema";
+import { EDITABLE_PAGES, type EditablePage, type EditablePageId } from "@/lib/editable-pages";
 import { getActiveGroups, getUpcomingEvents } from "@/lib/events";
 import { getAllSchoolLevels } from "@/lib/school-levels";
 import { getAllSchoolYearEvents } from "@/lib/school-year-events";
-import { getAnnouncement } from "@/lib/site-settings";
+import { getAnnouncement, getCenterContact } from "@/lib/site-settings";
 import { getSitePhotos } from "@/lib/site-photos";
 import { getSiteTextOverrides } from "@/lib/site-text";
 import { AdminButtonLink } from "@/components/admin/admin-button";
 import { AdminCard } from "@/components/admin/admin-card";
+import { PAGE_TONES } from "@/components/admin/admin-page-tone";
 import { AdminPageWidth } from "@/components/admin/admin-page-width";
 
 export const dynamic = "force-dynamic";
+
+type PageLink = { href: string; label: string };
+
+function plural(count: number, one: string, many: string): string {
+  return `${count} ${count === 1 ? one : many}`;
+}
 
 function changesSummary(textCount: number, photoCount: number): string {
   if (textCount === 0 && photoCount === 0) {
@@ -20,8 +29,8 @@ function changesSummary(textCount: number, photoCount: number): string {
   }
 
   const parts: string[] = [];
-  if (textCount > 0) parts.push(`${textCount} sentence${textCount === 1 ? "" : "s"}`);
-  if (photoCount > 0) parts.push(`${photoCount} photo${photoCount === 1 ? "" : "s"}`);
+  if (textCount > 0) parts.push(plural(textCount, "sentence", "sentences"));
+  if (photoCount > 0) parts.push(plural(photoCount, "photo", "photos"));
 
   const total = textCount + photoCount;
   const changed = parts.join(" and ");
@@ -30,40 +39,111 @@ function changesSummary(textCount: number, photoCount: number): string {
   return `${changed} ${verb} been changed from ${noun}.`;
 }
 
-function SummaryCard({
-  kanji,
-  title,
-  children,
-  addHref,
-  addLabel,
-  viewHref,
-  viewLabel,
+function PageCard({
+  page,
+  status,
+  primary,
+  others,
 }: {
-  kanji: string;
-  title: string;
-  children: ReactNode;
-  addHref: string;
-  addLabel: string;
-  viewHref: string;
-  viewLabel: string;
+  page: EditablePage;
+  status: string[];
+  primary: PageLink;
+  others: PageLink[];
 }) {
+  const tone = PAGE_TONES[page.id];
+  const headingId = `page-card-${page.id}`;
+
   return (
-    <AdminCard>
+    <section
+      aria-labelledby={headingId}
+      className={`flex flex-col rounded-xl border border-ink/10 p-6 ${tone.surface}`}
+    >
       <div className="flex items-center gap-4">
         <span
           aria-hidden="true"
-          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-line bg-mist font-accent text-xl font-bold text-indigo"
+          className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-white font-accent text-2xl font-bold text-ink"
         >
-          {kanji}
+          {tone.kanji}
         </span>
-        <h2 className="font-display text-xl text-ink">{title}</h2>
+        <h3 id={headingId} className="font-display text-2xl text-ink">
+          {page.label}
+        </h3>
       </div>
-      <p className="mt-4 text-sm leading-relaxed text-stone">{children}</p>
-      <div className="mt-6 flex flex-col gap-3">
-        <AdminButtonLink href={addHref}>{addLabel}</AdminButtonLink>
-        <AdminButtonLink href={viewHref} variant="secondary">
-          {viewLabel}
-        </AdminButtonLink>
+
+      <ul className="mt-4 space-y-1 text-base text-ink">
+        {status.map((line) => (
+          <li key={line}>{line}</li>
+        ))}
+      </ul>
+      <p className="mt-3 text-sm leading-relaxed text-ink-soft">
+        <span className="font-semibold">On this page:</span>{" "}
+        {page.sections.map((section) => section.label).join(" · ")}
+      </p>
+
+      <div className="mt-6 flex flex-1 flex-col justify-end gap-3">
+        <AdminButtonLink href={primary.href}>{primary.label}</AdminButtonLink>
+        {others.map((link) => (
+          <AdminButtonLink key={link.href} href={link.href} variant="secondary">
+            {link.label}
+          </AdminButtonLink>
+        ))}
+        <Link
+          href={page.href}
+          className="inline-flex min-h-11 items-center self-start font-semibold text-ink underline underline-offset-4 hover:text-indigo-deep"
+        >
+          See this page on the website
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+function PageSketch({ highlight }: { highlight: "top" | "bottom" }) {
+  const band = "h-3 rounded-sm bg-indigo";
+  const line = "h-1.5 rounded-full bg-line";
+  return (
+    <div
+      aria-hidden="true"
+      className="flex h-24 w-20 shrink-0 flex-col gap-1.5 rounded-lg border-2 border-line bg-white p-1.5"
+    >
+      <div className={highlight === "top" ? band : line} />
+      <div className={line} />
+      <div className={`${line} w-3/4`} />
+      <div className={line} />
+      <div className={`${line} w-2/3`} />
+      <div className="flex-1" />
+      <div className={highlight === "bottom" ? band : line} />
+    </div>
+  );
+}
+
+function SharedPartCard({
+  title,
+  highlight,
+  where,
+  children,
+  href,
+  action,
+}: {
+  title: string;
+  highlight: "top" | "bottom";
+  where: string;
+  children: ReactNode;
+  href: string;
+  action: string;
+}) {
+  return (
+    <AdminCard>
+      <div className="flex flex-col gap-5 sm:flex-row">
+        <PageSketch highlight={highlight} />
+        <div className="min-w-0">
+          <h3 className="font-display text-2xl text-ink">{title}</h3>
+          <p className="mt-1 text-sm text-ink-soft">{where}</p>
+          <div className="mt-3 text-base break-words text-ink">{children}</div>
+        </div>
+      </div>
+      <div className="mt-6 flex flex-col">
+        <AdminButtonLink href={href}>{action}</AdminButtonLink>
       </div>
     </AdminCard>
   );
@@ -80,6 +160,7 @@ export default async function AdminDashboard() {
     announcement,
     siteTextOverrides,
     sitePhotos,
+    contact,
   ] = await Promise.all([
     getActiveGroups(),
     getUpcomingEvents(),
@@ -89,6 +170,7 @@ export default async function AdminDashboard() {
     getAnnouncement(),
     getSiteTextOverrides(),
     getSitePhotos(),
+    getCenterContact(),
   ]);
 
   const boardMemberCounts = {
@@ -105,6 +187,70 @@ export default async function AdminDashboard() {
     showing: allSchoolYearEvents.filter((event) => event.visible && event.photoUrl).length,
     hidden: allSchoolYearEvents.filter((event) => !event.visible && event.photoUrl).length,
     pending: allSchoolYearEvents.filter((event) => !event.photoUrl).length,
+  };
+
+  function changesOn(page: EditablePage): string {
+    const paths = page.sections.flatMap((section) => section.fields.map((field) => field.path));
+    const slots = page.sections.flatMap((section) => section.photos.map((photo) => photo.id));
+    return changesSummary(
+      paths.filter((path) => siteTextOverrides.has(path)).length,
+      slots.filter((slot) => sitePhotos.has(slot)).length
+    );
+  }
+
+  const hiddenNote = (hidden: number) => (hidden > 0 ? ` (${hidden} hidden)` : "");
+  const wordsAndPhotos = (id: EditablePageId) => ({
+    href: `/admin/pages/${id}`,
+    label: "Change the words & photos",
+  });
+
+  const pageCards: Record<
+    EditablePageId,
+    { status: string[]; primary: PageLink; others: PageLink[] }
+  > = {
+    home: {
+      status: [
+        `${plural(boardMemberCounts.showing, "board member is", "board members are")} showing${hiddenNote(boardMemberCounts.hidden)}.`
+      ],
+      primary: wordsAndPhotos("home"),
+      others: [{ href: "/admin/board", label: "Board of Directors" }],
+    },
+    school: {
+      status: [
+        `${plural(schoolLevelCounts.showing, "class level is", "class levels are")} showing${hiddenNote(schoolLevelCounts.hidden)}.`,
+        `${plural(schoolYearEventCounts.showing, "school-year event is", "school-year events are")} showing${hiddenNote(schoolYearEventCounts.hidden)}${schoolYearEventCounts.pending > 0 ? ` (${schoolYearEventCounts.pending} still need a photo)` : ""}.`
+      ],
+      primary: wordsAndPhotos("school"),
+      others: [
+        { href: "/admin/levels", label: "Class levels" },
+        { href: "/admin/school-year", label: "The school year" },
+      ],
+    },
+    events: {
+      status: [
+        `${plural(upcomingEvents.length, "event is", "events are")} coming up.`
+      ],
+      primary: { href: "/admin/events/new", label: "+ Add a new event" },
+      others: [
+        { href: "/admin/events", label: "Change or remove an event" },
+        wordsAndPhotos("events"),
+      ],
+    },
+    groups: {
+      status: [
+        `${plural(activeGroups.length, "group is", "groups are")} listed.`
+      ],
+      primary: { href: "/admin/groups/new", label: "+ Add a new group" },
+      others: [
+        { href: "/admin/groups", label: "Change or remove a group" },
+        wordsAndPhotos("groups"),
+      ],
+    },
+    donate: {
+      status: [],
+      primary: wordsAndPhotos("donate"),
+      others: [{ href: "/admin/donations", label: "Donation details" }],
+    },
   };
 
   const firstName = session?.user?.name?.trim().split(/\s+/)[0] ?? null;
@@ -156,84 +302,58 @@ export default async function AdminDashboard() {
         </div>
       )}
 
-      <div className="mt-10 grid gap-6 sm:grid-cols-2">
-        <SummaryCard
-          kanji="祭"
-          title="Events"
-          addHref="/admin/events/new"
-          addLabel="+ Add a new event"
-          viewHref="/admin/events"
-          viewLabel="View & edit all events"
-        >
-          {upcomingEvents.length} upcoming{" "}
-          {upcomingEvents.length === 1 ? "event is" : "events are"} on the
-          community calendar.
-        </SummaryCard>
-        <SummaryCard
-          kanji="部"
-          title="Sports & Classes"
-          addHref="/admin/groups/new"
-          addLabel="+ Add a new group"
-          viewHref="/admin/groups"
-          viewLabel="View & edit all groups"
-        >
-          {activeGroups.length}{" "}
-          {activeGroups.length === 1 ? "group is" : "groups are"} listed on the
-          community page.
-        </SummaryCard>
-        <SummaryCard
-          kanji="志"
-          title="Board of Directors"
-          addHref="/admin/board"
-          addLabel="Edit the section"
-          viewHref="/#board"
-          viewLabel="See it on the website"
-        >
-          {`${boardMemberCounts.showing} board ${boardMemberCounts.showing === 1 ? "member is" : "members are"} showing on the home page${boardMemberCounts.hidden > 0 ? ` (${boardMemberCounts.hidden} hidden)` : ""}.`}
-        </SummaryCard>
-        <SummaryCard
-          kanji="報"
-          title="Announcement bar"
-          addHref="/admin/announcement"
-          addLabel="Change the announcement"
-          viewHref="/"
-          viewLabel="See it on the website"
-        >
-          {announcement
-            ? `Showing: “${announcement.text}”`
-            : "Not showing. The bar shows the next event."}
-        </SummaryCard>
-        <SummaryCard
-          kanji="文"
-          title="Your website"
-          addHref="/admin/pages"
-          addLabel="Change a page"
-          viewHref="/"
-          viewLabel="See the website"
-        >
-          {changesSummary(siteTextOverrides.size, sitePhotos.size)}
-        </SummaryCard>
-        <SummaryCard
-          kanji="級"
-          title="Class Levels"
-          addHref="/admin/levels/new"
-          addLabel="+ Add a class level"
-          viewHref="/admin/levels"
-          viewLabel="View & edit all levels"
-        >
-          {`${schoolLevelCounts.showing} class ${schoolLevelCounts.showing === 1 ? "level is" : "levels are"} showing on the school page${schoolLevelCounts.hidden > 0 ? ` (${schoolLevelCounts.hidden} hidden)` : ""}.`}
-        </SummaryCard>
-        <SummaryCard
-          kanji="年"
-          title="School Year"
-          addHref="/admin/school-year/new"
-          addLabel="+ Add an event"
-          viewHref="/admin/school-year"
-          viewLabel="View & edit the year"
-        >
-          {`${schoolYearEventCounts.showing} ${schoolYearEventCounts.showing === 1 ? "event is" : "events are"} showing on the school page (${schoolYearEventCounts.hidden} hidden, ${schoolYearEventCounts.pending} need a photo).`}
-        </SummaryCard>
-      </div>
+      <section aria-labelledby="dashboard-pages" className="mt-10">
+        <h2 id="dashboard-pages" className="font-display text-2xl text-ink">
+          Pages of the website
+        </h2>
+        <p className="mt-1 text-lg text-ink-soft">
+          Find the page you want to change. Each page has its own color, and
+          the menu uses the same colors.
+        </p>
+        <div className="mt-6 grid gap-6 md:grid-cols-2">
+          {EDITABLE_PAGES.map((page) => (
+            <PageCard
+              key={page.id}
+              page={page}
+              {...pageCards[page.id]}
+              status={[...pageCards[page.id].status, changesOn(page)]}
+            />
+          ))}
+        </div>
+      </section>
+
+      <section aria-labelledby="dashboard-shared" className="mt-14">
+        <h2 id="dashboard-shared" className="font-display text-2xl text-ink">
+          Top &amp; bottom of every page
+        </h2>
+        <p className="mt-1 text-lg text-ink-soft">
+          These show on every page, so you only change them once.
+        </p>
+        <div className="mt-6 grid gap-6 md:grid-cols-2">
+          <SharedPartCard
+            title="Top banner"
+            highlight="top"
+            where="A short message in a strip above the menu."
+            href="/admin/announcement"
+            action="Change the top banner"
+          >
+            {announcement
+              ? `Showing now: “${announcement.text}”`
+              : "No message right now, so the banner shows the next event."}
+          </SharedPartCard>
+          <SharedPartCard
+            title="Phone, email & address"
+            highlight="bottom"
+            where="At the bottom of every page, and on the home and donations pages."
+            href="/admin/contact"
+            action="Change phone, email or address"
+          >
+            <p>{contact.phone}</p>
+            <p>{contact.email}</p>
+            <p>{contact.address}</p>
+          </SharedPartCard>
+        </div>
+      </section>
     </AdminPageWidth>
   );
 }

@@ -7,13 +7,16 @@ import { useId, useState } from "react";
 import { AdminUserIdentity } from "@/components/admin/admin-user-identity";
 import { KanjiWatermark } from "@/components/kanji-watermark";
 import { SectionKicker } from "@/components/section-kicker";
+import { PAGE_TONES } from "@/components/admin/admin-page-tone";
 import type { UserRole } from "@/db/schema";
 import { signOutAction } from "./sign-out-action";
 
 type NavItem = {
   href: string;
   label: string;
+  hint?: string;
   kanji: string;
+  surface?: string;
   adminOnly?: boolean;
   alsoActiveFor?: string[];
 };
@@ -22,39 +25,74 @@ type NavGroup = { heading: string | null; items: NavItem[] };
 const NAV_GROUPS: NavGroup[] = [
   {
     heading: null,
-    items: [{ href: "/admin", label: "Dashboard", kanji: "始" }],
+    items: [{ href: "/admin", label: "Start here", kanji: "始" }],
   },
   {
-    heading: "Your website",
+    heading: "Pages of the website",
     items: [
-      { href: "/admin/pages/home", label: "Home", kanji: "家", alsoActiveFor: ["/admin/board"] },
+      {
+        href: "/admin/pages/home",
+        label: "Home page",
+        hint: "Board, history, community",
+        ...PAGE_TONES.home,
+        alsoActiveFor: ["/admin/board"],
+      },
       {
         href: "/admin/pages/school",
-        label: "Japanese School",
-        kanji: "文",
+        label: "Japanese School page",
+        hint: "Classes, school year, tuition",
+        ...PAGE_TONES.school,
         alsoActiveFor: ["/admin/levels", "/admin/school-year"],
       },
-      { href: "/admin/events", label: "Events", kanji: "祭", alsoActiveFor: ["/admin/pages/events"] },
+      {
+        href: "/admin/events",
+        label: "Events page",
+        hint: "Add or change an event",
+        ...PAGE_TONES.events,
+        alsoActiveFor: ["/admin/pages/events"],
+      },
       {
         href: "/admin/groups",
-        label: "Sports & Classes",
-        kanji: "部",
+        label: "Sports & Classes page",
+        hint: "Add or change a group",
+        ...PAGE_TONES.groups,
         alsoActiveFor: ["/admin/pages/groups"],
       },
-      { href: "/admin/pages/donate", label: "Donate", kanji: "寄", alsoActiveFor: ["/admin/donations"] },
+      {
+        href: "/admin/pages/donate",
+        label: "Donations page",
+        hint: "Ways to give",
+        ...PAGE_TONES.donate,
+        alsoActiveFor: ["/admin/donations"],
+      },
     ],
   },
   {
-    heading: "On every page",
+    heading: "Top & bottom of every page",
     items: [
-      { href: "/admin/announcement", label: "Announcement bar", kanji: "報" },
-      { href: "/admin/contact", label: "Contact details", kanji: "連" },
+      {
+        href: "/admin/announcement",
+        label: "Top banner",
+        hint: "Message above the menu",
+        kanji: "報",
+      },
+      {
+        href: "/admin/contact",
+        label: "Phone, email & address",
+        hint: "Shown at the bottom",
+        kanji: "連",
+      },
     ],
   },
   {
     heading: "Admin only",
     items: [
-      { href: "/admin/volunteers", label: "Who Can Sign In", kanji: "友", adminOnly: true },
+      {
+        href: "/admin/volunteers",
+        label: "Who Can Sign In",
+        kanji: "友",
+        adminOnly: true,
+      },
       { href: "/admin/settings", label: "Settings", kanji: "設", adminOnly: true },
     ],
   },
@@ -167,21 +205,30 @@ export function AdminSidebar({
                             href={item.href}
                             onClick={() => setOpen(false)}
                             aria-current={active ? "page" : undefined}
-                            className={`flex items-center gap-3 rounded-md border-l-2 px-3 py-3 font-display text-base font-semibold tracking-wide ${
+                            className={`flex items-center gap-3 rounded-md border-l-2 px-3 py-3 font-display tracking-wide ${
                               active
-                                ? "border-sky text-white"
-                                : "border-transparent text-white/70 hover:text-white"
+                                ? "border-sky bg-white/10 text-white"
+                                : "border-transparent text-white/80 hover:bg-white/5 hover:text-white"
                             }`}
                           >
                             <span
                               aria-hidden="true"
-                              className={`font-accent text-base font-bold ${
-                                active ? "text-sky" : "text-sky/60"
+                              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-md font-accent text-lg font-bold ${
+                                item.surface ? `${item.surface} text-ink` : "bg-white/10 text-white"
                               }`}
                             >
                               {item.kanji}
                             </span>
-                            {item.label}
+                            <span className="min-w-0">
+                              <span className="block text-base font-semibold">{item.label}</span>
+                              {item.hint && (
+                                <span
+                                  className={`block text-sm font-normal ${active ? "text-white/90" : "text-white/70"}`}
+                                >
+                                  {item.hint}
+                                </span>
+                              )}
+                            </span>
                           </Link>
                         </li>
                       );

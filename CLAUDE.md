@@ -21,7 +21,7 @@ All design tokens live in `@theme` in [globals.css](src/app/globals.css)
 (text and line colors: `ink`, `ink-deep`, `ink-soft`, `stone`, `line`, `navy`,
 `indigo`, `indigo-deep`, `sky`, `magenta`, `magenta-deep`, `blossom`, `gold`,
 `sand`; surface colors, for backgrounds only: `paper`, `mist`, `cloud`,
-`cream`, `azure`, `celadon`, `peach`, `lilac`; aspect ratios: `aspect-flyer` (flyers),
+`cream`, `azure`, `celadon`, `peach`, `lilac`, `butter`; aspect ratios: `aspect-flyer` (flyers),
 `aspect-card` (card media), `aspect-photo`, `aspect-band`; widths: `max-w-wide`
 (the event rows, wider than the `max-w-6xl` the rest of a section sits in);
 heights: `min-h-page-hero` (a page's opening photo, the screen below the
@@ -43,7 +43,7 @@ be built from these tokens via Tailwind utility classes.
   readable text colors on `navy`; `indigo`, `magenta` and `gold` are not —
   use them for fills and rules there, never for words. On `paper` and `mist`,
   `stone` is the lightest color still safe for body copy; on the tinted
-  surfaces (`azure`, `celadon`, `peach`, `lilac`, `cream`) it falls below AA,
+  surfaces (`azure`, `celadon`, `peach`, `lilac`, `butter`, `cream`) it falls below AA,
   so use `ink-soft` or `ink` there — that's what `SectionKicker`'s `tinted`
   kicker tone is for. `sand` is a light stroke color for decoration on
   dark surfaces only; `ink-deep` is darker than `navy` and takes the same
