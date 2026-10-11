@@ -1668,34 +1668,6 @@ body {
     display: none;
   }
 
-  /* The pastel glows are the tinted surfaces, so copy on the dashboard
-     welcome takes `ink-soft`, never `stone`. */
-  .dashboard-hero {
-    position: relative;
-    isolation: isolate;
-    overflow: clip;
-    border-radius: var(--radius-3xl);
-    background:
-      radial-gradient(40rem 24rem at 100% 0%, var(--color-lilac), transparent 70%),
-      radial-gradient(32rem 20rem at 72% 115%, --alpha(var(--color-peach) / 85%), transparent 70%),
-      radial-gradient(30rem 22rem at 0% 100%, --alpha(var(--color-celadon) / 80%), transparent 70%),
-      linear-gradient(135deg, var(--color-white), var(--color-cloud));
-    box-shadow:
-      0 0 0 1px --alpha(var(--color-gold) / 35%),
-      0 28px 60px --alpha(var(--color-ink) / 9%),
-      0 4px 12px --alpha(var(--color-ink) / 4%);
-  }
-
-  .dashboard-hero::after {
-    content: "";
-    position: absolute;
-    inset: --spacing(2);
-    z-index: -1;
-    border: 1px solid --alpha(var(--color-gold) / 30%);
-    border-radius: calc(var(--radius-3xl) - --spacing(2));
-    pointer-events: none;
-  }
-
   .edit-dialog {
     width: 100%;
     max-width: 100%;

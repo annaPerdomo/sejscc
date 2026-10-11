@@ -5,12 +5,11 @@ import { auth } from "@/auth";
 import { EDITABLE_PAGES, type EditablePage } from "@/lib/editable-pages";
 import { getUpcomingEvents } from "@/lib/events";
 import { getAnnouncement, getCenterContact } from "@/lib/site-settings";
-import { getSitePhotos } from "@/lib/site-photos";
+import { getSitePhotos, slotPhoto } from "@/lib/site-photos";
 import { buttonClass } from "@/components/admin/admin-button";
 import { BallIcon, CalendarPlusIcon, MegaphoneIcon } from "@/components/admin/admin-icons";
 import { ADMIN_PAGES, type AdminPage } from "@/components/admin/admin-pages";
 import { AdminPageWidth } from "@/components/admin/admin-page-width";
-import { KanjiWatermark } from "@/components/kanji-watermark";
 import { SectionKicker } from "@/components/section-kicker";
 
 export const dynamic = "force-dynamic";
@@ -160,118 +159,143 @@ export default async function AdminDashboard() {
   });
 
   return (
-    <AdminPageWidth>
-      <section aria-labelledby="dashboard-welcome" className="dashboard-hero enter-rise px-6 py-9 sm:px-10 sm:py-12">
-        <KanjiWatermark char="園" className="-right-8 -bottom-24 text-indigo/5 sm:right-6 sm:-bottom-36" />
-        <SectionKicker accent="おかえりなさい" caption={`${weekday}, ${date}`} tone="tinted" entrance="load" />
-        <h1 id="dashboard-welcome" className="mt-5 font-display text-4xl text-ink sm:text-6xl">
-          {firstName ? (
-            <>
-              Welcome back, <span className="text-indigo-deep">{firstName}</span>
-            </>
-          ) : (
-            "Welcome back"
-          )}
-        </h1>
-        <p className="mt-4 max-w-xl text-lg leading-relaxed text-ink-soft sm:text-xl">
-          Everything on the website can be changed from here.
-        </p>
-        {!firstName && (
-          <p className="mt-3 text-base text-ink-soft">
-            We don’t have your name yet.{" "}
-            <Link href="/admin/profile" className="font-semibold text-indigo-deep underline underline-offset-4">
-              Add your name
-            </Link>{" "}
-            so we can greet you properly.
-          </p>
-        )}
-      </section>
-
-      <section aria-labelledby="dashboard-quick" className="mt-12">
-        <div className="flex items-center gap-4">
-          <h2
-            id="dashboard-quick"
-            className="font-display text-sm font-semibold tracking-[0.18em] text-stone uppercase"
-          >
-            The most common jobs
-          </h2>
-          <span aria-hidden="true" className="h-px min-w-8 flex-1 bg-gradient-to-r from-gold/60 to-transparent" />
+    <>
+      {/* Cancels the padding in layout.tsx so the welcome runs edge to edge. */}
+      <section
+        aria-labelledby="dashboard-welcome"
+        className="relative isolate -mx-5 -mt-8 overflow-clip sm:-mx-8 lg:-mx-10 lg:-mt-10"
+      >
+        <div aria-hidden="true" className="section-wash-history absolute inset-0 -z-10 mask-b-from-70%">
+          <div className="absolute inset-0 mask-b-from-40%">
+            <Image
+              src={slotPhoto(sitePhotos, "home.events-backdrop", "", "en").src}
+              alt=""
+              fill
+              preload
+              sizes="100vw"
+              className="object-cover"
+            />
+            <div className="absolute inset-0 bg-paper/88" />
+          </div>
         </div>
-        <ul className="enter-stagger mt-4 grid gap-4 sm:grid-cols-3">
-          {QUICK_ACTIONS.map((action) => (
-            <li key={action.href} className="flex">
-              <article
-                className={`surface-card surface-card-link relative flex w-full items-center gap-4 overflow-clip bg-gradient-to-br to-white p-5 sm:flex-col sm:items-start sm:gap-5 sm:p-6 ${action.surface}`}
-              >
-                <action.icon className="pointer-events-none absolute -right-5 -bottom-5 hidden h-32 w-32 text-ink/5 sm:block" />
-                <span
-                  className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white text-indigo-deep shadow-md ring-4 ${action.ring}`}
-                >
-                  <action.icon className="h-8 w-8" />
-                </span>
-                <span className="min-w-0">
-                  <Link
-                    href={action.href}
-                    className="card-stretch block font-display text-xl font-semibold text-ink"
-                  >
-                    {action.label}
-                  </Link>
-                  <span className="mt-1 block text-base text-ink-soft">{action.detail}</span>
-                </span>
-              </article>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section aria-labelledby="dashboard-pages" className="mt-12">
-        <DashboardHeading id="dashboard-pages">Pages of the website</DashboardHeading>
-        <p className="mt-2 text-lg text-ink-soft">
-          Each page of the website has its own place here. Open one to change what is on it.
-        </p>
-        <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-          {ADMIN_PAGES.map(pageTile)}
-        </div>
-      </section>
-
-      <section aria-labelledby="dashboard-shared" className="mt-14">
-        <DashboardHeading id="dashboard-shared">On every page</DashboardHeading>
-        <p className="mt-2 text-lg text-ink-soft">
-          These two show at the top and bottom of every page of the website.
-        </p>
-        <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-          <Tile
-            surface="bg-gradient-to-r from-indigo to-sky"
-            photo={null}
-            title="Top banner"
-            href="/admin/announcement"
-            action="Change the top banner"
-          >
-            {announcement ? (
-              <>
-                Showing now: <q className="text-ink">{announcement.text}</q>
-              </>
-            ) : nextEvent ? (
-              <>
-                Showing the next event automatically: <q className="text-ink">{nextEvent.title}</q>
-              </>
-            ) : (
-              "Set to show the next event automatically, but no events are coming up, so the bar is empty."
+        <div className="px-5 pt-12 pb-20 sm:px-8 sm:pt-16 sm:pb-24 lg:px-10">
+          <div className="enter-rise mx-auto max-w-5xl">
+            <SectionKicker accent="おかえりなさい" caption={`${weekday}, ${date}`} tone="magenta" size="lg" entrance="load" />
+            <h1
+              id="dashboard-welcome"
+              className="mt-4 font-display text-4xl font-normal tracking-[0.02em] text-ink sm:text-5xl lg:text-6xl"
+            >
+              {firstName ? (
+                <>
+                  <span className="text-indigo">Welcome back,</span> {firstName}
+                </>
+              ) : (
+                <span className="text-indigo">Welcome back</span>
+              )}
+            </h1>
+            <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink-soft sm:text-xl">
+              Everything on the website can be changed from here.
+            </p>
+            {!firstName && (
+              <p className="mt-3 text-base text-ink-soft">
+                We don’t have your name yet.{" "}
+                <Link href="/admin/profile" className="font-semibold text-indigo-deep underline underline-offset-4">
+                  Add your name
+                </Link>{" "}
+                so we can greet you properly.
+              </p>
             )}
-          </Tile>
-          <Tile
-            surface="bg-gradient-to-r from-magenta to-blossom"
-            photo={null}
-            title="Contact info"
-            href="/admin/contact"
-            action="Change the contact info"
-          >
-            <p>{contact.phone}</p>
-            <p>{contact.email}</p>
-            <p>{contact.address}</p>
-          </Tile>
+          </div>
         </div>
       </section>
-    </AdminPageWidth>
+
+      <AdminPageWidth>
+        <section aria-labelledby="dashboard-quick">
+          <div className="flex items-center gap-4">
+            <h2
+              id="dashboard-quick"
+              className="font-display text-sm font-semibold tracking-[0.18em] text-stone uppercase"
+            >
+              The most common jobs
+            </h2>
+            <span aria-hidden="true" className="h-px min-w-8 flex-1 bg-gradient-to-r from-gold/60 to-transparent" />
+          </div>
+          <ul className="enter-stagger mt-4 grid gap-4 sm:grid-cols-3">
+            {QUICK_ACTIONS.map((action) => (
+              <li key={action.href} className="flex">
+                <article
+                  className={`surface-card surface-card-link relative flex w-full items-center gap-4 overflow-clip bg-gradient-to-br to-white p-5 sm:flex-col sm:items-start sm:gap-5 sm:p-6 ${action.surface}`}
+                >
+                  <action.icon className="pointer-events-none absolute -right-5 -bottom-5 hidden h-32 w-32 text-ink/5 sm:block" />
+                  <span
+                    className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white text-indigo-deep shadow-md ring-4 ${action.ring}`}
+                  >
+                    <action.icon className="h-8 w-8" />
+                  </span>
+                  <span className="min-w-0">
+                    <Link
+                      href={action.href}
+                      className="card-stretch block font-display text-xl font-semibold text-ink"
+                    >
+                      {action.label}
+                    </Link>
+                    <span className="mt-1 block text-base text-ink-soft">{action.detail}</span>
+                  </span>
+                </article>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section aria-labelledby="dashboard-pages" className="mt-12">
+          <DashboardHeading id="dashboard-pages">Pages of the website</DashboardHeading>
+          <p className="mt-2 text-lg text-ink-soft">
+            Each page of the website has its own place here. Open one to change what is on it.
+          </p>
+          <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+            {ADMIN_PAGES.map(pageTile)}
+          </div>
+        </section>
+
+        <section aria-labelledby="dashboard-shared" className="mt-14">
+          <DashboardHeading id="dashboard-shared">On every page</DashboardHeading>
+          <p className="mt-2 text-lg text-ink-soft">
+            These two show at the top and bottom of every page of the website.
+          </p>
+          <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+            <Tile
+              surface="bg-gradient-to-r from-indigo to-sky"
+              photo={null}
+              title="Top banner"
+              href="/admin/announcement"
+              action="Change the top banner"
+            >
+              {announcement ? (
+                <>
+                  Showing now: <q className="text-ink">{announcement.text}</q>
+                </>
+              ) : nextEvent ? (
+                <>
+                  Showing the next event automatically: <q className="text-ink">{nextEvent.title}</q>
+                </>
+              ) : (
+                "Set to show the next event automatically, but no events are coming up, so the bar is empty."
+              )}
+            </Tile>
+            <Tile
+              surface="bg-gradient-to-r from-magenta to-blossom"
+              photo={null}
+              title="Contact info"
+              href="/admin/contact"
+              action="Change the contact info"
+            >
+              <p>{contact.phone}</p>
+              <p>{contact.email}</p>
+              <p>{contact.address}</p>
+            </Tile>
+          </div>
+        </section>
+      </AdminPageWidth>
+    </>
   );
 }
