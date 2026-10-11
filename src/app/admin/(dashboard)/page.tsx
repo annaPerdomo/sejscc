@@ -10,6 +10,8 @@ import { buttonClass } from "@/components/admin/admin-button";
 import { BallIcon, CalendarPlusIcon, MegaphoneIcon } from "@/components/admin/admin-icons";
 import { ADMIN_PAGES, type AdminPage } from "@/components/admin/admin-pages";
 import { AdminPageWidth } from "@/components/admin/admin-page-width";
+import { KanjiWatermark } from "@/components/kanji-watermark";
+import { SectionKicker } from "@/components/section-kicker";
 
 export const dynamic = "force-dynamic";
 
@@ -23,29 +25,35 @@ const QUICK_ACTIONS = [
     label: "Add a new event",
     detail: "Post the date, place and flyer.",
     icon: CalendarPlusIcon,
-    surface: "bg-peach",
+    surface: "from-peach",
+    ring: "ring-peach",
   },
   {
     href: "/admin/groups/new",
     label: "Add a sport or class",
     detail: "Put a new group on the list.",
     icon: BallIcon,
-    surface: "bg-lilac",
+    surface: "from-lilac",
+    ring: "ring-lilac",
   },
   {
     href: "/admin/announcement",
     label: "Change the top banner",
     detail: "The message at the top of every page.",
     icon: MegaphoneIcon,
-    surface: "bg-azure",
+    surface: "from-azure",
+    ring: "ring-azure",
   },
 ];
 
 function DashboardHeading({ id, children }: { id: string; children: ReactNode }) {
   return (
-    <h2 id={id} className="font-display text-2xl text-ink sm:text-3xl">
-      {children}
-    </h2>
+    <div className="flex items-center gap-5">
+      <h2 id={id} className="font-display text-2xl text-ink sm:text-3xl">
+        {children}
+      </h2>
+      <span aria-hidden="true" className="h-px min-w-8 flex-1 bg-gradient-to-r from-gold/60 to-transparent" />
+    </div>
   );
 }
 
@@ -67,25 +75,35 @@ function Tile({
   siteHref?: string;
 }) {
   return (
-    <article className="surface-card surface-card-link relative flex flex-col overflow-clip">
+    <article className="group surface-card surface-card-link relative flex flex-col overflow-clip">
       {photo && (
-        <div className="relative aspect-band bg-mist">
-          <Image src={photo} alt="" fill sizes="(min-width: 1280px) 30rem, 100vw" className="object-cover" />
+        <div className="relative aspect-band overflow-clip bg-mist">
+          <Image
+            src={photo}
+            alt=""
+            fill
+            sizes="(min-width: 1280px) 30rem, 100vw"
+            className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+          />
+          <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-ink-deep/35 via-transparent to-transparent" />
         </div>
       )}
-      <span aria-hidden="true" className={`block h-2 ${surface}`} />
+      <span aria-hidden="true" className={`block h-1.5 ${surface}`} />
       <div className="flex flex-1 flex-col gap-4 p-6">
         <h3 className="font-display text-2xl text-ink">{title}</h3>
         <div className="text-lg leading-relaxed text-ink-soft">{children}</div>
         <div className="mt-auto flex flex-wrap items-center gap-x-6 gap-y-3 pt-2">
-          <Link href={href} className={`card-stretch text-lg ${buttonClass("primary")}`}>
+          <Link
+            href={href}
+            className={`card-stretch text-lg shadow-lg shadow-indigo/25 transition-colors ${buttonClass("primary")}`}
+          >
             {action}
             <span className="sr-only"> — {title}</span>
           </Link>
           {siteHref && (
             <Link
               href={siteHref}
-              className="relative z-10 inline-flex min-h-11 items-center text-base font-semibold text-indigo-deep underline underline-offset-4 hover:text-indigo"
+              className="link-arrow relative z-10 inline-flex min-h-11 items-center text-base font-semibold text-indigo-deep underline decoration-indigo/40 underline-offset-4 hover:text-indigo hover:decoration-indigo"
             >
               See it on the website
               <span className="sr-only"> — {title}</span>
@@ -143,20 +161,19 @@ export default async function AdminDashboard() {
 
   return (
     <AdminPageWidth>
-      <section aria-labelledby="dashboard-welcome" className="enter-rise">
-        <p className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <span lang="ja" className="font-accent text-sm font-bold tracking-[0.2em] text-indigo">
-            おかえりなさい
-          </span>
-          <span aria-hidden="true" className="enter-rule h-px w-9 bg-indigo" />
-          <span className="font-display text-xs font-semibold tracking-[0.2em] text-stone uppercase">
-            {weekday}, {date}
-          </span>
-        </p>
-        <h1 id="dashboard-welcome" className="mt-4 font-display text-4xl text-ink sm:text-5xl">
-          {firstName ? `Welcome back, ${firstName}` : "Welcome back"}
+      <section aria-labelledby="dashboard-welcome" className="dashboard-hero enter-rise px-6 py-9 sm:px-10 sm:py-12">
+        <KanjiWatermark char="園" className="-right-8 -bottom-24 text-indigo/5 sm:right-6 sm:-bottom-36" />
+        <SectionKicker accent="おかえりなさい" caption={`${weekday}, ${date}`} tone="tinted" entrance="load" />
+        <h1 id="dashboard-welcome" className="mt-5 font-display text-4xl text-ink sm:text-6xl">
+          {firstName ? (
+            <>
+              Welcome back, <span className="text-indigo-deep">{firstName}</span>
+            </>
+          ) : (
+            "Welcome back"
+          )}
         </h1>
-        <p className="mt-3 max-w-xl text-lg leading-relaxed text-ink-soft">
+        <p className="mt-4 max-w-xl text-lg leading-relaxed text-ink-soft sm:text-xl">
           Everything on the website can be changed from here.
         </p>
         {!firstName && (
@@ -170,20 +187,26 @@ export default async function AdminDashboard() {
         )}
       </section>
 
-      <section aria-labelledby="dashboard-quick" className="mt-10">
-        <h2
-          id="dashboard-quick"
-          className="font-display text-sm font-semibold tracking-[0.18em] text-stone uppercase"
-        >
-          The most common jobs
-        </h2>
+      <section aria-labelledby="dashboard-quick" className="mt-12">
+        <div className="flex items-center gap-4">
+          <h2
+            id="dashboard-quick"
+            className="font-display text-sm font-semibold tracking-[0.18em] text-stone uppercase"
+          >
+            The most common jobs
+          </h2>
+          <span aria-hidden="true" className="h-px min-w-8 flex-1 bg-gradient-to-r from-gold/60 to-transparent" />
+        </div>
         <ul className="enter-stagger mt-4 grid gap-4 sm:grid-cols-3">
           {QUICK_ACTIONS.map((action) => (
             <li key={action.href} className="flex">
               <article
-                className={`surface-card surface-card-link relative flex w-full items-center gap-4 p-5 sm:flex-col sm:items-start sm:gap-5 sm:p-6 ${action.surface}`}
+                className={`surface-card surface-card-link relative flex w-full items-center gap-4 overflow-clip bg-gradient-to-br to-white p-5 sm:flex-col sm:items-start sm:gap-5 sm:p-6 ${action.surface}`}
               >
-                <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white text-ink shadow-sm">
+                <action.icon className="pointer-events-none absolute -right-5 -bottom-5 hidden h-32 w-32 text-ink/5 sm:block" />
+                <span
+                  className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white text-indigo-deep shadow-md ring-4 ${action.ring}`}
+                >
                   <action.icon className="h-8 w-8" />
                 </span>
                 <span className="min-w-0">
@@ -218,7 +241,7 @@ export default async function AdminDashboard() {
         </p>
         <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
           <Tile
-            surface="bg-indigo"
+            surface="bg-gradient-to-r from-indigo to-sky"
             photo={null}
             title="Top banner"
             href="/admin/announcement"
@@ -237,7 +260,7 @@ export default async function AdminDashboard() {
             )}
           </Tile>
           <Tile
-            surface="bg-magenta"
+            surface="bg-gradient-to-r from-magenta to-blossom"
             photo={null}
             title="Contact info"
             href="/admin/contact"
