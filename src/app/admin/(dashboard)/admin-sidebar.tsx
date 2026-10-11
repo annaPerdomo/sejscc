@@ -6,9 +6,8 @@ import { usePathname } from "next/navigation";
 import { useId, useState } from "react";
 import { buttonVariantClass } from "@/components/admin/admin-button";
 import { AdminUserIdentity } from "@/components/admin/admin-user-identity";
-import { byAdminPageOrder, PAGE_TONES } from "@/components/admin/admin-page-tone";
+import { ADMIN_PAGES } from "@/components/admin/admin-pages";
 import type { UserRole } from "@/db/schema";
-import type { EditablePageId } from "@/lib/editable-pages";
 import { signOutAction } from "./sign-out-action";
 
 type NavItem = {
@@ -20,39 +19,6 @@ type NavItem = {
 };
 type NavGroup = { heading: string | null; items: NavItem[] };
 
-const PAGE_NAV_ITEMS: Record<EditablePageId, Omit<NavItem, "surface"> & { id: EditablePageId }> = {
-  events: {
-    id: "events",
-    href: "/admin/events",
-    label: "Events",
-    alsoActiveFor: ["/admin/pages/events"],
-  },
-  groups: {
-    id: "groups",
-    href: "/admin/groups",
-    label: "Sports & Classes",
-    alsoActiveFor: ["/admin/pages/groups"],
-  },
-  home: {
-    id: "home",
-    href: "/admin/pages/home",
-    label: "Home",
-    alsoActiveFor: ["/admin/board"],
-  },
-  donate: {
-    id: "donate",
-    href: "/admin/pages/donate",
-    label: "Donations",
-    alsoActiveFor: ["/admin/donations"],
-  },
-  school: {
-    id: "school",
-    href: "/admin/pages/school",
-    label: "Japanese School",
-    alsoActiveFor: ["/admin/levels", "/admin/school-year"],
-  },
-};
-
 const NAV_GROUPS: NavGroup[] = [
   {
     heading: null,
@@ -60,12 +26,15 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     heading: "Pages of the website",
-    items: Object.values(PAGE_NAV_ITEMS)
-      .sort(byAdminPageOrder)
-      .map(({ id, ...item }) => ({ ...item, surface: PAGE_TONES[id].surface })),
+    items: ADMIN_PAGES.map((page) => ({
+      href: page.hub,
+      label: page.menuLabel,
+      surface: page.surface,
+      alsoActiveFor: page.alsoActiveFor,
+    })),
   },
   {
-    heading: "Top & bottom of every page",
+    heading: "On every page",
     items: [
       { href: "/admin/announcement", label: "Top banner" },
       { href: "/admin/contact", label: "Contact info" },
@@ -74,7 +43,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     heading: "Admin only",
     items: [
-      { href: "/admin/volunteers", label: "Who Can Sign In", adminOnly: true },
+      { href: "/admin/volunteers", label: "Who can sign in", adminOnly: true },
       { href: "/admin/settings", label: "Settings", adminOnly: true },
     ],
   },
@@ -97,7 +66,7 @@ export function AdminSidebar({
   const navGroupBaseId = useId();
 
   return (
-    <header className="section-navy-scene relative isolate overflow-clip text-white lg:sticky lg:top-0 lg:flex lg:h-dvh lg:w-72 lg:shrink-0 lg:flex-col lg:self-start">
+    <header className="section-navy-scene seigaiha-rings seigaiha-rings-sky text-white lg:sticky lg:top-0 lg:flex lg:h-dvh lg:w-72 lg:shrink-0 lg:flex-col lg:self-start">
       <span
         aria-hidden="true"
         className="absolute inset-y-0 right-0 hidden w-1 bg-gradient-to-b from-indigo via-sky to-magenta lg:block"
@@ -112,8 +81,13 @@ export function AdminSidebar({
             height={40}
             className="h-10 w-10 shrink-0"
           />
-          <span className="min-w-0 font-display text-sm leading-snug font-semibold text-white">
-            Southeast Japanese School &amp; Community Center
+          <span className="min-w-0">
+            <span className="block font-display text-sm leading-snug font-semibold text-white">
+              Southeast Japanese School &amp; Community Center
+            </span>
+            <span lang="ja" className="mt-0.5 block font-accent text-xs tracking-[0.12em] text-sky">
+              サウスイースト日本語学園
+            </span>
           </span>
         </Link>
         <button
@@ -160,12 +134,12 @@ export function AdminSidebar({
                 {group.heading && (
                   <p
                     id={headingId}
-                    className="mt-3 mb-1 px-3 font-display text-sm font-semibold text-sky"
+                    className="mt-6 mb-2 px-3 font-display text-xs font-semibold tracking-[0.18em] text-sky uppercase"
                   >
                     {group.heading}
                   </p>
                 )}
-                <ul aria-labelledby={group.heading ? headingId : undefined} className="flex flex-col">
+                <ul aria-labelledby={group.heading ? headingId : undefined} className="flex flex-col gap-0.5">
                   {items.map((item) => {
                     const active = isActive(pathname, item);
                     return (
@@ -174,7 +148,7 @@ export function AdminSidebar({
                           href={item.href}
                           onClick={() => setOpen(false)}
                           aria-current={active ? "page" : undefined}
-                          className={`flex min-h-10 items-center gap-3 rounded-md border-l-4 px-3 py-1.5 font-display text-base font-semibold tracking-wide ${
+                          className={`flex min-h-12 items-center gap-3 rounded-lg border-l-4 px-3 py-2 font-display text-lg font-medium ${
                             active
                               ? "border-sky bg-white/10 text-white"
                               : "border-transparent text-white/85 hover:bg-white/5 hover:text-white"
@@ -183,7 +157,7 @@ export function AdminSidebar({
                           {item.surface && (
                             <span
                               aria-hidden="true"
-                              className={`h-4 w-4 shrink-0 rounded-sm ${item.surface}`}
+                              className={`h-3.5 w-3.5 shrink-0 rounded-full ring-2 ring-white/30 ${item.surface}`}
                             />
                           )}
                           {item.label}

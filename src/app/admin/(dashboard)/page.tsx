@@ -2,398 +2,211 @@ import type { ReactNode } from "react";
 import Image, { type ImageProps } from "next/image";
 import Link from "next/link";
 import { auth } from "@/auth";
-import { db } from "@/db";
-import { boardMembers, volunteerSection } from "@/db/schema";
 import { EDITABLE_PAGES, type EditablePage } from "@/lib/editable-pages";
-import { getActiveGroups, getUpcomingEvents } from "@/lib/events";
-import { excerpt, formatEventDate, isUploadedFileUrl } from "@/lib/format";
-import { boardPhoto } from "@/lib/photos";
-import { getAllSchoolLevels } from "@/lib/school-levels";
-import { getAllSchoolYearEvents } from "@/lib/school-year-events";
 import { getAnnouncement, getCenterContact } from "@/lib/site-settings";
 import { getSitePhotos } from "@/lib/site-photos";
-import { AdminButtonLink } from "@/components/admin/admin-button";
-import { AdminCard } from "@/components/admin/admin-card";
-import { byAdminPageOrder, PAGE_TONES } from "@/components/admin/admin-page-tone";
+import { buttonClass } from "@/components/admin/admin-button";
+import { ADMIN_PAGES, type AdminPage } from "@/components/admin/admin-pages";
 import { AdminPageWidth } from "@/components/admin/admin-page-width";
 
 export const dynamic = "force-dynamic";
 
 type PhotoSrc = ImageProps["src"];
 
-const PREVIEW_COUNT = 3;
+const CENTER_TIME_ZONE = "America/Los_Angeles";
 
-function firstUploaded(urls: (string | null)[]): string | null {
-  return urls.find((url): url is string => url !== null && isUploadedFileUrl(url)) ?? null;
+const QUICK_ACTIONS = [
+  { href: "/admin/events/new", label: "Add a new event" },
+  { href: "/admin/announcement", label: "Change the top banner" },
+  { href: "/admin/groups/new", label: "Add a sport or class" },
+];
+
+function DashboardHeading({ id, children }: { id: string; children: ReactNode }) {
+  return (
+    <h2 id={id} className="font-display text-2xl text-ink sm:text-3xl">
+      {children}
+    </h2>
+  );
 }
 
-function sectionsSummary(page: EditablePage): string {
-  const labels = page.sections
-    .filter((section) => section.fields.length > 0 || section.photos.length > 0)
-    .map((section) => section.label);
-  const shown = labels.slice(0, 3).join(", ");
-  return labels.length > 3 ? `${shown} and more` : shown;
-}
-
-function plural(count: number, one: string, many: string): string {
-  return `${count} ${count === 1 ? one : many}`;
-}
-
-function DashboardRow({
-  href,
+function Tile({
+  surface,
   photo,
   title,
-  detail,
-}: {
-  href: string;
-  photo: PhotoSrc | null;
-  title: string;
-  detail?: string;
-}) {
-  return (
-    <li>
-      <Link
-        href={href}
-        className="group flex items-center gap-4 rounded-lg border border-ink/10 bg-white p-3 hover:border-indigo"
-      >
-        {photo && (
-          <span className="relative aspect-photo w-16 shrink-0 overflow-clip rounded-md bg-mist sm:w-24">
-            <Image src={photo} alt="" fill sizes="(min-width: 640px) 6rem, 4rem" className="object-cover" />
-          </span>
-        )}
-        <span className="min-w-0 flex-1">
-          <span className="block font-semibold text-ink group-hover:underline">{title}</span>
-          {detail && <span className="mt-0.5 block text-sm text-ink-soft">{detail}</span>}
-        </span>
-        <span aria-hidden="true" className="shrink-0 text-2xl text-indigo">
-          ›
-        </span>
-      </Link>
-    </li>
-  );
-}
-
-function RowList({ heading, children }: { heading?: string; children: ReactNode }) {
-  return (
-    <div>
-      {heading && (
-        <h4 className="mb-2 font-display text-base font-semibold text-ink-soft">{heading}</h4>
-      )}
-      <ul className="flex flex-col gap-2">{children}</ul>
-    </div>
-  );
-}
-
-function PageCard({ page, children }: { page: EditablePage; children: ReactNode }) {
-  const headingId = `page-card-${page.id}`;
-
-  return (
-    <section
-      aria-labelledby={headingId}
-      className={`flex flex-col gap-5 rounded-xl border border-ink/10 p-6 ${PAGE_TONES[page.id].surface}`}
-    >
-      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <h3 id={headingId} className="font-display text-2xl text-ink">
-          {page.label}
-        </h3>
-        <Link
-          href={page.href}
-          className="inline-flex min-h-11 items-center text-sm font-semibold text-ink underline underline-offset-4 hover:text-indigo-deep"
-        >
-          See it on the website
-        </Link>
-      </div>
-      {children}
-    </section>
-  );
-}
-
-function PageSketch({ highlight }: { highlight: "top" | "bottom" }) {
-  const band = "h-3 rounded-sm bg-indigo";
-  const line = "h-1.5 rounded-full bg-line";
-  return (
-    <div
-      aria-hidden="true"
-      className="flex h-24 w-20 shrink-0 flex-col gap-1.5 rounded-lg border-2 border-line bg-white p-1.5"
-    >
-      <div className={highlight === "top" ? band : line} />
-      <div className={line} />
-      <div className={`${line} w-3/4`} />
-      <div className={line} />
-      <div className={`${line} w-2/3`} />
-      <div className="flex-1" />
-      <div className={highlight === "bottom" ? band : line} />
-    </div>
-  );
-}
-
-function SharedPartCard({
-  title,
-  highlight,
-  where,
   children,
   href,
   action,
+  siteHref,
 }: {
+  surface: string;
+  photo: PhotoSrc | null;
   title: string;
-  highlight: "top" | "bottom";
-  where: string;
   children: ReactNode;
   href: string;
   action: string;
+  siteHref?: string;
 }) {
   return (
-    <AdminCard>
-      <div className="flex flex-col gap-5 sm:flex-row">
-        <PageSketch highlight={highlight} />
-        <div className="min-w-0">
-          <h3 className="font-display text-2xl text-ink">{title}</h3>
-          <p className="mt-1 text-sm text-ink-soft">{where}</p>
-          <div className="mt-3 text-base break-words text-ink">{children}</div>
+    <article className="surface-card surface-card-link relative flex flex-col overflow-clip">
+      {photo && (
+        <div className="relative aspect-band bg-mist">
+          <Image src={photo} alt="" fill sizes="(min-width: 1280px) 30rem, 100vw" className="object-cover" />
+        </div>
+      )}
+      <span aria-hidden="true" className={`block h-2 ${surface}`} />
+      <div className="flex flex-1 flex-col gap-4 p-6">
+        <h3 className="font-display text-2xl text-ink">{title}</h3>
+        <div className="text-lg leading-relaxed text-ink-soft">{children}</div>
+        <div className="mt-auto flex flex-wrap items-center gap-x-6 gap-y-3 pt-2">
+          <Link href={href} className={`card-stretch text-lg ${buttonClass("primary")}`}>
+            {action}
+            <span className="sr-only"> — {title}</span>
+          </Link>
+          {siteHref && (
+            <Link
+              href={siteHref}
+              className="relative z-10 inline-flex min-h-11 items-center text-base font-semibold text-indigo-deep underline underline-offset-4 hover:text-indigo"
+            >
+              See it on the website
+              <span className="sr-only"> — {title}</span>
+            </Link>
+          )}
         </div>
       </div>
-      <div className="mt-6 flex flex-col">
-        <AdminButtonLink href={href}>{action}</AdminButtonLink>
-      </div>
-    </AdminCard>
+    </article>
   );
 }
 
 export default async function AdminDashboard() {
   const session = await auth();
-  const [
-    activeGroups,
-    upcomingEvents,
-    allBoardMembers,
-    boardSections,
-    allSchoolLevels,
-    allSchoolYearEvents,
-    announcement,
-    sitePhotos,
-    contact,
-  ] = await Promise.all([
-    getActiveGroups(),
-    getUpcomingEvents(),
-    db.select({ visible: boardMembers.visible }).from(boardMembers),
-    db.select({ photoUrl: volunteerSection.photoUrl }).from(volunteerSection),
-    getAllSchoolLevels(),
-    getAllSchoolYearEvents(),
+  const [announcement, sitePhotos, contact] = await Promise.all([
     getAnnouncement(),
     getSitePhotos(),
     getCenterContact(),
   ]);
 
-  const hiddenNote = (hidden: number) => (hidden > 0 ? ` (${hidden} hidden)` : "");
-
-  const boardShowing = allBoardMembers.filter((member) => member.visible).length;
-  const boardHidden = allBoardMembers.length - boardShowing;
-
-  const visibleLevels = allSchoolLevels.filter((level) => level.visible);
-  const levelsHidden = allSchoolLevels.length - visibleLevels.length;
-
-  const yearShowing = allSchoolYearEvents.filter((event) => event.visible && event.photoUrl);
-  const yearNeedPhoto = allSchoolYearEvents.filter((event) => !event.photoUrl).length;
+  const pagesById = new Map(EDITABLE_PAGES.map((page) => [page.id, page]));
 
   function pagePhoto(page: EditablePage): PhotoSrc | null {
     const slot = page.sections.flatMap((section) => section.photos)[0];
     return slot ? (sitePhotos.get(slot.id)?.url ?? slot.defaultSrc) : null;
   }
 
-  function wordsAndPhotosRow(page: EditablePage) {
+  function pageTile(adminPage: AdminPage) {
+    const page = pagesById.get(adminPage.id);
+    if (!page) return null;
     return (
-      <DashboardRow
-        href={`/admin/pages/${page.id}`}
+      <Tile
+        key={page.id}
+        surface={adminPage.surface}
         photo={pagePhoto(page)}
-        title="Words & photos"
-        detail={sectionsSummary(page)}
-      />
+        title={page.label}
+        href={adminPage.hub}
+        action="Change this page"
+        siteHref={page.href}
+      >
+        {adminPage.summary}
+      </Tile>
     );
-  }
-
-  function groupPhoto(group: (typeof activeGroups)[number]): string | null {
-    return firstUploaded([...group.photoUrls, group.imageIsLogo ? null : group.imageUrl]);
-  }
-
-  function pageContent(page: EditablePage): ReactNode {
-    switch (page.id) {
-      case "events":
-        return (
-          <>
-            <AdminButtonLink href="/admin/events/new">+ Add a new event</AdminButtonLink>
-            {upcomingEvents.length > 0 ? (
-              <RowList heading="Coming up next">
-                {upcomingEvents.slice(0, PREVIEW_COUNT).map((event) => (
-                  <DashboardRow
-                    key={event.id}
-                    href={`/admin/events/${event.id}`}
-                    photo={firstUploaded([event.flyerUrl])}
-                    title={event.title}
-                    detail={formatEventDate(event.startAt) ?? undefined}
-                  />
-                ))}
-              </RowList>
-            ) : (
-              <p className="text-base text-ink">No events are coming up.</p>
-            )}
-            <AdminButtonLink href="/admin/events" variant="secondary">
-              See all events
-            </AdminButtonLink>
-            <RowList heading="Also on this page">{wordsAndPhotosRow(page)}</RowList>
-          </>
-        );
-      case "groups":
-        return (
-          <>
-            <AdminButtonLink href="/admin/groups/new">+ Add a new group</AdminButtonLink>
-            {activeGroups.length > 0 && (
-              <RowList heading="Some of the groups">
-                {activeGroups.slice(0, PREVIEW_COUNT).map((group) => (
-                  <DashboardRow
-                    key={group.id}
-                    href={`/admin/groups/${group.id}`}
-                    photo={groupPhoto(group)}
-                    title={group.name}
-                    detail={group.description ? excerpt(group.description, 60) : undefined}
-                  />
-                ))}
-              </RowList>
-            )}
-            <AdminButtonLink href="/admin/groups" variant="secondary">
-              See all groups
-            </AdminButtonLink>
-            <RowList heading="Also on this page">{wordsAndPhotosRow(page)}</RowList>
-          </>
-        );
-      case "home":
-        return (
-          <RowList>
-            <DashboardRow
-              href="/admin/board"
-              photo={firstUploaded(boardSections.map((section) => section.photoUrl)) ?? boardPhoto}
-              title="Board of Directors"
-              detail={`${plural(boardShowing, "member", "members")} showing${hiddenNote(boardHidden)}`}
-            />
-            {wordsAndPhotosRow(page)}
-          </RowList>
-        );
-      case "donate":
-        return (
-          <RowList>
-            <DashboardRow
-              href="/admin/donations"
-              photo={null}
-              title="Ways to donate"
-              detail="The online form, Zelle and the mailing address for checks"
-            />
-            {wordsAndPhotosRow(page)}
-          </RowList>
-        );
-      case "school":
-        return (
-          <RowList>
-            <DashboardRow
-              href="/admin/levels"
-              photo={firstUploaded(visibleLevels.map((level) => level.photoUrl))}
-              title="Classes"
-              detail={`${plural(visibleLevels.length, "class", "classes")} showing${hiddenNote(levelsHidden)}`}
-            />
-            <DashboardRow
-              href="/admin/school-year"
-              photo={firstUploaded(yearShowing.map((event) => event.photoUrl))}
-              title="The school year"
-              detail={`${plural(yearShowing.length, "event", "events")} showing${yearNeedPhoto > 0 ? `, ${yearNeedPhoto} still need a photo` : ""}`}
-            />
-            {wordsAndPhotosRow(page)}
-          </RowList>
-        );
-    }
   }
 
   const firstName = session?.user?.name?.trim().split(/\s+/)[0] ?? null;
   const today = new Date();
+  const weekday = today.toLocaleDateString("en-US", { weekday: "long", timeZone: CENTER_TIME_ZONE });
+  const date = today.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    timeZone: CENTER_TIME_ZONE,
+  });
 
   return (
     <AdminPageWidth>
-      <div className="flex flex-wrap items-end justify-between gap-6">
-        <h1 className="font-display text-3xl text-ink sm:text-4xl">
-          {firstName ? (
-            <>
-              Welcome back, <span className="text-indigo">{firstName.toUpperCase()}</span>
-            </>
-          ) : (
-            "Welcome back"
-          )}
+      <section
+        aria-labelledby="dashboard-welcome"
+        className="section-navy-scene seigaiha-rings seigaiha-rings-sky enter-rise rounded-2xl px-6 py-8 text-white sm:px-10 sm:py-10"
+      >
+        <p className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <span lang="ja" className="font-accent text-sm font-bold tracking-[0.2em] text-sky">
+            おかえりなさい
+          </span>
+          <span aria-hidden="true" className="enter-rule h-px w-9 bg-sky" />
+          <span className="font-display text-xs font-semibold tracking-[0.2em] text-sky uppercase">
+            {weekday}, {date}
+          </span>
+        </p>
+        <h1 id="dashboard-welcome" className="mt-4 font-display text-4xl sm:text-5xl">
+          {firstName ? `Welcome back, ${firstName}` : "Welcome back"}
         </h1>
-        <div className="text-right">
-          <p className="font-display text-xs font-semibold tracking-[0.14em] text-stone uppercase">
-            {today.toLocaleDateString("en-US", {
-              weekday: "long",
-              timeZone: "America/Los_Angeles",
-            })}
-          </p>
-          <p className="font-display text-sm text-ink">
-            {today.toLocaleDateString("en-US", {
-              month: "long",
-              day: "numeric",
-              year: "numeric",
-              timeZone: "America/Los_Angeles",
-            })}
-          </p>
-        </div>
-      </div>
-
-      {!firstName && (
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-line bg-cream px-5 py-4">
-          <p className="text-sm text-ink-soft">
-            We don’t have your name yet — add it so the site can greet you by
-            name.
-          </p>
-          <AdminButtonLink href="/admin/profile" variant="secondary">
-            Add your name
-          </AdminButtonLink>
-        </div>
-      )}
-
-      <section aria-labelledby="dashboard-pages" className="mt-10">
-        <h2 id="dashboard-pages" className="font-display text-2xl text-ink">
-          Pages of the website
-        </h2>
-        <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-          {[...EDITABLE_PAGES].sort(byAdminPageOrder).map((page) => (
-            <PageCard key={page.id} page={page}>
-              {pageContent(page)}
-            </PageCard>
+        <p className="mt-3 max-w-xl text-lg leading-relaxed text-sky">
+          Everything on the website can be changed from here. Pick a page below, or
+          start with one of these.
+        </p>
+        <ul className="mt-6 flex flex-wrap gap-3">
+          {QUICK_ACTIONS.map((action) => (
+            <li key={action.href}>
+              <Link
+                href={action.href}
+                className="button-light inline-flex min-h-12 items-center px-5 text-base"
+              >
+                {action.label}
+              </Link>
+            </li>
           ))}
+        </ul>
+        {!firstName && (
+          <p className="mt-6 text-base text-sky">
+            We don’t have your name yet.{" "}
+            <Link href="/admin/profile" className="font-semibold text-white underline underline-offset-4">
+              Add your name
+            </Link>{" "}
+            so we can greet you properly.
+          </p>
+        )}
+      </section>
+
+      <section aria-labelledby="dashboard-pages" className="mt-12">
+        <DashboardHeading id="dashboard-pages">Pages of the website</DashboardHeading>
+        <p className="mt-2 text-lg text-ink-soft">
+          Each page of the website has its own place here. Open one to change what is on it.
+        </p>
+        <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+          {ADMIN_PAGES.map(pageTile)}
         </div>
       </section>
 
       <section aria-labelledby="dashboard-shared" className="mt-14">
-        <h2 id="dashboard-shared" className="font-display text-2xl text-ink">
-          Top &amp; bottom of every page
-        </h2>
-        <div className="mt-6 grid gap-6 md:grid-cols-2">
-          <SharedPartCard
+        <DashboardHeading id="dashboard-shared">On every page</DashboardHeading>
+        <p className="mt-2 text-lg text-ink-soft">
+          These two show at the top and bottom of every page of the website.
+        </p>
+        <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+          <Tile
+            surface="bg-indigo"
+            photo={null}
             title="Top banner"
-            highlight="top"
-            where="A short message in a strip above the menu."
             href="/admin/announcement"
             action="Change the top banner"
           >
-            {announcement
-              ? `Showing now: “${announcement.text}”`
-              : "No message right now, so the banner shows the next event."}
-          </SharedPartCard>
-          <SharedPartCard
+            {announcement ? (
+              <>
+                Showing now: <q className="text-ink">{announcement.text}</q>
+              </>
+            ) : (
+              "No message right now, so the banner shows the next event."
+            )}
+          </Tile>
+          <Tile
+            surface="bg-magenta"
+            photo={null}
             title="Contact info"
-            highlight="bottom"
-            where="At the bottom of every page, and on the home and donations pages."
             href="/admin/contact"
             action="Change the contact info"
           >
             <p>{contact.phone}</p>
             <p>{contact.email}</p>
             <p>{contact.address}</p>
-          </SharedPartCard>
+          </Tile>
         </div>
       </section>
     </AdminPageWidth>
