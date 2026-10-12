@@ -30,7 +30,7 @@ const ADMIN_PAGE_DETAILS: Record<EditablePageId, Omit<AdminPage, "id">> = {
     menuLabel: "Home",
     surface: "bg-azure",
     hub: "/admin/pages/home",
-    alsoActiveFor: ["/admin/board"],
+    alsoActiveFor: ["/admin/board", "/admin/videos"],
     summary: "The welcome a visitor sees first, the board of directors, and our history.",
   },
   donate: {

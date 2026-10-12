@@ -59,7 +59,16 @@ const SECTION_ORDER: Record<EditablePageId, SectionSpec[]> = {
     { id: "home-top", label: "Top of the page", manage: EVENTS_LIST },
     { id: "home-japanese-school", label: "Japanese School", anchor: "school" },
     { id: "home-sports-clubs", label: "Sports, Clubs & Classes", anchor: "groups", manage: GROUPS_LIST },
-    { id: "home-history", label: "Our History", anchor: "history" },
+    {
+      id: "home-history",
+      label: "Our History",
+      anchor: "history",
+      manage: {
+        href: "/admin/videos",
+        description: "The videos in this section come from a list of YouTube links.",
+        action: "Change the videos",
+      },
+    },
     {
       id: "home-board",
       label: "Board of Directors",

@@ -35,7 +35,7 @@ const MAX_ABOUT_VIDEOS = 6;
 
 export async function updateAboutVideoUrls(raw: string): Promise<ActionResult<string[]>> {
   return runAction(async () => {
-    await requireAdmin();
+    await requireUser();
     const lines = raw
       .split("\n")
       .map((line) => line.trim())

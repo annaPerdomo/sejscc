@@ -5,7 +5,9 @@ import { allowedEmails, users } from "@/db/schema";
 import { AdminCard, AdminEmptyState } from "@/components/admin/admin-card";
 import { ConfirmDeleteButton } from "@/components/admin/confirm-delete-button";
 import { getCurrentUser } from "@/lib/admin";
+import { getSiteSettings } from "@/lib/site-settings";
 import { ROLE_LABELS } from "@/lib/format";
+import { AccessRequestEmailForm } from "./access-request-email-form";
 import { AddVolunteerForm } from "./add-volunteer-form";
 import { removeAllowedEmail } from "./actions";
 import { AdminPageWidth } from "@/components/admin/admin-page-width";
@@ -17,11 +19,12 @@ export default async function VolunteersPage() {
   if (user?.role !== "admin") redirect("/admin");
   const currentEmail = user.email?.trim().toLowerCase();
 
-  const [allowed, accounts] = await Promise.all([
+  const [allowed, accounts, settings] = await Promise.all([
     db.select().from(allowedEmails).orderBy(asc(allowedEmails.addedAt)),
     db
       .select({ email: users.email, name: users.name, role: users.role })
       .from(users),
+    getSiteSettings(),
   ]);
   const accountsByEmail = new Map(
     accounts.map((account) => [account.email, account])
@@ -86,6 +89,22 @@ export default async function VolunteersPage() {
             })}
           </ul>
         )}
+
+        <section aria-labelledby="access-request-heading" className="pt-6">
+          <h2
+            id="access-request-heading"
+            className="font-display text-xl text-ink"
+          >
+            When someone can&rsquo;t sign in
+          </h2>
+          <p className="mt-1 mb-4 text-stone">
+            The sign-in page tells people who aren&rsquo;t on this list who to
+            ask for access.
+          </p>
+          <AccessRequestEmailForm
+            initialEmail={settings?.accessRequestEmail ?? ""}
+          />
+        </section>
       </div>
     </AdminPageWidth>
   );
