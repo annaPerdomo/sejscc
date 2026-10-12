@@ -189,7 +189,7 @@ export default async function AdminDashboard() {
               <SectionKicker accent="おかえりなさい" caption={`${weekday}, ${date}`} tone="magenta" size="lg" entrance="load" />
               <h1
                 id="dashboard-welcome"
-                className="mt-4 max-w-xl font-display text-4xl font-normal tracking-[0.02em] break-words text-ink sm:text-5xl lg:text-6xl"
+                className="mt-4 max-w-xl font-display text-4xl font-normal tracking-[0.02em] break-words text-ink sm:text-5xl"
               >
                 {firstName ? (
                   <>
