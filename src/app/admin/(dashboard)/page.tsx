@@ -166,9 +166,9 @@ export default async function AdminDashboard() {
         className="relative isolate -mx-5 -mt-8 overflow-clip sm:-mx-8 lg:-mx-10 lg:-mt-10"
       >
         <div aria-hidden="true" className="section-wash-history absolute inset-0 -z-10 mask-b-from-70%">
-          {/* The copy starts where this strip ends, so no text ever sits on the
-              photo and a board member can swap in any picture. */}
-          <div className="absolute inset-x-0 top-0 h-64 mask-b-from-50% sm:h-80 lg:h-96">
+          {/* Raised from lg so the school sign, in the photo's upper third, sits
+              in the band instead of under its bottom fade. */}
+          <div className="absolute inset-0 mask-b-from-60% lg:-top-24">
             <Image
               src={slotPhoto(sitePhotos, "home.events-backdrop", "", "en").src}
               alt=""
@@ -179,33 +179,38 @@ export default async function AdminDashboard() {
             />
           </div>
         </div>
-        <div className="px-5 pt-64 pb-12 sm:px-8 sm:pt-80 sm:pb-14 lg:px-10 lg:pt-96">
+        <div className="px-5 pt-12 pb-20 sm:px-8 sm:pt-16 sm:pb-24 lg:px-10">
           <div className="enter-rise mx-auto max-w-5xl">
-            <SectionKicker accent="おかえりなさい" caption={`${weekday}, ${date}`} tone="magenta" size="lg" entrance="load" />
-            <h1
-              id="dashboard-welcome"
-              className="mt-4 font-display text-4xl font-normal tracking-[0.02em] text-ink sm:text-5xl lg:text-6xl"
-            >
-              {firstName ? (
-                <>
-                  <span className="text-indigo">Welcome back,</span> {firstName}
-                </>
-              ) : (
-                <span className="text-indigo">Welcome back</span>
-              )}
-            </h1>
-            <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink-soft sm:text-xl">
-              Everything on the website can be changed from here.
-            </p>
-            {!firstName && (
-              <p className="mt-3 text-base text-ink-soft">
-                We don’t have your name yet.{" "}
-                <Link href="/admin/profile" className="font-semibold text-indigo-deep underline underline-offset-4">
-                  Add your name
-                </Link>{" "}
-                so we can greet you properly.
+            <div className="relative w-fit max-w-full">
+              {/* Holds every text color at AA over whatever photo sits behind the
+                  copy; 88% is the home page's tuned wash. */}
+              <div aria-hidden="true" className="absolute -inset-12 -z-10 bg-paper/88 blur-2xl" />
+              <SectionKicker accent="おかえりなさい" caption={`${weekday}, ${date}`} tone="magenta" size="lg" entrance="load" />
+              <h1
+                id="dashboard-welcome"
+                className="mt-4 font-display text-4xl font-normal tracking-[0.02em] text-ink sm:text-5xl lg:text-6xl"
+              >
+                {firstName ? (
+                  <>
+                    <span className="text-indigo">Welcome back,</span> {firstName}
+                  </>
+                ) : (
+                  <span className="text-indigo">Welcome back</span>
+                )}
+              </h1>
+              <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink-soft sm:text-xl">
+                Everything on the website can be changed from here.
               </p>
-            )}
+              {!firstName && (
+                <p className="mt-3 text-base text-ink-soft">
+                  We don’t have your name yet.{" "}
+                  <Link href="/admin/profile" className="font-semibold text-indigo-deep underline underline-offset-4">
+                    Add your name
+                  </Link>{" "}
+                  so we can greet you properly.
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </section>
