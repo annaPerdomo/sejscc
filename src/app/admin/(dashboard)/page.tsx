@@ -165,10 +165,11 @@ export default async function AdminDashboard() {
         aria-labelledby="dashboard-welcome"
         className="relative isolate -mx-5 -mt-8 overflow-clip sm:-mx-8 lg:-mx-10 lg:-mt-10"
       >
-        <div aria-hidden="true" className="section-wash-history absolute inset-0 -z-10 mask-b-from-70%">
-          {/* Raised from lg so the school sign, in the photo's upper third, sits
-              in the band instead of under its bottom fade. */}
-          <div className="absolute inset-0 mask-b-from-60% lg:-top-24">
+        <div aria-hidden="true" className="section-wash-history absolute inset-0 -z-10 mask-b-from-80%">
+          {/* From lg the photo keeps its own 16:9 shape and is lifted further on
+              wider bands, which scale it up, so the school sign (the photo's
+              upper middle) lands above the band's bottom fade. */}
+          <div className="absolute inset-0 lg:bottom-auto lg:aspect-video lg:-translate-y-1/10 xl:-translate-y-1/8 2xl:-translate-y-1/5">
             <Image
               src={slotPhoto(sitePhotos, "home.events-backdrop", "", "en").src}
               alt=""
