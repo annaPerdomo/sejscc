@@ -161,13 +161,16 @@ export function EventsHeroCarousel({
 
   return (
     <div ref={rootRef} {...rotation.focusProps}>
-      <div aria-hidden="true" className="absolute inset-0">
+      <div
+        aria-hidden="true"
+        className="absolute inset-x-0 top-0 h-page-hero mask-b-from-40% lg:inset-y-0 lg:h-auto lg:mask-none"
+      >
         <Image
           src={backdropSrc}
           alt=""
           fill
           preload
-          sizes="100vw"
+          sizes="(max-width: 1023px) 150vw, 100vw"
           className="hero-intro-photo object-cover"
         />
       </div>

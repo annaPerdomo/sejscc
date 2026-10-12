@@ -1164,22 +1164,25 @@ body {
       animation: brush-draw 1200ms cubic-bezier(0.65, 0, 0.35, 1) 250ms both;
     }
 
-    /* `--enter-delay` holds the entrances inside each stage until it starts. */
-    .hero-intro-photo {
-      animation: hero-intro-settle 2400ms cubic-bezier(0.22, 1, 0.36, 1) both;
-    }
+    /* `--enter-delay` holds the entrances inside each stage until it starts.
+       Desktop only: on a phone the bare photo first reads as an empty page. */
+    @media (width >= 64rem) {
+      .hero-intro-photo {
+        animation: hero-intro-settle 2400ms cubic-bezier(0.22, 1, 0.36, 1) both;
+      }
 
-    .hero-intro-scrim {
-      animation: hero-intro 1100ms ease-in-out 700ms both;
-    }
+      .hero-intro-scrim {
+        animation: hero-intro 1100ms ease-in-out 700ms both;
+      }
 
-    .hero-intro {
-      --enter-delay: 1300ms;
-    }
+      .hero-intro {
+        --enter-delay: 1300ms;
+      }
 
-    .hero-intro-late {
-      --enter-delay: 2400ms;
-      animation: hero-intro 900ms ease-out 2400ms both;
+      .hero-intro-late {
+        --enter-delay: 2400ms;
+        animation: hero-intro 900ms ease-out 2400ms both;
+      }
     }
 
     .hero-drift {
