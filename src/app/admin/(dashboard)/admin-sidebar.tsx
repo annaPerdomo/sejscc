@@ -41,6 +41,10 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    heading: "Website developer",
+    items: [{ href: "/admin/requests", label: "Submit a request or report an issue" }],
+  },
+  {
     heading: "Admin only",
     items: [
       { href: "/admin/volunteers", label: "Who can sign in", adminOnly: true },
