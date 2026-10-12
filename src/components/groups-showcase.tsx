@@ -151,7 +151,7 @@ export function GroupsShowcase({
               onToggle={rotation.toggle}
               pauseLabel={labels.pause}
               playLabel={labels.play}
-              className="h-11 w-11 shrink-0 border-navy/40 bg-transparent text-navy hover:bg-navy hover:text-white"
+              className="h-11 w-11 shrink-0 border-navy/40 bg-transparent text-navy hover:bg-navy hover:text-white max-sm:hidden"
             />
           )}
         </div>
@@ -161,7 +161,7 @@ export function GroupsShowcase({
         <div className="asanoha-frame lg:col-span-7">
           <div
             ref={stageRef}
-            className="relative aspect-square overflow-clip rounded-xs bg-navy ring-1 ring-gold/40 sm:aspect-photo lg:aspect-auto lg:h-full lg:min-h-144"
+            className="relative grid overflow-clip rounded-xs bg-ink-deep ring-1 ring-gold/40 sm:block sm:bg-navy sm:aspect-photo lg:aspect-auto lg:h-full lg:min-h-144"
           >
             {items.map((item, i) => {
               const isOpen = i === active;
@@ -172,21 +172,29 @@ export function GroupsShowcase({
                   role="tabpanel"
                   aria-labelledby={`group-tab-${item.id}`}
                   inert={!isOpen}
-                  className="absolute inset-0 transition-opacity duration-700 ease-in-out"
+                  className="col-start-1 row-start-1 transition-opacity duration-700 ease-in-out sm:absolute sm:inset-0"
                   style={{ opacity: isOpen ? 1 : 0 }}
                 >
-                  {isOpen && (
-                    <>
-                      <Slideshow
-                        item={item}
-                        slide={slide}
-                        altTemplate={labels.photoAlt}
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-ink-deep from-5% via-ink-deep/55 via-40% to-transparent to-70%" />
-                      {slideCount(item) > 1 && (
-                        <>
-                          <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-ink-deep/50 to-transparent" />
-                          <div className="absolute inset-x-3 top-2 z-20 sm:inset-x-5 lg:inset-x-7">
+                  <div className="relative aspect-photo sm:absolute sm:inset-0 sm:aspect-auto">
+                    {isOpen && (
+                      <>
+                        <Slideshow
+                          item={item}
+                          slide={slide}
+                          altTemplate={labels.photoAlt}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-ink-deep to-transparent to-25% sm:from-5% sm:via-ink-deep/55 sm:via-40% sm:to-70%" />
+                        <div
+                          className={`absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-ink-deep/50 to-transparent ${
+                            slideCount(item) > 1 ? "" : "sm:hidden"
+                          }`}
+                        />
+                        {slideCount(item) > 1 && (
+                          <div
+                            className={`absolute inset-x-3 top-2 z-20 sm:inset-x-5 lg:inset-x-7 ${
+                              rotation.canRotate ? "max-sm:right-16" : ""
+                            }`}
+                          >
                             <CarouselDots
                               count={slideCount(item)}
                               active={slide}
@@ -201,58 +209,71 @@ export function GroupsShowcase({
                               }
                             />
                           </div>
-                        </>
+                        )}
+                        {slideCount(item) === 1 && (
+                          <RotationProgress
+                            rotation={rotation}
+                            intervalClassName="groups-progress"
+                            className="invisible absolute"
+                          />
+                        )}
+                      </>
+                    )}
+                  </div>
+                  {/* Every group's copy stays in the grid cell so the stacked
+                      stage is as tall as the longest one and never jumps. */}
+                  <div
+                    className={`${isOpen ? "enter-stagger" : ""} relative z-10 bg-ink-deep px-5 pt-3 pb-6 text-white sm:absolute sm:inset-x-0 sm:bottom-0 sm:bg-transparent sm:p-7 lg:p-9`}
+                  >
+                    <div className="flex items-center gap-4">
+                      {item.logoUrl && (
+                        <span className="relative block size-14 shrink-0 sm:size-16">
+                          <Image
+                            src={item.logoUrl}
+                            alt=""
+                            fill
+                            sizes={LOGO_SIZES}
+                            className="object-contain"
+                          />
+                        </span>
                       )}
-                      {slideCount(item) === 1 && (
-                        <RotationProgress
-                          rotation={rotation}
-                          intervalClassName="groups-progress"
-                          className="invisible absolute"
-                        />
-                      )}
-                      <div className="enter-stagger absolute inset-x-0 bottom-0 z-10 p-5 text-white sm:p-7 lg:p-9">
-                        <div className="flex items-center gap-4">
-                          {item.logoUrl && (
-                            <span className="relative block size-14 shrink-0 sm:size-16">
-                              <Image
-                                src={item.logoUrl}
-                                alt=""
-                                fill
-                                sizes={LOGO_SIZES}
-                                className="object-contain"
-                              />
-                            </span>
-                          )}
-                          <h3 className="font-display text-2xl leading-tight font-semibold text-pretty sm:text-3xl lg:text-4xl">
-                            {item.name}
-                          </h3>
-                        </div>
-                        {item.schedule && (
-                          <p className="mt-4 text-base text-white/90 sm:text-lg">
-                            <EventMeta icon="repeat">{item.schedule}</EventMeta>
-                          </p>
-                        )}
-                        {item.description && (
-                          <p className="mt-3 line-clamp-2 max-w-2xl text-base leading-relaxed text-white/85 sm:text-lg">
-                            {item.description}
-                          </p>
-                        )}
-                        {item.websiteUrl && (
-                          <p className="mt-5">
-                            <ExternalLink
-                              href={item.websiteUrl}
-                              className="button-light inline-block px-6 py-3 text-sm sm:text-base"
-                            >
-                              {labels.website}
-                            </ExternalLink>
-                          </p>
-                        )}
-                      </div>
-                    </>
-                  )}
+                      <h3 className="font-display text-2xl leading-tight font-semibold text-pretty sm:text-3xl lg:text-4xl">
+                        {item.name}
+                      </h3>
+                    </div>
+                    {item.schedule && (
+                      <p className="mt-4 text-base text-white/90 sm:text-lg">
+                        <EventMeta icon="repeat">{item.schedule}</EventMeta>
+                      </p>
+                    )}
+                    {item.description && (
+                      <p className="mt-3 line-clamp-2 max-w-2xl text-base leading-relaxed text-white/85 sm:text-lg">
+                        {item.description}
+                      </p>
+                    )}
+                    {item.websiteUrl && (
+                      <p className="mt-5">
+                        <ExternalLink
+                          href={item.websiteUrl}
+                          className="button-light inline-block px-6 py-3 text-sm sm:text-base"
+                        >
+                          {labels.website}
+                        </ExternalLink>
+                      </p>
+                    )}
+                  </div>
                 </div>
               );
             })}
+            {rotation.canRotate && (
+              <CarouselPlayToggle
+                stopped={rotation.stopped}
+                onToggle={rotation.toggle}
+                pauseLabel={labels.pause}
+                playLabel={labels.play}
+                className="absolute top-2 right-3 z-30 h-11 w-11 border-white/60 bg-ink-deep/50 text-white hover:bg-white hover:text-navy sm:hidden"
+              />
+            )}
           </div>
         </div>
 
@@ -270,7 +291,7 @@ export function GroupsShowcase({
               <div
                 key={item.id}
                 role="none"
-                className="relative isolate w-72 shrink-0 sm:w-auto"
+                className="relative isolate w-64 shrink-0 sm:w-auto"
               >
                 {isOpen && (
                   <span
@@ -287,7 +308,7 @@ export function GroupsShowcase({
                   onClick={() => show(i, 0)}
                   className="surface-card surface-card-link relative flex h-full w-full min-w-0 items-center gap-3 overflow-clip rounded-sm p-2 pr-4 text-left"
                 >
-                  <span className="relative block aspect-card w-24 shrink-0 overflow-clip rounded-xs bg-mist">
+                  <span className="relative block aspect-card w-20 shrink-0 overflow-clip rounded-xs bg-mist sm:w-24">
                     {cover && (
                       <Image
                         src={cover}
