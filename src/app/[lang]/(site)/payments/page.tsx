@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { DONATE_REASON_ICONS, HeartIcon } from "@/components/donate-icons";
+import { DonationPanel } from "@/components/donation-panel";
 import { ExternalLink } from "@/components/external-link";
+import { HeroTitle } from "@/components/hero-title";
 import { HeroPhotos } from "@/components/hero-photos";
 import { KanjiWatermark } from "@/components/kanji-watermark";
-import { PhotoHero } from "@/components/photo-hero";
 import { SectionHeading } from "@/components/section-heading";
 import { SectionKicker } from "@/components/section-kicker";
+import { StickyColumn } from "@/components/sticky-column";
+import { WaveDivider } from "@/components/wave-divider";
 import { ZeffyEmbed } from "@/components/zeffy-embed";
 import { getDictionary, getDictionaryFor, getLocale } from "@/lib/dictionaries";
 import { ZEFFY_DONATION_URL, ZELLE_FALLBACK_EMAIL } from "@/lib/donate";
@@ -34,9 +38,30 @@ const MOSAIC_SIZES = [
   "100vw",
 ];
 
-const STACK_TOPS = ["top-28", "top-32", "top-36", "top-40"];
-// The formal numerals: a lone 一 or 二 at this size reads as a rule.
-const NUMERALS = ["壱", "弐", "参", "肆", "伍", "陸"];
+function ReasonPhoto({
+  photo,
+  Icon,
+  className = "",
+}: {
+  photo: NonNullable<ReturnType<typeof slotPhoto>>;
+  Icon: (typeof DONATE_REASON_ICONS)[number];
+  className?: string;
+}) {
+  return (
+    <div className={`relative overflow-clip rounded-sm ring-1 ring-gold/60 ${className}`}>
+      <Image
+        src={photo.src}
+        alt={photo.alt}
+        fill
+        sizes="(min-width: 1024px) 14rem, (min-width: 640px) 45vw, 100vw"
+        className="object-cover"
+      />
+      <span className="absolute top-2 left-2 flex size-9 items-center justify-center rounded-full bg-ink-deep/85 text-sky ring-1 ring-gold/60">
+        <Icon className="size-5" />
+      </span>
+    </div>
+  );
+}
 
 type Props = { params: Promise<{ lang: string }> };
 
@@ -78,32 +103,143 @@ export default async function PaymentsPage() {
 
   return (
     <>
-      <PhotoHero
-        id="payments"
-        photo={heroPhoto.src}
-        photoAlt={heroPhoto.alt}
-        accent={dict.payments.kickerAccent}
-        caption={dict.payments.kickerCaption}
-        titleLine1={dict.payments.titleLine1}
-        titleLine2={dict.payments.titleLine2}
-        settlesInto="paper"
-        lede={
-          <>
-            <p className="font-display text-xl font-medium text-white sm:text-2xl">
-              {dict.payments.lede}
-            </p>
-            <p className="mt-5">{dict.payments.donateIntro}</p>
-          </>
-        }
-        aside={
-          <div id="donate" className="scroll-mt-32">
-            <div className="overflow-clip rounded-sm bg-white shadow-2xl ring-4 ring-gold/70">
+      <section className="edge-flush section-midnight-scene relative isolate overflow-clip text-white">
+        <div className="absolute inset-x-0 top-0 -z-10 h-page-hero">
+          <Image
+            src={heroPhoto.src}
+            alt={heroPhoto.alt}
+            fill
+            preload
+            sizes="100vw"
+            className="hero-intro-photo object-cover"
+          />
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 bg-gradient-to-b from-ink-deep/90 via-navy/90 to-ink-deep/95 lg:bg-gradient-to-r lg:from-ink-deep/95 lg:via-navy/90 lg:via-60% lg:to-navy/10 lg:to-90%"
+          />
+          <div
+            aria-hidden="true"
+            className="absolute inset-x-0 bottom-0 h-72 bg-gradient-to-t from-ink-deep via-ink-deep/80 to-transparent"
+          />
+        </div>
+
+        <div className="relative mx-auto max-w-wide px-5 pt-10 pb-32 sm:px-10 sm:pt-14 sm:pb-44 lg:flex lg:gap-12 lg:px-16 lg:pt-6">
+          <StickyColumn className="lg:w-3/5" panelClassName="lg:top-36 scroll-mt-36">
+            <div className="enter-stagger">
+              <SectionKicker
+                accent={dict.payments.kickerAccent}
+                caption={dict.payments.kickerCaption}
+                tone="photo"
+                size="lg"
+                entrance="load"
+              />
+              <HeroTitle
+                compact
+                line1={dict.payments.titleLine1}
+                line2={dict.payments.titleLine2}
+              />
+              <p className="mt-4 font-display text-xl font-medium text-white">
+                {dict.payments.lede}
+              </p>
+              <div className="mt-8 lg:hidden">
+                <a
+                  href="#donate"
+                  className="button-donate inline-flex min-h-12 items-center rounded-lg px-7 py-3 font-display text-lg font-semibold text-white"
+                >
+                  {dict.payments.giveNow}
+                </a>
+              </div>
+            </div>
+
+            <section aria-labelledby="donate-reasons" className="mt-14 lg:mt-8">
+              <h2
+                id="donate-reasons"
+                className="flex items-center gap-5 font-display text-2xl font-normal tracking-wide text-white"
+              >
+                <span className="shrink-0">{dict.payments.impactTitle}</span>
+                <span aria-hidden="true" className="enter-rule h-px flex-1 bg-gold/60" />
+              </h2>
+              <div className="enter-stagger mt-6 hidden grid-cols-4 gap-3 lg:grid">
+                {reasons.map((reason, i) =>
+                  reason.photo ? (
+                    <ReasonPhoto
+                      key={reason.title}
+                      photo={reason.photo}
+                      Icon={DONATE_REASON_ICONS[i % DONATE_REASON_ICONS.length]}
+                      className="aspect-square"
+                    />
+                  ) : (
+                    <div key={reason.title} />
+                  ),
+                )}
+              </div>
+              <ol className="enter-stagger mt-8 grid gap-x-10 gap-y-10 sm:grid-cols-2 lg:mt-5 lg:gap-y-5">
+                {reasons.map((reason, i) => {
+                  const Icon = DONATE_REASON_ICONS[i % DONATE_REASON_ICONS.length];
+                  return (
+                    <li key={reason.title}>
+                      {reason.photo && (
+                        <ReasonPhoto
+                          photo={reason.photo}
+                          Icon={Icon}
+                          className="mb-4 aspect-photo lg:hidden"
+                        />
+                      )}
+                      <h3 className="flex items-center gap-2.5 font-display text-xl leading-snug font-normal text-white">
+                        <Icon className="size-6 shrink-0 text-sky" />
+                        {reason.title}
+                      </h3>
+                      <p className="mt-1.5 text-lg leading-snug text-white/85">{reason.text}</p>
+                    </li>
+                  );
+                })}
+              </ol>
+            </section>
+          </StickyColumn>
+
+          <DonationPanel
+            id="donate"
+            className="mt-16 scroll-mt-36 lg:mt-0 lg:w-2/5"
+            panelClassName="enter-rise flyer-mount relative scroll-mt-36 lg:top-36"
+          >
+            <div
+              aria-hidden="true"
+              className="seigaiha-rings seigaiha-rings-gold absolute inset-x-3.5 top-3.5 h-6"
+            />
+            <div className="relative flex items-center gap-4 px-3 pt-8 pb-5 sm:px-4">
+              <span
+                aria-hidden="true"
+                className="flex size-12 shrink-0 items-center justify-center rounded-full bg-magenta text-cream shadow-md ring-4 ring-cream"
+              >
+                <HeartIcon className="size-6" />
+              </span>
+              <div className="min-w-0">
+                <h2 className="font-display text-3xl leading-tight font-light tracking-wide text-ink">
+                  {dict.payments.formTitle}
+                </h2>
+                <p className="mt-0.5 text-base leading-snug text-ink-soft">
+                  {dict.payments.formNote}
+                </p>
+              </div>
+            </div>
+            <div className="overflow-clip rounded-md ring-1 ring-gold/50">
               <ZeffyEmbed
                 title={dict.payments.donateFrame}
                 src={donation.donateFormUrl}
-                className="h-144 min-h-144 w-full lg:h-136 lg:min-h-136"
+                className="block h-144 w-full bg-mist"
               />
-              <p className="border-t border-line px-6 py-4 text-base text-ink-soft">
+            </div>
+            <div className="space-y-1 px-4 pt-5 pb-2 text-center text-base leading-relaxed text-ink-soft">
+              <p>
+                {dict.payments.otherWaysBefore}
+                <a
+                  href="#other-ways"
+                  className="link-arrow font-semibold text-indigo hover:text-indigo-deep"
+                >
+                  {dict.payments.otherWaysLink}
+                </a>
+              </p>
+              <p>
                 {dict.payments.donateTroubleBefore}
                 <ExternalLink
                   href={ZEFFY_DONATION_URL}
@@ -113,57 +249,10 @@ export default async function PaymentsPage() {
                 </ExternalLink>
               </p>
             </div>
-          </div>
-        }
-      />
+          </DonationPanel>
+        </div>
 
-      <section className="relative bg-paper">
-        <div className="reveal-rise mx-auto max-w-3xl px-5 pt-12 pb-14 text-center sm:px-10 sm:pt-16">
-          <SectionHeading className="sm:text-5xl">{dict.payments.impactTitle}</SectionHeading>
-        </div>
-        <div className="pb-1">
-          {reasons.map((reason, i) => (
-            <article
-              key={reason.title}
-              className={`isolate flex min-h-stack-panel lg:tall:sticky flex-col border-t-4 border-gold bg-ink-deep text-white shadow-2xl ${
-                STACK_TOPS[i % STACK_TOPS.length]
-              }`}
-            >
-              {reason.photo && (
-                <Image
-                  src={reason.photo.src}
-                  alt={reason.photo.alt}
-                  fill
-                  sizes="100vw"
-                  className="-z-10 object-cover"
-                />
-              )}
-              {/* The copy sits at the top, so the next panel covers the photo
-                  before the words; this keeps it at AA over the photo. */}
-              <div
-                aria-hidden="true"
-                className="absolute inset-0 -z-10 bg-gradient-to-b from-ink-deep from-10% via-ink-deep/90 via-55% to-ink-deep/80 lg:bg-gradient-to-r lg:from-ink-deep/95 lg:from-0% lg:via-ink-deep/85 lg:via-50% lg:to-transparent lg:to-80%"
-              />
-              <div className="mx-auto w-full max-w-wide px-5 pt-12 pb-16 sm:px-10 sm:pt-16 lg:px-16 lg:pt-20">
-                <div className="max-w-2xl">
-                  <span
-                    lang="ja"
-                    aria-hidden="true"
-                    className="block font-accent text-7xl leading-none font-bold text-sky sm:text-8xl"
-                  >
-                    {NUMERALS[i % NUMERALS.length]}
-                  </span>
-                  <h3 className="mt-5 font-display text-4xl leading-tight font-normal sm:text-5xl">
-                    {reason.title}
-                  </h3>
-                  <p className="mt-4 text-lg leading-relaxed text-white/90 sm:text-xl">
-                    {reason.text}
-                  </p>
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
+        <WaveDivider id="payments-hero" seed={9} className="absolute inset-x-0 bottom-0 text-paper" />
       </section>
 
       <section className="relative overflow-clip bg-paper pt-20 pb-1 sm:pt-28">
@@ -177,6 +266,7 @@ export default async function PaymentsPage() {
           />
           <SectionHeading className="mt-4 sm:text-5xl">{dict.payments.mosaicTitle}</SectionHeading>
           <p className="mt-5 text-lg leading-relaxed text-ink-soft">{dict.payments.mosaicText}</p>
+          <p className="mt-4 text-lg leading-relaxed text-ink-soft">{dict.payments.donateIntro}</p>
         </div>
         <HeroPhotos
           layout={MOSAIC_LAYOUT}

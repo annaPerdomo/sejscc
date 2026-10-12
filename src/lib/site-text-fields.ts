@@ -130,7 +130,7 @@ export const SITE_TEXT_PAGES: SiteTextPage[] = [
     sections: [
       section("donate-top", [
         field("payments.lede", "Opening sentence", "short"),
-        field("payments.donateIntro", "Paragraph", "body"),
+        field("payments.formNote", "Line under “Make your gift”", "short"),
       ]),
       section("donate-reasons", [
         field("payments.impactTitle", "Heading", "heading"),
@@ -142,6 +142,7 @@ export const SITE_TEXT_PAGES: SiteTextPage[] = [
       section("donate-mosaic", [
         field("payments.mosaicTitle", "Heading", "heading"),
         field("payments.mosaicText", "Paragraph", "body"),
+        field("payments.donateIntro", "Paragraph about the programs", "body"),
       ]),
       section("donate-other", [
         field("payments.otherText", "Paragraph", "body"),

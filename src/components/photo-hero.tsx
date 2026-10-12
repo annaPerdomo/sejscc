@@ -5,6 +5,7 @@ import { useRef, type ReactNode } from "react";
 import { useMountedAround, useRotation } from "@/components/carousel-hooks";
 import { CarouselDots } from "@/components/carousel-dots";
 import { CarouselPlayToggle } from "@/components/carousel-play-toggle";
+import { HeroTitle } from "@/components/hero-title";
 import { SectionKicker } from "@/components/section-kicker";
 import { WaveDivider } from "@/components/wave-divider";
 
@@ -99,12 +100,7 @@ export function PhotoHero({
         size="lg"
         entrance="load"
       />
-      <h1 className="mt-5 font-display text-4xl leading-none font-light tracking-[0.01em] text-balance sm:text-6xl xl:text-7xl">
-        <span className="block text-white">{titleLine1}</span>
-        {titleLine2 && (
-          <span className="mt-2 block font-normal text-sky">{titleLine2}</span>
-        )}
-      </h1>
+      <HeroTitle line1={titleLine1} line2={titleLine2} />
       {lede && (
         <div className="mt-7 max-w-2xl text-lg leading-relaxed text-white/90 sm:text-xl">
           {lede}
