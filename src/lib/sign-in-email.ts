@@ -1,5 +1,6 @@
 import type { EmailProviderSendVerificationRequestParams } from "next-auth/providers/email";
 import { CENTER_ADDRESS } from "@/lib/center";
+import { sendEmail } from "@/lib/resend";
 
 const SENDER_NAME = "SEJSCC Volunteer Portal";
 const FALLBACK_SENDER = `${SENDER_NAME} <onboarding@resend.dev>`;
@@ -169,24 +170,12 @@ export async function sendSignInEmail({
   expires,
   provider,
 }: EmailProviderSendVerificationRequestParams) {
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${provider.apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: provider.from,
-      to: identifier,
-      subject: "Your SEJSCC volunteer portal sign-in link",
-      html: buildHtml(url, expires),
-      text: buildText(url, expires),
-    }),
+  await sendEmail({
+    purpose: "sign-in",
+    from: provider.from ?? signInSender(),
+    to: identifier,
+    subject: "Your SEJSCC volunteer portal sign-in link",
+    html: buildHtml(url, expires),
+    text: buildText(url, expires),
   });
-
-  if (!response.ok) {
-    throw new Error(
-      `Resend rejected the sign-in email (${response.status}): ${await response.text()}`
-    );
-  }
 }
