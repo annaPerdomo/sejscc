@@ -745,22 +745,25 @@ body {
 
   .envelope {
     position: relative;
-    isolation: isolate;
-    background: var(--color-cream);
+    border-radius: var(--radius-sm);
+    background: linear-gradient(165deg, var(--color-white), var(--color-cream) 70%);
     box-shadow:
-      0 0 0 1px --alpha(var(--color-gold) / 60%),
-      0 24px 48px --alpha(var(--color-ink-deep) / 18%);
+      0 0 0 1px --alpha(var(--color-gold) / 35%),
+      0 28px 50px --alpha(var(--color-ink-deep) / 16%),
+      0 4px 12px --alpha(var(--color-ink-deep) / 8%);
   }
 
-  .envelope::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background:
-      linear-gradient(to bottom right, transparent calc(50% - 1px), --alpha(var(--color-gold) / 40%) 50%, transparent calc(50% + 1px)) left top / 50% 55% no-repeat,
-      linear-gradient(to bottom left, transparent calc(50% - 1px), --alpha(var(--color-gold) / 40%) 50%, transparent calc(50% + 1px)) right top / 50% 55% no-repeat;
-    pointer-events: none;
+  /* The mask clips box-shadow too, so a shadow goes on a wrapper as a drop-shadow. */
+  .postage-stamp {
+    --perforation: 3px;
+    padding: --spacing(2);
+    background: var(--color-white);
+    mask:
+      radial-gradient(var(--perforation), transparent 98%, black) round
+        calc(-1.5 * var(--perforation)) calc(-1.5 * var(--perforation)) /
+        calc(3 * var(--perforation)) calc(3 * var(--perforation)),
+      linear-gradient(black 0 0) no-repeat 50% / calc(100% - 3 * var(--perforation))
+        calc(100% - 3 * var(--perforation));
   }
 
   .then-now-frame {

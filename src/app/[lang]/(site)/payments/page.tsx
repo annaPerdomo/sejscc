@@ -6,6 +6,7 @@ import { ExternalLink } from "@/components/external-link";
 import { HeroTitle } from "@/components/hero-title";
 import { HeroPhotos } from "@/components/hero-photos";
 import { KanjiWatermark } from "@/components/kanji-watermark";
+import { MailEnvelope } from "@/components/mail-envelope";
 import { SectionHeading } from "@/components/section-heading";
 import { SectionKicker } from "@/components/section-kicker";
 import { StickyColumn } from "@/components/sticky-column";
@@ -331,28 +332,17 @@ export default async function PaymentsPage() {
             </p>
           </div>
 
-          <div className="reveal-swing-right lg:col-span-6">
-            <div className="envelope flex flex-col gap-8 p-7 sm:p-10">
-              <div className="flex items-start justify-between gap-6">
-                <div>
-                  <h3 className="font-display text-2xl font-semibold text-ink">
-                    {dict.payments.checkTitle}
-                  </h3>
-                  <p className="mt-2 text-lg leading-relaxed text-ink-soft">
-                    {dict.payments.checkBefore}
-                    <strong className="text-ink">{donation.checkPayee}</strong>
-                    {dict.payments.checkAfter}
-                  </p>
-                </div>
-                <span
-                  lang="ja"
-                  aria-hidden="true"
-                  className="flex h-20 w-16 shrink-0 rotate-3 items-center justify-center bg-magenta font-accent text-3xl font-bold text-cream outline-2 -outline-offset-4 outline-cream/80 outline-dashed"
-                >
-                  縁
-                </span>
-              </div>
-              <p className="mx-auto font-display text-2xl leading-relaxed text-ink sm:text-3xl sm:leading-relaxed">
+          <div className="reveal-rise lg:col-span-6">
+            <h3 className="font-display text-2xl font-semibold text-ink">
+              {dict.payments.checkTitle}
+            </h3>
+            <p className="mt-2 text-lg leading-relaxed text-ink-soft">
+              {dict.payments.checkBefore}
+              <strong className="text-ink">{donation.checkPayee}</strong>
+              {dict.payments.checkAfter}
+            </p>
+            <div className="mt-6">
+              <MailEnvelope>
                 {donation.checkPayee}
                 <br />
                 {(() => {
@@ -371,9 +361,9 @@ export default async function PaymentsPage() {
                     </span>
                   ));
                 })()}
-              </p>
-              <p className="text-base leading-relaxed text-ink-soft">{dict.payments.checkMemo}</p>
+              </MailEnvelope>
             </div>
+            <p className="mt-6 text-base leading-relaxed text-ink-soft">{dict.payments.checkMemo}</p>
           </div>
         </div>
       </section>

@@ -95,7 +95,8 @@ be built from these tokens via Tailwind utility classes.
   date must also be in words), `nafuda` (a dojo's wooden
   name tag, for the weekly board), `paper-sheet` (a document with a folded
   corner; its clip-path also clips shadows and focus rings, so those go on a
-  wrapper), `envelope` (the check-by-mail address), `then-now` / `then-now-stage` /
+  wrapper), `envelope` (the front of an envelope addressed for check-by-mail gifts) with its
+  perforated `postage-stamp`, `then-now` / `then-now-stage` /
   `then-now-frame` / `then-now-reveal` / `then-now-edge` (two photos of the
   same place, pinned while today's wipes across the old one; without
   scroll-driven animation they simply stack), `drift-columns` (the middle
