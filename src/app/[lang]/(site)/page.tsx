@@ -229,7 +229,7 @@ export default async function HomePage() {
         <div className="relative mx-auto max-w-wide px-4 pt-6 pb-20 sm:px-6 sm:pb-24 lg:px-10 lg:pb-28">
           <div className="grid gap-10 lg:grid-cols-12 lg:items-center lg:gap-14">
             <div className="reveal-rise lg:col-span-5">
-              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-5">
+              <div className="grid items-start gap-x-5 sm:grid-cols-[minmax(0,1fr)_auto]">
                 <div>
                   <SectionKicker
                     accent={dict.home.japaneseSchool.kickerAccent}
@@ -249,10 +249,10 @@ export default async function HomePage() {
                     {dict.home.japaneseSchool.subheading}
                   </p>
                 </div>
-                <div className="relative mb-12 sm:row-span-2 sm:mb-0">
+                <div className="relative mt-7 mr-14 w-fit sm:row-span-2 sm:mt-0 sm:mr-0">
                   <p
                     lang="ja"
-                    className="school-plaque font-accent text-lg font-bold tracking-[0.16em] sm:text-xl"
+                    className="school-plaque font-accent text-base font-bold tracking-[0.16em] whitespace-nowrap max-sm:writing-horizontal sm:text-xl"
                   >
                     {dict.home.japaneseSchool.plaque}
                   </p>
@@ -260,10 +260,10 @@ export default async function HomePage() {
                     accent={dict.home.japaneseSchool.sealAccent}
                     year={dict.home.japaneseSchool.sealYear}
                     size="sm"
-                    className="reveal-pop z-10"
+                    className="reveal-pop z-10 max-sm:top-1/2 max-sm:left-full max-sm:mt-0 max-sm:-translate-x-3 max-sm:-translate-y-1/2"
                   />
                 </div>
-                <p className="col-span-2 mt-5 max-w-lg text-lg leading-relaxed text-white/80 sm:col-span-1">
+                <p className="mt-7 max-w-lg text-lg leading-relaxed text-white/80 sm:mt-5">
                   {dict.home.japaneseSchool.body}
                 </p>
               </div>

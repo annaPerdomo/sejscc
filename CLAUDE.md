@@ -32,7 +32,7 @@ header) and `pb-safe-bottom` (a bar pinned to the viewport's bottom edge,
 clear of iOS's home indicator); container breakpoints: `@volunteer-sm` /
 `@volunteer-lg` (the board & volunteers section lays out by its own width,
 so the admin preview matches the home page);
-vertical Japanese text: `writing-vertical`;
+vertical Japanese text: `writing-vertical` (and `writing-horizontal` to lay it flat on phones);
 fonts: `font-sans` (Zen Maru Gothic, body copy), `font-display` (Jost,
 headings and UI labels),
 `font-accent` (Shippori Mincho, Japanese kicker text)). Every component must

@@ -1709,6 +1709,10 @@ body {
   writing-mode: vertical-rl;
 }
 
+@utility writing-horizontal {
+  writing-mode: horizontal-tb;
+}
+
 @layer components {
   .inline-edit-target {
     display: inline;
