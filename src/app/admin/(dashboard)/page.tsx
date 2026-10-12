@@ -200,7 +200,7 @@ export default async function AdminDashboard() {
                 )}
               </h1>
               <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink-soft sm:text-xl">
-                Everything on the website can be changed from here.
+                Thank you for keeping our community connected.
               </p>
               {!firstName && (
                 <p className="mt-3 text-base text-ink-soft">
