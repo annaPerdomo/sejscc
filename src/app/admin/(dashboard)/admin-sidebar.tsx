@@ -16,6 +16,7 @@ type NavItem = {
   surface?: string;
   adminOnly?: boolean;
   alsoActiveFor?: string[];
+  small?: boolean;
 };
 type NavGroup = { heading: string | null; items: NavItem[] };
 
@@ -42,7 +43,9 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     heading: "Website developer",
-    items: [{ href: "/admin/requests", label: "Submit a request or report an issue" }],
+    items: [
+      { href: "/admin/requests", label: "Submit a request or report an issue", small: true },
+    ],
   },
   {
     heading: "Admin only",
@@ -152,7 +155,9 @@ export function AdminSidebar({
                           href={item.href}
                           onClick={() => setOpen(false)}
                           aria-current={active ? "page" : undefined}
-                          className={`flex min-h-12 items-center gap-3 rounded-lg border-l-4 px-3 py-2 font-display text-lg font-medium ${
+                          className={`flex min-h-12 items-center gap-3 rounded-lg border-l-4 px-3 py-2 font-display font-medium ${
+                            item.small ? "text-base leading-snug" : "text-lg"
+                          } ${
                             active
                               ? "border-sky bg-white/10 text-white"
                               : "border-transparent text-white/85 hover:bg-white/5 hover:text-white"
