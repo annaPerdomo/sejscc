@@ -188,7 +188,7 @@ export default async function AdminDashboard() {
               <SectionKicker accent="おかえりなさい" caption={`${weekday}, ${date}`} tone="magenta" size="lg" entrance="load" />
               <h1
                 id="dashboard-welcome"
-                className="mt-4 font-display text-4xl font-normal tracking-[0.02em] text-ink sm:text-5xl lg:text-6xl"
+                className="mt-4 max-w-xl font-display text-4xl font-normal tracking-[0.02em] break-words text-ink sm:text-5xl lg:text-6xl"
               >
                 {firstName ? (
                   <>
@@ -222,7 +222,7 @@ export default async function AdminDashboard() {
               id="dashboard-quick"
               className="font-display text-sm font-semibold tracking-[0.18em] text-stone uppercase"
             >
-              The most common jobs
+              The most common updates
             </h2>
             <span aria-hidden="true" className="h-px min-w-8 flex-1 bg-gradient-to-r from-gold/60 to-transparent" />
           </div>
