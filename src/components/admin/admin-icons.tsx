@@ -43,3 +43,12 @@ export function MegaphoneIcon(props: IconProps) {
     </Icon>
   );
 }
+
+export function PaperPlaneIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M28 4 4 14l10 4 4 10L28 4Z" />
+      <path d="m14 18 6-6" />
+    </Icon>
+  );
+}

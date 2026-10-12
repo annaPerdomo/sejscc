@@ -1,9 +1,10 @@
 "use client";
 
-import { useId, useState, type FormEvent } from "react";
+import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { AdminAlert } from "@/components/admin/admin-alert";
-import { AdminButton, AdminFormActions } from "@/components/admin/admin-button";
+import { AdminButton, AdminButtonLink, AdminFormActions } from "@/components/admin/admin-button";
 import { AdminCard } from "@/components/admin/admin-card";
+import { PaperPlaneIcon } from "@/components/admin/admin-icons";
 import {
   AdminCharacterCount,
   AdminOptional,
@@ -35,13 +36,25 @@ export function RequestForm({ email }: { email: string | null }) {
   const [page, setPage] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [sent, setSent] = useState(false);
+  const [sentSummary, setSentSummary] = useState<string | null>(null);
+  const formStartRef = useRef<HTMLLegendElement>(null);
+  const refocusForm = useRef(false);
+
+  useEffect(() => {
+    if (sentSummary !== null || !refocusForm.current) return;
+    refocusForm.current = false;
+    formStartRef.current?.focus();
+  }, [sentSummary]);
+
+  function sendAnother() {
+    refocusForm.current = true;
+    setSentSummary(null);
+  }
 
   async function send(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy) return;
     setError(null);
-    setSent(false);
     if (!kind) {
       setError("Please choose what kind of request this is.");
       return;
@@ -57,7 +70,7 @@ export function RequestForm({ email }: { email: string | null }) {
     setBusy(true);
     try {
       expectOk(await sendRequest({ kind, summary, details, page }));
-      setSent(true);
+      setSentSummary(summary.trim());
       setKind(null);
       setSummary("");
       setDetails("");
@@ -73,10 +86,20 @@ export function RequestForm({ email }: { email: string | null }) {
     }
   }
 
+  if (sentSummary !== null) {
+    return (
+      <RequestSent summary={sentSummary} email={email} onSendAnother={sendAnother} />
+    );
+  }
+
   return (
     <form onSubmit={send} className="flex flex-col gap-6">
       <fieldset className="flex flex-col gap-3">
-        <legend className="mb-3 flex items-center gap-3 font-display text-xl text-ink">
+        <legend
+          ref={formStartRef}
+          tabIndex={-1}
+          className="mb-3 flex items-center gap-3 font-display text-xl text-ink outline-none"
+        >
           What is this about? <AdminRequired />
         </legend>
         {REQUEST_KINDS.map((option) => (
@@ -135,11 +158,6 @@ export function RequestForm({ email }: { email: string | null }) {
         )}
         <div className="mt-6">
           <AdminFormActions>
-            <p role="status" aria-live="polite" className="mr-auto text-sm font-medium text-indigo-deep">
-              {sent && !error
-                ? `Sent — thank you!${email ? ` Replies will come to ${email}.` : ""}`
-                : ""}
-            </p>
             <AdminButton type="submit" variant="primary" disabled={busy}>
               {busy ? "Sending…" : "Send Request"}
             </AdminButton>
@@ -147,6 +165,54 @@ export function RequestForm({ email }: { email: string | null }) {
         </div>
       </AdminCard>
     </form>
+  );
+}
+
+function RequestSent({
+  summary,
+  email,
+  onSendAnother,
+}: {
+  summary: string;
+  email: string | null;
+  onSendAnother: () => void;
+}) {
+  const headingRef = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    headingRef.current?.focus();
+  }, []);
+
+  return (
+    <AdminCard>
+      <div className="flex flex-col items-start gap-5 py-4 sm:flex-row sm:gap-6">
+        <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-celadon text-ink">
+          <PaperPlaneIcon className="h-8 w-8" />
+        </span>
+        <div className="min-w-0">
+          <h2
+            ref={headingRef}
+            tabIndex={-1}
+            className="font-display text-2xl text-ink outline-none sm:text-3xl"
+          >
+            Your message has been sent
+          </h2>
+          <p className="mt-3 text-lg text-ink-soft">
+            <strong className="font-semibold text-ink">“{summary}”</strong> is now with the
+            site’s web developer.
+          </p>
+          <p className="mt-2 text-lg text-ink-soft">
+            {email
+              ? `They’ll reply by email to ${email}.`
+              : "They’ll reply to you by email."}
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <AdminButtonLink href="/admin">Back to the dashboard</AdminButtonLink>
+            <AdminButton onClick={onSendAnother}>Send another request</AdminButton>
+          </div>
+        </div>
+      </div>
+    </AdminCard>
   );
 }
 
