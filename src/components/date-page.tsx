@@ -5,6 +5,12 @@ const SIZES = {
     day: "pt-1 text-3xl",
     weekday: "pb-2 text-xs",
   },
+  md: {
+    page: "w-20",
+    month: "pt-2.5 pb-1 text-sm",
+    day: "pt-1 text-4xl",
+    weekday: "pb-2.5 text-sm",
+  },
   lg: {
     page: "w-24 sm:w-28",
     month: "pt-3.5 pb-1.5 text-sm",

@@ -87,8 +87,6 @@ be built from these tokens via Tailwind utility classes.
   parts are `emaki-stage`, `emaki-track`, `emaki-band`, `emaki-strip`,
   `emaki-photo` and `emaki-progress`, and it always carries
   a skip link past itself in each direction),
-  `reel-zoom` (the slow push-in on the events page's backdrop photos, held
-  with `reel-zoom-paused`),
   `calendar-menu` (a
   `<details>` disclosure styled as a button), `date-page` (a tear-off day
   calendar page; its band is `date-page-month`, and it is decorative, so the
@@ -126,9 +124,9 @@ be built from these tokens via Tailwind utility classes.
   celebration: a paper plane loops off its badge and lands in a ring and a
   burst of confetti),
   `ken-burns-in` / `ken-burns-out`, `enter-rise` / `enter-stagger` /
-  `enter-fade` / `enter-rule` / `brush-draw` / `menu-drop`, `hero-drift`, `link-arrow`,
+  `enter-fade` / `enter-rule` / `brush-draw` / `menu-drop`, `hero-drift` (held with `hero-drift-paused`), `link-arrow`,
   `tab-progress` (with a per-strip duration
-  class, `hero-progress`, `groups-progress`, `school-progress`, `photo-hero-progress`, `year-progress`, `reel-progress`, and
+  class, `hero-progress`, `groups-progress`, `school-progress`, `photo-hero-progress`, `year-progress`, and
   `tab-progress-paused` to
   hold the strip while keyboard focus is inside it; the
   strip advances on the bar's `animationend`, so the CSS duration is the

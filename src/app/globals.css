@@ -1186,6 +1186,10 @@ body {
       animation: hero-drift 14s ease-in-out infinite alternate;
     }
 
+    .hero-drift-paused {
+      animation-play-state: paused;
+    }
+
     /* The strip advances on this animation's `animationend`, so the
        duration is the rotation interval and pausing the bar holds the strip. */
     .tab-progress {
@@ -1235,20 +1239,6 @@ body {
 
     .year-progress {
       --tab-progress: 9s;
-    }
-
-    .reel-progress {
-      --tab-progress: 7s;
-    }
-
-    /* Runs a little past the rotation so the outgoing photo is still drifting
-       while it crossfades out. */
-    .reel-zoom {
-      animation: reel-zoom 9s ease-out both;
-    }
-
-    .reel-zoom-paused {
-      animation-play-state: paused;
     }
 
     .button-primary::after,
@@ -1646,15 +1636,6 @@ body {
   }
   to {
     translate: 0 0;
-  }
-}
-
-@keyframes reel-zoom {
-  from {
-    transform: scale(1);
-  }
-  to {
-    transform: scale(1.08);
   }
 }
 
