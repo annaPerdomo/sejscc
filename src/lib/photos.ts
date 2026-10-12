@@ -159,7 +159,17 @@ export const eventsPhotos = {
 } as const;
 
 export const groupsPhotos = {
-  hero: "/photos/hero-clubs.jpg",
+  /** Matches `groups.heroRotationAlts`; keep these photos off every other page. */
+  heroRotation: [
+    "/photos/hero-groups-rotation-nys-basketball-game-2022.jpg",
+    "/photos/hero-groups-rotation-judo-dojo-2024.jpg",
+    "/photos/hero-groups-rotation-kendo-dojo-1998.jpg",
+    "/photos/hero-groups-rotation-taiko-practice.jpg",
+    "/photos/hero-groups-rotation-japanese-dance-fans.jpg",
+    "/photos/hero-groups-rotation-hula-gourds.jpg",
+    "/photos/hero-groups-rotation-ukulele-band.jpg",
+    "/photos/hero-groups-rotation-ballroom-class-2003.jpg",
+  ],
   start: "/photos/groups-judo-1.jpg",
 } as const;
 

@@ -148,16 +148,18 @@ export const PHOTO_SLOTS: PhotoSlot[] = [
     defaultAltPath: "events.archive.heroPhotoAlt",
     shape: "wide",
   },
-  {
-    id: "groups.hero",
-    page: "groups",
-    section: "groups-top",
-    group: "Hero photo",
-    label: "Main photo",
-    defaultSrc: groupsPhotos.hero,
-    defaultAltPath: "groups.heroPhotoAlt",
-    shape: "wide",
-  },
+  ...groupsPhotos.heroRotation.map(
+    (defaultSrc, i): PhotoSlot => ({
+      id: `groups.hero-rotation.${i}`,
+      page: "groups",
+      section: "groups-top",
+      group: "Hero photo",
+      label: slide(i),
+      defaultSrc,
+      defaultAltPath: `groups.heroRotationAlts.${i}`,
+      shape: "wide",
+    })
+  ),
   {
     id: "groups.start",
     page: "groups",

@@ -118,7 +118,7 @@ export function PhotoHero({
             count={photos.length}
             active={active}
             rotation={rotation}
-            intervalClassName="school-hero-progress"
+            intervalClassName="photo-hero-progress"
             onShow={rotation.show}
             ariaLabel={rotationLabels.list}
             itemAriaLabel={(i) =>

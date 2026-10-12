@@ -129,7 +129,7 @@ be built from these tokens via Tailwind utility classes.
   `ken-burns-in` / `ken-burns-out`, `enter-rise` / `enter-stagger` /
   `enter-fade` / `enter-rule` / `brush-draw` / `menu-drop`, `hero-drift`, `link-arrow`,
   `tab-progress` (with a per-strip duration
-  class, `hero-progress`, `groups-progress`, `school-progress`, `school-hero-progress`, `year-progress`, `reel-progress`, and
+  class, `hero-progress`, `groups-progress`, `school-progress`, `photo-hero-progress`, `year-progress`, `reel-progress`, and
   `tab-progress-paused` to
   hold the strip while keyboard focus is inside it; the
   strip advances on the bar's `animationend`, so the CSS duration is the

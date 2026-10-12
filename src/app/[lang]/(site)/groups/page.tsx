@@ -19,6 +19,7 @@ import {
 import { getDictionary, getDictionaryFor, getLocale } from "@/lib/dictionaries";
 import { hasLocale, localePath } from "@/lib/i18n";
 import { getCenterContact } from "@/lib/site-settings";
+import { groupsPhotos } from "@/lib/photos";
 import { getSitePhotos, slotPhoto } from "@/lib/site-photos";
 
 export const revalidate = 300;
@@ -61,8 +62,11 @@ export default async function GroupsPage() {
     getCenterContact(),
     getSitePhotos(),
   ]);
-  const heroPhoto = slotPhoto(photos, "groups.hero", dict.groups.heroPhotoAlt, lang);
   const startPhoto = slotPhoto(photos, "groups.start", dict.groups.usePhotoAlt, lang);
+
+  const heroPhotos = groupsPhotos.heroRotation.map((_src, i) =>
+    slotPhoto(photos, `groups.hero-rotation.${i}`, dict.groups.heroRotationAlts[i], lang)
+  );
 
   const week = weekDays.map((day) => ({
     day,
@@ -76,8 +80,15 @@ export default async function GroupsPage() {
     <>
       <PhotoHero
         id="groups"
-        photo={heroPhoto.src}
-        photoAlt={heroPhoto.alt}
+        photo={heroPhotos[0].src}
+        photoAlt={heroPhotos[0].alt}
+        photos={heroPhotos}
+        rotationLabels={{
+          pause: dict.groups.heroPause,
+          play: dict.groups.heroPlay,
+          list: dict.groups.heroPhotosList,
+          photo: dict.groups.heroPhotoLabel,
+        }}
         accent={dict.groups.kickerAccent}
         caption={dict.groups.kickerCaption}
         titleLine1={dict.groups.titleLine1}
