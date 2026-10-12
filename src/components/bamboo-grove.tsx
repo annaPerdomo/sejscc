@@ -5,12 +5,12 @@
  * belongs to the next section and would otherwise paint over the artwork. The
  * section's content needs its own relative wrapper to paint above it.
  */
+const GROVE_FRAME =
+  "between-waves pointer-events-none absolute inset-x-0 -top-12 -bottom-10 overflow-clip text-gold sm:-top-20 sm:-bottom-16 lg:-top-30 lg:-bottom-28";
+
 export function BambooGrove() {
   return (
-    <div
-      aria-hidden="true"
-      className="between-waves pointer-events-none absolute inset-x-0 -top-12 -bottom-10 overflow-clip text-gold sm:-top-20 sm:-bottom-16 lg:-top-30 lg:-bottom-28"
-    >
+    <div aria-hidden="true" className={GROVE_FRAME}>
       <svg
         viewBox="0 0 480 1500"
         preserveAspectRatio="xMinYMin slice"
@@ -201,6 +201,119 @@ export function BambooGrove() {
           </g>
         </g>
       </svg>
+    </div>
+  );
+}
+
+const THICKET_TILE = { width: 260, height: 1200 };
+
+type Stalk = { x: number; width: number; opacity: number; nodes: number; phase: number };
+
+// Every node count divides the tile height, so each stalk repeats seamlessly.
+const THICKET_STALKS: Stalk[] = [
+  { x: 14, width: 14, opacity: 0.5, nodes: 5, phase: 40 },
+  { x: 48, width: 20, opacity: 0.9, nodes: 4, phase: 130 },
+  { x: 86, width: 15, opacity: 0.7, nodes: 5, phase: 190 },
+  { x: 122, width: 11, opacity: 0.45, nodes: 6, phase: 70 },
+  { x: 158, width: 19, opacity: 0.85, nodes: 6, phase: 150 },
+  { x: 198, width: 13, opacity: 0.55, nodes: 4, phase: 230 },
+  { x: 236, width: 11, opacity: 0.45, nodes: 6, phase: 60 },
+];
+
+type Sprig = { x: number; y: number; side: 1 | -1; scale: number; tilt: number };
+
+const THICKET_SPRIGS: Sprig[] = [
+  { x: 54, y: 130, side: 1, scale: 0.53, tilt: 0 },
+  { x: 152, y: 210, side: -1, scale: 0.45, tilt: 10 },
+  { x: 92, y: 430, side: 1, scale: 0.47, tilt: -8 },
+  { x: 192, y: 470, side: -1, scale: 0.5, tilt: 4 },
+  { x: 54, y: 700, side: 1, scale: 0.43, tilt: 12 },
+  { x: 164, y: 760, side: 1, scale: 0.5, tilt: -4 },
+  { x: 80, y: 990, side: -1, scale: 0.45, tilt: 6 },
+  { x: 192, y: 1030, side: -1, scale: 0.53, tilt: -10 },
+];
+
+function ThicketSide({ id, offset, className }: { id: string; offset: number; className: string }) {
+  const leaf = (name: string) => `#${id}-leaf-${name}`;
+  return (
+    <svg className={`absolute top-0 h-full opacity-15 mask-r-from-30% ${className}`}>
+      <defs>
+        <path id={`${id}-leaf-a`} d="M0 1 C40 -8 118 -16 172 -14 C210 -12 236 -6 252 4 C204 16 118 17 58 11 C34 8 12 5 0 1 Z" />
+        <path id={`${id}-leaf-b`} d="M0 0 C36 -10 96 -12 138 -4 C158 0 172 8 180 18 C144 16 84 12 40 7 C24 5 10 3 0 0 Z" />
+        <path id={`${id}-leaf-c`} d="M0 2 C30 -12 76 -18 112 -12 C134 -8 148 -2 156 6 C120 18 66 18 28 12 C16 10 6 6 0 2 Z" />
+        <filter id={`${id}-brush`} x="-5%" y="-1%" width="110%" height="102%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.02 0.005" numOctaves="3" seed="11" result="n" />
+          <feDisplacementMap in="SourceGraphic" in2="n" scale="5" />
+        </filter>
+        <pattern
+          id={`${id}-tile`}
+          width={THICKET_TILE.width}
+          height={THICKET_TILE.height}
+          patternUnits="userSpaceOnUse"
+          patternTransform={`translate(0 ${offset})`}
+        >
+          <g fill="currentColor">
+            {THICKET_STALKS.map((stalk) => {
+              const period = THICKET_TILE.height / stalk.nodes;
+              return (
+                <g key={stalk.x} opacity={stalk.opacity}>
+                  {Array.from({ length: stalk.nodes + 1 }, (_, k) => {
+                    const top = stalk.phase + (k - 1) * period;
+                    return (
+                      <g key={k}>
+                        <rect
+                          x={stalk.x - stalk.width / 2}
+                          y={top + 2}
+                          width={stalk.width}
+                          height={period - 4}
+                          rx={stalk.width * 0.3}
+                        />
+                        <rect
+                          x={stalk.x - stalk.width / 2 - 1.5}
+                          y={top - 1}
+                          width={stalk.width + 3}
+                          height={2}
+                          rx={1}
+                          opacity={0.6}
+                        />
+                      </g>
+                    );
+                  })}
+                </g>
+              );
+            })}
+            {THICKET_SPRIGS.map((sprig) => (
+              <g
+                key={`${sprig.x}-${sprig.y}`}
+                transform={`translate(${sprig.x} ${sprig.y}) rotate(${sprig.tilt}) scale(${sprig.side * sprig.scale} ${sprig.scale})`}
+              >
+                <path d="M0 -1.6 Q20 3 40 11.2 L40 12.8 Q20 8.4 0 1.6 Z" transform="rotate(14)" opacity="0.8" />
+                <use href={leaf("b")} transform="translate(36 8) rotate(36) scale(0.9)" opacity="0.8" />
+                <use href={leaf("a")} transform="translate(38 10) rotate(8) scale(0.8)" opacity="0.7" />
+                <use href={leaf("c")} transform="translate(30 6) rotate(64) scale(0.7)" opacity="0.5" />
+              </g>
+            ))}
+          </g>
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill={`url(#${id}-tile)`} filter={`url(#${id}-brush)`} />
+    </svg>
+  );
+}
+
+/**
+ * Tiles at a fixed size rather than scaling to the section, so stalks stay
+ * slim on a tall section. Same placement rules as `BambooGrove`.
+ */
+export function BambooThicket() {
+  return (
+    <div aria-hidden="true" className={GROVE_FRAME}>
+      <ThicketSide id="bamboo-thicket-left" offset={0} className="left-0 hidden w-40 md:block lg:w-56 xl:w-72" />
+      <ThicketSide
+        id="bamboo-thicket-right"
+        offset={-520}
+        className="right-0 hidden w-40 -scale-x-100 md:block lg:w-56 xl:w-72"
+      />
     </div>
   );
 }

@@ -99,8 +99,7 @@ be built from these tokens via Tailwind utility classes.
   perforated `postage-stamp`, `then-now` / `then-now-stage` /
   `then-now-frame` / `then-now-reveal` / `then-now-edge` (two photos of the
   same place, pinned while today's wipes across the old one; without
-  scroll-driven animation they simply stack), `drift-columns` (the middle
-  column of a three-across grid drifts up past its neighbours), `seigaiha-rings` (with
+  scroll-driven animation they simply stack), `seigaiha-rings` (with
   `seigaiha-rings-sky`, `seigaiha-rings-gold`, the slow-moving
   `seigaiha-rings-drift`, and
   `seigaiha-rings-fade` for a section whose texture would otherwise start as a

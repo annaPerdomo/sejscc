@@ -1337,24 +1337,6 @@ body {
         display: block;
         animation-name: then-now-edge;
       }
-
-      /* This sets the whole `animation`, so a reveal goes on an element
-         inside the grid item, not on the item. */
-      @media (64rem <= width < 96rem) {
-        .drift-columns > :nth-child(3n + 2) {
-          animation: drift-column linear both;
-          animation-timeline: view();
-          animation-range: cover 0% cover 100%;
-        }
-      }
-
-      @media (width >= 96rem) {
-        .drift-columns > :nth-child(2n) {
-          animation: drift-column linear both;
-          animation-timeline: view();
-          animation-range: cover 0% cover 100%;
-        }
-      }
     }
   }
 
@@ -1664,15 +1646,6 @@ body {
   }
   to {
     translate: 0 0;
-  }
-}
-
-@keyframes drift-column {
-  from {
-    translate: 0 7rem;
-  }
-  to {
-    translate: 0 -1rem;
   }
 }
 

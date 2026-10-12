@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { BambooThicket } from "@/components/bamboo-grove";
 import { DocumentLink } from "@/components/document-link";
 import { GroupPortrait } from "@/components/group-portrait";
 import { KanjiWatermark } from "@/components/kanji-watermark";
@@ -112,8 +113,8 @@ export default async function GroupsPage() {
         }
       />
 
-      <section className="seigaiha-rings seigaiha-rings-fade relative bg-paper pt-10 pb-20 sm:pt-14 sm:pb-28 lg:pb-40">
-        <KanjiWatermark char="道" className="top-40 -right-14 text-indigo/5" />
+      <section className="section-wash-groups relative z-10 pt-10 pb-6 sm:pt-14 sm:pb-8 lg:pb-12">
+        {hasWeek && <BambooThicket />}
         <div className="relative mx-auto max-w-wide px-5 sm:px-10 lg:px-16">
           <div className="reveal-rise mb-12 max-w-3xl">
             <SectionKicker
@@ -126,11 +127,9 @@ export default async function GroupsPage() {
             </SectionHeading>
           </div>
           {groups.length > 0 ? (
-            <div className="drift-columns reveal-stagger-2-3 grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-12 2xl:grid-cols-4">
+            <div className="reveal-stagger-2-3 grid gap-x-8 sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-12 2xl:grid-cols-4">
               {groups.map((group) => (
-                <div key={group.id}>
-                  <GroupPortrait group={group} />
-                </div>
+                <GroupPortrait key={group.id} group={group} />
               ))}
             </div>
           ) : (
@@ -147,7 +146,7 @@ export default async function GroupsPage() {
           className="section-navy-scene seigaiha-rings seigaiha-rings-sky relative scroll-mt-28 border-b-8 border-gold text-white"
         >
           <KanjiWatermark char="週" className="-right-12 -bottom-20 text-white/5" />
-          <WaveDivider id="week-top" position="top" seed={19} className="relative text-paper" />
+          <WaveDivider id="week-top" position="top" seed={19} className="relative text-cream" />
           <div className="relative mx-auto max-w-wide px-5 pt-6 pb-20 sm:px-10 sm:pb-24 lg:px-16">
             <div className="reveal-rise mb-12 max-w-3xl">
               <SectionKicker

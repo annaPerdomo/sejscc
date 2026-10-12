@@ -26,7 +26,7 @@ export async function GroupPortrait({ group }: { group: Group }) {
   const photo = group.photoUrls[0] ?? (group.imageIsLogo ? null : group.imageUrl);
 
   return (
-    <article className="group reveal-bloom flex flex-col">
+    <article className="group reveal-bloom row-span-5 grid grid-rows-subgrid pb-14">
       <div
         className={`relative aspect-photo overflow-clip rounded-sm shadow-lg ${
           muted ? "grayscale" : ""
@@ -52,8 +52,8 @@ export async function GroupPortrait({ group }: { group: Group }) {
           />
         )}
         {photo && logo && (
-          <span className="absolute bottom-3 left-3 size-16 overflow-clip rounded-full bg-white shadow-md ring-2 ring-gold">
-            <Image src={logo} alt="" fill sizes="4rem" className="object-contain p-2" />
+          <span className="absolute bottom-3 left-3 h-20 w-40 overflow-clip rounded-sm bg-ink-deep shadow-lg ring-2 ring-gold">
+            <Image src={logo} alt="" fill sizes="12rem" className="object-contain p-2" />
           </span>
         )}
         {statusLabel && (
@@ -63,75 +63,75 @@ export async function GroupPortrait({ group }: { group: Group }) {
         )}
       </div>
 
-      <div className="mt-5 flex flex-1 flex-col">
-        <div className="flex items-start justify-between gap-4">
-          <h3
-            className={`font-display text-2xl leading-snug font-semibold ${
-              muted ? "text-ink-soft" : "text-ink"
+      <div className="mt-5 flex items-start justify-between gap-4">
+        <h3
+          className={`font-display text-2xl leading-snug font-semibold ${
+            muted ? "text-ink-soft" : "text-ink"
+          }`}
+        >
+          {group.name}
+        </h3>
+        {group.nameJa && (
+          <span
+            lang="ja"
+            className={`shrink-0 pt-1 font-accent text-lg font-bold tracking-[0.12em] ${
+              muted ? "text-ink-soft" : "text-magenta"
             }`}
           >
-            {group.name}
-          </h3>
-          {group.nameJa && (
-            <span
-              lang="ja"
-              className={`shrink-0 pt-1 font-accent text-lg font-bold tracking-[0.12em] ${
-                muted ? "text-ink-soft" : "text-magenta"
-              }`}
-            >
-              {group.nameJa}
-            </span>
-          )}
-        </div>
-
-        <div className="mt-2 flex flex-col gap-1 text-base text-ink-soft">
-          {group.meetingSchedule ? (
-            <p>
-              <EventMeta icon="repeat">{group.meetingSchedule}</EventMeta>
-            </p>
-          ) : (
-            meetingDays && (
-              <p>
-                <EventMeta icon="calendar">{meetingDays}</EventMeta>
-              </p>
-            )
-          )}
-          <p>
-            <EventMeta icon="pin">{dict.groups.meetsAtCenter}</EventMeta>
-          </p>
-        </div>
-
-        {group.description && (
-          <p className="mt-3 text-base leading-relaxed text-ink-soft">{group.description}</p>
+            {group.nameJa}
+          </span>
         )}
+      </div>
 
-        <div className="mt-auto flex flex-wrap gap-x-6 gap-y-2 pt-4 font-display text-base font-semibold">
-          {group.websiteUrl && (
-            <ExternalLink
-              href={group.websiteUrl}
+      <div className="mt-2 flex flex-col gap-1 text-lg text-ink-soft">
+        {group.meetingSchedule ? (
+          <p>
+            <EventMeta icon="repeat">{group.meetingSchedule}</EventMeta>
+          </p>
+        ) : (
+          meetingDays && (
+            <p>
+              <EventMeta icon="calendar">{meetingDays}</EventMeta>
+            </p>
+          )
+        )}
+        <p>
+          <EventMeta icon="pin">{dict.groups.meetsAtCenter}</EventMeta>
+        </p>
+      </div>
+
+      <div>
+        {group.description && (
+          <p className="mt-3 text-lg leading-relaxed text-ink">{group.description}</p>
+        )}
+      </div>
+
+      <div className="flex flex-wrap content-start gap-x-6 gap-y-2 pt-4 font-display text-lg font-semibold">
+        {group.websiteUrl && (
+          <ExternalLink
+            href={group.websiteUrl}
+            className="link-arrow py-1 text-indigo hover:text-indigo-deep"
+          >
+            {dict.groups.website}
+          </ExternalLink>
+        )}
+        {group.contactEmail ? (
+          <a
+            href={`mailto:${group.contactEmail}`}
+            className="py-1 break-words text-indigo hover:text-indigo-deep"
+          >
+            {group.contactEmail}
+          </a>
+        ) : (
+          !group.websiteUrl && (
+            <a
+              href={`mailto:${contact.email}`}
               className="link-arrow py-1 text-indigo hover:text-indigo-deep"
             >
-              {dict.groups.website}
-            </ExternalLink>
-          )}
-          {group.contactEmail ? (
-            <a
-              href={`mailto:${group.contactEmail}`}
-              className="py-1 break-words text-indigo hover:text-indigo-deep"
-            >
-              {group.contactEmail}
+              {dict.groups.askCta}
             </a>
-          ) : (
-            !group.websiteUrl && (
-              <a
-                href={`mailto:${contact.email}`}
-                className="link-arrow py-1 text-indigo hover:text-indigo-deep"
-              >
-                {dict.groups.askCta}
-              </a>
-            )
-          )}
-        </div>
+          )
+        )}
       </div>
     </article>
   );
