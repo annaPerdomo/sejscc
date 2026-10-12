@@ -122,6 +122,9 @@ be built from these tokens via Tailwind utility classes.
   slower than the page; it needs 4rem of overhang top and bottom),
   `photo-develop` (a photo warming from black-and-white to color as it
   scrolls in), `watermark-drift`,
+  `sent-badge` / `sent-burst` / `sent-plane` (the admin's "message sent"
+  celebration: a paper plane loops off its badge and lands in a ring and a
+  burst of confetti),
   `ken-burns-in` / `ken-burns-out`, `enter-rise` / `enter-stagger` /
   `enter-fade` / `enter-rule` / `brush-draw` / `menu-drop`, `hero-drift`, `link-arrow`,
   `tab-progress` (with a per-strip duration

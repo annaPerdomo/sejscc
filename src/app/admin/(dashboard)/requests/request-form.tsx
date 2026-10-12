@@ -186,10 +186,15 @@ function RequestSent({
   return (
     <AdminCard>
       <div className="flex flex-col items-start gap-5 py-4 sm:flex-row sm:gap-6">
-        <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-celadon text-ink">
-          <PaperPlaneIcon className="h-8 w-8" />
+        <span className="sent-badge flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-celadon text-ink">
+          <span aria-hidden="true" className="sent-burst">
+            {Array.from({ length: 8 }, (_, i) => (
+              <span key={i} />
+            ))}
+          </span>
+          <PaperPlaneIcon className="sent-plane relative h-8 w-8" />
         </span>
-        <div className="min-w-0">
+        <div className="enter-stagger min-w-0">
           <h2
             ref={headingRef}
             tabIndex={-1}
