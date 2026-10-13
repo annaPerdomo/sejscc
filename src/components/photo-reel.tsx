@@ -49,6 +49,7 @@ export function PhotoReel({
                 alt={i === active ? photo.alt : ""}
                 fill
                 preload={i === 0}
+                fetchPriority={i === 0 ? "high" : undefined}
                 sizes="(max-width: 1280px) 100vw, 45vw"
                 className={`object-cover ${i === active || i === previous ? drifting : ""}`}
               />

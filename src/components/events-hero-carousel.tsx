@@ -170,6 +170,7 @@ export function EventsHeroCarousel({
           alt=""
           fill
           preload
+          fetchPriority="high"
           sizes="(max-width: 1023px) 150vw, 100vw"
           className="hero-intro-photo object-cover"
         />

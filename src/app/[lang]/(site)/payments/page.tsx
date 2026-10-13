@@ -111,6 +111,7 @@ export default async function PaymentsPage() {
             alt={heroPhoto.alt}
             fill
             preload
+            fetchPriority="high"
             sizes="100vw"
             className="hero-intro-photo object-cover"
           />

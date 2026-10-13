@@ -160,6 +160,7 @@ export function PhotoHero({
                 alt={i === active ? item.alt : ""}
                 fill
                 preload={i === 0}
+                fetchPriority={i === 0 ? "high" : undefined}
                 sizes="100vw"
                 className={`object-cover transition-opacity duration-1000 ease-in-out ${
                   i === 0 ? "hero-intro-photo" : ""
@@ -173,6 +174,7 @@ export function PhotoHero({
             alt={photoAlt}
             fill
             preload
+            fetchPriority="high"
             sizes="100vw"
             className="hero-intro-photo object-cover"
           />

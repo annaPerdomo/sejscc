@@ -259,6 +259,7 @@ export default async function EventPage({ params }: Props) {
                     flyerSize ? "w-auto max-w-full lg:max-h-hero-flyer" : "w-full"
                   }`}
                   preload
+                  fetchPriority="high"
                 />
               </div>
               {event.flyerDownloadUrl && (
