@@ -1,4 +1,5 @@
-import Image, { type StaticImageData } from "next/image";
+import type { StaticImageData } from "next/image";
+import { EmakiImage, EmakiStrip } from "@/components/emaki-strip";
 import { KanjiWatermark } from "@/components/kanji-watermark";
 
 export type EmakiPhoto = { image: StaticImageData; alt: string };
@@ -63,12 +64,12 @@ export function CentennialEmaki({
           className="emaki-track relative focus-visible:outline-2 focus-visible:outline-gold"
         >
           <div className="emaki-band">
-            <ul className="emaki-strip">
+            <EmakiStrip>
               {scenes.map((scene, i) => (
                 <SceneItems key={i} scene={scene} interlude={interludes[i]} />
               ))}
               {closing && <InterludeItem interlude={closing} />}
-            </ul>
+            </EmakiStrip>
           </div>
         </div>
 
@@ -101,16 +102,7 @@ function SceneItems({
       {interlude && <InterludeItem interlude={interlude} />}
       {scene.map((photo) => (
         <li key={photo.image.src} className="shrink-0">
-          <Image
-            src={photo.image}
-            alt={photo.alt}
-            sizes="(max-width: 640px) 110vw, 64rem"
-            placeholder="blur"
-            // Pinned, the band pans photos in from outside the clipped track,
-            // so lazy loading never sees them intersect and leaves them blank.
-            loading="eager"
-            className="emaki-photo"
-          />
+          <EmakiImage photo={photo} />
         </li>
       ))}
     </>
