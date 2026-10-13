@@ -54,17 +54,31 @@ export function ZeffyEmbed({
 }) {
   const frameRef = useRef<HTMLIFrameElement>(null);
   const [height, setHeight] = useState<number | null>(null);
+  const [nearby, setNearby] = useState(false);
+
+  // Native lazy loading starts the form up to a few screens early, and its
+  // payment scripts then compete with the rest of the page for bandwidth.
+  useEffect(() => {
+    const frame = frameRef.current;
+    if (!frame) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        setNearby(true);
+        observer.disconnect();
+      },
+      { rootMargin: "100% 0px" },
+    );
+    observer.observe(frame);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
-    function init() {
-      frameRef.current?.contentWindow?.postMessage(INIT_MESSAGE, ZEFFY_ORIGIN);
-    }
-
     function onMessage(event: MessageEvent) {
       if (event.origin !== ZEFFY_ORIGIN) return;
       if (event.source !== frameRef.current?.contentWindow) return;
       if (event.data === CHILD_READY) {
-        init();
+        frameRef.current?.contentWindow?.postMessage(INIT_MESSAGE, ZEFFY_ORIGIN);
         return;
       }
       const reported = reportedHeight(event.data);
@@ -72,8 +86,6 @@ export function ZeffyEmbed({
     }
 
     window.addEventListener("message", onMessage);
-    // The frame may have loaded, and announced itself, before hydration.
-    init();
     return () => window.removeEventListener("message", onMessage);
   }, []);
 
@@ -81,7 +93,7 @@ export function ZeffyEmbed({
     <iframe
       ref={frameRef}
       title={title}
-      src={src}
+      src={nearby ? src : undefined}
       allow="payment"
       className={className}
       style={height ? { height, minHeight: 0 } : undefined}
