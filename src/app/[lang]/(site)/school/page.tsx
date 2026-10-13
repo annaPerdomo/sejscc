@@ -393,7 +393,7 @@ export default async function SchoolPage() {
           <figcaption className="font-display text-sm font-semibold tracking-[0.2em] text-magenta uppercase">
             {history.missionLabel}
           </figcaption>
-          <blockquote className="mt-6 font-accent text-2xl leading-loose text-ink sm:text-3xl sm:leading-loose">
+          <blockquote className="mt-6 font-accent text-2xl leading-loose font-bold text-ink sm:text-3xl sm:leading-loose">
             {history.mission}
           </blockquote>
         </figure>

@@ -90,7 +90,7 @@ export function AdminSidebar({
             <span className="block font-display text-sm leading-snug font-semibold text-white">
               Southeast Japanese School &amp; Community Center
             </span>
-            <span lang="ja" className="mt-0.5 block font-accent text-xs tracking-[0.12em] text-sky">
+            <span lang="ja" className="mt-0.5 block font-accent text-xs font-bold tracking-[0.12em] text-sky">
               サウスイースト日本語学園
             </span>
           </span>

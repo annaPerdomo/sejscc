@@ -7,12 +7,14 @@ export const jost = Jost({
 
 export const shipporiMincho = Shippori_Mincho({
   variable: "--font-shippori-mincho",
-  weight: ["500", "700"],
+  weight: "700",
   subsets: ["latin"],
+  preload: false,
 });
 
 export const zenMaruGothic = Zen_Maru_Gothic({
   variable: "--font-zen-maru-gothic",
   weight: ["400", "500", "700"],
   subsets: ["latin"],
+  preload: false,
 });

@@ -65,7 +65,7 @@ export function EventDescriptionMedia({
     >
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute right-1 -bottom-2 font-accent text-8xl text-indigo/10 select-none"
+        className="pointer-events-none absolute right-1 -bottom-2 font-accent text-8xl font-bold text-indigo/10 select-none"
       >
         {KANJI[index % KANJI.length]}
       </span>

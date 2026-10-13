@@ -38,7 +38,7 @@ export function SectionKicker({
   const accentText = (
     <span
       key="accent"
-      className={`shrink-0 font-accent tracking-[0.2em] ${sizes.accent} ${styles.accent}`}
+      className={`shrink-0 font-accent font-bold tracking-[0.2em] ${sizes.accent} ${styles.accent}`}
     >
       {accent}
     </span>
