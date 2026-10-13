@@ -7,6 +7,7 @@ import { useId, useState } from "react";
 import { buttonVariantClass } from "@/components/admin/admin-button";
 import { AdminUserIdentity } from "@/components/admin/admin-user-identity";
 import { ADMIN_PAGES } from "@/components/admin/admin-pages";
+import { ADMIN_TUTORIAL_URL } from "@/components/admin/admin-tutorial";
 import type { UserRole } from "@/db/schema";
 import { signOutAction } from "./sign-out-action";
 
@@ -16,13 +17,17 @@ type NavItem = {
   surface?: string;
   adminOnly?: boolean;
   alsoActiveFor?: string[];
+  external?: boolean;
 };
 type NavGroup = { heading: string | null; items: NavItem[] };
 
 const NAV_GROUPS: NavGroup[] = [
   {
     heading: null,
-    items: [{ href: "/admin", label: "Start here" }],
+    items: [
+      { href: "/admin", label: "Start here" },
+      { href: ADMIN_TUTORIAL_URL, label: "How-to video", external: true },
+    ],
   },
   {
     heading: "Pages of the website",
@@ -53,6 +58,9 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
 ];
+
+const navLinkClass =
+  "flex min-h-11 items-center gap-3 rounded-lg border-l-4 px-3 py-1.5 font-display text-base leading-snug font-medium";
 
 const footerButton = `block rounded-lg px-3 py-2 text-sm ${buttonVariantClass("on-dark")}`;
 
@@ -146,6 +154,32 @@ export function AdminSidebar({
                 )}
                 <ul aria-labelledby={group.heading ? headingId : undefined} className="flex flex-col gap-0.5">
                   {items.map((item) => {
+                    if (item.external) {
+                      return (
+                        <li key={item.href}>
+                          <a
+                            href={item.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => setOpen(false)}
+                            className={`${navLinkClass} border-transparent text-white/85 hover:bg-white/5 hover:text-white`}
+                          >
+                            {item.label}
+                            <span className="sr-only"> (opens YouTube in a new tab)</span>
+                            <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0" aria-hidden="true">
+                              <path
+                                d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          </a>
+                        </li>
+                      );
+                    }
                     const active = isActive(pathname, item);
                     return (
                       <li key={item.href}>
@@ -153,7 +187,7 @@ export function AdminSidebar({
                           href={item.href}
                           onClick={() => setOpen(false)}
                           aria-current={active ? "page" : undefined}
-                          className={`flex min-h-11 items-center gap-3 rounded-lg border-l-4 px-3 py-1.5 font-display text-base leading-snug font-medium ${
+                          className={`${navLinkClass} ${
                             active
                               ? "border-sky bg-white/10 text-white"
                               : "border-transparent text-white/85 hover:bg-white/5 hover:text-white"

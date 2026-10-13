@@ -10,6 +10,8 @@ import { buttonClass } from "@/components/admin/admin-button";
 import { BallIcon, CalendarPlusIcon, MegaphoneIcon } from "@/components/admin/admin-icons";
 import { ADMIN_PAGES, type AdminPage } from "@/components/admin/admin-pages";
 import { AdminPageWidth } from "@/components/admin/admin-page-width";
+import { ADMIN_TUTORIAL_URL, ADMIN_TUTORIAL_VIDEO_ID } from "@/components/admin/admin-tutorial";
+import { SiteVideo } from "@/components/site-video";
 import { SectionKicker } from "@/components/section-kicker";
 
 export const dynamic = "force-dynamic";
@@ -252,6 +254,28 @@ export default async function AdminDashboard() {
               </li>
             ))}
           </ul>
+        </section>
+
+        <section aria-labelledby="dashboard-tutorial" className="mt-12">
+          <DashboardHeading id="dashboard-tutorial">How-to video</DashboardHeading>
+          <p className="mt-2 text-lg text-ink-soft">
+            A walk-through of how to change the website. Come back to it any time, or{" "}
+            <a
+              href={ADMIN_TUTORIAL_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-indigo-deep underline underline-offset-4"
+            >
+              open it on YouTube
+              <span className="sr-only"> (opens in a new tab)</span>
+            </a>{" "}
+            to watch it beside this page while you work.
+          </p>
+          <SiteVideo
+            videoId={ADMIN_TUTORIAL_VIDEO_ID}
+            title="How to change the website"
+            className="mt-6 max-w-3xl"
+          />
         </section>
 
         <section aria-labelledby="dashboard-pages" className="mt-12">
