@@ -2,7 +2,8 @@
   "meta": {
     "siteTitle": "Southeast Japanese School & Community Center",
     "titleTemplate": "%s · SEJSCC",
-    "siteDescription": "A home for Japanese language, culture, and community in Norwalk, California. Japanese school, judo, basketball, cultural events, and more."
+    "siteDescription": "A home for Japanese language, culture, and community in Norwalk, California. Japanese school, judo, basketball, cultural events, and more.",
+    "ogImageAlt": "The Southeast Japanese School & Community Center sign on its Norwalk campus, beside the center's name and logo"
   },
   "header": {
     "orgTop": "Southeast Japanese School",
