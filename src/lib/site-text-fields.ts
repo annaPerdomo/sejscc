@@ -54,7 +54,6 @@ export const SITE_TEXT_PAGES: SiteTextPage[] = [
       section("home-top", [
         field("home.welcome.kicker", "Small line above the heading", "short"),
         field("home.welcome.heading", "Heading", "heading"),
-        field("home.welcome.headingEmphasis", "Word in the heading shown larger", "heading"),
       ]),
       section("home-japanese-school", [
         field("home.japaneseSchool.headingLine1", "Heading, first line", "heading"),

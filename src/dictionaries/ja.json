@@ -42,18 +42,14 @@
     "photoSoon": "写真は準備中です",
     "welcome": {
       "kicker": "Welcome",
-      "heading": "コミュニティへようこそ",
-      "headingEmphasis": "ようこそ"
+      "heading": "文化でつながる"
     },
     "eventsHero": {
       "photoAlt": "グリドリー・ロード沿いの看板とサウスイースト日本語学園・コミュニティセンターの建物",
       "panelTitle": "今後のイベント",
-      "moreInfo": "詳細を見る",
-      "moreInfoAria": "{title}の詳細を見る",
-      "flyer": "チラシをダウンロード",
-      "flyerAria": "{title}のチラシをダウンロード"
+      "flyerAria": "{title}（チラシを新しいタブで開く）"
     },
-    "viewAll": "今後のイベントをすべて見る",
+    "viewAll": "すべてのイベントを見る",
     "noEvents": "新しいイベントを準備中です。またご確認いただくか、センター（(562) 863-5996）までお電話ください。",
     "japaneseSchool": {
       "kickerAccent": "日本語学校",

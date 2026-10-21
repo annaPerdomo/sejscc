@@ -42,18 +42,14 @@
     "photoSoon": "Photos coming soon",
     "welcome": {
       "kicker": "ようこそ",
-      "heading": "Welcome to our community",
-      "headingEmphasis": "Welcome"
+      "heading": "Connected Through Culture"
     },
     "eventsHero": {
       "photoAlt": "The Southeast Japanese School and Community Center, with its sign out front on Gridley Road",
       "panelTitle": "Upcoming events",
-      "moreInfo": "More info",
-      "moreInfoAria": "More info about {title}",
-      "flyer": "Download flyer",
-      "flyerAria": "Download the {title} flyer"
+      "flyerAria": "{title} (opens the flyer in a new tab)"
     },
-    "viewAll": "See all upcoming events",
+    "viewAll": "See all events",
     "noEvents": "New events are being planned — check back soon, or call the center at (562) 863-5996.",
     "japaneseSchool": {
       "kickerAccent": "日本語学校",
