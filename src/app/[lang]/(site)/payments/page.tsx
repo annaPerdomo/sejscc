@@ -10,7 +10,7 @@ import { MailEnvelope } from "@/components/mail-envelope";
 import { SectionHeading } from "@/components/section-heading";
 import { SectionKicker } from "@/components/section-kicker";
 import { StickyColumn } from "@/components/sticky-column";
-import { WaveDivider } from "@/components/wave-divider";
+import { SectionDivider } from "@/components/section-divider";
 import { ZeffyEmbed } from "@/components/zeffy-embed";
 import { getDictionary, getDictionaryFor, getLocale } from "@/lib/dictionaries";
 import { ZEFFY_DONATION_URL, ZELLE_FALLBACK_EMAIL } from "@/lib/donate";
@@ -104,7 +104,7 @@ export default async function PaymentsPage() {
 
   return (
     <>
-      <section className="edge-flush section-midnight-scene relative isolate overflow-clip text-white">
+      <section className="section-midnight-scene relative isolate overflow-clip text-white">
         <div className="absolute inset-x-0 top-0 -z-10 h-page-hero">
           <Image
             src={heroPhoto.src}
@@ -125,7 +125,7 @@ export default async function PaymentsPage() {
           />
         </div>
 
-        <div className="relative mx-auto max-w-wide px-5 pt-10 pb-32 sm:px-10 sm:pt-14 sm:pb-44 lg:flex lg:gap-12 lg:px-16 lg:pt-6">
+        <div className="relative mx-auto max-w-wide px-5 pt-10 pb-16 sm:px-10 sm:pt-14 sm:pb-24 lg:flex lg:gap-12 lg:px-16 lg:pt-6">
           <StickyColumn className="lg:w-3/5" panelClassName="lg:top-36 scroll-mt-36">
             <div className="enter-stagger">
               <SectionKicker
@@ -253,9 +253,8 @@ export default async function PaymentsPage() {
             </div>
           </DonationPanel>
         </div>
-
-        <WaveDivider id="payments-hero" seed={9} className="absolute inset-x-0 bottom-0 text-paper" />
       </section>
+      <SectionDivider ornament="crest" />
 
       <section className="relative overflow-clip bg-paper pt-20 pb-1 sm:pt-28">
         <KanjiWatermark char="縁" className="-top-10 -right-14 text-indigo/5" />

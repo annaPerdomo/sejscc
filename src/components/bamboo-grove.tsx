@@ -1,12 +1,9 @@
 /**
- * Brush-painted bamboo backdrop that reaches into the wave dividers on either
- * side of its section. The parent section must be relative, must NOT clip its
- * overflow (this wrapper clips itself), and needs a z-index — the divider below
- * belongs to the next section and would otherwise paint over the artwork. The
- * section's content needs its own relative wrapper to paint above it.
+ * Brush-painted bamboo backdrop. The parent section must be relative, and its
+ * content needs its own relative wrapper to paint above it.
  */
 const GROVE_FRAME =
-  "between-waves pointer-events-none absolute inset-x-0 -top-12 -bottom-10 overflow-clip text-gold sm:-top-20 sm:-bottom-16 lg:-top-30 lg:-bottom-28";
+  "pointer-events-none absolute inset-0 overflow-clip text-gold";
 
 export function BambooGrove() {
   return (

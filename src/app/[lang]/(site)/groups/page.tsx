@@ -8,7 +8,7 @@ import { KanjiWatermark } from "@/components/kanji-watermark";
 import { PhotoHero } from "@/components/photo-hero";
 import { SectionHeading } from "@/components/section-heading";
 import { SectionKicker } from "@/components/section-kicker";
-import { WaveDivider } from "@/components/wave-divider";
+import { SectionDivider } from "@/components/section-divider";
 import { weekDays } from "@/db/schema";
 import { getActiveGroups } from "@/lib/events";
 import {
@@ -80,7 +80,6 @@ export default async function GroupsPage() {
   return (
     <>
       <PhotoHero
-        id="groups"
         photo={heroPhotos[0].src}
         photoAlt={heroPhotos[0].alt}
         photos={heroPhotos}
@@ -95,7 +94,6 @@ export default async function GroupsPage() {
         titleLine1={dict.groups.titleLine1}
         titleLine2={dict.groups.titleLine2}
         lede={<p>{dict.groups.lede}</p>}
-        settlesInto="paper"
         actions={
           <>
             {hasWeek && (
@@ -141,85 +139,88 @@ export default async function GroupsPage() {
       </section>
 
       {hasWeek && (
-        <section
-          id="week"
-          className="section-navy-scene seigaiha-rings seigaiha-rings-sky relative scroll-mt-28 border-b-8 border-gold text-white"
-        >
-          <KanjiWatermark char="週" className="-right-12 -bottom-20 text-white/5" />
-          <WaveDivider id="week-top" position="top" seed={19} className="relative text-cream" />
-          <div className="relative mx-auto max-w-wide px-5 pt-6 pb-20 sm:px-10 sm:pb-24 lg:px-16">
-            <div className="reveal-rise mb-12 max-w-3xl">
-              <SectionKicker
-                accent={dict.groups.weekAccent}
-                caption={dict.groups.weekCaption}
-                tone="sky"
-                size="lg"
-              />
-              <h2 className="mt-4 font-display text-4xl leading-tight font-normal tracking-[0.02em] sm:text-5xl">
-                <span className="text-white">{dict.groups.weekTitleLine1}</span>{" "}
-                <span className="text-sky">{dict.groups.weekTitleLine2}</span>
-              </h2>
-              <p className="mt-5 text-lg leading-relaxed text-white/85">
-                {dict.groups.weekNote}
-              </p>
-            </div>
+        <>
+          <SectionDivider ornament="seigaiha" align="start" />
+          <section
+            id="week"
+            className="section-navy-scene seigaiha-rings seigaiha-rings-sky relative scroll-mt-28 text-white"
+          >
+            <KanjiWatermark char="週" className="-right-12 -bottom-20 text-white/5" />
+            <div className="relative mx-auto max-w-wide px-5 pt-16 pb-20 sm:pt-20 sm:px-10 sm:pb-24 lg:px-16">
+              <div className="reveal-rise mb-12 max-w-3xl">
+                <SectionKicker
+                  accent={dict.groups.weekAccent}
+                  caption={dict.groups.weekCaption}
+                  tone="sky"
+                  size="lg"
+                />
+                <h2 className="mt-4 font-display text-4xl leading-tight font-normal tracking-[0.02em] sm:text-5xl">
+                  <span className="text-white">{dict.groups.weekTitleLine1}</span>{" "}
+                  <span className="text-sky">{dict.groups.weekTitleLine2}</span>
+                </h2>
+                <p className="mt-5 text-lg leading-relaxed text-white/85">
+                  {dict.groups.weekNote}
+                </p>
+              </div>
 
-            <div className="reveal-stagger-4-7 grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-4 lg:grid-cols-7 lg:gap-x-5">
-              {week.map(({ day, entries }) => (
-                <div key={day} className="reveal-rise flex flex-col">
-                  <h3 className="flex flex-col items-center gap-2">
-                    <span
-                      lang="ja"
-                      aria-hidden="true"
-                      className={`kanji-box w-20 font-accent text-5xl font-bold ${
-                        entries.length ? "text-white" : "text-white/60"
-                      }`}
-                    >
-                      {DAY_KANJI[day]}
-                    </span>
-                    <span
-                      className={
-                        dict.groups.weekDays[day] === DAY_KANJI[day]
-                          ? "sr-only"
-                          : "font-display text-base font-semibold tracking-[0.16em] text-sky uppercase"
-                      }
-                    >
-                      {dict.groups.weekDays[day]}
-                    </span>
-                  </h3>
-                  {entries.length > 0 ? (
-                    <ul className="mt-5 flex flex-col gap-3">
-                      {entries.map((group) => (
-                        <li
-                          key={group.id}
-                          className="nafuda text-center font-display text-base leading-snug font-semibold"
-                        >
-                          {group.name}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="mt-5 rounded-xs border-2 border-dashed border-white/30 px-3 py-4 text-center text-base leading-snug text-white/80">
-                      {dict.groups.weekQuiet}
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
+              <div className="reveal-stagger-4-7 grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-4 lg:grid-cols-7 lg:gap-x-5">
+                {week.map(({ day, entries }) => (
+                  <div key={day} className="reveal-rise flex flex-col">
+                    <h3 className="flex flex-col items-center gap-2">
+                      <span
+                        lang="ja"
+                        aria-hidden="true"
+                        className={`kanji-box w-20 font-accent text-5xl font-bold ${
+                          entries.length ? "text-white" : "text-white/60"
+                        }`}
+                      >
+                        {DAY_KANJI[day]}
+                      </span>
+                      <span
+                        className={
+                          dict.groups.weekDays[day] === DAY_KANJI[day]
+                            ? "sr-only"
+                            : "font-display text-base font-semibold tracking-[0.16em] text-sky uppercase"
+                        }
+                      >
+                        {dict.groups.weekDays[day]}
+                      </span>
+                    </h3>
+                    {entries.length > 0 ? (
+                      <ul className="mt-5 flex flex-col gap-3">
+                        {entries.map((group) => (
+                          <li
+                            key={group.id}
+                            className="nafuda text-center font-display text-base leading-snug font-semibold"
+                          >
+                            {group.name}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="mt-5 rounded-xs border-2 border-dashed border-white/30 px-3 py-4 text-center text-base leading-snug text-white/80">
+                        {dict.groups.weekQuiet}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
 
-            <div className="reveal-rise mt-14 flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-8">
-              <Link
-                href={localePath(lang, "/events#calendars")}
-                className="button-light shrink-0 px-7 py-4 text-center text-base"
-              >
-                {dict.groups.weekCalendarCta}
-              </Link>
-              <p className="max-w-xl text-lg leading-relaxed text-white/85">
-                {dict.groups.weekCalendarNote}
-              </p>
+              <div className="reveal-rise mt-14 flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-8">
+                <Link
+                  href={localePath(lang, "/events#calendars")}
+                  className="button-light shrink-0 px-7 py-4 text-center text-base"
+                >
+                  {dict.groups.weekCalendarCta}
+                </Link>
+                <p className="max-w-xl text-lg leading-relaxed text-white/85">
+                  {dict.groups.weekCalendarNote}
+                </p>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+          <SectionDivider ornament="blossom" align="end" />
+        </>
       )}
 
       <div className="grid lg:grid-cols-2">

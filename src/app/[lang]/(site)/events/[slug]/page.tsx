@@ -8,7 +8,7 @@ import { DatePage } from "@/components/date-page";
 import { ExternalLink } from "@/components/external-link";
 import { KanjiWatermark } from "@/components/kanji-watermark";
 import { SectionKicker } from "@/components/section-kicker";
-import { WaveDivider } from "@/components/wave-divider";
+import { SectionDivider } from "@/components/section-divider";
 import { calendarLinks, calendarOptions } from "@/lib/calendars";
 import { isAtCenter, mapsUrl } from "@/lib/center";
 import { getEventBySlug, getUpcomingEventSlugs } from "@/lib/events";
@@ -148,7 +148,7 @@ export default async function EventPage({ params }: Props) {
 
   return (
     <>
-      <section className="edge-flush relative isolate overflow-clip bg-ink-deep text-white">
+      <section className="relative isolate overflow-clip bg-ink-deep text-white">
         <div aria-hidden="true" className="absolute inset-0 -z-10">
           <Image
             src={event.flyerUrl ?? backdropSrc}
@@ -164,7 +164,7 @@ export default async function EventPage({ params }: Props) {
         <KanjiWatermark char="祭" className="-right-12 -bottom-10 text-white/5" />
 
         <div
-          className={`relative mx-auto grid max-w-wide gap-12 px-5 pt-8 pb-28 sm:px-10 sm:pb-36 lg:items-center lg:px-16 ${
+          className={`relative mx-auto grid max-w-wide gap-12 px-5 pt-8 pb-16 sm:px-10 sm:pb-20 lg:items-center lg:px-16 ${
             event.flyerUrl ? "lg:grid-cols-12 lg:gap-14" : ""
           }`}
         >
@@ -274,8 +274,8 @@ export default async function EventPage({ params }: Props) {
             </div>
           )}
         </div>
-        <WaveDivider id="event-detail" seed={17} className="absolute inset-x-0 bottom-0 text-paper" />
       </section>
+      <SectionDivider ornament="crest" />
 
       <section className="seigaiha-rings seigaiha-rings-fade relative bg-paper pt-12 pb-20 sm:pt-16 sm:pb-24">
         <KanjiWatermark char="縁" className="-right-14 -bottom-20 text-indigo/5" />

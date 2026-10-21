@@ -9,7 +9,7 @@ import { PhotoReel } from "@/components/photo-reel";
 import { RevealMore } from "@/components/reveal-more";
 import { SectionHeading } from "@/components/section-heading";
 import { SectionKicker } from "@/components/section-kicker";
-import { WaveDivider } from "@/components/wave-divider";
+import { SectionDivider } from "@/components/section-divider";
 import { calendarSources } from "@/lib/calendars";
 import { getPastEvents, getUpcomingEvents } from "@/lib/events";
 import { getDictionary, getDictionaryFor, getLocale } from "@/lib/dictionaries";
@@ -60,8 +60,8 @@ export default async function EventsPage() {
 
   return (
     <>
-      <section className="section-navy-scene edge-flush relative isolate flex flex-col overflow-clip text-white xl:block">
-        <div className="relative mx-auto grid w-full max-w-wide px-5 pt-6 pb-28 sm:px-10 sm:pb-36 lg:px-16 xl:min-h-page-hero xl:grid-cols-12 xl:items-center xl:pt-14">
+      <section className="section-navy-scene relative isolate flex flex-col overflow-clip text-white xl:block">
+        <div className="relative mx-auto grid w-full max-w-wide px-5 pt-6 pb-16 sm:px-10 sm:pb-20 lg:px-16 xl:min-h-page-hero xl:grid-cols-12 xl:items-center xl:pt-14">
           <div className="enter-stagger xl:col-span-7">
             <SectionKicker
               accent={dict.events.kickerAccent}
@@ -107,17 +107,13 @@ export default async function EventsPage() {
           }}
           className="relative order-first h-72 sm:h-96 xl:absolute xl:inset-y-0 xl:right-0 xl:h-auto xl:w-5/12"
         />
-        <WaveDivider
-          id="events-hero"
-          seed={9}
-          className={`absolute inset-x-0 bottom-0 ${later.length > 0 ? "text-azure" : "text-paper"}`}
-        />
       </section>
+      <SectionDivider ornament="crest" />
 
       {later.length > 0 && (
         <section
           id="upcoming"
-          className="relative scroll-mt-28 overflow-clip bg-azure pt-8 pb-20 sm:pt-10 sm:pb-28"
+          className="relative scroll-mt-28 overflow-clip bg-azure pt-16 pb-20 sm:pt-20 sm:pb-28"
         >
           <KanjiWatermark char="催" className="-top-6 -right-10 text-indigo/5" />
           <div className="relative mx-auto max-w-wide px-5 sm:px-10 lg:px-16">

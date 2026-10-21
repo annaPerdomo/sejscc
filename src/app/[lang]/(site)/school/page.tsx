@@ -9,7 +9,7 @@ import { SchoolYear } from "@/components/school-year";
 import { SectionHeading } from "@/components/section-heading";
 import { SectionKicker } from "@/components/section-kicker";
 import { SitePhoto } from "@/components/site-photo";
-import { WaveDivider } from "@/components/wave-divider";
+import { SectionDivider } from "@/components/section-divider";
 import { getDictionary, getDictionaryFor, getLocale } from "@/lib/dictionaries";
 import { hasLocale, localePath } from "@/lib/i18n";
 import { schoolPhotos } from "@/lib/photos";
@@ -113,7 +113,6 @@ export default async function SchoolPage() {
   return (
     <>
       <PhotoHero
-        id="school"
         photo={heroPhoto.src}
         photoAlt={heroPhoto.alt}
         photos={heroPhotos}
@@ -128,7 +127,6 @@ export default async function SchoolPage() {
         titleLine1={dict.school.titleLine1}
         titleLine2={dict.school.titleLine2}
         lede={<p>{dict.school.lede}</p>}
-        settlesInto="paper"
         actions={
           <>
             <ExternalLink
@@ -210,13 +208,13 @@ export default async function SchoolPage() {
         </div>
       </section>
 
+      <SectionDivider ornament="seigaiha" align="start" />
       <section
         id="year"
-        className="section-navy-scene edge-flush relative scroll-mt-28 overflow-clip text-white"
+        className="section-navy-scene relative scroll-mt-28 overflow-clip text-white"
       >
         <KanjiWatermark char="祭" className="-bottom-24 -left-14 text-white/5" />
-        <WaveDivider id="school-year-top" position="top" seed={12} className="relative text-paper" />
-        <div className="relative mx-auto max-w-wide px-5 pt-6 pb-16 sm:px-10 sm:pb-24 lg:px-16">
+        <div className="relative mx-auto max-w-wide px-5 pt-16 pb-16 sm:pt-20 sm:px-10 sm:pb-24 lg:px-16">
           <div className="reveal-rise mb-8 grid gap-5 lg:mb-6 lg:grid-cols-12 lg:items-end lg:gap-12">
             <div className="lg:col-span-7">
               <SectionKicker
@@ -245,8 +243,8 @@ export default async function SchoolPage() {
             }}
           />
         </div>
-        <WaveDivider id="school-year-bottom" seed={23} className="text-mist" />
       </section>
+      <SectionDivider ornament="blossom" align="end" />
 
       <section id="tuition" className="relative scroll-mt-28 bg-mist pt-10 sm:pt-14">
         <div className="reveal-rise mx-auto max-w-3xl px-5 text-center sm:px-10">
@@ -399,6 +397,7 @@ export default async function SchoolPage() {
         </figure>
       </section>
 
+      <SectionDivider ornament="asanoha" />
       <section className="relative isolate overflow-clip bg-ink-deep text-white">
         <div className="absolute inset-0 -z-10">
           <Image
@@ -412,8 +411,7 @@ export default async function SchoolPage() {
               over the bright tables and paper in the photo. */}
           <div aria-hidden="true" className="absolute inset-0 bg-ink-deep/85" />
         </div>
-        <WaveDivider id="school-join-top" position="top" seed={31} className="relative text-paper" />
-        <div className="relative mx-auto max-w-3xl px-5 pt-10 pb-24 text-center sm:px-10 sm:pt-16 sm:pb-32">
+        <div className="relative mx-auto max-w-3xl px-5 pt-20 pb-24 text-center sm:px-10 sm:pt-24 sm:pb-32">
           <p lang="ja" className="reveal-rise font-accent text-lg font-bold tracking-[0.22em] text-sky">
             {dict.school.join.accent}
           </p>

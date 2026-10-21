@@ -59,7 +59,6 @@ export default async function PastEventsPage() {
   return (
     <>
       <PhotoHero
-        id="past-events"
         photo={archivePhoto.src}
         photoAlt={archivePhoto.alt}
         accent={dict.events.pastAccent}
@@ -67,7 +66,6 @@ export default async function PastEventsPage() {
         titleLine1={archive.titleLine1}
         titleLine2={archive.titleLine2}
         lede={<p>{archive.lede}</p>}
-        settlesInto="mist"
         eyebrow={
           <Link
             href={localePath(lang, "/events")}

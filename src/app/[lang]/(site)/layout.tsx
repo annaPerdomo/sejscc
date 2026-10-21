@@ -5,6 +5,7 @@ import { LanguageToggle } from "@/components/language-toggle";
 import { MadeWithLove } from "@/components/made-with-love";
 import { MobileNav } from "@/components/mobile-nav";
 import { ScrollReset } from "@/components/scroll-reset";
+import { SiteLogo } from "@/components/site-logo";
 import { SiteNav } from "@/components/site-nav";
 import { VolunteerSignInLink } from "@/components/volunteer-sign-in-link";
 import { getUpcomingEvents } from "@/lib/events";
@@ -129,22 +130,11 @@ export default async function SiteLayout({
         </div>
         <header className="border-b border-line bg-paper/95 backdrop-blur">
           <div className="relative flex items-center justify-between gap-3 px-5 py-3 sm:gap-4 sm:px-10 lg:px-11">
-            <Link href={href("/")} className="group flex min-w-0 items-center gap-2 sm:gap-3">
-              <Image
-                src="/logo-mark.png"
-                alt=""
-                width={48}
-                height={48}
-                className="h-10 w-10 shrink-0 transition-transform duration-500 ease-out group-hover:rotate-12 sm:h-12 sm:w-12"
+            <Link href={href("/")} className="group min-w-0 rounded-sm">
+              <SiteLogo
+                label={`${dict.header.orgTop} ${dict.header.orgBottom}`}
+                className="h-11 w-auto max-w-full text-navy sm:h-14 lg:h-13 xl:h-15"
               />
-              <span className="min-w-0 font-display text-[11px] leading-tight font-semibold tracking-[0.06em] text-ink uppercase sm:text-sm sm:leading-snug">
-                <span className="block truncate whitespace-normal break-keep sm:whitespace-nowrap">
-                  {dict.header.orgTop}
-                </span>
-                <span className="block truncate whitespace-normal break-keep sm:whitespace-nowrap">
-                  {dict.header.orgBottom}
-                </span>
-              </span>
             </Link>
             <div className="flex shrink-0 items-center gap-2 sm:gap-3 lg:gap-5">
               <SiteNav items={nav} />

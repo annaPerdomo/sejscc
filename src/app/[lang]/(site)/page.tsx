@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { BrushEdge } from "@/components/brush-edge";
 import { EventsHero } from "@/components/events-hero";
 import { BambooGrove } from "@/components/bamboo-grove";
 import {
@@ -16,7 +15,7 @@ import { SchoolSlideshow, type SchoolSlide } from "@/components/school-slideshow
 import { SectionKicker } from "@/components/section-kicker";
 import { SitePhoto } from "@/components/site-photo";
 import { SiteVideo } from "@/components/site-video";
-import { WaveDivider } from "@/components/wave-divider";
+import { SectionDivider } from "@/components/section-divider";
 import { KanjiWatermark } from "@/components/kanji-watermark";
 import { mapsEmbedUrl, mapsUrl } from "@/lib/center";
 import { getActiveGroups, getUpcomingEvents } from "@/lib/events";
@@ -82,7 +81,7 @@ export default async function HomePage() {
   const [dict, upcoming, groups, aboutVideoUrls, volunteerSection, contact, photos] =
     await Promise.all([
       getDictionary(),
-      getUpcomingEvents(5),
+      getUpcomingEvents(4),
       getActiveGroups(),
       getAboutVideoUrls(),
       getVolunteerSection(lang),
@@ -168,10 +167,11 @@ export default async function HomePage() {
   return (
     <>
       <EventsHero events={upcoming} />
+      <SectionDivider ornament="crest" />
 
       <section
         id="groups"
-        className="section-wash-groups edge-flush relative z-10 scroll-mt-28"
+        className="section-wash-groups relative z-10 scroll-mt-28"
       >
         <BambooGrove />
         <div className="relative mx-auto max-w-wide px-5 pt-12 pb-20 sm:px-10 sm:pt-14 sm:pb-24 lg:px-16 lg:pb-32">
@@ -215,18 +215,13 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <SectionDivider ornament="seigaiha" align="start" />
       <section
         id="school"
-        className="section-midnight-scene seigaiha-rings seigaiha-rings-sky edge-flush scroll-mt-28 text-white"
+        className="section-midnight-scene seigaiha-rings seigaiha-rings-sky scroll-mt-28 text-white"
       >
         <KanjiWatermark char="学" className="-top-14 -left-10 text-white/5" />
-        <WaveDivider
-          id="school-top"
-          position="top"
-          seed={12}
-          className="relative text-cream"
-        />
-        <div className="relative mx-auto max-w-wide px-4 pt-6 pb-20 sm:px-6 sm:pb-24 lg:px-10 lg:pb-28">
+        <div className="relative mx-auto max-w-wide px-4 pt-16 pb-20 sm:pt-20 sm:px-6 sm:pb-24 lg:px-10 lg:pb-28">
           <div className="grid gap-10 lg:grid-cols-12 lg:items-center lg:gap-14">
             <div className="reveal-rise lg:col-span-5">
               <div className="grid items-start gap-x-5 sm:grid-cols-[minmax(0,1fr)_auto]">
@@ -398,13 +393,8 @@ export default async function HomePage() {
             </ol>
           </div>
         </div>
-        <BrushEdge
-          id="school-bottom"
-          variant="ink"
-          settlesInto="white"
-          className="absolute inset-x-0 bottom-0"
-        />
       </section>
+      <SectionDivider ornament="blossom" align="end" />
 
       <section
         id="history"
@@ -421,6 +411,9 @@ export default async function HomePage() {
                 src={slotPhoto(photos, "home.events-backdrop", "", lang).src}
                 alt=""
                 fill
+                // Shares its URL with the hero photo above; a lazy copy would
+                // make Next flag the hero as a lazily loaded LCP image.
+                loading="eager"
                 sizes="100vw"
                 className="photo-develop object-cover"
               />
@@ -504,64 +497,56 @@ export default async function HomePage() {
       </section>
 
       {aboutVideoIds.length > 0 && (
-        <section className="section-indigo-scene seigaiha-rings seigaiha-rings-sky text-white">
-          <KanjiWatermark char="映" className="-top-10 -right-8 text-white/5" />
-          <WaveDivider
-            id="videos-top"
-            position="top"
-            seed={19}
-            className="relative text-paper"
-          />
-          <div className="relative mx-auto max-w-wide px-4 pt-4 pb-22 sm:px-6 sm:pb-30 lg:px-10 lg:pb-40">
-            <div className="reveal-rise mx-auto max-w-2xl text-center">
-              <SectionKicker
-                accent={dict.home.history.videosKickerAccent}
-                caption={dict.home.history.videosKickerCaption}
-                tone="photo"
-                order="caption-first"
-                className="justify-center"
-              />
-              <h2 className="mt-4 font-display text-2xl leading-snug font-normal tracking-[0.02em] text-white sm:text-3xl">
-                {dict.home.history.videosTitle}
-              </h2>
-              <p className="mx-auto mt-3 max-w-xl leading-relaxed text-white/75">
-                {dict.home.history.videoCaption}
-              </p>
-            </div>
-            <div
-              className={`mx-auto mt-10 grid max-w-3xl gap-6 lg:gap-8 ${
-                aboutVideoIds.length > 2
-                  ? "reveal-stagger-3 lg:max-w-none lg:grid-cols-3"
-                  : aboutVideoIds.length > 1
-                    ? "reveal-stagger-2 sm:grid-cols-2 lg:max-w-6xl"
-                    : "lg:max-w-4xl"
-              }`}
-            >
-              {aboutVideoIds.map((id, i) => (
-                <SiteVideo
-                  key={id}
-                  videoId={id}
-                  dark
-                  title={
-                    aboutVideoIds.length > 1
-                      ? `${dict.home.history.videoTitle} ${i + 1}`
-                      : dict.home.history.videoTitle
-                  }
-                  className=""
+        <>
+          <SectionDivider ornament="asanoha" />
+          <section className="section-indigo-scene seigaiha-rings seigaiha-rings-sky text-white">
+            <KanjiWatermark char="映" className="-top-10 -right-8 text-white/5" />
+            <div className="relative mx-auto max-w-wide px-4 pt-16 pb-16 sm:px-6 sm:pt-20 sm:pb-20 lg:px-10 lg:pb-24">
+              <div className="reveal-rise mx-auto max-w-2xl text-center">
+                <SectionKicker
+                  accent={dict.home.history.videosKickerAccent}
+                  caption={dict.home.history.videosKickerCaption}
+                  tone="photo"
+                  order="caption-first"
+                  className="justify-center"
                 />
-              ))}
+                <h2 className="mt-4 font-display text-2xl leading-snug font-normal tracking-[0.02em] text-white sm:text-3xl">
+                  {dict.home.history.videosTitle}
+                </h2>
+                <p className="mx-auto mt-3 max-w-xl leading-relaxed text-white/75">
+                  {dict.home.history.videoCaption}
+                </p>
+              </div>
+              <div
+                className={`mx-auto mt-10 grid max-w-3xl gap-6 lg:gap-8 ${
+                  aboutVideoIds.length > 2
+                    ? "reveal-stagger-3 lg:max-w-none lg:grid-cols-3"
+                    : aboutVideoIds.length > 1
+                      ? "reveal-stagger-2 sm:grid-cols-2 lg:max-w-6xl"
+                      : "lg:max-w-4xl"
+                }`}
+              >
+                {aboutVideoIds.map((id, i) => (
+                  <SiteVideo
+                    key={id}
+                    videoId={id}
+                    dark
+                    title={
+                      aboutVideoIds.length > 1
+                        ? `${dict.home.history.videoTitle} ${i + 1}`
+                        : dict.home.history.videoTitle
+                    }
+                    className=""
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+          <SectionDivider ornament="seigaiha" align="end" />
+        </>
       )}
 
-      <div
-        className={
-          aboutVideoIds.length > 0
-            ? "under-wave relative -mt-12 overflow-clip sm:-mt-20 lg:-mt-30"
-            : "relative overflow-clip"
-        }
-      >
+      <div className="relative overflow-clip">
         <Image
           src={centennialPhoto.src}
           alt={centennialPhoto.alt}
@@ -570,14 +555,6 @@ export default async function HomePage() {
           sizes="100vw"
           className="ken-burns-in block h-auto min-h-64 w-full object-cover object-bottom sm:min-h-80 lg:min-h-0"
         />
-        {aboutVideoIds.length > 0 && (
-          <WaveDivider
-            id="videos-bottom"
-            accent="none"
-            seed={33}
-            className="absolute inset-x-0 top-0 text-transparent"
-          />
-        )}
       </div>
 
       <section

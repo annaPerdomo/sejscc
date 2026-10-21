@@ -103,11 +103,7 @@ be built from these tokens via Tailwind utility classes.
   `seigaiha-rings-sky`, `seigaiha-rings-gold`, the slow-moving
   `seigaiha-rings-drift`, and
   `seigaiha-rings-fade` for a section whose texture would otherwise start as a
-  hard line under the divider above it), `edge-flush` (on a section that ends
-  in a wave or brush edge, so the next one covers the hairline the two
-  antialiased edges leave at the join — the next section has to be positioned
-  and opaque at its top edge, or the overlap paints over the section it is
-  meant to hide behind),
+  hard line under the divider above it),
   `reveal-rise` / `reveal-bloom` / `reveal-swing-left` / `reveal-swing-right`
   (plus `reveal-stagger` on a grid to cascade its columns — the cascade
   repeats with the column count, so a grid that isn't two-then-four across
@@ -136,7 +132,7 @@ be built from these tokens via Tailwind utility classes.
   hold the strip while keyboard focus is inside it; the
   strip advances on the bar's `animationend`, so the CSS duration is the
   rotation interval),
-  `between-waves`, `card-stretch`,
+  `card-stretch`,
   `preview-static` (holds every scroll-driven
   animation at its end state inside the admin's inert live preview, which has
   no scroll timeline to drive them), `inline-edit-target` / `inline-edit-chip` /
@@ -172,8 +168,13 @@ be built from these tokens via Tailwind utility classes.
   position; the card's focus ring is drawn by `surface-card-link:has(...)`,
   so a stretched link must live inside a `surface-card-link` to be visibly
   focusable.
-- `between-waves` masks a texture to the wave lines above and below it — its
-  `--wave-cap` / `--wave-tail` must stay in step with `wave-divider.tsx`.
+- Section edges are straight. Where two sections meet with a seam, put
+  [SectionDivider](src/components/section-divider.tsx) between them as a
+  sibling (a gold-edged navy ribbon with a medallion): it straddles the
+  join, so it can't live inside a section that clips its overflow. The crest
+  medallion closes every page's opening hero; the seams below it vary the
+  ornament (`seigaiha`, `blossom`, `asanoha`) and alternate `align`, so no two
+  in a row look the same.
 - Anything that auto-advances on a timer (carousel, spotlight) needs a
   visible pause control — WCAG 2.2.2 is a Level A criterion. Build it on
   `useRotation()` in [carousel-hooks](src/components/carousel-hooks.ts) with
