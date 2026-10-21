@@ -69,7 +69,11 @@ export function SchoolSlideshow({
             rotation={rotation}
             intervalClassName="school-progress"
             onShow={rotation.show}
-            itemAriaLabel={(i) => labels.show.replace("{label}", slides[i].label)}
+            itemAriaLabel={(i) =>
+              labels.show
+                .replace("{label}", slides[i].label)
+                .replace("{caption}", slides[i].caption)
+            }
           />
         </div>
 

@@ -52,18 +52,6 @@ export const PHOTO_SLOTS: PhotoSlot[] = [
       shape: "photo",
     })
   ),
-  ...homePhotos.highlights.map(
-    (defaultSrc, i): PhotoSlot => ({
-      id: `home.school-highlight.${i}`,
-      page: "home",
-      section: "home-japanese-school",
-      group: "Japanese School highlights",
-      label: photoN(i),
-      defaultSrc,
-      defaultAltPath: `home.japaneseSchool.highlights.${i}.photoAlt`,
-      shape: "square",
-    })
-  ),
   {
     id: "home.centennial",
     page: "home",

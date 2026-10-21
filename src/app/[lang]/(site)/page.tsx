@@ -312,36 +312,6 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <ul className="reveal-stagger mt-14 grid grid-cols-2 gap-3 sm:gap-4 lg:mt-20 lg:grid-cols-4">
-            {dict.home.japaneseSchool.highlights.map((item, i) => (
-              <li key={item.title} className="reveal-bloom">
-                <figure className="relative aspect-square overflow-clip rounded-sm sm:aspect-card">
-                  <SitePhoto
-                    photo={slotPhoto(photos, `home.school-highlight.${i}`, item.photoAlt, lang)}
-                    dark
-                    sizes="(max-width: 1024px) 50vw, 24rem"
-                    placeholderLabel={dict.home.photoSoon}
-                    className="h-full w-full"
-                  />
-                  <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink-deep via-ink-deep/85 to-transparent px-4 pt-14 pb-4 sm:px-5 sm:pb-5">
-                    <span
-                      lang={lang === "en" ? "ja" : "en"}
-                      className="block font-accent text-sm font-bold tracking-[0.14em] text-sky sm:text-base"
-                    >
-                      {item.term}
-                    </span>
-                    <span className="mt-0.5 block font-display text-lg leading-tight font-semibold text-white sm:text-xl">
-                      {item.title}
-                    </span>
-                    <span className="mt-1 hidden text-base leading-snug text-white/85 sm:block">
-                      {item.text}
-                    </span>
-                  </figcaption>
-                </figure>
-              </li>
-            ))}
-          </ul>
-
           <div className="mt-16 lg:mt-24">
             <div className="reveal-rise flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
               <div>
