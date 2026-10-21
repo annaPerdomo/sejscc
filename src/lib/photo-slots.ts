@@ -37,7 +37,7 @@ export const PHOTO_SLOTS: PhotoSlot[] = [
     group: "Backdrops",
     label: "Events and history backdrop",
     defaultSrc: homePhotos.eventsBackdrop,
-    defaultAltPath: null,
+    defaultAltPath: "home.eventsHero.photoAlt",
     shape: "wide",
   },
   ...homePhotos.schoolSlides.map(

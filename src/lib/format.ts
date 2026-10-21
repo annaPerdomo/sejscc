@@ -46,6 +46,16 @@ export function formatEventTime(
   return end ? `${fmt(start)} – ${fmt(end)}` : fmt(start);
 }
 
+export function formatShortEventDate(date: Date | null, locale: Locale = "en") {
+  if (!date) return null;
+  return date.toLocaleDateString(INTL_LOCALES[locale], {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+}
+
 export function formatCalendarDate(date: Date | null, locale: Locale = "en") {
   if (!date) return null;
   return date.toLocaleDateString(INTL_LOCALES[locale], {

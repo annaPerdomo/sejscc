@@ -68,6 +68,7 @@
 /* A screen tall enough to show a whole sticky panel; shorter or zoomed-in
    screens get panels that scroll normally, so none of their copy is cut off. */
 @custom-variant tall (@media (min-height: 48rem));
+@custom-variant taller (@media (min-height: 56rem));
 
 @theme inline {
   --font-sans: var(--font-zen-maru-gothic), system-ui, sans-serif;
@@ -1159,29 +1160,26 @@ body {
       animation-delay: calc(var(--enter-delay, 0ms) + 300ms);
     }
 
-    .brush-draw {
-      stroke-dasharray: 1;
-      animation: brush-draw 1200ms cubic-bezier(0.65, 0, 0.35, 1) 250ms both;
+    .hero-intro-follow {
+      --enter-delay: 1000ms;
     }
 
-    /* `--enter-delay` holds the entrances inside each stage until it starts.
-       Desktop only: on a phone the bare photo first reads as an empty page. */
+    /* Desktop only: on a phone the bare photo first reads as an empty page. */
     @media (width >= 64rem) {
       .hero-intro-photo {
         animation: hero-intro-settle 2400ms cubic-bezier(0.22, 1, 0.36, 1) both;
       }
 
       .hero-intro-scrim {
-        animation: hero-intro 1100ms ease-in-out 700ms both;
+        animation: hero-intro 900ms ease-in-out 900ms both;
       }
 
       .hero-intro {
-        --enter-delay: 1300ms;
+        --enter-delay: 1700ms;
       }
 
-      .hero-intro-late {
-        --enter-delay: 2400ms;
-        animation: hero-intro 900ms ease-out 2400ms both;
+      .hero-intro-follow {
+        --enter-delay: 3300ms;
       }
     }
 
@@ -1202,10 +1200,6 @@ body {
 
     .tab-progress-paused {
       animation-play-state: paused;
-    }
-
-    .hero-progress {
-      --tab-progress: 6s;
     }
 
     .groups-progress {
@@ -1569,15 +1563,6 @@ body {
   from {
     opacity: 0;
     transform: translateY(0.5rem);
-  }
-}
-
-@keyframes brush-draw {
-  from {
-    stroke-dashoffset: 1;
-  }
-  to {
-    stroke-dashoffset: 0;
   }
 }
 

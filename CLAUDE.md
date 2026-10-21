@@ -32,6 +32,8 @@ header) and `pb-safe-bottom` (a bar pinned to the viewport's bottom edge,
 clear of iOS's home indicator); container breakpoints: `@volunteer-sm` /
 `@volunteer-lg` (the board & volunteers section lays out by its own width,
 so the admin preview matches the home page);
+screen-height variants: `tall:` / `taller:` (48rem / 56rem high, for
+fitting a one-screen hero to the screen it's on);
 vertical Japanese text: `writing-vertical` (and `writing-horizontal` to lay it flat on phones);
 fonts: `font-sans` (Zen Maru Gothic, body copy), `font-display` (Jost,
 headings and UI labels),
@@ -124,9 +126,12 @@ be built from these tokens via Tailwind utility classes.
   celebration: a paper plane loops off its badge and lands in a ring and a
   burst of confetti),
   `ken-burns-in` / `ken-burns-out`, `enter-rise` / `enter-stagger` /
-  `enter-fade` / `enter-rule` / `brush-draw` / `menu-drop`, `hero-drift` (held with `hero-drift-paused`), `link-arrow`,
+  `enter-fade` / `enter-rule` / `menu-drop`, `hero-intro-photo` /
+  `hero-intro-scrim` / `hero-intro` / `hero-intro-follow` (a hero's staged
+  opening on desktop: the photo alone, then its scrim fills in, then the
+  heading, then what follows it), `hero-drift` (held with `hero-drift-paused`), `link-arrow`,
   `tab-progress` (with a per-strip duration
-  class, `hero-progress`, `groups-progress`, `school-progress`, `photo-hero-progress`, `year-progress`, and
+  class, `groups-progress`, `school-progress`, `photo-hero-progress`, `year-progress`, and
   `tab-progress-paused` to
   hold the strip while keyboard focus is inside it; the
   strip advances on the bar's `animationend`, so the CSS duration is the
@@ -149,7 +154,7 @@ be built from these tokens via Tailwind utility classes.
 - Motion comes in two families. The `reveal-*` classes are scroll-driven
   (`animation-timeline: view()`) and do nothing for content that is already
   on screen when the page opens, so heroes, menus and tab panels use the
-  time-based `enter-rise` / `enter-stagger` / `enter-fade` / `brush-draw`
+  time-based `enter-rise` / `enter-stagger` / `enter-fade`
   entrances instead. Every animation sits behind
   `prefers-reduced-motion: no-preference`; keep new ones there too. Hover
   transforms (a card that lifts, tilts or zooms) are motion as well, and a

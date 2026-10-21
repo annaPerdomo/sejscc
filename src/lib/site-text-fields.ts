@@ -52,8 +52,9 @@ export const SITE_TEXT_PAGES: SiteTextPage[] = [
     href: "/",
     sections: [
       section("home-top", [
-        field("home.eventsHero.headingLine1", "Heading, first line", "heading"),
-        field("home.eventsHero.headingLine2", "Heading, second line", "heading"),
+        field("home.welcome.kicker", "Small line above the heading", "short"),
+        field("home.welcome.heading", "Heading", "heading"),
+        field("home.welcome.headingEmphasis", "Word in the heading shown larger", "heading"),
       ]),
       section("home-japanese-school", [
         field("home.japaneseSchool.headingLine1", "Heading, first line", "heading"),

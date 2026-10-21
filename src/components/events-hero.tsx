@@ -1,106 +1,177 @@
-import {
-  EventsHeroCarousel,
-  type EventsHeroItem,
-} from "@/components/events-hero-carousel";
-import { WaveDivider } from "@/components/wave-divider";
-import { calendarLinks, calendarOptions } from "@/lib/calendars";
-import { venueLabel } from "@/lib/center";
+import Image from "next/image";
+import Link from "next/link";
+import { DatePage } from "@/components/date-page";
 import type { Event } from "@/lib/events";
 import {
-  excerpt,
-  formatEventDate,
   formatEventDay,
   formatEventMonth,
   formatEventTime,
-  formatWeekday,
+  formatShortEventDate,
 } from "@/lib/format";
 import { getDictionary, getLocale } from "@/lib/dictionaries";
 import { localePath } from "@/lib/i18n";
-import { getImageSize } from "@/lib/image-size";
-import { describeRepeat } from "@/lib/recurrence";
 import { getSitePhotos, slotPhoto } from "@/lib/site-photos";
 
-// Half-width cells; three lines beside the flyer at the widest the column gets.
-const SUMMARY_MAX_CELLS = 220;
+const HEADING_SMALL_WORDS =
+  "text-lg sm:text-3xl lg:text-xl lg:tall:text-2xl xl:taller:text-3xl";
+
+function splitAround(text: string, emphasis: string) {
+  const start = emphasis ? text.indexOf(emphasis) : -1;
+  if (start === -1) return { before: "", emphasis: text, after: "" };
+  return {
+    before: text.slice(0, start),
+    emphasis,
+    after: text.slice(start + emphasis.length),
+  };
+}
 
 export async function EventsHero({ events }: { events: Event[] }) {
-  const [lang, dict, flyerSizes, photos] = await Promise.all([
+  const [lang, dict, photos] = await Promise.all([
     getLocale(),
     getDictionary(),
-    Promise.all(
-      events.map((event) =>
-        event.flyerUrl ? getImageSize(event.flyerUrl) : null,
-      ),
-    ),
     getSitePhotos(),
   ]);
   const copy = dict.home.eventsHero;
-  const backdropSrc = slotPhoto(photos, "home.events-backdrop", "", lang).src;
-
-  const items: EventsHeroItem[] = events.map((event, i) => ({
-    id: event.id,
-    title: event.title,
-    href: localePath(lang, `/events/${event.slug}`),
-    date: formatEventDate(event.startAt, lang),
-    weekday: event.startAt ? formatWeekday(event.startAt, lang) : null,
-    month: formatEventMonth(event.startAt, lang),
-    day: formatEventDay(event.startAt, lang),
-    time: formatEventTime(event.startAt, event.endAt, lang),
-    venue: venueLabel(event.location, dict.events.atCenter),
-    repeat: describeRepeat(event, dict.events.repeat, lang),
-    // Without a flyer the description already fills the frame.
-    summary:
-      event.flyerUrl && event.description
-        ? excerpt(event.description, SUMMARY_MAX_CELLS)
-        : null,
-    calendar: event.startAt
-      ? calendarOptions(
-          calendarLinks({
-            slug: event.slug,
-            title: event.title,
-            start: event.startAt,
-            end: event.endAt,
-            details: event.description,
-            location: event.location,
-          }),
-          dict.calendar,
-        )
-      : null,
-    description: event.description,
-    flyerUrl: event.flyerUrl,
-    flyerSize: flyerSizes[i],
-    flyerAlt: dict.eventDetail.flyerAlt.replace("{title}", event.title),
-  }));
+  const welcome = dict.home.welcome;
+  const heading = splitAround(welcome.heading, welcome.headingEmphasis);
+  const photo = slotPhoto(photos, "home.events-backdrop", copy.photoAlt, lang);
 
   return (
-    <section className="edge-flush relative overflow-clip bg-navy">
-      <EventsHeroCarousel
-        items={items}
-        backdropSrc={backdropSrc}
-        viewAllHref={localePath(lang, "/events")}
-        labels={{
-          kickerAccent: copy.kickerAccent,
-          kickerCaption: copy.kickerCaption,
-          headingLine1: copy.headingLine1,
-          headingLine2: copy.headingLine2,
-          empty: dict.home.noEvents,
-          viewAll: dict.home.viewAll,
-          next: copy.nextLabel,
-          upcoming: copy.upcomingLabel,
-          date: dict.eventDetail.date,
-          time: dict.eventDetail.time,
-          where: dict.eventDetail.where,
-          repeats: dict.eventDetail.repeats,
-          details: copy.detailsCta,
-          addToCalendar: dict.calendar.addToCalendar,
-          chooseCalendar: dict.calendar.chooseCalendar,
-          panelTitle: copy.panelTitle,
-          list: copy.listLabel,
-          pause: dict.home.upcomingPause,
-          play: dict.home.upcomingPlay,
-        }}
+    <section className="relative isolate overflow-clip bg-navy lg:flex lg:min-h-page-hero">
+      <div className="relative aspect-photo lg:absolute lg:inset-0 lg:-z-10 lg:aspect-auto">
+        <Image
+          src={photo.src}
+          alt={photo.alt}
+          fill
+          preload
+          fetchPriority="high"
+          sizes="100vw"
+          className="hero-intro-photo object-cover object-right"
+        />
+      </div>
+      {/* Over the white building, white text keeps AA down to a 70% wash;
+          sky and blossom text would need 90%, so the words here stay white. */}
+      <div
+        aria-hidden="true"
+        className="hero-intro-scrim absolute inset-0 -z-10 hidden bg-gradient-to-r from-ink-deep/85 via-navy/75 via-50% to-transparent to-58% lg:block"
       />
-      <WaveDivider id="hero" seed={3} className="absolute inset-x-0 bottom-0 text-paper" />
+
+      <div className="hero-intro flex-1 px-5 pt-8 pb-12 sm:px-10 sm:pt-10 lg:flex lg:px-11 lg:py-4 lg:tall:py-8 lg:taller:py-12">
+        <div className="flex flex-col justify-center lg:w-1/2">
+          <div className="enter-rise">
+            <p
+              lang={lang === "ja" ? "en" : "ja"}
+              className={
+                lang === "ja"
+                  ? "font-display text-base font-semibold tracking-[0.3em] text-sky uppercase"
+                  : "font-accent text-xl font-bold tracking-[0.3em] text-sky"
+              }
+            >
+              {welcome.kicker}
+            </p>
+            <h1 className="mt-1 font-display leading-tight font-light tracking-[0.02em] text-white sm:whitespace-nowrap lg:leading-none lg:tall:leading-tight">
+              {heading.before && <span className={HEADING_SMALL_WORDS}>{heading.before}</span>}
+              <span className="text-4xl sm:text-7xl lg:text-5xl lg:tall:text-6xl lg:taller:text-7xl">
+                {heading.emphasis}
+              </span>
+              {heading.after && <span className={HEADING_SMALL_WORDS}>{heading.after}</span>}
+            </h1>
+          </div>
+
+          <div className="hero-intro-follow enter-stagger">
+            <div className="mt-8 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 lg:mt-3 lg:tall:mt-6">
+              <h2 className="font-display text-lg font-semibold tracking-[0.2em] text-white uppercase">
+                {copy.panelTitle}
+              </h2>
+              {events.length > 0 && (
+                <Link
+                  href={localePath(lang, "/events")}
+                  className="link-arrow py-1 font-display text-lg font-semibold text-white decoration-sky decoration-2 underline-offset-4 hover:underline"
+                >
+                  {dict.home.viewAll}
+                </Link>
+              )}
+            </div>
+            {events.length === 0 ? (
+              <p className="mt-4 text-xl leading-relaxed text-white/90">
+                {dict.home.noEvents}
+              </p>
+            ) : (
+              <ul className="mt-4 sm:grid sm:grid-cols-[auto_minmax(0,1fr)_auto] lg:mt-2 lg:tall:mt-4">
+                {events.map((event) => {
+                  const date = formatShortEventDate(event.startAt, lang);
+                  const time = formatEventTime(event.startAt, event.endAt, lang);
+                  const flyerHref = event.flyerDownloadUrl ?? event.flyerUrl;
+                  const month = formatEventMonth(event.startAt, lang);
+                  const day = formatEventDay(event.startAt, lang);
+                  return (
+                    <li
+                      key={event.id}
+                      className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-5 border-t border-gold/70 py-3 sm:col-span-3 sm:grid-cols-subgrid lg:py-2 lg:tall:py-3 lg:taller:py-4"
+                    >
+                      {event.flyerUrl && flyerHref ? (
+                        <a
+                          href={flyerHref}
+                          download
+                          tabIndex={-1}
+                          aria-hidden="true"
+                          className="relative row-span-2 aspect-flyer w-16 overflow-clip rounded-xs border-2 border-white bg-cream shadow-lg shadow-ink-deep/50 transition-transform duration-300 ease-out hover:-rotate-2 hover:scale-105 sm:row-span-1 lg:w-14 lg:tall:w-16 lg:taller:w-20"
+                        >
+                          <Image
+                            src={event.flyerUrl}
+                            alt=""
+                            fill
+                            sizes="5rem"
+                            className="object-cover object-top"
+                          />
+                        </a>
+                      ) : (
+                        month &&
+                        day && (
+                          <DatePage
+                            month={month}
+                            day={day}
+                            className="row-span-2 sm:row-span-1 lg:w-14 lg:tall:w-16 lg:taller:w-20"
+                          />
+                        )
+                      )}
+                      <div className="min-w-0">
+                        {(date || time) && (
+                          <p className="font-display text-base font-semibold text-white lg:taller:text-lg">
+                            {[date, time].filter(Boolean).join(" · ")}
+                          </p>
+                        )}
+                        <h3 className="mt-0.5 line-clamp-2 font-display text-xl leading-snug font-semibold text-pretty text-white lg:taller:text-2xl">
+                          {event.title}
+                        </h3>
+                      </div>
+                      <div className="col-start-2 flex flex-wrap gap-x-5 sm:col-start-3 sm:row-start-1 sm:flex-col sm:items-start">
+                        <Link
+                          href={localePath(lang, `/events/${event.slug}`)}
+                          aria-label={copy.moreInfoAria.replace("{title}", event.title)}
+                          className="link-arrow inline-block py-1 font-display text-lg font-semibold whitespace-nowrap text-white decoration-sky decoration-2 underline-offset-4 hover:underline"
+                        >
+                          {copy.moreInfo}
+                        </Link>
+                        {flyerHref && (
+                          <a
+                            href={flyerHref}
+                            download
+                            aria-label={copy.flyerAria.replace("{title}", event.title)}
+                            className="inline-block py-1 font-display text-lg font-semibold whitespace-nowrap text-white underline decoration-blossom decoration-2 underline-offset-4 hover:decoration-white"
+                          >
+                            {copy.flyer}
+                          </a>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        </div>
+      </div>
     </section>
   );
 }
