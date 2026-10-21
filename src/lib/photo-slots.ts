@@ -58,7 +58,7 @@ export const PHOTO_SLOTS: PhotoSlot[] = [
     section: "home-history",
     group: "Centennial banner",
     label: "Banner photo",
-    defaultSrc: homePhotos.centennial,
+    defaultSrc: homePhotos.centennial.src,
     defaultAltPath: "home.centennialPhotoAlt",
     shape: "wide",
   },

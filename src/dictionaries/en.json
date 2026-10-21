@@ -387,6 +387,14 @@
     "connectTitle": "All Generations. One Community.",
     "connectText": "Everyone is welcome at SEJSCC. We are a nonprofit organization and all of our activities are open to anyone, regardless of race or religion. Together we learn, celebrate, volunteer, and create memories that last a lifetime.",
     "centennialPhotoAlt": "The whole community gathered outside the center for its 100th anniversary in 2025",
+    "centennialZoom": {
+      "open": "Zoom in",
+      "title": "Our 100th anniversary group photo",
+      "hint": "Drag, swipe or use the arrow keys to look around. Press + or − to zoom.",
+      "close": "Close",
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out"
+    },
     "contact": {
       "addressLabel": "Address",
       "addressAria": "Get directions to the center (opens in Google Maps)",

@@ -54,7 +54,7 @@ export const homePhotos = {
     "/photos/home-school-2018-ohanashikai.jpg",
     "/photos/home-school-2025-teachers-level.jpg",
   ],
-  centennial: "/photos/home-centennial.jpg",
+  centennial: { src: "/photos/home-centennial-group.jpg", width: 6253, height: 1266 },
 } as const;
 
 // Keyed by `home.history.milestones[].id`, not by position: inserting a

@@ -140,7 +140,8 @@ be built from these tokens via Tailwind utility classes.
   inherits the page's typography, its "Change" chip, and the textarea that
   replaces it), `admin-disclosure` (a `<details>` in the admin whose summary
   draws its own Show/Hide label instead of the browser's triangle), `edit-dialog` (a native `<dialog>` that is a full-screen sheet
-  on phones and a centred panel from 40rem), and the
+  on phones and a centred panel from 40rem), `photo-viewer` (a full-screen
+  dark `<dialog>` for zooming into a photo), and the
   `section-wash-*` backgrounds, and the three dark
   scenes, `section-navy-scene`, `section-midnight-scene` (ink-deep, for the
   school) and `section-plum-scene` (magenta-deep into ink-deep under a gold asanoha

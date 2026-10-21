@@ -36,6 +36,7 @@ import {
   schoolPhotos,
 } from "@/lib/photos";
 import { VolunteerSection } from "@/components/volunteer-section";
+import { ZoomablePhoto } from "@/components/zoomable-photo";
 
 export const revalidate = 300;
 
@@ -515,16 +516,15 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <div className="relative overflow-clip">
-        <Image
-          src={centennialPhoto.src}
-          alt={centennialPhoto.alt}
-          width={centennialPhoto.width ?? 2000}
-          height={centennialPhoto.height ?? 405}
-          sizes="100vw"
-          className="ken-burns-in block h-auto min-h-64 w-full object-cover object-bottom sm:min-h-80 lg:min-h-0"
-        />
-      </div>
+      <ZoomablePhoto
+        photo={{
+          src: centennialPhoto.src,
+          alt: centennialPhoto.alt,
+          width: centennialPhoto.width ?? homePhotos.centennial.width,
+          height: centennialPhoto.height ?? homePhotos.centennial.height,
+        }}
+        labels={dict.home.centennialZoom}
+      />
 
       <section
         id="contact"
