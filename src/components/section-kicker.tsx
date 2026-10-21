@@ -7,6 +7,7 @@ const TONES = {
   // Over a photo the caption goes white: `sky` only clears 4.5:1 on a
   // near-solid navy scrim.
   photo: { accent: "text-sky", rule: "h-px bg-sky", caption: "text-white" },
+  plum: { accent: "text-blossom", rule: "h-px bg-gold", caption: "text-white" },
 };
 
 const SIZES = {

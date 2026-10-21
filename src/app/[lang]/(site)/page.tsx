@@ -364,6 +364,55 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {aboutVideoIds.length > 0 && (
+        <>
+          <SectionDivider ornament="asanoha" />
+          <section className="section-plum-scene text-white">
+            <KanjiWatermark char="映" className="-top-10 -right-8 text-white/5" />
+            <div className="relative mx-auto max-w-wide px-4 pt-16 pb-16 sm:px-6 sm:pt-20 sm:pb-20 lg:px-10 lg:pb-24">
+              <div className="reveal-rise mx-auto max-w-2xl text-center">
+                <SectionKicker
+                  accent={dict.home.history.videosKickerAccent}
+                  caption={dict.home.history.videosKickerCaption}
+                  tone="plum"
+                  order="caption-first"
+                  className="justify-center"
+                />
+                <h2 className="mt-4 font-display text-2xl leading-snug font-normal tracking-[0.02em] text-white sm:text-3xl">
+                  {dict.home.history.videosTitle}
+                </h2>
+                <p className="mx-auto mt-3 max-w-xl leading-relaxed text-white/75">
+                  {dict.home.history.videoCaption}
+                </p>
+              </div>
+              <div
+                className={`mx-auto mt-10 grid max-w-3xl gap-6 lg:gap-8 ${
+                  aboutVideoIds.length > 2
+                    ? "reveal-stagger-3 lg:max-w-none lg:grid-cols-3"
+                    : aboutVideoIds.length > 1
+                      ? "reveal-stagger-2 sm:grid-cols-2 lg:max-w-6xl"
+                      : "lg:max-w-4xl"
+                }`}
+              >
+                {aboutVideoIds.map((id, i) => (
+                  <SiteVideo
+                    key={id}
+                    videoId={id}
+                    dark
+                    title={
+                      aboutVideoIds.length > 1
+                        ? `${dict.home.history.videoTitle} ${i + 1}`
+                        : dict.home.history.videoTitle
+                    }
+                    className=""
+                  />
+                ))}
+              </div>
+            </div>
+          </section>
+        </>
+      )}
       <SectionDivider ornament="blossom" align="end" />
 
       <section
@@ -465,56 +514,6 @@ export default async function HomePage() {
           )}
         </div>
       </section>
-
-      {aboutVideoIds.length > 0 && (
-        <>
-          <SectionDivider ornament="asanoha" />
-          <section className="section-indigo-scene seigaiha-rings seigaiha-rings-sky text-white">
-            <KanjiWatermark char="映" className="-top-10 -right-8 text-white/5" />
-            <div className="relative mx-auto max-w-wide px-4 pt-16 pb-16 sm:px-6 sm:pt-20 sm:pb-20 lg:px-10 lg:pb-24">
-              <div className="reveal-rise mx-auto max-w-2xl text-center">
-                <SectionKicker
-                  accent={dict.home.history.videosKickerAccent}
-                  caption={dict.home.history.videosKickerCaption}
-                  tone="photo"
-                  order="caption-first"
-                  className="justify-center"
-                />
-                <h2 className="mt-4 font-display text-2xl leading-snug font-normal tracking-[0.02em] text-white sm:text-3xl">
-                  {dict.home.history.videosTitle}
-                </h2>
-                <p className="mx-auto mt-3 max-w-xl leading-relaxed text-white/75">
-                  {dict.home.history.videoCaption}
-                </p>
-              </div>
-              <div
-                className={`mx-auto mt-10 grid max-w-3xl gap-6 lg:gap-8 ${
-                  aboutVideoIds.length > 2
-                    ? "reveal-stagger-3 lg:max-w-none lg:grid-cols-3"
-                    : aboutVideoIds.length > 1
-                      ? "reveal-stagger-2 sm:grid-cols-2 lg:max-w-6xl"
-                      : "lg:max-w-4xl"
-                }`}
-              >
-                {aboutVideoIds.map((id, i) => (
-                  <SiteVideo
-                    key={id}
-                    videoId={id}
-                    dark
-                    title={
-                      aboutVideoIds.length > 1
-                        ? `${dict.home.history.videoTitle} ${i + 1}`
-                        : dict.home.history.videoTitle
-                    }
-                    className=""
-                  />
-                ))}
-              </div>
-            </div>
-          </section>
-          <SectionDivider ornament="seigaiha" align="end" />
-        </>
-      )}
 
       <div className="relative overflow-clip">
         <Image

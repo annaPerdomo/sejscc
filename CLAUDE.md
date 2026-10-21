@@ -143,7 +143,8 @@ be built from these tokens via Tailwind utility classes.
   on phones and a centred panel from 40rem), and the
   `section-wash-*` backgrounds, and the three dark
   scenes, `section-navy-scene`, `section-midnight-scene` (ink-deep, for the
-  school) and `section-indigo-scene` (indigo-deep, for the videos), so no
+  school) and `section-plum-scene` (magenta-deep into ink-deep under a gold asanoha
+  lattice, for the videos), so no
   two dark sections on a page share a tone. Extend one of these rather than restyling a card or button
   inline, and build them from tokens — use `--alpha(var(--color-x) / 20%)`
   for a tint instead of writing the color out again.

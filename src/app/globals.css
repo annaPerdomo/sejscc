@@ -82,6 +82,10 @@ html {
   overscroll-behavior: none;
 }
 
+:root {
+  --asanoha-lattice: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='34.64' viewBox='0 0 20 34.64'%3E%3Cpath d='M-20 17.32L0 17.32M-10 0L0 -17.32M-10 0L0 -5.77M-10 0L0 5.77M-10 0L0 17.32M-10 0L10 0M-10 11.55L0 17.32M-10 23.09L0 17.32M-10 34.64L0 17.32M-10 34.64L0 28.87M-10 34.64L0 40.41M-10 34.64L0 51.96M-10 34.64L10 34.64M0 -17.32L10 0M0 -5.77L10 0M0 5.77L0 17.32M0 5.77L10 0M0 17.32L0 28.87M0 17.32L10 0M0 17.32L10 11.55M0 17.32L10 23.09M0 17.32L10 34.64M0 17.32L20 17.32M0 28.87L10 34.64M0 40.41L10 34.64M0 51.96L10 34.64M10 -11.55L10 0M10 0L10 11.55M10 0L20 -17.32M10 0L20 -5.77M10 0L20 5.77M10 0L20 17.32M10 0L30 0M10 11.55L20 17.32M10 23.09L10 34.64M10 23.09L20 17.32M10 34.64L10 46.19M10 34.64L20 17.32M10 34.64L20 28.87M10 34.64L20 40.41M10 34.64L20 51.96M10 34.64L30 34.64M20 -17.32L30 0M20 -5.77L30 0M20 5.77L20 17.32M20 5.77L30 0M20 17.32L20 28.87M20 17.32L30 0M20 17.32L30 11.55M20 17.32L30 23.09M20 17.32L30 34.64M20 17.32L40 17.32M20 28.87L30 34.64M20 40.41L30 34.64M20 51.96L30 34.64' fill='none' stroke='black' stroke-width='0.9'/%3E%3C/svg%3E");
+}
+
 body {
   background:
     radial-gradient(circle at 4% 12%, --alpha(var(--color-celadon) / 48%), transparent 19rem),
@@ -140,13 +144,31 @@ body {
       linear-gradient(170deg, var(--color-ink-deep), var(--color-ink) 60%, var(--color-ink-deep));
   }
 
-  /* The glows stay in the corners: sky text only clears 4.5:1 on the bare
-     indigo-deep base, so captions here are white. */
-  .section-indigo-scene {
+  /* Blossom text holds 4.5:1 only while the glow stays at 20% and the
+     lattice at 12%; captions here are white. */
+  .section-plum-scene {
+    position: relative;
+    isolation: isolate;
+    overflow: clip;
     background:
-      radial-gradient(52rem 32rem at 0% 100%, --alpha(var(--color-indigo) / 55%), transparent 62%),
-      radial-gradient(48rem 30rem at 100% 0%, --alpha(var(--color-magenta) / 16%), transparent 60%),
-      linear-gradient(165deg, var(--color-indigo-deep), var(--color-navy));
+      radial-gradient(52rem 32rem at 100% 0%, --alpha(var(--color-magenta) / 20%), transparent 62%),
+      linear-gradient(
+        165deg,
+        color-mix(in srgb, var(--color-magenta-deep) 55%, var(--color-ink-deep)),
+        color-mix(in srgb, var(--color-magenta-deep) 35%, var(--color-ink-deep))
+      );
+  }
+
+  .section-plum-scene::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--color-gold);
+    mask-image: var(--asanoha-lattice);
+    mask-size: 40px 69.28px;
+    opacity: 12%;
+    pointer-events: none;
   }
 
   .callout-celadon {
@@ -421,7 +443,7 @@ body {
     z-index: -1;
     border-radius: inherit;
     background: var(--color-gold);
-    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='34.64' viewBox='0 0 20 34.64'%3E%3Cpath d='M-20 17.32L0 17.32M-10 0L0 -17.32M-10 0L0 -5.77M-10 0L0 5.77M-10 0L0 17.32M-10 0L10 0M-10 11.55L0 17.32M-10 23.09L0 17.32M-10 34.64L0 17.32M-10 34.64L0 28.87M-10 34.64L0 40.41M-10 34.64L0 51.96M-10 34.64L10 34.64M0 -17.32L10 0M0 -5.77L10 0M0 5.77L0 17.32M0 5.77L10 0M0 17.32L0 28.87M0 17.32L10 0M0 17.32L10 11.55M0 17.32L10 23.09M0 17.32L10 34.64M0 17.32L20 17.32M0 28.87L10 34.64M0 40.41L10 34.64M0 51.96L10 34.64M10 -11.55L10 0M10 0L10 11.55M10 0L20 -17.32M10 0L20 -5.77M10 0L20 5.77M10 0L20 17.32M10 0L30 0M10 11.55L20 17.32M10 23.09L10 34.64M10 23.09L20 17.32M10 34.64L10 46.19M10 34.64L20 17.32M10 34.64L20 28.87M10 34.64L20 40.41M10 34.64L20 51.96M10 34.64L30 34.64M20 -17.32L30 0M20 -5.77L30 0M20 5.77L20 17.32M20 5.77L30 0M20 17.32L20 28.87M20 17.32L30 0M20 17.32L30 11.55M20 17.32L30 23.09M20 17.32L30 34.64M20 17.32L40 17.32M20 28.87L30 34.64M20 40.41L30 34.64M20 51.96L30 34.64' fill='none' stroke='black' stroke-width='0.9'/%3E%3C/svg%3E");
+    mask-image: var(--asanoha-lattice);
     mask-size: 20px 34.64px;
     opacity: 35%;
     pointer-events: none;
