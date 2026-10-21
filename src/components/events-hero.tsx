@@ -56,7 +56,7 @@ export async function EventsHero({ events }: { events: Event[] }) {
         className="hero-intro-scrim absolute inset-0 -z-10 hidden bg-gradient-to-r from-ink-deep/85 via-navy/75 via-50% to-transparent to-58% lg:block"
       />
 
-      <div className="hero-intro flex-1 px-5 pt-8 pb-12 sm:px-10 sm:pt-10 lg:flex lg:px-11 lg:py-4 lg:tall:py-8 lg:taller:py-12">
+      <div className="hero-intro flex-1 px-5 pt-8 pb-12 sm:px-10 sm:pt-10 lg:flex lg:px-11 lg:py-4 lg:tall:py-6 lg:taller:py-12">
         <div className="flex flex-col justify-center lg:w-1/2">
           <div className="enter-rise">
             <p
@@ -107,7 +107,7 @@ export async function EventsHero({ events }: { events: Event[] }) {
                   return (
                     <li
                       key={event.id}
-                      className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-5 border-t border-gold/70 py-3 sm:col-span-3 sm:grid-cols-subgrid lg:py-2 lg:tall:py-3 lg:taller:py-4"
+                      className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-5 border-t border-gold/70 py-3 sm:col-span-3 sm:grid-cols-subgrid lg:py-1.5 lg:tall:py-2 lg:taller:py-3"
                     >
                       {event.flyerUrl && flyerHref ? (
                         <a
@@ -115,7 +115,7 @@ export async function EventsHero({ events }: { events: Event[] }) {
                           download
                           tabIndex={-1}
                           aria-hidden="true"
-                          className="relative row-span-2 aspect-flyer w-16 overflow-clip rounded-xs border-2 border-white bg-cream shadow-lg shadow-ink-deep/50 transition-transform duration-300 ease-out hover:-rotate-2 hover:scale-105 sm:row-span-1 lg:w-14 lg:tall:w-16 lg:taller:w-20"
+                          className="relative row-span-2 aspect-flyer w-16 overflow-clip rounded-xs border-2 border-white bg-cream shadow-lg shadow-ink-deep/50 transition-transform duration-300 ease-out hover:-rotate-2 hover:scale-105 sm:row-span-1 lg:w-12 lg:taller:w-16"
                         >
                           <Image
                             src={event.flyerUrl}
@@ -131,25 +131,25 @@ export async function EventsHero({ events }: { events: Event[] }) {
                           <DatePage
                             month={month}
                             day={day}
-                            className="row-span-2 sm:row-span-1 lg:w-14 lg:tall:w-16 lg:taller:w-20"
+                            className="row-span-2 sm:row-span-1 lg:w-12 lg:taller:w-16"
                           />
                         )
                       )}
                       <div className="min-w-0">
+                        <h3 className="line-clamp-2 font-display text-xl leading-snug font-semibold text-pretty text-white lg:text-lg lg:tall:text-xl xl:line-clamp-1">
+                          {event.title}
+                        </h3>
                         {(date || time) && (
-                          <p className="font-display text-base font-semibold text-white lg:taller:text-lg">
+                          <p className="mt-0.5 font-display text-base font-semibold text-white lg:taller:text-lg">
                             {[date, time].filter(Boolean).join(" · ")}
                           </p>
                         )}
-                        <h3 className="mt-0.5 line-clamp-2 font-display text-xl leading-snug font-semibold text-pretty text-white lg:taller:text-2xl">
-                          {event.title}
-                        </h3>
                       </div>
-                      <div className="col-start-2 flex flex-wrap gap-x-5 sm:col-start-3 sm:row-start-1 sm:flex-col sm:items-start">
+                      <div className="col-start-2 mt-3 flex flex-wrap gap-3 sm:col-start-3 sm:row-start-1 sm:mt-0 sm:flex-col sm:items-stretch xl:flex-row xl:items-center">
                         <Link
                           href={localePath(lang, `/events/${event.slug}`)}
                           aria-label={copy.moreInfoAria.replace("{title}", event.title)}
-                          className="link-arrow inline-block py-1 font-display text-lg font-semibold whitespace-nowrap text-white decoration-sky decoration-2 underline-offset-4 hover:underline"
+                          className="button-light px-5 py-3 text-center text-lg whitespace-nowrap lg:py-2.5 lg:text-base"
                         >
                           {copy.moreInfo}
                         </Link>
@@ -158,7 +158,7 @@ export async function EventsHero({ events }: { events: Event[] }) {
                             href={flyerHref}
                             download
                             aria-label={copy.flyerAria.replace("{title}", event.title)}
-                            className="inline-block py-1 font-display text-lg font-semibold whitespace-nowrap text-white underline decoration-blossom decoration-2 underline-offset-4 hover:decoration-white"
+                            className="button-outline-light px-5 py-2.5 text-center text-base whitespace-nowrap lg:py-2"
                           >
                             {copy.flyer}
                           </a>

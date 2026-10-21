@@ -81,7 +81,7 @@ export default async function HomePage() {
   const [dict, upcoming, groups, aboutVideoUrls, volunteerSection, contact, photos] =
     await Promise.all([
       getDictionary(),
-      getUpcomingEvents(4),
+      getUpcomingEvents(5),
       getActiveGroups(),
       getAboutVideoUrls(),
       getVolunteerSection(lang),
