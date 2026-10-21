@@ -33,13 +33,13 @@ const COLOR = {
   inkSoft: "#46617d",
   indigo: "#1e63b0",
   indigoDeep: "#14498a",
-  sky: "#8fc1f0",
+  sky: "#9ecaf3",
   magenta: "#b02d76",
   magentaDeep: "#8f2560",
   blossom: "#f2a3c8",
   gold: "#ae9665",
   sand: "#f3e7d3",
-  navy: "#12365f",
+  navy: "#183c88",
   inkDeep: "#0e2540",
 } as const;
 

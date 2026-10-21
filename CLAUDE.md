@@ -51,8 +51,8 @@ be built from these tokens via Tailwind utility classes.
   dark surfaces only; `ink-deep` is darker than `navy` and takes the same
   text colors.
 - A background that washes over `navy` eats the headroom `sky` text depends
-  on: `sky` clears 4.5:1 on flat `navy` by a margin of roughly 0.04 relative
-  luminance, so a light wash of even 12–17% drops it below AA. The composed
+  on: `sky` clears 4.5:1 on flat `navy` by a margin of roughly 0.03 relative
+  luminance, so a light wash of about 10% drops it below AA. The composed
   backgrounds that sit under text (`section-navy-scene`, the `seigaiha-rings`
   textures) are tuned against that ceiling — re-check the darkest text on
   them, at mobile widths, before lightening any layer.

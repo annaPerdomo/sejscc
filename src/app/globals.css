@@ -14,13 +14,13 @@
   --color-ink-soft: #46617d;
   --color-indigo: #1e63b0;
   --color-indigo-deep: #14498a;
-  --color-sky: #8fc1f0;
+  --color-sky: #9ecaf3;
   --color-magenta: #b02d76;
   --color-magenta-deep: #8f2560;
   --color-blossom: #f2a3c8;
   --color-gold: #ae9665;
   --color-sand: #f3e7d3;
-  --color-navy: #12365f;
+  --color-navy: #183c88;
   --color-ink-deep: #0e2540;
   --color-line: #d3e4f4;
   --color-stone: #4f6d8f;
@@ -117,16 +117,13 @@ body {
     );
   }
 
-  /* Deep navy scene lit from the top-right and bottom-left. On a phone the
-     copy runs full width across both glows, so the base never rises above
-     navy and the washes are capped where they stack: navy carries text-sky
-     at 6.4:1 and only ~0.04 of relative luminance separates that from the
-     4.5:1 floor. Lightening any layer here drops the kicker below AA. */
+  /* Sky text clears 4.5:1 here by only ~0.03 relative luminance, and phone
+     copy crosses both glows: lightening any layer drops the kicker below AA. */
   .section-navy-scene {
     background:
-      radial-gradient(62rem 40rem at 84% 4%, --alpha(var(--color-indigo) / 28%), transparent 64%),
-      radial-gradient(48rem 33rem at 4% 100%, --alpha(var(--color-indigo) / 28%), transparent 62%),
-      linear-gradient(118deg, --alpha(var(--color-mist) / 6%), transparent 42%),
+      radial-gradient(62rem 40rem at 84% 4%, --alpha(var(--color-indigo) / 16%), transparent 64%),
+      radial-gradient(48rem 33rem at 4% 100%, --alpha(var(--color-indigo) / 16%), transparent 62%),
+      linear-gradient(118deg, --alpha(var(--color-mist) / 3%), transparent 42%),
       linear-gradient(
         165deg,
         var(--color-navy) 0%,
