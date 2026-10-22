@@ -1,20 +1,18 @@
 // Fills the events calendar with a year of demo activity so the board can see
 // the site with something in it. Rows are matched by slug, so it is safe to
 // re-run, and `--clear` takes them back out again.
-import { execFileSync } from "node:child_process";
-import { existsSync, mkdtempSync } from "node:fs";
-import { readFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { existsSync } from "node:fs";
 import path from "node:path";
-import { neon } from "@neondatabase/serverless";
-import { del, put } from "@vercel/blob";
 import type { DemoEvent } from "./demo-events.mts";
+import { CENTER, DEMO_EVENTS, RETIRED_SLUGS, TITLE_PREFIX } from "./demo-events.mts";
 import {
-  CENTER,
-  DEMO_EVENTS,
-  RETIRED_SLUGS,
-  TITLE_PREFIX,
-} from "./demo-events.mts";
+  DEMO_TITLE_PREFIXES,
+  dropBlobs,
+  makeFlyerUploader,
+  requireDatabaseTarget,
+  toWallClock,
+  type FlyerRow,
+} from "./seed-shared.mts";
 
 type Options = { clear: boolean; flyerDir: string; force?: string };
 
@@ -27,57 +25,14 @@ const options: Options = {
   force: args.find((a) => a.startsWith("--force="))?.slice("--force=".length),
 };
 
-if (!process.env.DATABASE_URL) {
-  console.error("DATABASE_URL is not set. Add it to .env.local or export it.");
-  process.exit(1);
-}
-
-// Never print the URL itself on failure: it carries the password, and an
-// invalid one would otherwise reach the terminal through the parse error.
-let targetHost: string;
-try {
-  ({ host: targetHost } = new URL(process.env.DATABASE_URL));
-} catch {
-  console.error("DATABASE_URL is not a valid connection URL.");
-  process.exit(1);
-}
-
-// .env.local can point anywhere, including the live database. Confirming means
-// retyping the host, so an operator can't wave through one they didn't read —
-// Neon branch hostnames differ by a few characters.
-if (options.force !== targetHost) {
-  console.error(
-    `This would write demo events to ${targetHost}, and upload flyers to this\n` +
-      `project's Vercel Blob store. Re-run with --force=${targetHost} if that is right.`
-  );
-  process.exit(1);
-}
-
-const sql = neon(process.env.DATABASE_URL);
-const slugs = DEMO_EVENTS.map((event) => event.slug);
-// Rows seeded under an earlier prefix stay recognisable, so a re-seed or
-// --clear still reaches them.
-const RETIRED_TITLE_PREFIXES = ["[TEST] "];
-const demoTitles = [TITLE_PREFIX, ...RETIRED_TITLE_PREFIXES].map(
-  (prefix) => `${prefix}%`
+const { sql, host: targetHost } = requireDatabaseTarget(
+  options.force,
+  "demo events"
 );
 
-type FlyerRow = { flyer_url?: unknown; flyer_download_url?: unknown };
-
-function isHttpsUrl(value: unknown): value is string {
-  return typeof value === "string" && value.startsWith("https://");
-}
-
-// Uploads use addRandomSuffix, so a row's blobs are unreachable once its row is
-// gone. Dropping them here is what keeps re-runs from filling the store.
-async function dropBlobs(rows: FlyerRow[]) {
-  const urls = rows
-    .flatMap((row) => [row.flyer_url, row.flyer_download_url])
-    .filter(isHttpsUrl);
-  if (!urls.length) return;
-  await del([...new Set(urls)]);
-  console.log(`Deleted ${new Set(urls).size} flyer blob(s).`);
-}
+const slugs = DEMO_EVENTS.map((event) => event.slug);
+const demoTitles = DEMO_TITLE_PREFIXES.map((prefix) => `${prefix}%`);
+const uploadFlyer = makeFlyerUploader(options.flyerDir);
 
 if (options.clear) {
   const removed: FlyerRow[] = await sql`
@@ -98,56 +53,6 @@ const retired: FlyerRow[] = await sql`
 if (retired.length) {
   await dropBlobs(retired);
   console.log(`Removed ${retired.length} replaced demo event(s).`);
-}
-
-// The storage convention: LA wall clock behind a fake UTC marker (format.ts).
-function toWallClock(date: string, time?: string): Date | null {
-  return date ? new Date(`${date}T${time ?? "00:00"}:00Z`) : null;
-}
-
-type FlyerUrls = { imageUrl: string; downloadUrl: string };
-
-const flyerCache = new Map<string, FlyerUrls>();
-
-async function upload(file: string, name: string): Promise<string> {
-  const { url } = await put(`flyers/${name}`, await readFile(file), {
-    access: "public",
-    addRandomSuffix: true,
-  });
-  return url;
-}
-
-// The site renders the flyer as an image, so a PDF needs a first-page preview
-// too — what src/lib/pdf-preview.ts does in the browser. qlmanage is macOS-only.
-function pdfFirstPageToPng(file: string): string {
-  const out = mkdtempSync(path.join(tmpdir(), "sejscc-flyer-"));
-  execFileSync("qlmanage", ["-t", "-s", "1600", "-o", out, file], {
-    stdio: "ignore",
-  });
-  return path.join(out, `${path.basename(file)}.png`);
-}
-
-async function uploadFlyer(name: string): Promise<FlyerUrls> {
-  const cached = flyerCache.get(name);
-  if (cached) return cached;
-
-  const file = path.join(options.flyerDir, name);
-  const urls = name.toLowerCase().endsWith(".pdf")
-    ? {
-        imageUrl: await upload(
-          pdfFirstPageToPng(file),
-          name.replace(/\.pdf$/i, ".png")
-        ),
-        downloadUrl: await upload(file, name),
-      }
-    : await upload(file, name).then((url) => ({
-        imageUrl: url,
-        downloadUrl: url,
-      }));
-
-  flyerCache.set(name, urls);
-  console.log(`  uploaded ${name}`);
-  return urls;
 }
 
 function flyerFor(event: DemoEvent): string | null {

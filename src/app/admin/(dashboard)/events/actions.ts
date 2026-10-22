@@ -19,10 +19,13 @@ import {
   flyerArtPrompts,
 } from "@/lib/flyer-art";
 import {
+  isUploadedFileUrl,
   normalizeUploadedFileUrl,
   normalizeWebsiteUrl,
   slugify,
 } from "@/lib/format";
+import { normalizeFlyerArtUrl } from "@/lib/flyer-templates";
+import { isFlyerLayout, type FlyerLayout } from "@/lib/flyer-layouts";
 
 export type EventInput = {
   title: string;
@@ -30,6 +33,9 @@ export type EventInput = {
   flyerUrl: string | null;
   flyerDownloadUrl: string | null;
   flyerArtUrl: string | null;
+  flyerLayout: FlyerLayout | null;
+  flyerWordsX: number | null;
+  flyerWordsY: number | null;
   signupUrl: string;
   date: string; // "2025-07-26", or "" for undated
   startTime: string; // "16:00", or ""
@@ -65,15 +71,37 @@ function checkedRepeat(input: EventInput) {
   return { repeat, repeatUntil };
 }
 
+function checkedFlyerStyle(input: EventInput, flyerArtUrl: string | null) {
+  if (!flyerArtUrl) {
+    return { flyerLayout: null, flyerWordsX: null, flyerWordsY: null };
+  }
+  if (input.flyerLayout !== null && !isFlyerLayout(input.flyerLayout)) {
+    throw new AdminError("Pick one of the listed flyer layouts.");
+  }
+  const validCoordinate = (value: number | null) =>
+    value === null ||
+    (typeof value === "number" && Number.isInteger(value) && value >= 0 && value <= 100);
+  if (!validCoordinate(input.flyerWordsX) || !validCoordinate(input.flyerWordsY)) {
+    throw new AdminError("The words’ position must be between 0 and 100.");
+  }
+  return {
+    flyerLayout: input.flyerLayout,
+    flyerWordsX: input.flyerWordsX,
+    flyerWordsY: input.flyerWordsY,
+  };
+}
+
 function eventValues(input: EventInput, userId?: string) {
   const title = input.title.trim();
   if (!title) throw new AdminError("An event title is required.");
+  const flyerArtUrl = normalizeFlyerArtUrl(input.flyerArtUrl);
   return {
     title,
     description: input.description.trim() || null,
     flyerUrl: normalizeUploadedFileUrl(input.flyerUrl, "flyer"),
     flyerDownloadUrl: normalizeUploadedFileUrl(input.flyerDownloadUrl, "flyer"),
-    flyerArtUrl: normalizeUploadedFileUrl(input.flyerArtUrl, "flyer"),
+    flyerArtUrl,
+    ...checkedFlyerStyle(input, flyerArtUrl),
     signupUrl: normalizeWebsiteUrl(input.signupUrl, "sign-up link"),
     startAt: toWallClock(input.date, input.startTime),
     endAt: input.endTime ? toWallClock(input.date, input.endTime) : null,
@@ -82,6 +110,12 @@ function eventValues(input: EventInput, userId?: string) {
     status: input.status,
     ...(userId ? { createdById: userId } : {}),
   };
+}
+
+function blobUrls(urls: (string | null)[]): string[] {
+  return [
+    ...new Set(urls.filter((url): url is string => url !== null && isUploadedFileUrl(url))),
+  ];
 }
 
 export async function createEvent(input: EventInput): Promise<ActionResult> {
@@ -109,12 +143,10 @@ export async function updateEvent(id: string, input: EventInput): Promise<Action
       values.flyerDownloadUrl,
       values.flyerArtUrl,
     ]);
-    const orphans = [
-      existing.flyerUrl,
-      existing.flyerDownloadUrl,
-      existing.flyerArtUrl,
-    ].filter(
-      (url): url is string => Boolean(url) && !kept.has(url)
+    const orphans = blobUrls(
+      [existing.flyerUrl, existing.flyerDownloadUrl, existing.flyerArtUrl].filter(
+        (url) => !kept.has(url)
+      )
     );
     if (orphans.length) {
       try {
@@ -136,13 +168,11 @@ export async function deleteEvent(id: string): Promise<ActionResult> {
     await db.delete(events).where(eq(events.id, id));
 
     // Best-effort cleanup of uploaded flyers; the event row is already gone.
-    const blobs = [
+    const blobs = blobUrls([
       existing.flyerUrl,
       existing.flyerDownloadUrl,
       existing.flyerArtUrl,
-    ].filter(
-      (url): url is string => Boolean(url)
-    );
+    ]);
     if (blobs.length) {
       try {
         await del(blobs);
