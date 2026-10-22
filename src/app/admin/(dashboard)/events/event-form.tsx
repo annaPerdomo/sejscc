@@ -7,6 +7,7 @@ import type { EventRepeat } from "@/db/schema";
 import { expectOk } from "@/lib/action-result";
 import { CENTER_ADDRESS, venueLabel } from "@/lib/center";
 import { composeFlyer, type FlyerLettering } from "@/lib/flyer-compose";
+import { EVENT_TITLE_MAX_LENGTH } from "@/lib/flyer-art";
 import { formatShortEventDate, normalizeWebsiteUrl } from "@/lib/format";
 import { pdfFirstPageToPng } from "@/lib/pdf-preview";
 import { MAX_UPLOAD_BYTES, PHOTO_UNREADABLE_MESSAGE, asUploadablePhoto } from "@/lib/photo-upload";
@@ -97,11 +98,18 @@ function flyerLettering({
   venue: string | null;
 }): FlyerLettering {
   const day = repeat === "none" ? date && flyerDate(date) : schedule;
+  const first = repeat === "none" ? fromInputs(date) : null;
   return {
     title: title.trim(),
     kicker: date && repeat === "none" ? formatShortEventDate(fromInputs(date), "ja") : null,
     when: [day, timeLabel].filter(Boolean).join(" · ") || null,
     where: venue,
+    badge: first
+      ? {
+          month: first.toLocaleDateString("en-US", { month: "short", timeZone: "UTC" }).toUpperCase(),
+          day: String(first.getUTCDate()),
+        }
+      : null,
   };
 }
 function shortDate(d: Date) {
@@ -124,6 +132,7 @@ export function EventForm({
 }) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const letteredUrlRef = useRef<string | null>(null);
 
   const [title, setTitle] = useState(event?.title ?? "");
   const [description, setDescription] = useState(event?.description ?? "");
@@ -216,8 +225,8 @@ export function EventForm({
 
     if (!flyerFile) {
       if (artUrl && needsLettering) {
-        const png = await composeFlyer(artUrl, lettering);
-        const image = await upload("flyers/flyer.png", png, opts);
+        const flyer = await composeFlyer(artUrl, lettering);
+        const image = await upload("flyers/flyer.jpg", flyer, opts);
         return { flyerUrl: image.url, flyerDownloadUrl: image.url, flyerArtUrl: artUrl };
       }
       if (flyerRemoved) return { flyerUrl: null, flyerDownloadUrl: null, flyerArtUrl: null };
@@ -325,11 +334,15 @@ export function EventForm({
     let current = true;
     const timer = setTimeout(async () => {
       try {
-        const png = await composeFlyer(
+        const flyer = await composeFlyer(
           artUrl,
           flyerLettering({ title, date, repeat, schedule, timeLabel, venue })
         );
-        if (current) setPreviewUrl(URL.createObjectURL(png));
+        if (!current) return;
+        const url = URL.createObjectURL(flyer);
+        if (letteredUrlRef.current) URL.revokeObjectURL(letteredUrlRef.current);
+        letteredUrlRef.current = url;
+        setPreviewUrl(url);
       } catch {
         // The saved flyer stays in the preview; saving letters it again.
       }
@@ -339,6 +352,18 @@ export function EventForm({
       clearTimeout(timer);
     };
   }, [artUrl, needsLettering, title, date, repeat, schedule, timeLabel, venue]);
+
+  useEffect(
+    () => () => {
+      if (letteredUrlRef.current) URL.revokeObjectURL(letteredUrlRef.current);
+    },
+    []
+  );
+
+  const shownPreviewUrl =
+    artUrl && artUrl === event?.flyerArtUrl && !needsLettering
+      ? event.flyerUrl
+      : previewUrl;
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
@@ -354,10 +379,10 @@ export function EventForm({
             }
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            maxLength={150}
+            maxLength={EVENT_TITLE_MAX_LENGTH}
             placeholder="Enter event title…"
           />
-          <AdminCharacterCount value={title} max={150} />
+          <AdminCharacterCount value={title} max={EVENT_TITLE_MAX_LENGTH} />
         </AdminCard>
 
         <AdminCard>
@@ -455,10 +480,10 @@ export function EventForm({
             Flyer
           </AdminCardHeading>
           <div className="mt-4 flex flex-wrap items-start gap-5">
-            {previewUrl && (
+            {shownPreviewUrl && (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={previewUrl}
+                src={shownPreviewUrl}
                 alt="Flyer preview"
                 className="w-40 rounded-lg border border-line bg-mist object-contain shadow-sm"
               />
@@ -475,7 +500,7 @@ export function EventForm({
                 <span className="text-2xl">↑</span>
                 {preparing
                   ? "Getting your flyer ready…"
-                  : previewUrl
+                  : shownPreviewUrl
                     ? "Replace flyer"
                     : "Upload flyer"}
                 <span className="text-xs">A PDF up to 10 MB, or a JPG or PNG photo of any size</span>
@@ -483,7 +508,7 @@ export function EventForm({
               <p role="status" className="sr-only">
                 {preparing ? "Getting your flyer ready…" : ""}
               </p>
-              {previewUrl && (
+              {shownPreviewUrl && (
                 <button
                   type="button"
                   onClick={removeFlyer}
@@ -575,11 +600,11 @@ export function EventForm({
               <EventMeta icon="repeat">{schedule}</EventMeta>
             </p>
           )}
-          {previewUrl ? (
+          {shownPreviewUrl ? (
             <div className="mt-3 aspect-card w-full overflow-clip bg-white">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={previewUrl}
+                src={shownPreviewUrl}
                 alt=""
                 className="h-full w-full scale-95 object-contain"
               />

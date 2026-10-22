@@ -13,6 +13,7 @@ import {
 import { AdminError, runAction, type ActionResult } from "@/lib/action-result";
 import { requireUser, revalidateSite } from "@/lib/admin";
 import {
+  FLYER_ART_CHOICES,
   FLYER_ART_DAILY_LIMIT,
   FLYER_ART_MODEL,
   flyerArtPrompts,
@@ -155,12 +156,15 @@ export async function deleteEvent(id: string): Promise<ActionResult> {
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+const UNKEPT_ART_LIFETIME_MS = 7 * DAY_MS;
+const RESERVED_PREFIX = "reserved:";
 
 export type FlyerArtInput = {
   title: string;
   description: string;
   date: string;
   idea: string;
+  themeId: string;
 };
 
 export async function generateFlyerArt(
@@ -173,64 +177,81 @@ export async function generateFlyerArt(
       throw new AdminError("Give the event a title first, so the picture can match it.");
     }
 
-    const dayAgo = new Date(Date.now() - DAY_MS);
     const [{ made }] = await db
       .select({ made: count() })
       .from(flyerArtDrafts)
-      .where(gte(flyerArtDrafts.createdAt, dayAgo));
-    if (made >= FLYER_ART_DAILY_LIMIT) {
+      .where(gte(flyerArtDrafts.createdAt, new Date(Date.now() - DAY_MS)));
+    if (made + FLYER_ART_CHOICES > FLYER_ART_DAILY_LIMIT) {
       throw new AdminError(
         "The flyer maker has drawn all the pictures it can for today. Please try again tomorrow."
       );
     }
 
-    await sweepUnkeptFlyerArt(dayAgo);
+    // Rows are claimed before the model runs, so every picture is counted
+    // against the limit even if it, or the request, fails halfway.
+    const reserved = Array.from(
+      { length: FLYER_ART_CHOICES },
+      () => `${RESERVED_PREFIX}${crypto.randomUUID()}`
+    );
+    await db
+      .insert(flyerArtDrafts)
+      .values(reserved.map((url) => ({ url, createdById: user.id })));
+
+    await sweepUnkeptFlyerArt();
 
     const prompts = flyerArtPrompts({
       title,
       description: input.description,
       date: toWallClock(input.date, ""),
       idea: input.idea,
+      themeId: input.themeId,
     });
-    let urls: string[];
-    try {
-      urls = await Promise.all(
-        prompts.map(async (prompt) => {
-          const { image } = await generateImage({
-            model: FLYER_ART_MODEL,
-            prompt,
-            aspectRatio: "4:5",
-          });
-          const extension = image.mediaType.split("/")[1] ?? "png";
-          const blob = await put(`flyer-art/art.${extension}`, Buffer.from(image.uint8Array), {
-            access: "public",
-            addRandomSuffix: true,
-            contentType: image.mediaType,
-          });
-          return blob.url;
-        })
-      );
-    } catch (error) {
-      console.error("Flyer art generation failed:", error);
+    const results = await Promise.allSettled(
+      prompts.map(async (prompt, i) => {
+        const { image } = await generateImage({
+          model: FLYER_ART_MODEL,
+          prompt,
+          aspectRatio: "4:5",
+        });
+        const extension = image.mediaType.split("/")[1] ?? "png";
+        const blob = await put(`flyer-art/art.${extension}`, Buffer.from(image.uint8Array), {
+          access: "public",
+          addRandomSuffix: true,
+          contentType: image.mediaType,
+        });
+        await db
+          .update(flyerArtDrafts)
+          .set({ url: blob.url })
+          .where(eq(flyerArtDrafts.url, reserved[i]));
+        return blob.url;
+      })
+    );
+
+    const urls = results.flatMap((result) =>
+      result.status === "fulfilled" ? [result.value] : []
+    );
+    for (const result of results) {
+      if (result.status === "rejected") {
+        console.error("Flyer art generation failed:", result.reason);
+      }
+    }
+    if (!urls.length) {
       throw new AdminError(
         "Couldn’t make a flyer right now. Please try again in a minute."
       );
     }
-
-    await db
-      .insert(flyerArtDrafts)
-      .values(urls.map((url) => ({ url, createdById: user.id })));
     return urls;
   });
 }
 
-// Best-effort: a picture nobody kept within a day is never coming back.
-async function sweepUnkeptFlyerArt(before: Date) {
+// A week, not the limit's day: a form left open overnight still needs its
+// unsaved pictures.
+async function sweepUnkeptFlyerArt() {
   try {
     const stale = await db
       .select({ url: flyerArtDrafts.url })
       .from(flyerArtDrafts)
-      .where(lt(flyerArtDrafts.createdAt, before));
+      .where(lt(flyerArtDrafts.createdAt, new Date(Date.now() - UNKEPT_ART_LIFETIME_MS)));
     if (!stale.length) return;
     const staleUrls = stale.map((draft) => draft.url);
     const kept = await db
@@ -238,7 +259,9 @@ async function sweepUnkeptFlyerArt(before: Date) {
       .from(events)
       .where(inArray(events.flyerArtUrl, staleUrls));
     const keptUrls = new Set(kept.map((event) => event.url));
-    const unkept = staleUrls.filter((url) => !keptUrls.has(url));
+    const unkept = staleUrls.filter(
+      (url) => !keptUrls.has(url) && !url.startsWith(RESERVED_PREFIX)
+    );
     if (unkept.length) await del(unkept);
     await db.delete(flyerArtDrafts).where(inArray(flyerArtDrafts.url, staleUrls));
   } catch (error) {

@@ -1,8 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
+import Image from "next/image";
 import { expectOk } from "@/lib/action-result";
-import { FLYER_ART_CHOICES, FLYER_IDEA_MAX_LENGTH } from "@/lib/flyer-art";
+import {
+  FLYER_ART_CHOICES,
+  FLYER_IDEA_MAX_LENGTH,
+  FLYER_THEMES,
+  OTHER_THEME,
+  themeForTitle,
+} from "@/lib/flyer-art";
 import { composeFlyer, type FlyerLettering } from "@/lib/flyer-compose";
 import { AdminAlert } from "@/components/admin/admin-alert";
 import { AdminButton } from "@/components/admin/admin-button";
@@ -21,12 +28,14 @@ export function FlyerMaker({
   chosenArtUrl,
   onChoose,
 }: {
-  request: Omit<FlyerArtInput, "idea">;
+  request: Omit<FlyerArtInput, "idea" | "themeId">;
   lettering: FlyerLettering;
   chosenArtUrl: string | null;
   onChoose: (artUrl: string, previewUrl: string) => void;
 }) {
   const [idea, setIdea] = useState("");
+  const [pickedTheme, setPickedTheme] = useState<string | null>(null);
+  const themeId = pickedTheme ?? themeForTitle(request.title) ?? OTHER_THEME;
   const [choices, setChoices] = useState<Choice[]>([]);
   const [making, setMaking] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,13 +49,16 @@ export function FlyerMaker({
     }
     setMaking(true);
     try {
-      const artUrls = expectOk(await generateFlyerArt({ ...request, idea }));
+      const artUrls = expectOk(await generateFlyerArt({ ...request, idea, themeId }));
       const made = await Promise.all(
         artUrls.map(async (artUrl) => ({
           artUrl,
           previewUrl: URL.createObjectURL(await composeFlyer(artUrl, lettering)),
         }))
       );
+      for (const old of choices) {
+        if (old.artUrl !== chosenArtUrl) URL.revokeObjectURL(old.previewUrl);
+      }
       setChoices(made);
     } catch (e) {
       setError(
@@ -63,11 +75,59 @@ export function FlyerMaker({
     <div className="mt-6 border-t border-line pt-5">
       <p className="font-semibold text-ink">No flyer? Let the website make one.</p>
       <p className="mt-1 text-sm text-stone">
-        It paints {FLYER_ART_CHOICES} different pictures to match your event’s
-        title, description and season, then prints the title, date and place
+        Pick what kind of event it is and it paints {FLYER_ART_CHOICES}{" "}
+        pictures in the center’s colors, then prints the title, date and place
         on them. Pick the one you like. Change the date later and the flyer
         updates to match.
       </p>
+      <fieldset className="mt-4">
+        <legend className="text-sm font-semibold text-ink">
+          What kind of event is it?
+        </legend>
+        <p className="mt-1 text-xs text-stone">
+          We guessed from your title. Pick another if it’s not right.
+        </p>
+        <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
+          {FLYER_THEMES.map((theme) => (
+            <ThemeOption
+              key={theme.id}
+              name={theme.name}
+              checked={themeId === theme.id}
+              onSelect={() => setPickedTheme(theme.id)}
+            >
+              <span className="relative block aspect-flyer w-full">
+                <Image
+                  src={`/flyer-styles/${theme.id}.jpg`}
+                  alt=""
+                  fill
+                  sizes="(max-width: 640px) 45vw, 12rem"
+                  className="object-cover"
+                />
+              </span>
+            </ThemeOption>
+          ))}
+          <ThemeOption
+            name="Something else"
+            blurb="Describe it in the box below"
+            checked={themeId === OTHER_THEME}
+            onSelect={() => setPickedTheme(OTHER_THEME)}
+          >
+            <span className="grid aspect-flyer w-full grid-cols-2 grid-rows-2">
+              {FLYER_THEMES.slice(0, 4).map((theme) => (
+                <span key={theme.id} className="relative">
+                  <Image
+                    src={`/flyer-styles/${theme.id}.jpg`}
+                    alt=""
+                    fill
+                    sizes="6rem"
+                    className="object-cover"
+                  />
+                </span>
+              ))}
+            </span>
+          </ThemeOption>
+        </div>
+      </fieldset>
       <div className="mt-4">
         <AdminTextArea
           label={
@@ -83,8 +143,9 @@ export function FlyerMaker({
         />
         <AdminCharacterCount value={idea} max={FLYER_IDEA_MAX_LENGTH} />
         <p className="mt-1 text-xs text-stone">
-          Describe the picture, not the words — the title, date and place are
-          added for you.
+          Want something custom? Describe it here — your idea comes first and
+          the event type fills in the rest. Describe the picture, not the
+          words: the title, date and place are added for you.
         </p>
       </div>
       <div className="mt-4">
@@ -97,7 +158,11 @@ export function FlyerMaker({
         </AdminButton>
       </div>
       <p role="status" className="mt-2 text-sm text-stone">
-        {making ? "This takes about half a minute." : ""}
+        {making
+          ? "This takes about half a minute."
+          : choices.length
+            ? `${choices.length} flyers are ready. Pick one below.`
+            : ""}
       </p>
       {error && (
         <div className="mt-2">
@@ -129,7 +194,13 @@ export function FlyerMaker({
                     className="aspect-flyer w-full object-cover"
                   />
                   <span className="block px-2 py-1.5 text-center text-sm font-medium text-ink">
-                    {chosen ? "✓ Chosen" : `Option ${i + 1}`}
+                    {chosen ? (
+                      <>
+                        <span aria-hidden="true">✓ </span>Chosen
+                      </>
+                    ) : (
+                      `Option ${i + 1}`
+                    )}
                   </span>
                 </button>
               );
@@ -138,5 +209,39 @@ export function FlyerMaker({
         </fieldset>
       )}
     </div>
+  );
+}
+
+function ThemeOption({
+  name,
+  blurb,
+  checked,
+  onSelect,
+  children,
+}: {
+  name: string;
+  blurb?: string;
+  checked: boolean;
+  onSelect: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <label className="cursor-pointer overflow-clip rounded-lg border-4 border-transparent bg-mist hover:border-line has-checked:border-indigo has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-indigo">
+      <input
+        type="radio"
+        name="flyer-event-type"
+        checked={checked}
+        onChange={onSelect}
+        className="sr-only"
+      />
+      {children}
+      <span className="block px-2 py-1.5 text-sm font-semibold text-ink">
+        {checked && <span aria-hidden="true">✓ </span>}
+        {name}
+        {blurb && (
+          <span className="block text-xs font-normal text-ink-soft">{blurb}</span>
+        )}
+      </span>
+    </label>
   );
 }

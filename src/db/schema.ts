@@ -83,8 +83,6 @@ export const events = pgTable("event", {
   description: text("description"),
   flyerUrl: text("flyer_url"), // image rendered on the site
   flyerDownloadUrl: text("flyer_download_url"), // original printable PDF/image
-  // Set when the flyer was made from AI artwork, so a changed date or title
-  // can be re-lettered onto the same picture.
   flyerArtUrl: text("flyer_art_url"),
   signupUrl: text("signup_url"),
   startAt: timestamp("start_at", { mode: "date", withTimezone: true }),
@@ -105,8 +103,6 @@ export const events = pgTable("event", {
     .$onUpdate(() => new Date()),
 });
 
-// Every picture the flyer maker draws, kept or not. It meters the daily
-// limit, and lets pictures nobody kept be swept out of Blob storage.
 export const flyerArtDrafts = pgTable("flyer_art_draft", {
   url: text("url").primaryKey(),
   createdById: text("created_by_id").references(() => users.id),
