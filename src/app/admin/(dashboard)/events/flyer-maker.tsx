@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { expectOk } from "@/lib/action-result";
 import {
@@ -18,6 +18,7 @@ import {
   AdminOptional,
   AdminTextArea,
 } from "@/components/admin/admin-field";
+import { AdminOptionTile } from "@/components/admin/admin-option-tile";
 import { generateFlyerArt, type FlyerArtInput } from "./actions";
 
 type Choice = { artUrl: string; previewUrl: string };
@@ -89,8 +90,9 @@ export function FlyerMaker({
         </p>
         <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
           {FLYER_THEMES.map((theme) => (
-            <ThemeOption
+            <AdminOptionTile
               key={theme.id}
+              inputName="flyer-event-type"
               name={theme.name}
               checked={themeId === theme.id}
               onSelect={() => setPickedTheme(theme.id)}
@@ -104,9 +106,10 @@ export function FlyerMaker({
                   className="object-cover"
                 />
               </span>
-            </ThemeOption>
+            </AdminOptionTile>
           ))}
-          <ThemeOption
+          <AdminOptionTile
+            inputName="flyer-event-type"
             name="Something else"
             blurb="Describe it in the box below"
             checked={themeId === OTHER_THEME}
@@ -125,7 +128,7 @@ export function FlyerMaker({
                 </span>
               ))}
             </span>
-          </ThemeOption>
+          </AdminOptionTile>
         </div>
       </fieldset>
       <div className="mt-4">
@@ -209,39 +212,5 @@ export function FlyerMaker({
         </fieldset>
       )}
     </div>
-  );
-}
-
-function ThemeOption({
-  name,
-  blurb,
-  checked,
-  onSelect,
-  children,
-}: {
-  name: string;
-  blurb?: string;
-  checked: boolean;
-  onSelect: () => void;
-  children: ReactNode;
-}) {
-  return (
-    <label className="cursor-pointer overflow-clip rounded-lg border-4 border-transparent bg-mist hover:border-line has-checked:border-indigo has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-indigo">
-      <input
-        type="radio"
-        name="flyer-event-type"
-        checked={checked}
-        onChange={onSelect}
-        className="sr-only"
-      />
-      {children}
-      <span className="block px-2 py-1.5 text-sm font-semibold text-ink">
-        {checked && <span aria-hidden="true">✓ </span>}
-        {name}
-        {blurb && (
-          <span className="block text-xs font-normal text-ink-soft">{blurb}</span>
-        )}
-      </span>
-    </label>
   );
 }

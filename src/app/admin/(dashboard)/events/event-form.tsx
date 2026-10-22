@@ -37,6 +37,7 @@ import { EventDescriptionMedia } from "@/components/event-media";
 import { EventMeta } from "@/components/event-meta";
 import { createEvent, updateEvent, type EventInput } from "./actions";
 import { FlyerMaker } from "./flyer-maker";
+import { FlyerWordsControls } from "./flyer-words";
 
 const REPEAT_OPTIONS: { value: EventRepeat; label: string }[] = [
   { value: "none", label: "Does not repeat" },
@@ -341,6 +342,8 @@ export function EventForm({
   const [savedLetteringKey] = useState(letteringKey);
   const needsLettering =
     artUrl !== (event?.flyerArtUrl ?? null) || letteringKey !== savedLetteringKey;
+  const previewKey = `${artUrl}|${letteringKey}`;
+  const [letteredKey, setLetteredKey] = useState<string | null>(null);
 
   useEffect(() => {
     if (!artUrl || !needsLettering) return;
@@ -357,15 +360,18 @@ export function EventForm({
         if (letteredUrlRef.current) URL.revokeObjectURL(letteredUrlRef.current);
         letteredUrlRef.current = url;
         setPreviewUrl(url);
+        setLetteredKey(previewKey);
       } catch {
-        // The saved flyer stays in the preview; saving letters it again.
+        if (!current) return;
+        setLetteredKey(previewKey);
+        setError("The flyer picture couldn’t be drawn. Try choosing another picture.");
       }
     }, 400);
     return () => {
       current = false;
       clearTimeout(timer);
     };
-  }, [artUrl, needsLettering, title, date, repeat, schedule, timeLabel, venue, style]);
+  }, [artUrl, needsLettering, title, date, repeat, schedule, timeLabel, venue, style, previewKey]);
 
   useEffect(
     () => () => {
@@ -551,6 +557,16 @@ export function EventForm({
             chosenArtUrl={artUrl}
             onChoose={chooseArt}
           />
+          {artUrl && (
+            <FlyerWordsControls
+              artUrl={artUrl}
+              lettering={lettering}
+              style={style}
+              previewUrl={shownPreviewUrl}
+              updating={needsLettering && letteredKey !== previewKey}
+              onChange={setStyle}
+            />
+          )}
         </AdminCard>
 
         <AdminCard>
