@@ -9,6 +9,7 @@ import {
 import type { AdapterAccountType } from "next-auth/adapters";
 // Relative, not "@/": drizzle-kit loads this file outside Next's path aliases.
 import { CENTER_ADDRESS } from "../lib/center";
+import { FLYER_LAYOUTS } from "../lib/flyer-layouts";
 
 // The four tables below are shaped by @auth/drizzle-adapter, not by us.
 export const users = pgTable("user", {
@@ -84,6 +85,9 @@ export const events = pgTable("event", {
   flyerUrl: text("flyer_url"), // image rendered on the site
   flyerDownloadUrl: text("flyer_download_url"), // original printable PDF/image
   flyerArtUrl: text("flyer_art_url"),
+  flyerLayout: text("flyer_layout", { enum: FLYER_LAYOUTS }),
+  flyerWordsX: integer("flyer_words_x"),
+  flyerWordsY: integer("flyer_words_y"),
   signupUrl: text("signup_url"),
   startAt: timestamp("start_at", { mode: "date", withTimezone: true }),
   endAt: timestamp("end_at", { mode: "date", withTimezone: true }),

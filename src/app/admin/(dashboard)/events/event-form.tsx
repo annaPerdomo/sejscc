@@ -6,7 +6,8 @@ import { upload } from "@vercel/blob/client";
 import type { EventRepeat } from "@/db/schema";
 import { expectOk } from "@/lib/action-result";
 import { CENTER_ADDRESS, venueLabel } from "@/lib/center";
-import { composeFlyer, type FlyerLettering } from "@/lib/flyer-compose";
+import { composeFlyer, NO_FLYER_STYLE, type FlyerStyle, type FlyerLettering } from "@/lib/flyer-compose";
+import type { FlyerLayout } from "@/lib/flyer-layouts";
 import { EVENT_TITLE_MAX_LENGTH } from "@/lib/flyer-art";
 import { formatShortEventDate, normalizeWebsiteUrl } from "@/lib/format";
 import { pdfFirstPageToPng } from "@/lib/pdf-preview";
@@ -51,6 +52,9 @@ type ExistingEvent = {
   flyerUrl: string | null;
   flyerDownloadUrl: string | null;
   flyerArtUrl: string | null;
+  flyerLayout: FlyerLayout | null;
+  flyerWordsX: number | null;
+  flyerWordsY: number | null;
   signupUrl: string | null;
   startAt: Date | null;
   endAt: Date | null;
@@ -154,6 +158,11 @@ export function EventForm({
   );
   const [flyerRemoved, setFlyerRemoved] = useState(false);
   const [artUrl, setArtUrl] = useState(event?.flyerArtUrl ?? null);
+  const [style, setStyle] = useState<FlyerStyle>({
+    layout: event?.flyerLayout ?? null,
+    wordsX: event?.flyerWordsX ?? null,
+    wordsY: event?.flyerWordsY ?? null,
+  });
 
   const [busy, setBusy] = useState<"draft" | "published" | null>(null);
   const [preparing, setPreparing] = useState(false);
@@ -213,6 +222,7 @@ export function EventForm({
     setFlyerFile(null);
     setPreviewUrl(preview);
     setFlyerRemoved(false);
+    setStyle(NO_FLYER_STYLE);
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
@@ -225,7 +235,7 @@ export function EventForm({
 
     if (!flyerFile) {
       if (artUrl && needsLettering) {
-        const flyer = await composeFlyer(artUrl, lettering);
+        const flyer = await composeFlyer(artUrl, lettering, style);
         const image = await upload("flyers/flyer.jpg", flyer, opts);
         return { flyerUrl: image.url, flyerDownloadUrl: image.url, flyerArtUrl: artUrl };
       }
@@ -272,6 +282,9 @@ export function EventForm({
         repeatUntil,
         location,
         status,
+        flyerLayout: style.layout,
+        flyerWordsX: style.wordsX,
+        flyerWordsY: style.wordsY,
         ...flyer,
       };
       if (event) {
@@ -324,7 +337,7 @@ export function EventForm({
     : null;
 
   const lettering = flyerLettering({ title, date, repeat, schedule, timeLabel, venue });
-  const letteringKey = JSON.stringify(lettering);
+  const letteringKey = JSON.stringify({ lettering, style });
   const [savedLetteringKey] = useState(letteringKey);
   const needsLettering =
     artUrl !== (event?.flyerArtUrl ?? null) || letteringKey !== savedLetteringKey;
@@ -336,7 +349,8 @@ export function EventForm({
       try {
         const flyer = await composeFlyer(
           artUrl,
-          flyerLettering({ title, date, repeat, schedule, timeLabel, venue })
+          flyerLettering({ title, date, repeat, schedule, timeLabel, venue }),
+          style
         );
         if (!current) return;
         const url = URL.createObjectURL(flyer);
@@ -351,7 +365,7 @@ export function EventForm({
       current = false;
       clearTimeout(timer);
     };
-  }, [artUrl, needsLettering, title, date, repeat, schedule, timeLabel, venue]);
+  }, [artUrl, needsLettering, title, date, repeat, schedule, timeLabel, venue, style]);
 
   useEffect(
     () => () => {

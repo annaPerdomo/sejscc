@@ -1,3 +1,5 @@
+import { FLYER_LAYOUTS, type FlyerLayout } from "./flyer-layouts";
+
 export type FlyerLettering = {
   title: string;
   kicker: string | null;
@@ -5,6 +7,18 @@ export type FlyerLettering = {
   where: string | null;
   badge: { month: string; day: string } | null;
 };
+
+export type FlyerStyle = {
+  layout: FlyerLayout | null;
+  wordsX: number | null;
+  wordsY: number | null;
+};
+
+export const NO_FLYER_STYLE: FlyerStyle = { layout: null, wordsX: null, wordsY: null };
+
+export function clampWords(value: number): number {
+  return Math.min(100, Math.max(0, Math.round(value)));
+}
 
 const WIDTH = 1200;
 const HEIGHT = 1500;
@@ -54,11 +68,8 @@ const TITLE_FACES = [
   { face: "font-sans", weight: 700 },
 ];
 
-const LAYOUTS = ["band", "badge", "mat", "card", "blossom"] as const;
-type Layout = (typeof LAYOUTS)[number];
-
 type Look = {
-  layout: Layout;
+  layout: FlyerLayout;
   centered: boolean;
   scheme: Scheme;
   titleFace: (typeof TITLE_FACES)[number];
@@ -66,19 +77,32 @@ type Look = {
 
 // A picture's look is worked out from its address rather than stored, so
 // re-lettering it after a date change keeps the same layout and colors.
-function lookFor(artUrl: string): Look {
+function lookFor(artUrl: string, layout?: FlyerLayout | null): Look {
   let hash = 2166136261;
   for (let i = 0; i < artUrl.length; i++) {
     hash = Math.imul(hash ^ artUrl.charCodeAt(i), 16777619) >>> 0;
   }
-  const layout = LAYOUTS[hash % LAYOUTS.length];
-  const light = layout === "card" || (layout === "mat" && (hash >>> 2) % 2 === 0);
+  const resolvedLayout = layout ?? FLYER_LAYOUTS[hash % FLYER_LAYOUTS.length];
+  const light = resolvedLayout === "card" || (resolvedLayout === "mat" && (hash >>> 2) % 2 === 0);
   const schemes = light ? LIGHT_SCHEMES : DARK_SCHEMES;
   return {
-    layout,
-    centered: layout === "blossom" || (layout !== "badge" && (hash >>> 3) % 2 === 0),
+    layout: resolvedLayout,
+    centered: resolvedLayout === "blossom" || (resolvedLayout !== "badge" && (hash >>> 3) % 2 === 0),
     scheme: schemes[(hash >>> 4) % schemes.length],
     titleFace: TITLE_FACES[(hash >>> 9) % TITLE_FACES.length],
+  };
+}
+
+function between(top: number, bottom: number, t: number) {
+  return Math.round(top + (bottom - top) * t);
+}
+
+export function wordsFor(artUrl: string, style: FlyerStyle): { layout: FlyerLayout; x: number; y: number } {
+  const look = lookFor(artUrl, style.layout);
+  return {
+    layout: look.layout,
+    x: style.wordsX ?? (look.centered ? 50 : 0),
+    y: style.wordsY ?? 100,
   };
 }
 
@@ -199,15 +223,18 @@ function textBlock(ctx: CanvasRenderingContext2D, lettering: FlyerLettering, loo
   return { rows, height: y };
 }
 
+type Align = "start" | "center" | "end";
+
 function drawBlock(
   ctx: CanvasRenderingContext2D,
   rows: Row[],
-  { x, top, maxWidth, centered }: { x: number; top: number; maxWidth: number; centered: boolean }
+  { x, top, maxWidth, align }: { x: number; top: number; maxWidth: number; align: Align }
 ) {
-  const anchor = centered ? x + maxWidth / 2 : x;
+  const anchor = align === "center" ? x + maxWidth / 2 : align === "end" ? x + maxWidth : x;
+  const ruleX = align === "center" ? anchor - RULE_WIDTH / 2 : align === "end" ? anchor - RULE_WIDTH : x;
   ctx.fillStyle = themed("text-gold").color;
-  ctx.fillRect(centered ? anchor - RULE_WIDTH / 2 : x, top, RULE_WIDTH, 6);
-  ctx.textAlign = centered ? "center" : "start";
+  ctx.fillRect(ruleX, top, RULE_WIDTH, 6);
+  ctx.textAlign = align;
   for (const row of rows) {
     ctx.font = row.font;
     ctx.fillStyle = row.color;
@@ -216,21 +243,42 @@ function drawBlock(
   ctx.textAlign = "start";
 }
 
-function drawBand(ctx: CanvasRenderingContext2D, image: HTMLImageElement, look: Look, surface: string, rows: Row[], height: number) {
+function drawBand(
+  ctx: CanvasRenderingContext2D,
+  image: HTMLImageElement,
+  surface: string,
+  rows: Row[],
+  height: number,
+  align: Align,
+  top: number
+) {
   drawCover(ctx, image, 0, 0, WIDTH, HEIGHT);
-  const top = HEIGHT - MARGIN - height;
-  const bandTop = top - 56;
-  const fade = ctx.createLinearGradient(0, bandTop - FADE, 0, bandTop);
-  fade.addColorStop(0, withAlpha(surface, 0));
-  fade.addColorStop(1, surface);
-  ctx.fillStyle = fade;
-  ctx.fillRect(0, bandTop - FADE, WIDTH, FADE);
+  let stripTop = top - 56;
+  let stripBottom = top + height + 56;
+  const fadeAbove = stripTop >= MARGIN;
+  const fadeBelow = HEIGHT - stripBottom >= MARGIN;
+  if (!fadeAbove) stripTop = 0;
+  if (!fadeBelow) stripBottom = HEIGHT;
+  if (fadeAbove) {
+    const fade = ctx.createLinearGradient(0, stripTop - FADE, 0, stripTop);
+    fade.addColorStop(0, withAlpha(surface, 0));
+    fade.addColorStop(1, surface);
+    ctx.fillStyle = fade;
+    ctx.fillRect(0, stripTop - FADE, WIDTH, FADE);
+  }
+  if (fadeBelow) {
+    const fade = ctx.createLinearGradient(0, stripBottom, 0, stripBottom + FADE);
+    fade.addColorStop(0, surface);
+    fade.addColorStop(1, withAlpha(surface, 0));
+    ctx.fillStyle = fade;
+    ctx.fillRect(0, stripBottom, WIDTH, FADE);
+  }
   ctx.fillStyle = surface;
-  ctx.fillRect(0, bandTop, WIDTH, HEIGHT - bandTop);
-  drawBlock(ctx, rows, { x: MARGIN, top, maxWidth: WIDTH - MARGIN * 2, centered: look.centered });
+  ctx.fillRect(0, stripTop, WIDTH, stripBottom - stripTop);
+  drawBlock(ctx, rows, { x: MARGIN, top, maxWidth: WIDTH - MARGIN * 2, align });
 }
 
-function drawBadge(ctx: CanvasRenderingContext2D, badge: { month: string; day: string }) {
+function drawBadge(ctx: CanvasRenderingContext2D, badge: { month: string; day: string }, top: number) {
   const month = themed("text-white font-display");
   const day = themed("text-ink font-display");
   ctx.save();
@@ -238,36 +286,53 @@ function drawBadge(ctx: CanvasRenderingContext2D, badge: { month: string; day: s
   ctx.shadowBlur = 24;
   ctx.shadowOffsetY = 8;
   ctx.fillStyle = themed("text-paper").color;
-  ctx.fillRect(MARGIN, MARGIN, BADGE_SIZE, BADGE_SIZE);
+  ctx.fillRect(MARGIN, top, BADGE_SIZE, BADGE_SIZE);
   ctx.restore();
   ctx.fillStyle = themed("text-magenta").color;
-  ctx.fillRect(MARGIN, MARGIN, BADGE_SIZE, BADGE_MONTH_HEIGHT);
+  ctx.fillRect(MARGIN, top, BADGE_SIZE, BADGE_MONTH_HEIGHT);
   ctx.textAlign = "center";
   ctx.font = `600 36px ${month.fontFamily}`;
   ctx.fillStyle = month.color;
-  ctx.fillText(badge.month, MARGIN + BADGE_SIZE / 2, MARGIN + 46);
+  ctx.fillText(badge.month, MARGIN + BADGE_SIZE / 2, top + 46);
   ctx.font = `600 104px ${day.fontFamily}`;
   ctx.fillStyle = day.color;
-  ctx.fillText(badge.day, MARGIN + BADGE_SIZE / 2, MARGIN + BADGE_MONTH_HEIGHT + 104);
+  ctx.fillText(badge.day, MARGIN + BADGE_SIZE / 2, top + BADGE_MONTH_HEIGHT + 104);
   ctx.textAlign = "start";
 }
 
-function drawMat(ctx: CanvasRenderingContext2D, image: HTMLImageElement, look: Look, surface: string, rows: Row[], height: number) {
+function drawMat(
+  ctx: CanvasRenderingContext2D,
+  image: HTMLImageElement,
+  surface: string,
+  rows: Row[],
+  height: number,
+  align: Align,
+  y: number
+) {
   ctx.fillStyle = surface;
   ctx.fillRect(0, 0, WIDTH, HEIGHT);
-  const top = HEIGHT - MARGIN - height;
-  const artHeight = top - MARGIN - 48;
-  drawCover(ctx, image, MARGIN, MARGIN, WIDTH - MARGIN * 2, artHeight);
+  const top = y >= 50 ? HEIGHT - MARGIN - height : MARGIN;
+  const artTop = y >= 50 ? MARGIN : MARGIN + height + 48;
+  const artHeight = y >= 50 ? top - MARGIN - 48 : HEIGHT - MARGIN - artTop;
+  drawCover(ctx, image, MARGIN, artTop, WIDTH - MARGIN * 2, artHeight);
   ctx.strokeStyle = themed("text-gold").color;
   ctx.lineWidth = 4;
-  ctx.strokeRect(MARGIN - 16, MARGIN - 16, WIDTH - MARGIN * 2 + 32, artHeight + 32);
-  drawBlock(ctx, rows, { x: MARGIN, top, maxWidth: WIDTH - MARGIN * 2, centered: look.centered });
+  ctx.strokeRect(MARGIN - 16, artTop - 16, WIDTH - MARGIN * 2 + 32, artHeight + 32);
+  drawBlock(ctx, rows, { x: MARGIN, top, maxWidth: WIDTH - MARGIN * 2, align });
 }
 
-function drawCard(ctx: CanvasRenderingContext2D, image: HTMLImageElement, look: Look, surface: string, rows: Row[], height: number) {
+function drawCard(
+  ctx: CanvasRenderingContext2D,
+  image: HTMLImageElement,
+  surface: string,
+  rows: Row[],
+  height: number,
+  align: Align,
+  t: number
+) {
   drawCover(ctx, image, 0, 0, WIDTH, HEIGHT);
   const cardHeight = height + CARD_PADDING * 2 - 24;
-  const cardTop = HEIGHT - CARD_INSET - cardHeight;
+  const cardTop = between(CARD_INSET, HEIGHT - CARD_INSET - cardHeight, t);
   ctx.save();
   ctx.shadowColor = withAlpha(themed("text-ink-deep").color, 0.35);
   ctx.shadowBlur = 40;
@@ -278,7 +343,7 @@ function drawCard(ctx: CanvasRenderingContext2D, image: HTMLImageElement, look: 
   ctx.fill();
   ctx.restore();
   const x = CARD_INSET + CARD_PADDING;
-  drawBlock(ctx, rows, { x, top: cardTop + CARD_PADDING - 24, maxWidth: WIDTH - x * 2, centered: look.centered });
+  drawBlock(ctx, rows, { x, top: cardTop + CARD_PADDING - 24, maxWidth: WIDTH - x * 2, align });
 }
 
 function blossomPath(ctx: CanvasRenderingContext2D, cx: number, cy: number, radius: number) {
@@ -294,26 +359,37 @@ function blossomPath(ctx: CanvasRenderingContext2D, cx: number, cy: number, radi
   ctx.arc(cx, cy, radius * 0.6, 0, Math.PI * 2);
 }
 
-function drawBlossom(ctx: CanvasRenderingContext2D, image: HTMLImageElement, look: Look, surface: string, rows: Row[], height: number) {
+function drawBlossom(
+  ctx: CanvasRenderingContext2D,
+  image: HTMLImageElement,
+  surface: string,
+  rows: Row[],
+  height: number,
+  x: number,
+  t: number
+) {
   drawCover(ctx, image, 0, 0, WIDTH, HEIGHT);
   const radius = Math.max(BLOSSOM_MIN_RADIUS, height / 2 + 110);
-  const cy = HEIGHT - BLOSSOM_BOTTOM - radius;
+  const reach = radius * 1.02 + 12;
+  const cy = BLOSSOM_BOTTOM + radius + (HEIGHT - 2 * (BLOSSOM_BOTTOM + radius)) * t;
+  const shift = Math.max(0, WIDTH / 2 - reach);
+  const cx = Math.round(WIDTH / 2 + (x / 50 - 1) * shift);
   ctx.save();
   ctx.shadowColor = withAlpha(themed("text-ink-deep").color, 0.35);
   ctx.shadowBlur = 40;
   ctx.shadowOffsetY = 12;
   ctx.fillStyle = themed("text-gold").color;
-  blossomPath(ctx, WIDTH / 2, cy, radius + 12);
+  blossomPath(ctx, cx, cy, radius + 12);
   ctx.fill();
   ctx.restore();
   ctx.fillStyle = surface;
-  blossomPath(ctx, WIDTH / 2, cy, radius);
+  blossomPath(ctx, cx, cy, radius);
   ctx.fill();
-  const x = (WIDTH - BLOSSOM_TEXT_WIDTH) / 2;
-  drawBlock(ctx, rows, { x, top: cy - height / 2, maxWidth: BLOSSOM_TEXT_WIDTH, centered: look.centered });
+  const textX = cx - BLOSSOM_TEXT_WIDTH / 2;
+  drawBlock(ctx, rows, { x: textX, top: cy - height / 2, maxWidth: BLOSSOM_TEXT_WIDTH, align: "center" });
 }
 
-function textWidth(layout: Layout) {
+function textWidth(layout: FlyerLayout) {
   if (layout === "card") return WIDTH - (CARD_INSET + CARD_PADDING) * 2;
   if (layout === "blossom") return BLOSSOM_TEXT_WIDTH;
   return WIDTH - MARGIN * 2;
@@ -331,8 +407,13 @@ async function loadFaces(lettering: FlyerLettering) {
   );
 }
 
-export async function composeFlyer(artUrl: string, lettering: FlyerLettering): Promise<Blob> {
-  const look = lookFor(artUrl);
+export async function composeFlyer(
+  artUrl: string,
+  lettering: FlyerLettering,
+  style: FlyerStyle = NO_FLYER_STYLE
+): Promise<Blob> {
+  const look = lookFor(artUrl, style.layout);
+  const { x, y } = wordsFor(artUrl, style);
   await loadFaces(lettering);
   const image = await loadImage(artUrl);
 
@@ -345,16 +426,22 @@ export async function composeFlyer(artUrl: string, lettering: FlyerLettering): P
 
   const { rows, height } = textBlock(ctx, lettering, look, textWidth(look.layout));
   const surface = themed(look.scheme.surface).color;
+  const t = y / 100;
+  const align: Align = look.layout === "blossom" ? "center" : x < 34 ? "start" : x < 67 ? "center" : "end";
 
   if (look.layout === "mat") {
-    drawMat(ctx, image, look, surface, rows, height);
+    drawMat(ctx, image, surface, rows, height, align, y);
   } else if (look.layout === "card") {
-    drawCard(ctx, image, look, surface, rows, height);
+    drawCard(ctx, image, surface, rows, height, align, t);
   } else if (look.layout === "blossom") {
-    drawBlossom(ctx, image, look, surface, rows, height);
+    drawBlossom(ctx, image, surface, rows, height, x, t);
   } else {
-    drawBand(ctx, image, look, surface, rows, height);
-    if (look.layout === "badge" && lettering.badge) drawBadge(ctx, lettering.badge);
+    const top = between(MARGIN, HEIGHT - MARGIN - height, t);
+    drawBand(ctx, image, surface, rows, height, align, top);
+    if (look.layout === "badge" && lettering.badge) {
+      const badgeTop = top < MARGIN + BADGE_SIZE + 24 ? HEIGHT - MARGIN - BADGE_SIZE : MARGIN;
+      drawBadge(ctx, lettering.badge, badgeTop);
+    }
   }
 
   return new Promise((resolve, reject) => {
