@@ -19,10 +19,12 @@ import {
   flyerArtPrompts,
 } from "@/lib/flyer-art";
 import {
+  isUploadedFileUrl,
   normalizeUploadedFileUrl,
   normalizeWebsiteUrl,
   slugify,
 } from "@/lib/format";
+import { normalizeFlyerArtUrl } from "@/lib/flyer-templates";
 import { isFlyerLayout, type FlyerLayout } from "@/lib/flyer-layouts";
 
 export type EventInput = {
@@ -92,7 +94,7 @@ function checkedFlyerStyle(input: EventInput, flyerArtUrl: string | null) {
 function eventValues(input: EventInput, userId?: string) {
   const title = input.title.trim();
   if (!title) throw new AdminError("An event title is required.");
-  const flyerArtUrl = normalizeUploadedFileUrl(input.flyerArtUrl, "flyer");
+  const flyerArtUrl = normalizeFlyerArtUrl(input.flyerArtUrl);
   return {
     title,
     description: input.description.trim() || null,
@@ -108,6 +110,12 @@ function eventValues(input: EventInput, userId?: string) {
     status: input.status,
     ...(userId ? { createdById: userId } : {}),
   };
+}
+
+function blobUrls(urls: (string | null)[]): string[] {
+  return [
+    ...new Set(urls.filter((url): url is string => url !== null && isUploadedFileUrl(url))),
+  ];
 }
 
 export async function createEvent(input: EventInput): Promise<ActionResult> {
@@ -135,12 +143,10 @@ export async function updateEvent(id: string, input: EventInput): Promise<Action
       values.flyerDownloadUrl,
       values.flyerArtUrl,
     ]);
-    const orphans = [
-      existing.flyerUrl,
-      existing.flyerDownloadUrl,
-      existing.flyerArtUrl,
-    ].filter(
-      (url): url is string => Boolean(url) && !kept.has(url)
+    const orphans = blobUrls(
+      [existing.flyerUrl, existing.flyerDownloadUrl, existing.flyerArtUrl].filter(
+        (url) => !kept.has(url)
+      )
     );
     if (orphans.length) {
       try {
@@ -162,13 +168,11 @@ export async function deleteEvent(id: string): Promise<ActionResult> {
     await db.delete(events).where(eq(events.id, id));
 
     // Best-effort cleanup of uploaded flyers; the event row is already gone.
-    const blobs = [
+    const blobs = blobUrls([
       existing.flyerUrl,
       existing.flyerDownloadUrl,
       existing.flyerArtUrl,
-    ].filter(
-      (url): url is string => Boolean(url)
-    );
+    ]);
     if (blobs.length) {
       try {
         await del(blobs);

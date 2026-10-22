@@ -8,7 +8,7 @@ export function useLetteredPreviews(
   lettering: FlyerLettering
 ): Record<string, string> {
   const [previews, setPreviews] = useState<Record<string, string>>({});
-  const urlsRef = useRef<Record<string, string>>({});
+  const composedRef = useRef<Record<string, { url: string; signature: string }>>({});
 
   const signature = JSON.stringify({ jobs, lettering });
 
@@ -18,14 +18,16 @@ export function useLetteredPreviews(
       const input: { jobs: LetteringJob[]; lettering: FlyerLettering } = JSON.parse(signature);
       for (const job of input.jobs) {
         if (!current) return;
+        const jobSignature = JSON.stringify({ job, lettering: input.lettering });
+        if (composedRef.current[job.key]?.signature === jobSignature) continue;
         try {
           const blob = await composeFlyer(job.artUrl, input.lettering, job.style ?? NO_FLYER_STYLE);
           if (!current) return;
           const url = URL.createObjectURL(blob);
-          const old = urlsRef.current[job.key];
-          urlsRef.current[job.key] = url;
+          const old = composedRef.current[job.key];
+          composedRef.current[job.key] = { url, signature: jobSignature };
           setPreviews((prev) => ({ ...prev, [job.key]: url }));
-          if (old) URL.revokeObjectURL(old);
+          if (old) URL.revokeObjectURL(old.url);
         } catch {}
       }
     }, 800);
@@ -37,7 +39,7 @@ export function useLetteredPreviews(
 
   useEffect(
     () => () => {
-      for (const url of Object.values(urlsRef.current)) URL.revokeObjectURL(url);
+      for (const { url } of Object.values(composedRef.current)) URL.revokeObjectURL(url);
     },
     []
   );
