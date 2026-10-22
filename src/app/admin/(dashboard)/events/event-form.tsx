@@ -1,12 +1,13 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { upload } from "@vercel/blob/client";
 import type { EventRepeat } from "@/db/schema";
 import { expectOk } from "@/lib/action-result";
 import { CENTER_ADDRESS, venueLabel } from "@/lib/center";
-import { normalizeWebsiteUrl } from "@/lib/format";
+import { composeFlyer, type FlyerLettering } from "@/lib/flyer-compose";
+import { formatShortEventDate, normalizeWebsiteUrl } from "@/lib/format";
 import { pdfFirstPageToPng } from "@/lib/pdf-preview";
 import { MAX_UPLOAD_BYTES, PHOTO_UNREADABLE_MESSAGE, asUploadablePhoto } from "@/lib/photo-upload";
 import {
@@ -33,6 +34,7 @@ import {
 import { EventDescriptionMedia } from "@/components/event-media";
 import { EventMeta } from "@/components/event-meta";
 import { createEvent, updateEvent, type EventInput } from "./actions";
+import { FlyerMaker } from "./flyer-maker";
 
 const REPEAT_OPTIONS: { value: EventRepeat; label: string }[] = [
   { value: "none", label: "Does not repeat" },
@@ -47,6 +49,7 @@ type ExistingEvent = {
   description: string | null;
   flyerUrl: string | null;
   flyerDownloadUrl: string | null;
+  flyerArtUrl: string | null;
   signupUrl: string | null;
   startAt: Date | null;
   endAt: Date | null;
@@ -69,6 +72,37 @@ function fromInputs(date: string, time = "") {
   if (!date) return null;
   const value = new Date(`${date}T${time || "00:00"}:00Z`);
   return Number.isNaN(value.getTime()) ? null : value;
+}
+function flyerDate(date: string) {
+  return new Date(`${date}T00:00:00Z`).toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+}
+function flyerLettering({
+  title,
+  date,
+  repeat,
+  schedule,
+  timeLabel,
+  venue,
+}: {
+  title: string;
+  date: string;
+  repeat: EventRepeat;
+  schedule: string | null;
+  timeLabel: string | null;
+  venue: string | null;
+}): FlyerLettering {
+  const day = repeat === "none" ? date && flyerDate(date) : schedule;
+  return {
+    title: title.trim(),
+    kicker: date && repeat === "none" ? formatShortEventDate(fromInputs(date), "ja") : null,
+    when: [day, timeLabel].filter(Boolean).join(" · ") || null,
+    where: venue,
+  };
 }
 function shortDate(d: Date) {
   return d.toLocaleDateString("en-US", {
@@ -110,6 +144,7 @@ export function EventForm({
     event?.flyerUrl ?? null
   );
   const [flyerRemoved, setFlyerRemoved] = useState(false);
+  const [artUrl, setArtUrl] = useState(event?.flyerArtUrl ?? null);
 
   const [busy, setBusy] = useState<"draft" | "published" | null>(null);
   const [preparing, setPreparing] = useState(false);
@@ -139,6 +174,7 @@ export function EventForm({
       return;
     }
     setFlyerFile(file);
+    setArtUrl(null);
     try {
       if (file.type === "application/pdf") {
         const png = await pdfFirstPageToPng(file);
@@ -157,23 +193,40 @@ export function EventForm({
 
   function removeFlyer() {
     setFlyerFile(null);
+    setArtUrl(null);
     setPreviewUrl(null);
     setFlyerRemoved(true);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  function chooseArt(chosen: string, preview: string) {
+    setArtUrl(chosen);
+    setFlyerFile(null);
+    setPreviewUrl(preview);
+    setFlyerRemoved(false);
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
   async function uploadFlyer(): Promise<{
     flyerUrl: string | null;
     flyerDownloadUrl: string | null;
+    flyerArtUrl: string | null;
   }> {
+    const opts = { access: "public", handleUploadUrl: "/api/upload" } as const;
+
     if (!flyerFile) {
-      if (flyerRemoved) return { flyerUrl: null, flyerDownloadUrl: null };
+      if (artUrl && needsLettering) {
+        const png = await composeFlyer(artUrl, lettering);
+        const image = await upload("flyers/flyer.png", png, opts);
+        return { flyerUrl: image.url, flyerDownloadUrl: image.url, flyerArtUrl: artUrl };
+      }
+      if (flyerRemoved) return { flyerUrl: null, flyerDownloadUrl: null, flyerArtUrl: null };
       return {
         flyerUrl: event?.flyerUrl ?? null,
         flyerDownloadUrl: event?.flyerDownloadUrl ?? null,
+        flyerArtUrl: event?.flyerArtUrl ?? null,
       };
     }
-    const opts = { access: "public", handleUploadUrl: "/api/upload" } as const;
 
     if (flyerFile.type === "application/pdf") {
       const png = await pdfFirstPageToPng(flyerFile);
@@ -181,11 +234,11 @@ export function EventForm({
         upload("flyers/flyer.png", png, opts),
         upload(`flyers/${flyerFile.name}`, flyerFile, opts),
       ]);
-      return { flyerUrl: image.url, flyerDownloadUrl: original.url };
+      return { flyerUrl: image.url, flyerDownloadUrl: original.url, flyerArtUrl: null };
     }
 
     const image = await upload(`flyers/${flyerFile.name}`, flyerFile, opts);
-    return { flyerUrl: image.url, flyerDownloadUrl: image.url };
+    return { flyerUrl: image.url, flyerDownloadUrl: image.url, flyerArtUrl: null };
   }
 
   async function save(status: "draft" | "published") {
@@ -260,6 +313,32 @@ export function EventForm({
         )
         .join(" – ")
     : null;
+
+  const lettering = flyerLettering({ title, date, repeat, schedule, timeLabel, venue });
+  const letteringKey = JSON.stringify(lettering);
+  const [savedLetteringKey] = useState(letteringKey);
+  const needsLettering =
+    artUrl !== (event?.flyerArtUrl ?? null) || letteringKey !== savedLetteringKey;
+
+  useEffect(() => {
+    if (!artUrl || !needsLettering) return;
+    let current = true;
+    const timer = setTimeout(async () => {
+      try {
+        const png = await composeFlyer(
+          artUrl,
+          flyerLettering({ title, date, repeat, schedule, timeLabel, venue })
+        );
+        if (current) setPreviewUrl(URL.createObjectURL(png));
+      } catch {
+        // The saved flyer stays in the preview; saving letters it again.
+      }
+    }, 400);
+    return () => {
+      current = false;
+      clearTimeout(timer);
+    };
+  }, [artUrl, needsLettering, title, date, repeat, schedule, timeLabel, venue]);
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
@@ -427,6 +506,12 @@ export function EventForm({
             the description instead — the preview beside this form shows exactly
             how it will look.
           </p>
+          <FlyerMaker
+            request={{ title, description, date }}
+            lettering={lettering}
+            chosenArtUrl={artUrl}
+            onChoose={chooseArt}
+          />
         </AdminCard>
 
         <AdminCard>

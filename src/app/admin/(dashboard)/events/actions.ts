@@ -1,11 +1,22 @@
 "use server";
 
-import { del } from "@vercel/blob";
-import { eq } from "drizzle-orm";
+import { del, put } from "@vercel/blob";
+import { generateImage } from "ai";
+import { count, eq, gte, inArray, lt } from "drizzle-orm";
 import { db } from "@/db";
-import { eventRepeats, events, type EventRepeat } from "@/db/schema";
+import {
+  eventRepeats,
+  events,
+  flyerArtDrafts,
+  type EventRepeat,
+} from "@/db/schema";
 import { AdminError, runAction, type ActionResult } from "@/lib/action-result";
 import { requireUser, revalidateSite } from "@/lib/admin";
+import {
+  FLYER_ART_DAILY_LIMIT,
+  FLYER_ART_MODEL,
+  flyerArtPrompts,
+} from "@/lib/flyer-art";
 import {
   normalizeUploadedFileUrl,
   normalizeWebsiteUrl,
@@ -17,6 +28,7 @@ export type EventInput = {
   description: string;
   flyerUrl: string | null;
   flyerDownloadUrl: string | null;
+  flyerArtUrl: string | null;
   signupUrl: string;
   date: string; // "2025-07-26", or "" for undated
   startTime: string; // "16:00", or ""
@@ -60,6 +72,7 @@ function eventValues(input: EventInput, userId?: string) {
     description: input.description.trim() || null,
     flyerUrl: normalizeUploadedFileUrl(input.flyerUrl, "flyer"),
     flyerDownloadUrl: normalizeUploadedFileUrl(input.flyerDownloadUrl, "flyer"),
+    flyerArtUrl: normalizeUploadedFileUrl(input.flyerArtUrl, "flyer"),
     signupUrl: normalizeWebsiteUrl(input.signupUrl, "sign-up link"),
     startAt: toWallClock(input.date, input.startTime),
     endAt: input.endTime ? toWallClock(input.date, input.endTime) : null,
@@ -90,8 +103,16 @@ export async function updateEvent(id: string, input: EventInput): Promise<Action
     await db.update(events).set(values).where(eq(events.id, id));
 
     // Best-effort cleanup of flyers this update dropped or replaced.
-    const kept = new Set([values.flyerUrl, values.flyerDownloadUrl]);
-    const orphans = [existing.flyerUrl, existing.flyerDownloadUrl].filter(
+    const kept = new Set([
+      values.flyerUrl,
+      values.flyerDownloadUrl,
+      values.flyerArtUrl,
+    ]);
+    const orphans = [
+      existing.flyerUrl,
+      existing.flyerDownloadUrl,
+      existing.flyerArtUrl,
+    ].filter(
       (url): url is string => Boolean(url) && !kept.has(url)
     );
     if (orphans.length) {
@@ -114,7 +135,11 @@ export async function deleteEvent(id: string): Promise<ActionResult> {
     await db.delete(events).where(eq(events.id, id));
 
     // Best-effort cleanup of uploaded flyers; the event row is already gone.
-    const blobs = [existing.flyerUrl, existing.flyerDownloadUrl].filter(
+    const blobs = [
+      existing.flyerUrl,
+      existing.flyerDownloadUrl,
+      existing.flyerArtUrl,
+    ].filter(
       (url): url is string => Boolean(url)
     );
     if (blobs.length) {
@@ -127,4 +152,96 @@ export async function deleteEvent(id: string): Promise<ActionResult> {
 
     revalidateSite();
   });
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+export type FlyerArtInput = {
+  title: string;
+  description: string;
+  date: string;
+  idea: string;
+};
+
+export async function generateFlyerArt(
+  input: FlyerArtInput
+): Promise<ActionResult<string[]>> {
+  return runAction(async () => {
+    const user = await requireUser();
+    const title = input.title.trim();
+    if (!title) {
+      throw new AdminError("Give the event a title first, so the picture can match it.");
+    }
+
+    const dayAgo = new Date(Date.now() - DAY_MS);
+    const [{ made }] = await db
+      .select({ made: count() })
+      .from(flyerArtDrafts)
+      .where(gte(flyerArtDrafts.createdAt, dayAgo));
+    if (made >= FLYER_ART_DAILY_LIMIT) {
+      throw new AdminError(
+        "The flyer maker has drawn all the pictures it can for today. Please try again tomorrow."
+      );
+    }
+
+    await sweepUnkeptFlyerArt(dayAgo);
+
+    const prompts = flyerArtPrompts({
+      title,
+      description: input.description,
+      date: toWallClock(input.date, ""),
+      idea: input.idea,
+    });
+    let urls: string[];
+    try {
+      urls = await Promise.all(
+        prompts.map(async (prompt) => {
+          const { image } = await generateImage({
+            model: FLYER_ART_MODEL,
+            prompt,
+            aspectRatio: "4:5",
+          });
+          const extension = image.mediaType.split("/")[1] ?? "png";
+          const blob = await put(`flyer-art/art.${extension}`, Buffer.from(image.uint8Array), {
+            access: "public",
+            addRandomSuffix: true,
+            contentType: image.mediaType,
+          });
+          return blob.url;
+        })
+      );
+    } catch (error) {
+      console.error("Flyer art generation failed:", error);
+      throw new AdminError(
+        "Couldn’t make a flyer right now. Please try again in a minute."
+      );
+    }
+
+    await db
+      .insert(flyerArtDrafts)
+      .values(urls.map((url) => ({ url, createdById: user.id })));
+    return urls;
+  });
+}
+
+// Best-effort: a picture nobody kept within a day is never coming back.
+async function sweepUnkeptFlyerArt(before: Date) {
+  try {
+    const stale = await db
+      .select({ url: flyerArtDrafts.url })
+      .from(flyerArtDrafts)
+      .where(lt(flyerArtDrafts.createdAt, before));
+    if (!stale.length) return;
+    const staleUrls = stale.map((draft) => draft.url);
+    const kept = await db
+      .select({ url: events.flyerArtUrl })
+      .from(events)
+      .where(inArray(events.flyerArtUrl, staleUrls));
+    const keptUrls = new Set(kept.map((event) => event.url));
+    const unkept = staleUrls.filter((url) => !keptUrls.has(url));
+    if (unkept.length) await del(unkept);
+    await db.delete(flyerArtDrafts).where(inArray(flyerArtDrafts.url, staleUrls));
+  } catch (error) {
+    console.error("Failed to sweep unkept flyer art:", error);
+  }
 }
