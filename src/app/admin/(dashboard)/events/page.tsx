@@ -10,6 +10,7 @@ import { describeRepeat, type RepeatPhrases } from "@/lib/recurrence";
 import { AdminBadge, type AdminBadgeTone } from "@/components/admin/admin-badge";
 import { AdminButtonLink } from "@/components/admin/admin-button";
 import { AdminEmptyState } from "@/components/admin/admin-card";
+import { AdminDisclosure } from "@/components/admin/admin-disclosure";
 import { AdminListRow } from "@/components/admin/admin-list-row";
 import { AdminPageWidth } from "@/components/admin/admin-page-width";
 
@@ -67,22 +68,13 @@ export default async function AdminEventsPage() {
           )}
 
           {past.length > 0 && (
-            <details className="admin-disclosure group mt-10 rounded-xl border border-line bg-white">
-              <summary className="flex min-h-14 items-center justify-between gap-4 px-5 font-display text-lg text-ink">
-                Past events ({past.length})
-                <span className="text-base font-semibold text-indigo-deep">
-                  <span className="group-open:hidden">Show</span>
-                  <span className="hidden group-open:inline">Hide</span>
-                </span>
-              </summary>
-              <div className="border-t border-line px-5 pb-5">
-                <p className="mt-4 text-base text-ink-soft">
-                  Kept as a record. The most recent published ones also appear
-                  on the website&rsquo;s Past Events page.
-                </p>
-                <EventRows items={past} repeat={dict.events.repeat} />
-              </div>
-            </details>
+            <AdminDisclosure className="mt-10" summary={`Past events (${past.length})`}>
+              <p className="mt-4 text-base text-ink-soft">
+                Kept as a record. The most recent published ones also appear
+                on the website&rsquo;s Past Events page.
+              </p>
+              <EventRows items={past} repeat={dict.events.repeat} />
+            </AdminDisclosure>
           )}
         </>
       )}
