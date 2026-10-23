@@ -33,17 +33,25 @@ import {
   AdminTextArea,
   AdminTextField,
 } from "@/components/admin/admin-field";
+import { AdminOptionTile } from "@/components/admin/admin-option-tile";
 import { EventDescriptionMedia } from "@/components/event-media";
 import { EventMeta } from "@/components/event-meta";
 import { createEvent, updateEvent, type EventInput } from "./actions";
 import { FlyerMaker } from "./flyer-maker";
-import { FlyerWordsControls } from "./flyer-words";
 
 const REPEAT_OPTIONS: { value: EventRepeat; label: string }[] = [
   { value: "none", label: "Does not repeat" },
   { value: "weekly", label: "Every week" },
   { value: "biweekly", label: "Every other week" },
   { value: "monthly", label: "Every month" },
+];
+
+type FlyerChoice = "make" | "upload" | "none";
+
+const FLYER_CHOICES: { value: FlyerChoice; name: string; blurb: string }[] = [
+  { value: "make", name: "Make one here", blurb: "Pick a picture. The title, date and place are printed on it for you." },
+  { value: "upload", name: "Upload my own", blurb: "A flyer you already have, as a PDF or a photo." },
+  { value: "none", name: "No flyer", blurb: "The event shows its description instead." },
 ];
 
 type ExistingEvent = {
@@ -138,6 +146,7 @@ export function EventForm({
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const letteredUrlRef = useRef<string | null>(null);
+  const uploadPreviewRef = useRef<string | null>(null);
 
   const [title, setTitle] = useState(event?.title ?? "");
   const [description, setDescription] = useState(event?.description ?? "");
@@ -153,12 +162,14 @@ export function EventForm({
   const [location, setLocation] = useState(event?.location ?? CENTER_ADDRESS);
   const [signupUrl, setSignupUrl] = useState(event?.signupUrl ?? "");
 
-  const [flyerFile, setFlyerFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(
-    event?.flyerUrl ?? null
+  const savedUploadUrl = event?.flyerUrl && !event.flyerArtUrl ? event.flyerUrl : null;
+  const [flyerChoice, setFlyerChoice] = useState<FlyerChoice>(
+    event?.flyerArtUrl ? "make" : event?.flyerUrl ? "upload" : "none"
   );
-  const [flyerRemoved, setFlyerRemoved] = useState(false);
+  const [flyerFile, setFlyerFile] = useState<File | null>(null);
+  const [uploadPreviewUrl, setUploadPreviewUrl] = useState<string | null>(savedUploadUrl);
   const [artUrl, setArtUrl] = useState(event?.flyerArtUrl ?? null);
+  const [letteredUrl, setLetteredUrl] = useState<string | null>(null);
   const [style, setStyle] = useState<FlyerStyle>({
     layout: event?.flyerLayout ?? null,
     wordsX: event?.flyerWordsX ?? null,
@@ -169,7 +180,11 @@ export function EventForm({
   const [preparing, setPreparing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const missing = title.trim() ? [] : ["an event title"];
+  const missing = [
+    !title.trim() && "an event title",
+    flyerChoice === "make" && !artUrl && "a picture for the flyer",
+    flyerChoice === "upload" && !flyerFile && !savedUploadUrl && "a flyer file",
+  ].filter((item) => typeof item === "string");
 
   async function onPickFlyer(picked: File | undefined) {
     setError(null);
@@ -193,15 +208,12 @@ export function EventForm({
       return;
     }
     setFlyerFile(file);
-    setArtUrl(null);
     try {
-      if (file.type === "application/pdf") {
-        const png = await pdfFirstPageToPng(file);
-        setPreviewUrl(URL.createObjectURL(png));
-      } else {
-        setPreviewUrl(URL.createObjectURL(file));
-      }
-      setFlyerRemoved(false);
+      const image = file.type === "application/pdf" ? await pdfFirstPageToPng(file) : file;
+      const url = URL.createObjectURL(image);
+      if (uploadPreviewRef.current) URL.revokeObjectURL(uploadPreviewRef.current);
+      uploadPreviewRef.current = url;
+      setUploadPreviewUrl(url);
     } catch {
       setError(
         "We couldn't read that file. Please try a PDF, JPG, or PNG flyer."
@@ -210,21 +222,10 @@ export function EventForm({
     }
   }
 
-  function removeFlyer() {
-    setFlyerFile(null);
-    setArtUrl(null);
-    setPreviewUrl(null);
-    setFlyerRemoved(true);
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  }
-
   function chooseArt(chosen: string, preview: string) {
     setArtUrl(chosen);
-    setFlyerFile(null);
-    setPreviewUrl(preview);
-    setFlyerRemoved(false);
+    setLetteredUrl(preview);
     setStyle(NO_FLYER_STYLE);
-    if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
   async function uploadFlyer(): Promise<{
@@ -234,17 +235,28 @@ export function EventForm({
   }> {
     const opts = { access: "public", handleUploadUrl: "/api/upload" } as const;
 
-    if (!flyerFile) {
+    if (flyerChoice === "none") {
+      return { flyerUrl: null, flyerDownloadUrl: null, flyerArtUrl: null };
+    }
+
+    if (flyerChoice === "make") {
       if (artUrl && needsLettering) {
         const flyer = await composeFlyer(artUrl, lettering, style);
         const image = await upload("flyers/flyer.jpg", flyer, opts);
         return { flyerUrl: image.url, flyerDownloadUrl: image.url, flyerArtUrl: artUrl };
       }
-      if (flyerRemoved) return { flyerUrl: null, flyerDownloadUrl: null, flyerArtUrl: null };
       return {
         flyerUrl: event?.flyerUrl ?? null,
         flyerDownloadUrl: event?.flyerDownloadUrl ?? null,
         flyerArtUrl: event?.flyerArtUrl ?? null,
+      };
+    }
+
+    if (!flyerFile) {
+      return {
+        flyerUrl: savedUploadUrl,
+        flyerDownloadUrl: savedUploadUrl && (event?.flyerDownloadUrl ?? null),
+        flyerArtUrl: null,
       };
     }
 
@@ -266,6 +278,14 @@ export function EventForm({
     setError(null);
     if (!title.trim()) {
       setError("Please enter an event title.");
+      return;
+    }
+    if (flyerChoice === "make" && !artUrl) {
+      setError("Pick a picture for the flyer, or choose “No flyer”.");
+      return;
+    }
+    if (flyerChoice === "upload" && !flyerFile && !savedUploadUrl) {
+      setError("Choose the flyer file to upload, or choose “No flyer”.");
       return;
     }
     setBusy(status);
@@ -346,7 +366,7 @@ export function EventForm({
   const [letteredKey, setLetteredKey] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!artUrl || !needsLettering) return;
+    if (flyerChoice !== "make" || !artUrl || !needsLettering) return;
     let current = true;
     const timer = setTimeout(async () => {
       try {
@@ -359,7 +379,7 @@ export function EventForm({
         const url = URL.createObjectURL(flyer);
         if (letteredUrlRef.current) URL.revokeObjectURL(letteredUrlRef.current);
         letteredUrlRef.current = url;
-        setPreviewUrl(url);
+        setLetteredUrl(url);
         setLetteredKey(previewKey);
       } catch {
         if (!current) return;
@@ -371,19 +391,22 @@ export function EventForm({
       current = false;
       clearTimeout(timer);
     };
-  }, [artUrl, needsLettering, title, date, repeat, schedule, timeLabel, venue, style, previewKey]);
+  }, [flyerChoice, artUrl, needsLettering, title, date, repeat, schedule, timeLabel, venue, style, previewKey]);
 
   useEffect(
     () => () => {
       if (letteredUrlRef.current) URL.revokeObjectURL(letteredUrlRef.current);
+      if (uploadPreviewRef.current) URL.revokeObjectURL(uploadPreviewRef.current);
     },
     []
   );
 
-  const shownPreviewUrl =
+  const madePreviewUrl =
     artUrl && artUrl === event?.flyerArtUrl && !needsLettering
       ? event.flyerUrl
-      : previewUrl;
+      : letteredUrl;
+  const shownPreviewUrl =
+    flyerChoice === "make" ? madePreviewUrl : flyerChoice === "upload" ? uploadPreviewUrl : null;
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
@@ -499,73 +522,84 @@ export function EventForm({
           <AdminCardHeading step={3} tag={<AdminOptional />}>
             Flyer
           </AdminCardHeading>
-          <div className="mt-4 flex flex-wrap items-start gap-5">
-            {shownPreviewUrl && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={shownPreviewUrl}
-                alt="Flyer preview"
-                className="w-40 rounded-lg border border-line bg-mist object-contain shadow-sm"
-              />
-            )}
-            <div className="flex flex-col items-start gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  if (!preparing) fileInputRef.current?.click();
-                }}
-                aria-disabled={preparing}
-                className="flex min-h-40 w-40 flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-line p-4 text-center text-sm text-stone hover:border-indigo hover:text-indigo aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
-              >
-                <span className="text-2xl">↑</span>
-                {preparing
-                  ? "Getting your flyer ready…"
-                  : shownPreviewUrl
-                    ? "Replace flyer"
-                    : "Upload flyer"}
-                <span className="text-xs">A PDF up to 10 MB, or a JPG or PNG photo of any size</span>
-              </button>
-              <p role="status" className="sr-only">
-                {preparing ? "Getting your flyer ready…" : ""}
-              </p>
-              {shownPreviewUrl && (
-                <button
-                  type="button"
-                  onClick={removeFlyer}
-                  className="text-sm font-medium text-indigo-deep hover:underline"
-                >
-                  Remove flyer
-                </button>
-              )}
+          <fieldset className="mt-4">
+            <legend className="text-base font-semibold text-ink">
+              Does this event have a flyer?
+            </legend>
+            <div className="mt-2 grid gap-3 sm:grid-cols-3">
+              {FLYER_CHOICES.map((choice) => (
+                <AdminOptionTile
+                  key={choice.value}
+                  inputName="flyer-choice"
+                  name={choice.name}
+                  blurb={choice.blurb}
+                  checked={flyerChoice === choice.value}
+                  onSelect={() => setFlyerChoice(choice.value)}
+                />
+              ))}
             </div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="application/pdf,image/jpeg,image/png,image/webp"
-              className="hidden"
-              onChange={(e) => onPickFlyer(e.target.files?.[0])}
+          </fieldset>
+
+          {flyerChoice === "upload" && (
+            <div className="mt-6 flex flex-wrap items-start gap-5">
+              {uploadPreviewUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={uploadPreviewUrl}
+                  alt="Your flyer"
+                  className="w-48 rounded-lg border border-line bg-mist object-contain shadow-sm"
+                />
+              )}
+              <div>
+                <AdminButton
+                  variant="primary"
+                  aria-disabled={preparing}
+                  onClick={() => {
+                    if (!preparing) fileInputRef.current?.click();
+                  }}
+                >
+                  {preparing
+                    ? "Getting your flyer ready…"
+                    : uploadPreviewUrl
+                      ? "Choose a different file"
+                      : "Choose the flyer file"}
+                </AdminButton>
+                <p className="mt-2 text-sm text-stone">
+                  A PDF up to 10 MB, or a JPG or PNG photo of any size.
+                </p>
+                <p role="status" className="sr-only">
+                  {preparing ? "Getting your flyer ready…" : ""}
+                </p>
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="application/pdf,image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={(e) => onPickFlyer(e.target.files?.[0])}
+              />
+            </div>
+          )}
+
+          <div hidden={flyerChoice !== "make"}>
+            <FlyerMaker
+              active={flyerChoice === "make"}
+              request={{ title, description, date }}
+              lettering={lettering}
+              artUrl={artUrl}
+              style={style}
+              previewUrl={madePreviewUrl}
+              updating={needsLettering && letteredKey !== previewKey}
+              onChoose={chooseArt}
+              onStyleChange={setStyle}
             />
           </div>
-          <p className="mt-3 text-xs text-stone">
-            No flyer is fine. Without one, the event’s card shows the start of
-            the description instead — the preview beside this form shows exactly
-            how it will look.
-          </p>
-          <FlyerMaker
-            request={{ title, description, date }}
-            lettering={lettering}
-            chosenArtUrl={artUrl}
-            onChoose={chooseArt}
-          />
-          {artUrl && (
-            <FlyerWordsControls
-              artUrl={artUrl}
-              lettering={lettering}
-              style={style}
-              previewUrl={shownPreviewUrl}
-              updating={needsLettering && letteredKey !== previewKey}
-              onChange={setStyle}
-            />
+
+          {flyerChoice === "none" && (
+            <p className="mt-4 text-sm text-stone">
+              That’s fine. The event’s card shows the start of the description
+              instead. The Live Preview shows exactly how it will look.
+            </p>
           )}
         </AdminCard>
 
