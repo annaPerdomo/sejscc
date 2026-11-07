@@ -369,7 +369,7 @@ export default async function SchoolPage() {
                         photo={frame.photo}
                         sizes="(max-width: 1536px) 100vw, 90rem"
                         placeholderLabel={frame.placeholder}
-                        className="aspect-band w-full"
+                        className="aspect-photo w-full sm:aspect-band"
                       />
                       <figcaption
                         className={`absolute bottom-3 rounded-xs bg-ink-deep/90 px-3 py-1.5 font-display text-xs font-semibold tracking-[0.16em] text-white uppercase sm:bottom-5 sm:px-4 sm:py-2 sm:text-sm ${frame.caption}`}

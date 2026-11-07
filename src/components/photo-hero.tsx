@@ -140,7 +140,7 @@ export function PhotoHero({
         {...rotation.focusProps}
         className="relative isolate overflow-clip bg-ink-deep text-white"
       >
-        <div className="absolute inset-0 -z-10">
+        <div className="absolute inset-x-0 top-0 -z-10 h-64 sm:h-96 lg:inset-y-0 lg:h-auto">
           {isRotating && photos ? (
             photos.map((item, i) =>
               mounted.includes(i) ? (
@@ -171,20 +171,20 @@ export function PhotoHero({
           )}
           <div
             aria-hidden="true"
-            className="absolute inset-0 bg-gradient-to-b from-ink-deep/90 via-navy/90 to-ink-deep/95 lg:bg-gradient-to-r lg:from-ink-deep/95 lg:via-navy/90 lg:via-50% lg:to-navy/10 lg:to-85%"
+            className="absolute inset-0 bg-gradient-to-b from-transparent from-60% to-ink-deep lg:bg-gradient-to-r lg:from-ink-deep/95 lg:from-0% lg:via-navy/90 lg:via-50% lg:to-navy/10 lg:to-85%"
           />
           {/* A row laid along the bottom runs out past the side wash, so the
               bottom one rises to cover it. */}
           <div
             aria-hidden="true"
-            className={`absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink-deep to-transparent ${
+            className={`absolute inset-x-0 bottom-0 hidden bg-gradient-to-t lg:block from-ink-deep to-transparent ${
               below ? "h-120 via-ink-deep/90 via-60%" : "h-56 via-ink-deep/70"
             }`}
           />
         </div>
 
         <div
-          className={`relative mx-auto flex max-w-wide flex-col justify-center gap-12 px-5 pt-14 pb-16 sm:px-10 sm:pt-18 sm:pb-20 lg:min-h-page-hero lg:px-16 ${asideAtEnd ? "lg:grid lg:grid-cols-12 lg:items-center lg:gap-10" : ""}`}
+          className={`relative mx-auto flex max-w-wide flex-col justify-center gap-12 px-5 pt-72 pb-16 sm:px-10 sm:pt-104 sm:pb-20 lg:pt-18 lg:min-h-page-hero lg:px-16 ${asideAtEnd ? "lg:grid lg:grid-cols-12 lg:items-center lg:gap-10" : ""}`}
         >
           {asideAtStart ? (
             <div className="lg:-ml-8 lg:flex lg:items-start lg:gap-20">
