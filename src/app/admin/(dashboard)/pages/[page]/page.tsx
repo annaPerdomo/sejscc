@@ -3,6 +3,7 @@ import { assertEditablePagesRegistry, editablePage } from "@/lib/editable-pages"
 import { getBaseDictionaryFor } from "@/lib/dictionaries";
 import { readPath } from "@/lib/object-path";
 import { getSitePhotos } from "@/lib/site-photos";
+import { getSiteSettings } from "@/lib/site-settings";
 import { getSiteTextOverrides } from "@/lib/site-text";
 import type { PhotoTile } from "@/components/admin/inline-edit/photo-slot-tile";
 import { PageCanvas } from "./page-canvas";
@@ -24,11 +25,12 @@ export default async function EditablePagePage({
   const page = editablePage(pageId);
   if (!page) notFound();
 
-  const [overrides, en, ja, photos] = await Promise.all([
+  const [overrides, en, ja, photos, settings] = await Promise.all([
     getSiteTextOverrides(),
     getBaseDictionaryFor("en"),
     getBaseDictionaryFor("ja"),
     getSitePhotos(),
+    getSiteSettings(),
   ]);
 
   assertEditablePagesRegistry(en);
@@ -51,13 +53,24 @@ export default async function EditablePagePage({
     }
   }
 
+  const links: Record<string, string | null> = {};
+  for (const section of page.sections) {
+    for (const link of section.links) {
+      links[link.id] = settings?.[link.column] ?? null;
+    }
+  }
+
   return (
     <>
       <div className="mx-auto max-w-7xl">
         <h1 className="font-display text-3xl text-ink">{page.label}</h1>
         <p className="mt-1 mb-8 max-w-xl text-lg text-ink-soft">
-          Everything on this page, in the order a visitor sees it. Tap any
-          sentence or photo to change it. Parts that come from a list, like
+          Each part of this page is listed below, in the order a visitor sees
+          it. Open a part to see its words and photos
+          <span className="hidden lg:inline">
+            , and the preview on the right jumps to that part of the website
+          </span>
+          . Tap any sentence or photo to change it. Parts that come from a list, like
           events, have a button that takes you to that list. Each change goes
           live as soon as you press Save, and you can undo the last one.
         </p>
@@ -65,6 +78,7 @@ export default async function EditablePagePage({
       <PageCanvas
         page={page}
         overrides={Object.fromEntries(overrides)}
+        links={links}
         en={en}
         ja={ja}
         tiles={tiles}

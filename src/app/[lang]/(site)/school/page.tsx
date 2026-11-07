@@ -325,7 +325,7 @@ export default async function SchoolPage() {
         </p>
       </section>
 
-      <section className="section-wash-history relative overflow-clip">
+      <section id="history" className="section-wash-history relative scroll-mt-28 overflow-clip">
         <KanjiWatermark char="心" className="top-10 -right-6 text-ink/5" />
         <div className="relative mx-auto grid max-w-wide gap-10 px-5 pt-16 sm:px-10 sm:pt-24 lg:grid-cols-12 lg:gap-14 lg:px-16">
           <div className="reveal-rise lg:col-span-5">
@@ -348,7 +348,7 @@ export default async function SchoolPage() {
           </div>
         </div>
 
-        <div className="then-now">
+        <div id="then-now" className="then-now scroll-mt-28">
           <div className="then-now-stage">
             <div className="mx-auto w-full max-w-wide px-5 sm:px-10 lg:px-16">
               <div className="flyer-mount">
@@ -403,7 +403,7 @@ export default async function SchoolPage() {
       </section>
 
       <SectionDivider ornament="asanoha" />
-      <section className="relative isolate overflow-clip bg-ink-deep text-white">
+      <section id="join" className="relative isolate scroll-mt-28 overflow-clip bg-ink-deep text-white">
         <div className="absolute inset-0 -z-10">
           <Image
             src={joinPhoto.src}

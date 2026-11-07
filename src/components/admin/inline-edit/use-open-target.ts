@@ -8,6 +8,9 @@ export const BLOCKED_MESSAGE =
 function revealOpenField() {
   const open = document.querySelector<HTMLElement>("[data-inline-edit-open]");
   if (!open) return;
+  for (let details = open.closest("details"); details; details = details.parentElement?.closest("details") ?? null) {
+    details.open = true;
+  }
   open.scrollIntoView({ block: "center" });
   open.querySelector<HTMLElement>("textarea, input")?.focus({ preventScroll: true });
 }

@@ -111,7 +111,7 @@ export default async function GroupsPage() {
         }
       />
 
-      <section className="section-wash-groups relative z-10 pt-10 pb-6 sm:pt-14 sm:pb-8 lg:pb-12">
+      <section id="directory" className="section-wash-groups relative z-10 scroll-mt-28 pt-10 pb-6 sm:pt-14 sm:pb-8 lg:pb-12">
         {hasWeek && <BambooThicket />}
         <div className="relative mx-auto max-w-wide px-5 sm:px-10 lg:px-16">
           <div className="reveal-rise mb-12 max-w-3xl">

@@ -153,7 +153,7 @@ export default async function PaymentsPage() {
               </div>
             </div>
 
-            <section aria-labelledby="donate-reasons" className="mt-14 lg:mt-8">
+            <section id="reasons" aria-labelledby="donate-reasons" className="mt-14 scroll-mt-28 lg:mt-8">
               <h2
                 id="donate-reasons"
                 className="flex items-center gap-5 font-display text-2xl font-normal tracking-wide text-white"
@@ -256,7 +256,7 @@ export default async function PaymentsPage() {
       </section>
       <SectionDivider ornament="crest" />
 
-      <section className="relative overflow-clip bg-paper pt-20 pb-1 sm:pt-28">
+      <section id="mosaic" className="relative scroll-mt-28 overflow-clip bg-paper pt-20 pb-1 sm:pt-28">
         <KanjiWatermark char="縁" className="-top-10 -right-14 text-indigo/5" />
         <div className="reveal-rise relative mx-auto max-w-3xl px-5 text-center sm:px-10">
           <SectionKicker
