@@ -6,6 +6,7 @@ import { CENTER_ADDRESS, CENTER_EMAIL, CENTER_PHONE, phoneHref } from "@/lib/cen
 import { ZEFFY_DONATION_EMBED_URL } from "@/lib/donate";
 import { failSoft } from "@/lib/fail-soft";
 import { wallClockNow } from "@/lib/format";
+import { SITE_LINKS, type SiteLinkId } from "@/lib/site-links";
 
 export const getSiteSettings = cache(async function getSiteSettings() {
   const [row] = await db
@@ -70,6 +71,19 @@ export const getDonationDetails = cache(async function getDonationDetails(): Pro
     donateFormUrl: settings?.donateFormUrl ?? ZEFFY_DONATION_EMBED_URL,
   };
 });
+
+export type SiteLinkUrls = ReadonlyMap<SiteLinkId, string>;
+
+export const getSiteLinkUrls = cache(async function getSiteLinkUrls(): Promise<SiteLinkUrls> {
+  const settings = await failSoft(getSiteSettings(), null);
+  return new Map(SITE_LINKS.map((link) => [link.id, settings?.[link.column] ?? link.defaultUrl]));
+});
+
+export function siteLinkUrl(urls: SiteLinkUrls, id: SiteLinkId): string {
+  const url = urls.get(id);
+  if (!url) throw new Error(`No site link is registered as "${id}".`);
+  return url;
+}
 
 export type Announcement = {
   text: string;

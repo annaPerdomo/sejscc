@@ -3,7 +3,7 @@
 import { del, list } from "@vercel/blob";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { sitePhotos, siteText } from "@/db/schema";
+import { SITE_SETTINGS_ID, sitePhotos, siteSettings, siteText } from "@/db/schema";
 import { AdminError, runAction, type ActionResult } from "@/lib/action-result";
 import { requireUser, revalidateSite } from "@/lib/admin";
 import { getBaseDictionaryFor } from "@/lib/dictionaries";
@@ -11,12 +11,14 @@ import { getImageSize } from "@/lib/image-size";
 import type { Locale } from "@/lib/i18n";
 import { readPath } from "@/lib/object-path";
 import { photoSlot, type PhotoSlot } from "@/lib/photo-slots";
+import { normalizeSiteLinkUrl, siteLink } from "@/lib/site-links";
 import { siteTextField } from "@/lib/site-text-fields";
 import { checkedBlobImageUrl } from "@/lib/uploads";
 import { asOneParagraph, tooLongMessage } from "@/lib/volunteer-fields";
 
 const NOT_REGISTERED_MESSAGE = "That sentence can't be changed here.";
 const NOT_REGISTERED_PHOTO_MESSAGE = "That photo spot doesn't exist.";
+const NOT_REGISTERED_LINK_MESSAGE = "That link can't be changed here.";
 const MISSING_ALT_MESSAGE = "Please describe the photo for visitors who can't see it.";
 const NO_OVERRIDE_PHOTO_MESSAGE =
   "This photo is back to the original, so there's no description to change.";
@@ -82,6 +84,33 @@ export async function resetSiteText(path: string, lang: Locale): Promise<ActionR
 
     await setSiteTextColumn(path, checked, null);
     revalidateSite();
+  });
+}
+
+async function setSiteLink(id: string, url: string | null): Promise<void> {
+  const link = siteLink(id);
+  if (!link) throw new AdminError(NOT_REGISTERED_LINK_MESSAGE);
+  const set = { [link.column]: url };
+  await db
+    .insert(siteSettings)
+    .values({ id: SITE_SETTINGS_ID, ...set })
+    .onConflictDoUpdate({ target: siteSettings.id, set });
+  revalidateSite();
+}
+
+export async function updateSiteLink(id: string, url: string): Promise<ActionResult> {
+  return runAction(async () => {
+    await requireUser();
+    const normalized = normalizeSiteLinkUrl(url);
+    if (!normalized) throw new AdminError("Please paste the form's web address, or press Cancel to keep the current link.");
+    await setSiteLink(id, normalized);
+  });
+}
+
+export async function resetSiteLink(id: string): Promise<ActionResult> {
+  return runAction(async () => {
+    await requireUser();
+    await setSiteLink(id, null);
   });
 }
 

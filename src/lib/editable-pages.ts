@@ -1,4 +1,5 @@
 import { PHOTO_SLOTS, type PhotoSlot } from "@/lib/photo-slots";
+import { SITE_LINKS, type SiteLink } from "@/lib/site-links";
 import {
   assertSiteTextRegistry,
   SITE_TEXT_PAGES,
@@ -21,6 +22,7 @@ export type EditableSection = {
   anchor?: string;
   manage?: ManagedElsewhere;
   fields: SiteTextField[];
+  links: SiteLink[];
   photos: PhotoSlot[];
 };
 
@@ -149,6 +151,10 @@ function fieldsFor(pageId: EditablePageId, sectionId: string): SiteTextField[] {
   return page?.sections.find((s) => s.id === sectionId)?.fields ?? [];
 }
 
+function linksFor(pageId: EditablePageId, sectionId: string): SiteLink[] {
+  return SITE_LINKS.filter((link) => link.page === pageId && link.section === sectionId);
+}
+
 function photosFor(pageId: EditablePageId, sectionId: string): PhotoSlot[] {
   return PHOTO_SLOTS.filter((slot) => slot.page === pageId && slot.section === sectionId);
 }
@@ -169,6 +175,7 @@ export const EDITABLE_PAGES: EditablePage[] = EDITABLE_PAGE_IDS.map((pageId) => 
     anchor,
     manage,
     fields: fieldsFor(pageId, id),
+    links: linksFor(pageId, id),
     photos: photosFor(pageId, id),
   })),
 }));
@@ -185,7 +192,11 @@ export function assertEditablePagesRegistry(en: unknown): void {
   const emptySections = EDITABLE_PAGES.flatMap((page) =>
     page.sections
       .filter(
-        (section) => !section.manage && section.fields.length === 0 && section.photos.length === 0
+        (section) =>
+          !section.manage &&
+          section.fields.length === 0 &&
+          section.links.length === 0 &&
+          section.photos.length === 0
       )
       .map((section) => `${page.id}:${section.id}`)
   );
@@ -205,6 +216,15 @@ export function assertEditablePagesRegistry(en: unknown): void {
   if (badSlots.length > 0) {
     throw new Error(
       `These photo slots have a section not declared in the page editors' order: ${badSlots.join(", ")}`
+    );
+  }
+
+  const badLinks = SITE_LINKS.filter(
+    (link) => !declaredSectionsByPage.get(link.page)?.has(link.section)
+  ).map((link) => link.id);
+  if (badLinks.length > 0) {
+    throw new Error(
+      `These links have a section not declared in the page editors' order: ${badLinks.join(", ")}`
     );
   }
 

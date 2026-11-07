@@ -164,6 +164,8 @@ export const siteSettings = pgTable("site_setting", {
   checkPayee: text("check_payee"),
   checkAddress: text("check_address"),
   donateFormUrl: text("donate_form_url"),
+  youthRegistrationUrl: text("youth_registration_url"),
+  adultRegistrationUrl: text("adult_registration_url"),
   announcementText: text("announcement_text"),
   announcementTextJa: text("announcement_text_ja"),
   announcementUrl: text("announcement_url"),

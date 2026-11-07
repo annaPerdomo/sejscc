@@ -15,7 +15,7 @@ import { hasLocale, localePath } from "@/lib/i18n";
 import { schoolPhotos } from "@/lib/photos";
 import { getSchoolLevels } from "@/lib/school-levels";
 import { getSitePhotos, slotPhoto } from "@/lib/site-photos";
-import { ADULT_REGISTRATION_URL, YOUTH_REGISTRATION_URL } from "@/lib/school";
+import { getSiteLinkUrls, siteLinkUrl } from "@/lib/site-settings";
 import { buildSchoolYear } from "@/lib/school-year";
 import { getSchoolYearEvents } from "@/lib/school-year-events";
 
@@ -31,7 +31,6 @@ const SCHOOL_PHONE_HREF = "tel:+15628635996";
 // clear AA on that panel's surface.
 const PLAN_PANELS = {
   youth: {
-    href: YOUTH_REGISTRATION_URL,
     panel: "seigaiha-rings seigaiha-rings-sky bg-navy text-white",
     badge: "bg-magenta text-white",
     meta: "text-sky",
@@ -41,7 +40,6 @@ const PLAN_PANELS = {
     cta: "button-light",
   },
   adult: {
-    href: ADULT_REGISTRATION_URL,
     panel: "bg-cream text-ink",
     badge: "text-indigo",
     meta: "text-ink-soft",
@@ -51,7 +49,6 @@ const PLAN_PANELS = {
     cta: "button-primary text-white",
   },
   dues: {
-    href: `mailto:${SCHOOL_EMAIL}`,
     panel: "bg-lilac text-ink",
     badge: "text-magenta-deep",
     meta: "text-ink-soft",
@@ -88,13 +85,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function SchoolPage() {
   const localePromise = getLocale();
-  const [dict, lang, photos, levels, yearEvents] = await Promise.all([
+  const [dict, lang, photos, links, levels, yearEvents] = await Promise.all([
     getDictionary(),
     localePromise,
     getSitePhotos(),
+    getSiteLinkUrls(),
     localePromise.then((locale) => getSchoolLevels(locale)),
     localePromise.then((locale) => getSchoolYearEvents(locale)),
   ]);
+
+  const youthRegistrationUrl = siteLinkUrl(links, "school.youth-registration");
+  const planHrefs: Record<keyof typeof PLAN_PANELS, string> = {
+    youth: youthRegistrationUrl,
+    adult: siteLinkUrl(links, "school.adult-registration"),
+    dues: `mailto:${SCHOOL_EMAIL}`,
+  };
 
   const year = buildSchoolYear(dict.school.year.seasons, yearEvents, new Date());
 
@@ -130,7 +135,7 @@ export default async function SchoolPage() {
         actions={
           <>
             <ExternalLink
-              href={YOUTH_REGISTRATION_URL}
+              href={youthRegistrationUrl}
               className="button-light px-7 py-4 text-base"
             >
               {dict.school.registerCta}
@@ -304,7 +309,7 @@ export default async function SchoolPage() {
                     ))}
                   </ul>
                   <ExternalLink
-                    href={look.href}
+                    href={planHrefs[plan.id]}
                     className={`mt-auto rounded-lg px-6 py-4 text-center font-display text-base font-semibold ${look.cta}`}
                   >
                     {plan.cta}
@@ -432,7 +437,7 @@ export default async function SchoolPage() {
           </p>
           <div className="reveal-rise mt-10 flex flex-col justify-center gap-3 sm:flex-row">
             <ExternalLink
-              href={YOUTH_REGISTRATION_URL}
+              href={youthRegistrationUrl}
               className="button-light px-8 py-4 text-center text-base"
             >
               {dict.school.join.registerCta}
