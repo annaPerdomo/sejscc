@@ -197,3 +197,98 @@ export function assertSiteTextRegistry(en: unknown): void {
     );
   }
 }
+
+function wordsOf(segment: string): string {
+  if (/^\d+$/.test(segment)) return String(Number(segment) + 1);
+  return segment.replace(/([a-z])([A-Z0-9])/g, "$1 $2").toLowerCase();
+}
+
+function pageWordsLabel(path: string): string {
+  const parts = path
+    .split(".")
+    .slice(1)
+    .map(wordsOf)
+    .reduce<string[]>((joined, part) => {
+      if (/^\d+$/.test(part) && joined.length > 0) joined[joined.length - 1] += ` ${part}`;
+      else joined.push(part);
+      return joined;
+    }, []);
+  const label = parts.join(" — ");
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
+// Must mirror the `dict.*` namespaces each public page reads. `fromDatabase`
+// lists dictionary copies that page renders from the database instead.
+const PAGE_WORD_SOURCES: Record<SiteTextPage["id"], { namespaces: string[]; fromDatabase: string[] }> = {
+  home: { namespaces: ["home", "groups", "school"], fromDatabase: [] },
+  school: { namespaces: ["school", "home"], fromDatabase: ["school.classes.levels", "school.year.events"] },
+  events: { namespaces: ["events", "calendar"], fromDatabase: [] },
+  groups: { namespaces: ["groups"], fromDatabase: [] },
+  donate: { namespaces: ["payments"], fromDatabase: [] },
+};
+
+function isUnder(path: string, prefix: string): boolean {
+  return path === prefix || path.startsWith(`${prefix}.`);
+}
+
+function pageDrawsWordsFrom(pageId: SiteTextPage["id"], path: string): boolean {
+  const { namespaces, fromDatabase } = PAGE_WORD_SOURCES[pageId];
+  return (
+    namespaces.some((namespace) => isUnder(path, namespace)) &&
+    !fromDatabase.some((prefix) => isUnder(path, prefix))
+  );
+}
+
+const SAFE_SEGMENT = /^[A-Za-z0-9_]+$/;
+
+function pageWordsField(path: string, value: string): SiteTextField {
+  const kind: SiteTextKind = value.length > SHORT_FIELD_MAX ? "body" : "short";
+  return { path, label: pageWordsLabel(path), kind, max: Math.max(KIND_MAX[kind], value.length * 2) };
+}
+
+// Keys the pages look things up by, not words they show: a milestone's id
+// finds its photos, and an empty `status` keeps a class open.
+const LOOKUP_KEY = /(^|\.)(id|[A-Za-z]+Id|status)$/;
+
+function isPageWords(path: string, value: string): boolean {
+  if (FIELDS_BY_PATH.has(path) || LOOKUP_KEY.test(path)) return false;
+  // The page fills in "{placeholders}"; an edit that dropped one would break it.
+  return value.trim().length > 0 && !value.includes("{");
+}
+
+// Paths arrive from the browser, so only the dictionary's own keys are
+// followed; "constructor" or "__proto__" would otherwise reach Object itself.
+function ownChild(node: unknown, key: string): unknown {
+  if (!SAFE_SEGMENT.test(key) || typeof node !== "object" || node === null) return undefined;
+  return Object.entries(node).find(([own]) => own === key)?.[1];
+}
+
+function ownStringAt(root: unknown, path: string): string | undefined {
+  const value = path.split(".").reduce<unknown>(ownChild, root);
+  return typeof value === "string" ? value : undefined;
+}
+
+export function pageWordsFields(pageId: SiteTextPage["id"], en: unknown): SiteTextField[] {
+  const fields: SiteTextField[] = [];
+  function walk(node: unknown, path: string) {
+    if (typeof node === "string") {
+      if (pageDrawsWordsFrom(pageId, path) && isPageWords(path, node)) fields.push(pageWordsField(path, node));
+      return;
+    }
+    if (typeof node !== "object" || node === null) return;
+    for (const [key, child] of Object.entries(node)) walk(child, `${path}.${key}`);
+  }
+  for (const namespace of PAGE_WORD_SOURCES[pageId].namespaces) {
+    walk(ownChild(en, namespace), namespace);
+  }
+  return fields;
+}
+
+export function editableSiteTextField(path: string, en: unknown): SiteTextField | undefined {
+  const listed = FIELDS_BY_PATH.get(path);
+  if (listed) return listed;
+  if (!SITE_TEXT_PAGES.some((page) => pageDrawsWordsFrom(page.id, path))) return undefined;
+  const value = ownStringAt(en, path);
+  if (value === undefined || !isPageWords(path, value)) return undefined;
+  return pageWordsField(path, value);
+}

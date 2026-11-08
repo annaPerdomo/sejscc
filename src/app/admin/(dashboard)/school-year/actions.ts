@@ -1,12 +1,13 @@
 "use server";
 
-import { del } from "@vercel/blob";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { schoolYearEvents } from "@/db/schema";
 import { AdminError, runAction, type ActionResult } from "@/lib/action-result";
 import { requireUser, revalidateSite } from "@/lib/admin";
-import { isUploadedFileUrl, slugify } from "@/lib/format";
+import { deleteBlobIfUnused } from "@/lib/blob-cleanup";
+import { slugify } from "@/lib/format";
+import type { Locale } from "@/lib/i18n";
 import { checkedBlobImageUrl } from "@/lib/uploads";
 
 export type SchoolYearEventFormInput = {
@@ -139,14 +140,6 @@ async function nextSortOrder(): Promise<number> {
   return existing.reduce((max, row) => Math.max(max, row.sortOrder), -1) + 1;
 }
 
-async function deleteBlobBestEffort(url: string | null) {
-  if (!url || !isUploadedFileUrl(url)) return;
-  try {
-    await del(url);
-  } catch (error) {
-    console.error("Failed to delete school year event photo blob:", error);
-  }
-}
 
 export async function createSchoolYearEvent(
   input: SchoolYearEventFormInput,
@@ -189,7 +182,7 @@ export async function updateSchoolYearEvent(
       .where(eq(schoolYearEvents.id, id));
 
     if (existing.photoUrl && existing.photoUrl !== nextPhotoUrl) {
-      await deleteBlobBestEffort(existing.photoUrl);
+      await deleteBlobIfUnused(existing.photoUrl);
     }
 
     revalidateSite();
@@ -203,7 +196,7 @@ export async function deleteSchoolYearEvent(id: string): Promise<ActionResult> {
     if (!existing) return;
 
     await db.delete(schoolYearEvents).where(eq(schoolYearEvents.id, id));
-    await deleteBlobBestEffort(existing.photoUrl);
+    await deleteBlobIfUnused(existing.photoUrl);
 
     revalidateSite();
   });
@@ -222,6 +215,82 @@ export async function setSchoolYearEventVisible(
       .returning({ id: schoolYearEvents.id });
     if (result.length === 0) throw new AdminError(NOT_FOUND_MESSAGE);
 
+    revalidateSite();
+  });
+}
+
+export type SchoolYearTextField = "title" | "label" | "when" | "abbr" | "gloss" | "description" | "termJa";
+
+const TEXT_FIELDS = {
+  title: { noun: "event name", max: TITLE_MAX, ja: "titleJa" },
+  label: { noun: "short label", max: LABEL_MAX, ja: "labelJa" },
+  when: { noun: "“when” line", max: WHEN_MAX, ja: "whenJa" },
+  abbr: { noun: "month abbreviation", max: ABBR_MAX, ja: "abbrJa" },
+  gloss: { noun: "“what it means” line", max: GLOSS_MAX, ja: "glossJa" },
+  description: { noun: "description", max: DESCRIPTION_MAX, ja: "descriptionJa" },
+  termJa: { noun: "Japanese name", max: TERM_JA_MAX, ja: "termJa" },
+} as const satisfies Record<SchoolYearTextField, { noun: string; max: number; ja: string }>;
+
+async function existingEvent(id: string) {
+  const [existing] = await db.select().from(schoolYearEvents).where(eq(schoolYearEvents.id, id));
+  if (!existing) throw new AdminError(NOT_FOUND_MESSAGE);
+  return existing;
+}
+
+export async function updateSchoolYearEventText(input: {
+  id: string;
+  field: SchoolYearTextField;
+  lang: Locale;
+  value: string;
+}): Promise<ActionResult> {
+  return runAction(async () => {
+    await requireUser();
+    if (!Object.hasOwn(TEXT_FIELDS, input.field)) {
+      throw new AdminError("That part of the event can't be changed here.");
+    }
+    if (input.lang !== "en" && input.lang !== "ja") throw new AdminError("That language isn't supported.");
+    await existingEvent(input.id);
+
+    const spec = TEXT_FIELDS[input.field];
+    const value = input.value.trim();
+    if (value.length > spec.max) {
+      throw new AdminError(`The ${spec.noun} is too long — please keep it under ${spec.max} characters.`);
+    }
+    const english = input.lang === "en" || input.field === "termJa";
+    if (english && !value) throw new AdminError(`Please enter the ${spec.noun}.`);
+
+    const column = english ? input.field : spec.ja;
+    await db
+      .update(schoolYearEvents)
+      .set({ [column]: value || null })
+      .where(eq(schoolYearEvents.id, input.id));
+    revalidateSite();
+  });
+}
+
+export async function updateSchoolYearEventPhoto(input: {
+  id: string;
+  url: string | "unchanged";
+  alt: string;
+  altJa: string;
+}): Promise<ActionResult> {
+  return runAction(async () => {
+    await requireUser();
+    const existing = await existingEvent(input.id);
+    const photoUrl = input.url === "unchanged" ? existing.photoUrl : checkedBlobImageUrl(input.url);
+    if (!photoUrl) throw new AdminError("That photo didn't upload correctly. Please try again.");
+
+    const photoAlt = input.alt.trim();
+    if (!photoAlt) throw new AdminError("Please describe the photo for people who can't see it.");
+    if (photoAlt.length > DESCRIPTION_MAX || input.altJa.trim().length > DESCRIPTION_MAX) {
+      throw new AdminError(`The description is too long — please keep it under ${DESCRIPTION_MAX} characters.`);
+    }
+
+    await db
+      .update(schoolYearEvents)
+      .set({ photoUrl, photoAlt, photoAltJa: trimmedOrNull(input.altJa) })
+      .where(eq(schoolYearEvents.id, input.id));
+    if (existing.photoUrl !== photoUrl) await deleteBlobIfUnused(existing.photoUrl);
     revalidateSite();
   });
 }

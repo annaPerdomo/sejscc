@@ -1,13 +1,12 @@
 "use server";
 
-import { del } from "@vercel/blob";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { VOLUNTEER_SECTION_ID, boardMembers, volunteerSection } from "@/db/schema";
 import type { SectionTextField } from "@/components/volunteer-section";
 import { AdminError, runAction, type ActionResult } from "@/lib/action-result";
 import { requireUser, revalidateSite } from "@/lib/admin";
-import { isUploadedFileUrl } from "@/lib/format";
+import { deleteBlobIfUnused } from "@/lib/blob-cleanup";
 import type { Locale } from "@/lib/i18n";
 import { checkedBlobImageUrl } from "@/lib/uploads";
 import {
@@ -176,30 +175,14 @@ export async function updateSectionPhoto(input: {
       .set({ photoUrl, photoAlt: photoAlt.en, photoAltJa: photoAlt.ja })
       .where(eq(volunteerSection.id, VOLUNTEER_SECTION_ID));
 
-    if (
-      existing?.photoUrl &&
-      existing.photoUrl !== photoUrl &&
-      isUploadedFileUrl(existing.photoUrl)
-    ) {
-      try {
-        await del(existing.photoUrl);
-      } catch (error) {
-        console.error("Failed to delete the previous board photo blob:", error);
-      }
+    if (existing?.photoUrl && existing.photoUrl !== photoUrl) {
+      await deleteBlobIfUnused(existing.photoUrl);
     }
 
     revalidateSite();
   });
 }
 
-async function deleteBlobBestEffort(url: string | null, label: string) {
-  if (!url || !isUploadedFileUrl(url)) return;
-  try {
-    await del(url);
-  } catch (error) {
-    console.error(`Failed to delete the ${label} blob:`, error);
-  }
-}
 
 export async function updateMemberFields(
   id: string,
@@ -249,7 +232,7 @@ export async function updateMemberPhoto(
     await db.update(boardMembers).set({ photoUrl: checkedUrl }).where(eq(boardMembers.id, id));
 
     if (existing.photoUrl && existing.photoUrl !== checkedUrl) {
-      await deleteBlobBestEffort(existing.photoUrl, "previous board member photo");
+      await deleteBlobIfUnused(existing.photoUrl);
     }
 
     revalidateSite();
@@ -285,7 +268,7 @@ export async function deleteBoardMember(id: string): Promise<ActionResult> {
     if (!existing) throw new AdminError(NOT_FOUND_MESSAGE);
 
     await db.delete(boardMembers).where(eq(boardMembers.id, id));
-    await deleteBlobBestEffort(existing.photoUrl, "board member photo");
+    await deleteBlobIfUnused(existing.photoUrl);
 
     revalidateSite();
   });
@@ -323,6 +306,33 @@ export async function reorderBoardMembers(orderedIds: string[]): Promise<ActionR
     if (!firstUpdate) return;
     await db.batch([firstUpdate, ...restUpdates]);
 
+    revalidateSite();
+  });
+}
+
+export async function updateContactLinkLabel(lang: Locale, label: string): Promise<ActionResult> {
+  return runAction(async () => {
+    await requireUser();
+    if (lang !== "en" && lang !== "ja") throw new AdminError("That language isn't supported.");
+    const spec = SECTION_TEXT_FIELDS.contactLinkLabel;
+    const trimmed = asOneParagraph(label).trim();
+    validateText(lang, spec.label, spec.max, true, trimmed);
+    await db
+      .update(volunteerSection)
+      .set(lang === "en" ? { contactLinkLabel: trimmed } : { contactLinkLabelJa: trimmed || null })
+      .where(eq(volunteerSection.id, VOLUNTEER_SECTION_ID));
+    revalidateSite();
+  });
+}
+
+export async function updateSectionPhotoDescription(photoAlt: string, photoAltJa: string): Promise<ActionResult> {
+  return runAction(async () => {
+    await requireUser();
+    const alt = requiredField(photoAlt, photoAltJa, "photo description", LONG_MAX);
+    await db
+      .update(volunteerSection)
+      .set({ photoAlt: alt.en, photoAltJa: alt.ja })
+      .where(eq(volunteerSection.id, VOLUNTEER_SECTION_ID));
     revalidateSite();
   });
 }

@@ -73,30 +73,50 @@ export type ContactDetailsInput = {
   email: string;
 };
 
+function checkedAddress(raw: string): string | null {
+  const address = raw.trim();
+  if (!address) throw new AdminError("Please enter the street address.");
+  if (address.length > 200) throw new AdminError(tooLongMessage("address", 200));
+  return address === CENTER_ADDRESS ? null : address;
+}
+
+function checkedPhone(raw: string): string | null {
+  const phone = raw.trim();
+  if (!phone) throw new AdminError("Please enter the phone number.");
+  if (phone.length > 40) throw new AdminError(tooLongMessage("phone number", 40));
+  return phone === CENTER_PHONE ? null : phone;
+}
+
+function checkedEmail(raw: string): string | null {
+  const email = normalizeContactEmail(raw);
+  if (!email) throw new AdminError("Please enter the email address.");
+  return email === CENTER_EMAIL ? null : email;
+}
+
+const CONTACT_CHECKS = { address: checkedAddress, phone: checkedPhone, email: checkedEmail };
+
 export async function updateContactDetails(
   input: ContactDetailsInput
 ): Promise<ActionResult> {
   return runAction(async () => {
     await requireUser();
-
-    const address = input.address.trim();
-    if (!address) throw new AdminError("Please enter the street address.");
-    if (address.length > 200) throw new AdminError(tooLongMessage("address", 200));
-
-    const phone = input.phone.trim();
-    if (!phone) throw new AdminError("Please enter the phone number.");
-    if (phone.length > 40) throw new AdminError(tooLongMessage("phone number", 40));
-
-    const email = input.email.trim();
-    if (!email) throw new AdminError("Please enter the email address.");
-    const normalizedEmail = normalizeContactEmail(email);
-    if (!normalizedEmail) throw new AdminError("Please enter the email address.");
-
     await upsertSiteSettings({
-      address: address === CENTER_ADDRESS ? null : address,
-      phone: phone === CENTER_PHONE ? null : phone,
-      email: normalizedEmail === CENTER_EMAIL ? null : normalizedEmail,
+      address: checkedAddress(input.address),
+      phone: checkedPhone(input.phone),
+      email: checkedEmail(input.email),
     });
+    revalidateSite();
+  });
+}
+
+export async function updateContactField(
+  field: keyof ContactDetailsInput,
+  value: string
+): Promise<ActionResult> {
+  return runAction(async () => {
+    await requireUser();
+    if (!Object.hasOwn(CONTACT_CHECKS, field)) throw new AdminError("That contact detail doesn't exist.");
+    await upsertSiteSettings({ [field]: CONTACT_CHECKS[field](value) });
     revalidateSite();
   });
 }
@@ -130,35 +150,42 @@ function normalizeDonateFormUrl(raw: string): string | null {
   return url.href;
 }
 
+const DONATION_TEXT_LIMITS = {
+  zelleRecipient: { noun: "Zelle name or email", max: 120 },
+  checkPayee: { noun: "checks payable to name", max: 120 },
+  checkAddress: { noun: "mailing address", max: 200 },
+};
+
+function checkedDonationText(field: keyof typeof DONATION_TEXT_LIMITS, raw: string): string | null {
+  const { noun, max } = DONATION_TEXT_LIMITS[field];
+  const value = raw.trim();
+  if (value.length > max) throw new AdminError(tooLongMessage(noun, max));
+  return value || null;
+}
+
 export async function updateDonationDetails(
   input: DonationDetailsInput
 ): Promise<ActionResult> {
   return runAction(async () => {
     await requireUser();
-
-    const zelleRecipient = input.zelleRecipient.trim();
-    if (zelleRecipient.length > 120) {
-      throw new AdminError(tooLongMessage("Zelle name or email", 120));
-    }
-
-    const checkPayee = input.checkPayee.trim();
-    if (checkPayee.length > 120) {
-      throw new AdminError(tooLongMessage("checks payable to name", 120));
-    }
-
-    const checkAddress = input.checkAddress.trim();
-    if (checkAddress.length > 200) {
-      throw new AdminError(tooLongMessage("mailing address", 200));
-    }
-
-    const donateFormUrl = normalizeDonateFormUrl(input.donateFormUrl);
-
     await upsertSiteSettings({
-      zelleRecipient: zelleRecipient || null,
-      checkPayee: checkPayee || null,
-      checkAddress: checkAddress || null,
-      donateFormUrl,
+      zelleRecipient: checkedDonationText("zelleRecipient", input.zelleRecipient),
+      checkPayee: checkedDonationText("checkPayee", input.checkPayee),
+      checkAddress: checkedDonationText("checkAddress", input.checkAddress),
+      donateFormUrl: normalizeDonateFormUrl(input.donateFormUrl),
     });
+    revalidateSite();
+  });
+}
+
+export async function updateDonationField(
+  field: keyof typeof DONATION_TEXT_LIMITS,
+  value: string
+): Promise<ActionResult> {
+  return runAction(async () => {
+    await requireUser();
+    if (!Object.hasOwn(DONATION_TEXT_LIMITS, field)) throw new AdminError("That donation detail doesn't exist.");
+    await upsertSiteSettings({ [field]: checkedDonationText(field, value) });
     revalidateSite();
   });
 }

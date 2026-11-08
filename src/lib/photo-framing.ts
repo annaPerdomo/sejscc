@@ -2,6 +2,10 @@ import type { CSSProperties } from "react";
 
 export type PhotoFraming = { x: number; y: number; zoom: number };
 
+// A site_photo row with this address keeps the spot's own photo and only
+// stores how it is framed, so renaming a bundled photo can't orphan it.
+export const ORIGINAL_PHOTO_URL = "";
+
 export const ZOOM_MIN = 100;
 export const ZOOM_MAX = 300;
 export const ZOOM_STEP = 10;

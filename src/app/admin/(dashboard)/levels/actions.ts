@@ -1,13 +1,20 @@
 "use server";
 
-import { del } from "@vercel/blob";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { schoolLevels, schoolLevelStatuses, type SchoolLevelStatus } from "@/db/schema";
 import { AdminError, runAction, type ActionResult } from "@/lib/action-result";
 import { requireUser, revalidateSite } from "@/lib/admin";
-import { isUploadedFileUrl } from "@/lib/format";
+import { deleteBlobIfUnused } from "@/lib/blob-cleanup";
+import type { Locale } from "@/lib/i18n";
 import { checkedBlobImageUrl } from "@/lib/uploads";
+import {
+  LEVEL_DESCRIPTION_MAX,
+  LEVEL_KANJI_MAX,
+  LEVEL_NAME_MAX,
+  LEVEL_POINT_MAX,
+  LEVEL_SUMMARY_MAX,
+} from "@/lib/school-level-limits";
 
 export type LevelInput = {
   name: string;
@@ -26,10 +33,7 @@ export type LevelInput = {
 
 export type PhotoUrlInput = string | null | "unchanged";
 
-const NAME_MAX = 80;
-const KANJI_MAX = 8;
-const SUMMARY_MAX = 160;
-const DESCRIPTION_MAX = 1200;
+const ALT_MAX = 600;
 
 const NOT_FOUND_MESSAGE =
   "That class level no longer exists. Please reload the page.";
@@ -49,21 +53,21 @@ function linesOf(value: string): string[] {
 function levelValues(input: LevelInput, requirePhotoAlt: boolean) {
   const name = input.name.trim();
   if (!name) throw new AdminError("Please enter a name for this class level.");
-  if (name.length > NAME_MAX) {
-    throw new AdminError(`The name is too long — please keep it under ${NAME_MAX} characters.`);
+  if (name.length > LEVEL_NAME_MAX) {
+    throw new AdminError(`The name is too long — please keep it under ${LEVEL_NAME_MAX} characters.`);
   }
 
   const summary = input.summary.trim();
   if (!summary) throw new AdminError("Please enter a one-line summary.");
-  if (summary.length > SUMMARY_MAX) {
-    throw new AdminError(`The summary is too long — please keep it under ${SUMMARY_MAX} characters.`);
+  if (summary.length > LEVEL_SUMMARY_MAX) {
+    throw new AdminError(`The summary is too long — please keep it under ${LEVEL_SUMMARY_MAX} characters.`);
   }
 
   const description = input.description.trim();
   if (!description) throw new AdminError("Please enter a description.");
-  if (description.length > DESCRIPTION_MAX) {
+  if (description.length > LEVEL_DESCRIPTION_MAX) {
     throw new AdminError(
-      `The description is too long — please keep it under ${DESCRIPTION_MAX} characters.`
+      `The description is too long — please keep it under ${LEVEL_DESCRIPTION_MAX} characters.`
     );
   }
 
@@ -72,8 +76,8 @@ function levelValues(input: LevelInput, requirePhotoAlt: boolean) {
   }
 
   const kanji = input.kanji.trim();
-  if (kanji.length > KANJI_MAX) {
-    throw new AdminError(`The plaque kanji is too long — please keep it under ${KANJI_MAX} characters.`);
+  if (kanji.length > LEVEL_KANJI_MAX) {
+    throw new AdminError(`The plaque kanji is too long — please keep it under ${LEVEL_KANJI_MAX} characters.`);
   }
 
   const photoAlt = input.photoAlt.trim();
@@ -102,14 +106,6 @@ async function nextSortOrder(): Promise<number> {
   return existing.reduce((max, row) => Math.max(max, row.sortOrder), -1) + 1;
 }
 
-async function deleteBlobBestEffort(url: string | null) {
-  if (!url || !isUploadedFileUrl(url)) return;
-  try {
-    await del(url);
-  } catch (error) {
-    console.error("Failed to delete class level photo blob:", error);
-  }
-}
 
 export async function createSchoolLevel(
   input: LevelInput,
@@ -151,7 +147,7 @@ export async function updateSchoolLevel(
       .where(eq(schoolLevels.id, id));
 
     if (existing.photoUrl && existing.photoUrl !== nextPhotoUrl) {
-      await deleteBlobBestEffort(existing.photoUrl);
+      await deleteBlobIfUnused(existing.photoUrl);
     }
 
     revalidateSite();
@@ -165,7 +161,7 @@ export async function deleteSchoolLevel(id: string): Promise<ActionResult> {
     if (!existing) return;
 
     await db.delete(schoolLevels).where(eq(schoolLevels.id, id));
-    await deleteBlobBestEffort(existing.photoUrl);
+    await deleteBlobIfUnused(existing.photoUrl);
 
     revalidateSite();
   });
@@ -220,5 +216,120 @@ export async function reorderSchoolLevels(
 
     revalidateSite();
     return { ok: true };
+  });
+}
+
+export type LevelTextField = "name" | "summary" | "description" | "kanji";
+
+const LEVEL_TEXT_FIELDS = {
+  name: { noun: "name", max: LEVEL_NAME_MAX, en: "name", ja: "nameJa" },
+  summary: { noun: "summary", max: LEVEL_SUMMARY_MAX, en: "summary", ja: "summaryJa" },
+  description: { noun: "description", max: LEVEL_DESCRIPTION_MAX, en: "description", ja: "descriptionJa" },
+  kanji: { noun: "plaque kanji", max: LEVEL_KANJI_MAX, en: "kanji", ja: "kanji" },
+} as const satisfies Record<LevelTextField, { noun: string; max: number; en: string; ja: string }>;
+
+async function existingLevel(id: string) {
+  const [existing] = await db.select().from(schoolLevels).where(eq(schoolLevels.id, id));
+  if (!existing) throw new AdminError(NOT_FOUND_MESSAGE);
+  return existing;
+}
+
+function checkedLang(lang: string): Locale {
+  if (lang !== "en" && lang !== "ja") throw new AdminError("That language isn't supported.");
+  return lang;
+}
+
+export async function updateSchoolLevelText(input: {
+  id: string;
+  field: LevelTextField;
+  lang: Locale;
+  value: string;
+}): Promise<ActionResult> {
+  return runAction(async () => {
+    await requireUser();
+    if (!Object.hasOwn(LEVEL_TEXT_FIELDS, input.field)) {
+      throw new AdminError("That part of the class can't be changed here.");
+    }
+    const spec = LEVEL_TEXT_FIELDS[input.field];
+    const lang = checkedLang(input.lang);
+    await existingLevel(input.id);
+
+    const value = input.value.trim();
+    if (value.length > spec.max) {
+      throw new AdminError(`The ${spec.noun} is too long — please keep it under ${spec.max} characters.`);
+    }
+    const required = lang === "en" && input.field !== "kanji";
+    if (required && !value) throw new AdminError(`Please enter a ${spec.noun} for this class.`);
+
+    const column = lang === "en" ? spec.en : spec.ja;
+    await db
+      .update(schoolLevels)
+      .set({ [column]: value || null })
+      .where(eq(schoolLevels.id, input.id));
+    revalidateSite();
+  });
+}
+
+// An empty pointsJa makes /ja show the English points (getSchoolLevels), so it
+// is cleared again once no point differs, or later English edits wouldn't reach /ja.
+export async function updateSchoolLevelPoint(input: {
+  id: string;
+  index: number;
+  lang: Locale;
+  value: string;
+}): Promise<ActionResult> {
+  return runAction(async () => {
+    await requireUser();
+    const lang = checkedLang(input.lang);
+    const existing = await existingLevel(input.id);
+    if (!Number.isInteger(input.index) || input.index < 0 || input.index >= existing.points.length) {
+      throw new AdminError("That point no longer exists. Please reload the page.");
+    }
+
+    const value = input.value.trim();
+    if (!value && lang === "en") {
+      throw new AdminError("Please type the point, or press Cancel to keep it as it is.");
+    }
+    if (value.length > LEVEL_POINT_MAX) {
+      throw new AdminError(`The point is too long — please keep it under ${LEVEL_POINT_MAX} characters.`);
+    }
+
+    if (lang === "en") {
+      const points = existing.points.map((point, i) => (i === input.index ? value : point));
+      await db.update(schoolLevels).set({ points }).where(eq(schoolLevels.id, input.id));
+    } else {
+      const base = existing.pointsJa.length > 0 ? existing.pointsJa : existing.points;
+      const translated = base.map((point, i) => (i === input.index ? value || existing.points[i] : point));
+      const pointsJa = translated.every((point, i) => point === existing.points[i]) ? [] : translated;
+      await db.update(schoolLevels).set({ pointsJa }).where(eq(schoolLevels.id, input.id));
+    }
+    revalidateSite();
+  });
+}
+
+export async function updateSchoolLevelPhoto(input: {
+  id: string;
+  url: string | "unchanged";
+  alt: string;
+  altJa: string;
+}): Promise<ActionResult> {
+  return runAction(async () => {
+    await requireUser();
+    const existing = await existingLevel(input.id);
+    const photoUrl = input.url === "unchanged" ? existing.photoUrl : checkedBlobImageUrl(input.url);
+    if (!photoUrl) throw new AdminError("That photo didn't upload correctly. Please try again.");
+
+    const photoAlt = input.alt.trim();
+    if (!photoAlt) throw new AdminError("Please describe the photo for visitors who can't see it.");
+    if (photoAlt.length > ALT_MAX || input.altJa.trim().length > ALT_MAX) {
+      throw new AdminError(`The description is too long — please keep it under ${ALT_MAX} characters.`);
+    }
+
+    await db
+      .update(schoolLevels)
+      .set({ photoUrl, photoAlt, photoAltJa: trimmedOrNull(input.altJa) })
+      .where(eq(schoolLevels.id, input.id));
+    if (existing.photoUrl !== photoUrl) await deleteBlobIfUnused(existing.photoUrl);
+    revalidateSite();
   });
 }

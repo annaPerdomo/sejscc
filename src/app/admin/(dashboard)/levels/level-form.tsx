@@ -17,13 +17,15 @@ import {
 import { AdminImagePicker } from "@/components/admin/admin-image-picker";
 import type { SchoolLevel, SchoolLevelStatus } from "@/db/schema";
 import { expectOk } from "@/lib/action-result";
+import {
+  LEVEL_DESCRIPTION_MAX,
+  LEVEL_KANJI_MAX,
+  LEVEL_NAME_MAX,
+  LEVEL_SUMMARY_MAX,
+} from "@/lib/school-level-limits";
 import { createSchoolLevel, updateSchoolLevel, type LevelInput, type PhotoUrlInput } from "./actions";
 import { SCHOOL_LEVEL_STATUS_OPTIONS } from "./status";
 
-const NAME_MAX = 80;
-const KANJI_MAX = 8;
-const SUMMARY_MAX = 160;
-const DESCRIPTION_MAX = 1200;
 
 export function LevelForm({ level }: { level?: SchoolLevel }) {
   const router = useRouter();
@@ -139,16 +141,16 @@ export function LevelForm({ level }: { level?: SchoolLevel }) {
           }
           value={name}
           onChange={(e) => setName(e.target.value)}
-          maxLength={NAME_MAX}
+          maxLength={LEVEL_NAME_MAX}
           placeholder="e.g. Beginning Level Japanese"
         />
-        <AdminCharacterCount value={name} max={NAME_MAX} />
+        <AdminCharacterCount value={name} max={LEVEL_NAME_MAX} />
         <div className="mt-5">
           <AdminTextField
             label="Japanese name (optional)"
             value={nameJa}
             onChange={(e) => setNameJa(e.target.value)}
-            maxLength={NAME_MAX}
+            maxLength={LEVEL_NAME_MAX}
             placeholder="e.g. 初級クラス"
           />
         </div>
@@ -157,7 +159,7 @@ export function LevelForm({ level }: { level?: SchoolLevel }) {
             label="Short kanji label shown on the photo plaque (optional)"
             value={kanji}
             onChange={(e) => setKanji(e.target.value)}
-            maxLength={KANJI_MAX}
+            maxLength={LEVEL_KANJI_MAX}
             placeholder="e.g. 初級"
           />
         </div>
@@ -174,17 +176,17 @@ export function LevelForm({ level }: { level?: SchoolLevel }) {
             }
             value={summary}
             onChange={(e) => setSummary(e.target.value)}
-            maxLength={SUMMARY_MAX}
+            maxLength={LEVEL_SUMMARY_MAX}
             placeholder="e.g. No prior language knowledge required"
           />
-          <AdminCharacterCount value={summary} max={SUMMARY_MAX} />
+          <AdminCharacterCount value={summary} max={LEVEL_SUMMARY_MAX} />
         </div>
         <div className="mt-5">
           <AdminTextField
             label="Japanese summary (optional)"
             value={summaryJa}
             onChange={(e) => setSummaryJa(e.target.value)}
-            maxLength={SUMMARY_MAX}
+            maxLength={LEVEL_SUMMARY_MAX}
           />
         </div>
         <p className="mt-3 text-xs text-stone">
@@ -203,18 +205,18 @@ export function LevelForm({ level }: { level?: SchoolLevel }) {
             }
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            maxLength={DESCRIPTION_MAX}
+            maxLength={LEVEL_DESCRIPTION_MAX}
             rows={6}
             placeholder="Describe what students learn in this class…"
           />
-          <AdminCharacterCount value={description} max={DESCRIPTION_MAX} />
+          <AdminCharacterCount value={description} max={LEVEL_DESCRIPTION_MAX} />
         </div>
         <div className="mt-5">
           <AdminTextArea
             label="Japanese description (optional)"
             value={descriptionJa}
             onChange={(e) => setDescriptionJa(e.target.value)}
-            maxLength={DESCRIPTION_MAX}
+            maxLength={LEVEL_DESCRIPTION_MAX}
             rows={6}
           />
         </div>

@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { sitePhotos } from "@/db/schema";
 import { failSoft } from "@/lib/fail-soft";
 import type { Locale } from "@/lib/i18n";
-import { framingFromRow } from "@/lib/photo-framing";
+import { ORIGINAL_PHOTO_URL, framingFromRow } from "@/lib/photo-framing";
 import { photoSlot } from "@/lib/photo-slots";
 import type { SitePhotoSource } from "@/components/site-photo";
 
@@ -30,6 +30,9 @@ export function slotPhoto(
   const row = map.get(id);
   if (!row) {
     return { src: slot?.defaultSrc ?? "", alt: defaultAlt };
+  }
+  if (row.url === ORIGINAL_PHOTO_URL) {
+    return { src: slot?.defaultSrc ?? "", alt: defaultAlt, framing: framingFromRow(row) };
   }
 
   return {

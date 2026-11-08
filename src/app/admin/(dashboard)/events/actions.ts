@@ -298,3 +298,23 @@ async function sweepUnkeptFlyerArt() {
     console.error("Failed to sweep unkept flyer art:", error);
   }
 }
+
+const EVENT_TITLE_MAX = 200;
+
+export async function updateEventTitle(id: string, title: string): Promise<ActionResult> {
+  return runAction(async () => {
+    await requireUser();
+    const trimmed = title.trim();
+    if (!trimmed) throw new AdminError("An event title is required.");
+    if (trimmed.length > EVENT_TITLE_MAX) {
+      throw new AdminError(`The title is too long — please keep it under ${EVENT_TITLE_MAX} characters.`);
+    }
+    const result = await db
+      .update(events)
+      .set({ title: trimmed })
+      .where(eq(events.id, id))
+      .returning({ id: events.id });
+    if (result.length === 0) throw new AdminError("That event no longer exists. Please reload the page.");
+    revalidateSite();
+  });
+}

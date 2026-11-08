@@ -1,6 +1,5 @@
 "use server";
 
-import { del } from "@vercel/blob";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { groups, weekDays, type GroupStatus, type WeekDay } from "@/db/schema";
@@ -12,6 +11,7 @@ import {
   normalizeWebsiteUrl,
   slugify,
 } from "@/lib/format";
+import { deleteBlobIfUnused } from "@/lib/blob-cleanup";
 import { checkedBlobImageUrl } from "@/lib/uploads";
 
 export type GroupInput = {
@@ -72,15 +72,8 @@ function groupValues(input: GroupInput) {
   };
 }
 
-// Best-effort: the row is already written, so a failed cleanup must not
-// surface as a save error.
 async function deleteImages(urls: string[]) {
-  if (urls.length === 0) return;
-  try {
-    await del(urls);
-  } catch (error) {
-    console.error("Failed to delete group image blobs:", error);
-  }
+  await Promise.all(urls.map(deleteBlobIfUnused));
 }
 
 export async function createGroup(input: GroupInput): Promise<ActionResult> {
@@ -169,5 +162,39 @@ export async function reorderGroups(
 
     revalidateSite();
     return { ok: true };
+  });
+}
+
+export type GroupTextField = "name" | "nameJa" | "meetingSchedule" | "description" | "contactEmail";
+
+const GROUP_TEXT_LIMITS: Record<Exclude<GroupTextField, "contactEmail">, { noun: string; max: number }> = {
+  name: { noun: "group name", max: 100 },
+  nameJa: { noun: "Japanese name", max: 60 },
+  meetingSchedule: { noun: "meeting times", max: 100 },
+  description: { noun: "description", max: 500 },
+};
+
+function checkedGroupText(field: GroupTextField, raw: string): string | null {
+  if (field === "contactEmail") return normalizeContactEmail(raw);
+  const { noun, max } = GROUP_TEXT_LIMITS[field];
+  const value = raw.trim();
+  if (field === "name" && !value) throw new AdminError("A group name is required.");
+  if (value.length > max) throw new AdminError(`The ${noun} is too long — please keep it under ${max} characters.`);
+  return value || null;
+}
+
+export async function updateGroupText(id: string, field: GroupTextField, value: string): Promise<ActionResult> {
+  return runAction(async () => {
+    await requireUser();
+    if (!["name", "nameJa", "meetingSchedule", "description", "contactEmail"].includes(field)) {
+      throw new AdminError("That part of the group can't be changed here.");
+    }
+    const result = await db
+      .update(groups)
+      .set({ [field]: checkedGroupText(field, value) })
+      .where(eq(groups.id, id))
+      .returning({ id: groups.id });
+    if (result.length === 0) throw new AdminError("Group not found.");
+    revalidateSite();
   });
 }

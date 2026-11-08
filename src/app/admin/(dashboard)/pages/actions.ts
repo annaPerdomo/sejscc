@@ -1,16 +1,18 @@
 "use server";
 
-import { del, list } from "@vercel/blob";
+import { list } from "@vercel/blob";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { SITE_SETTINGS_ID, sitePhotos, siteSettings, siteText } from "@/db/schema";
 import { AdminError, runAction, type ActionResult } from "@/lib/action-result";
 import { requireUser, revalidateSite } from "@/lib/admin";
+import { deleteBlobIfUnused } from "@/lib/blob-cleanup";
 import { getBaseDictionaryFor } from "@/lib/dictionaries";
 import { getImageSize } from "@/lib/image-size";
 import type { Locale } from "@/lib/i18n";
 import { readPath } from "@/lib/object-path";
 import {
+  ORIGINAL_PHOTO_URL,
   ZOOM_MAX,
   ZOOM_MIN,
   framingToRow,
@@ -18,7 +20,7 @@ import {
 } from "@/lib/photo-framing";
 import { photoSlot, type PhotoSlot } from "@/lib/photo-slots";
 import { normalizeSiteLinkUrl, siteLink } from "@/lib/site-links";
-import { siteTextField } from "@/lib/site-text-fields";
+import { editableSiteTextField } from "@/lib/site-text-fields";
 import { checkedBlobImageUrl } from "@/lib/uploads";
 import { asOneParagraph, tooLongMessage } from "@/lib/volunteer-fields";
 
@@ -60,7 +62,7 @@ export async function updateSiteText(path: string, lang: Locale, value: string):
   return runAction(async () => {
     await requireUser();
 
-    const fieldSpec = siteTextField(path);
+    const fieldSpec = editableSiteTextField(path, await getBaseDictionaryFor("en"));
     if (!fieldSpec) throw new AdminError(NOT_REGISTERED_MESSAGE);
     const checked = checkedLang(lang);
 
@@ -85,7 +87,9 @@ export async function resetSiteText(path: string, lang: Locale): Promise<ActionR
   return runAction(async () => {
     await requireUser();
 
-    if (!siteTextField(path)) throw new AdminError(NOT_REGISTERED_MESSAGE);
+    if (!editableSiteTextField(path, await getBaseDictionaryFor("en"))) {
+      throw new AdminError(NOT_REGISTERED_MESSAGE);
+    }
     const checked = checkedLang(lang);
 
     await setSiteTextColumn(path, checked, null);
@@ -162,20 +166,6 @@ function checkedAltJa(altJa: string): string | null {
 
 // Call only after the row pointing at `url` has already been updated or
 // deleted, so a remaining match means a different slot still needs the blob.
-async function deleteOrphanedBlob(url: string | null): Promise<void> {
-  if (!url) return;
-  const [stillUsed] = await db
-    .select({ slot: sitePhotos.slot })
-    .from(sitePhotos)
-    .where(eq(sitePhotos.url, url));
-  if (stillUsed) return;
-  try {
-    await del(url);
-  } catch (error) {
-    console.error("Failed to delete photo blob:", error);
-  }
-}
-
 export async function updateSitePhoto(input: {
   slot: string;
   url: string;
@@ -209,7 +199,7 @@ export async function updateSitePhoto(input: {
       .onConflictDoUpdate({ target: sitePhotos.slot, set });
 
     if (existing && existing.url !== url) {
-      await deleteOrphanedBlob(existing.url);
+      await deleteBlobIfUnused(existing.url);
     }
 
     revalidateSite();
@@ -240,6 +230,30 @@ export async function updateSitePhotoDetails(input: {
   });
 }
 
+export async function updateOriginalPhotoFraming(input: {
+  slot: string;
+  framing: PhotoFraming;
+}): Promise<ActionResult> {
+  return runAction(async () => {
+    await requireUser();
+    const slot = checkedSlot(input.slot);
+    if (slot.framable === false) throw new AdminError("This photo always shows in full.");
+    const framing = framingToRow(checkedFraming(input.framing));
+
+    const [existing] = await db.select().from(sitePhotos).where(eq(sitePhotos.slot, slot.id));
+    if (existing && existing.url !== ORIGINAL_PHOTO_URL) {
+      throw new AdminError("This photo was replaced in the meantime. Please close this and try again.");
+    }
+
+    const set = { url: ORIGINAL_PHOTO_URL, alt: "", altJa: null, width: null, height: null, ...framing };
+    await db
+      .insert(sitePhotos)
+      .values({ slot: slot.id, ...set })
+      .onConflictDoUpdate({ target: sitePhotos.slot, set });
+    revalidateSite();
+  });
+}
+
 export async function resetSitePhoto(slotId: string): Promise<ActionResult> {
   return runAction(async () => {
     await requireUser();
@@ -249,7 +263,7 @@ export async function resetSitePhoto(slotId: string): Promise<ActionResult> {
     if (!existing) return;
 
     await db.delete(sitePhotos).where(eq(sitePhotos.slot, slot.id));
-    await deleteOrphanedBlob(existing.url);
+    await deleteBlobIfUnused(existing.url);
 
     revalidateSite();
   });
