@@ -221,7 +221,15 @@ function pageWordsLabel(path: string): string {
 // lists dictionary copies that page renders from the database instead.
 const PAGE_WORD_SOURCES: Record<SiteTextPage["id"], { namespaces: string[]; fromDatabase: string[] }> = {
   home: { namespaces: ["home", "groups", "school"], fromDatabase: [] },
-  school: { namespaces: ["school", "home"], fromDatabase: ["school.classes.levels", "school.year.events"] },
+  school: {
+    namespaces: [
+      "school",
+      "home.japaneseSchool.plaque",
+      "home.japaneseSchool.sealAccent",
+      "home.japaneseSchool.sealYear",
+    ],
+    fromDatabase: ["school.classes.levels", "school.year.events"],
+  },
   events: { namespaces: ["events", "calendar"], fromDatabase: [] },
   groups: { namespaces: ["groups"], fromDatabase: [] },
   donate: { namespaces: ["payments"], fromDatabase: [] },
@@ -279,7 +287,7 @@ export function pageWordsFields(pageId: SiteTextPage["id"], en: unknown): SiteTe
     for (const [key, child] of Object.entries(node)) walk(child, `${path}.${key}`);
   }
   for (const namespace of PAGE_WORD_SOURCES[pageId].namespaces) {
-    walk(ownChild(en, namespace), namespace);
+    walk(namespace.split(".").reduce<unknown>(ownChild, en), namespace);
   }
   return fields;
 }

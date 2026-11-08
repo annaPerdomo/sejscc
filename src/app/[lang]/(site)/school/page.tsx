@@ -181,7 +181,7 @@ export default async function SchoolPage() {
                   {fact.label}
                 </dt>
                 <dd className="mt-1.5 font-display text-xl font-medium text-white">
-                  {fact.value}
+                  <span>{fact.value}</span>
                   <span className="mt-1 block font-sans text-base font-normal text-white/80">
                     {fact.note}
                   </span>
