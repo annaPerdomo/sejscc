@@ -10,23 +10,34 @@ import { EditableText } from "@/components/admin/inline-edit/editable-text";
 import { EditableUrl } from "@/components/admin/inline-edit/editable-url";
 import type { PageEditTarget } from "@/components/admin/inline-edit/page-edit-targets";
 import { PageEditor } from "@/components/admin/inline-edit/page-editor";
+import { PhotoFramingBar } from "@/components/admin/inline-edit/photo-framing-bar";
 import {
   PhotoDialog,
   PhotoSlotEditor,
   PhotoSlotTile,
+  photoSlotTitle,
   type PhotoTile,
 } from "@/components/admin/inline-edit/photo-slot-tile";
 import { useOpenTarget } from "@/components/admin/inline-edit/use-open-target";
 import { useUndo, type UndoEntry } from "@/components/admin/inline-edit/use-undo";
 import { useUnsavedChangesGuard } from "@/components/admin/inline-edit/use-unsaved-changes-guard";
 import type { EditablePage, ManagedElsewhere } from "@/lib/editable-pages";
-import type { PhotoSlot } from "@/lib/photo-slots";
+import { DEFAULT_FRAMING, isDefaultFraming, sameFraming, type PhotoFraming } from "@/lib/photo-framing";
+import { photoSlot, type PhotoSlot } from "@/lib/photo-slots";
 import type { Dictionary } from "@/lib/dictionaries";
 import type { Locale } from "@/lib/i18n";
 import { readPath } from "@/lib/object-path";
 import { normalizeSiteLinkUrl, type SiteLink } from "@/lib/site-links";
 import type { SiteTextField } from "@/lib/site-text-fields";
-import { resetSiteLink, resetSiteText, updateSiteLink, updateSiteText } from "../actions";
+import {
+  resetSiteLink,
+  resetSitePhoto,
+  resetSiteText,
+  updateOriginalPhotoFraming,
+  updateSiteLink,
+  updateSitePhotoDetails,
+  updateSiteText,
+} from "../actions";
 import {
   recordItems,
   type PageRecords,
@@ -55,7 +66,13 @@ function isWordsItem(item: PageItem): item is WordsItem {
   return item.kind === "text" || item.kind === "link" || (item.kind === "record" && item.item.kind === "recordWords");
 }
 
+type FramingDraft = { slot: PhotoSlot; draft: PhotoFraming; saving: boolean; error: string | null };
+
 const GENERIC_SAVE_ERROR = "Something went wrong saving this. Please try again.";
+const UNMOVED_PHOTO_MESSAGE =
+  "Move or zoom the photo first, or press Cancel to leave it as it is.";
+const PHOTO_NOT_SHOWING_MESSAGE =
+  "That photo isn't showing on the page right now. Try again when it comes back around.";
 const EMPTY_FIELD_MESSAGE =
   "This spot on the website can't be left empty. Please type something, or press Cancel to keep the words as they are.";
 
@@ -74,6 +91,14 @@ function stringAt(dict: Dictionary, path: string): string {
 
 function localizedHref(lang: Locale, href: string): string {
   return href === "/" ? `/${lang}` : `/${lang}${href}`;
+}
+
+function saveSlotFraming(slot: PhotoSlot, tile: PhotoTile, framing: PhotoFraming | undefined) {
+  if (tile.isChanged) {
+    const { alt, altJa } = tile.current;
+    return updateSitePhotoDetails({ slot: slot.id, alt, altJa, framing: framing ?? DEFAULT_FRAMING });
+  }
+  return framing ? updateOriginalPhotoFraming({ slot: slot.id, framing }) : resetSitePhoto(slot.id);
 }
 
 export function PageCanvas({
@@ -109,6 +134,7 @@ export function PageCanvas({
   const [recordPhoto, setRecordPhoto] = useState<RecordPhoto | null>(null);
   const [recordElsewhere, setRecordElsewhere] = useState<RecordElsewhere | null>(null);
   const [foundKeys, setFoundKeys] = useState<ReadonlySet<string> | null>(null);
+  const [framing, setFraming] = useState<FramingDraft | null>(null);
 
   const editState = useOpenTarget();
   const undo = useUndo();
@@ -411,10 +437,61 @@ export function PageCanvas({
   }
 
   function onPhotoSaved(next: PhotoTile, undoEntry?: UndoEntry) {
+    const previous = tiles[next.slot];
     onTileChange(next);
     if (undoEntry) undo.record(undoEntry);
     else undo.clear();
     reloadPage();
+    const slot = photoSlot(next.slot);
+    const isNewPhoto = next.isChanged && next.current.src !== previous.current.src;
+    const onPage = foundKeys?.has(`photo:${next.slot}`);
+    if (slot && slot.framable !== false && isNewPhoto && onPage) startFraming(slot, next.current.framing);
+  }
+
+  function startFraming(slot: PhotoSlot, saved: PhotoFraming | undefined) {
+    setPickedPhoto(null);
+    setPhotoGroup(null);
+    setFraming({ slot, draft: saved ?? DEFAULT_FRAMING, saving: false, error: null });
+  }
+
+  function frameOnPage(slot: PhotoSlot): (() => void) | undefined {
+    if (slot.framable === false || !foundKeys?.has(`photo:${slot.id}`)) return undefined;
+    return () => startFraming(slot, tiles[slot.id].current.framing);
+  }
+
+  async function saveFraming() {
+    if (!framing || framing.saving) return;
+    const { slot, draft } = framing;
+    const tile = tiles[slot.id];
+    const previous = tile.current.framing;
+    if (sameFraming(draft, previous ?? DEFAULT_FRAMING)) {
+      setFraming({ ...framing, error: UNMOVED_PHOTO_MESSAGE });
+      return;
+    }
+    setFraming({ ...framing, saving: true, error: null });
+    setStatus({ kind: "saving" });
+    const description = `Moved ${photoSlotTitle(slot)}.`;
+    try {
+      const saved = isDefaultFraming(draft) ? undefined : draft;
+      expectOk(await saveSlotFraming(slot, tile, saved));
+      onTileChange({ ...tile, current: { ...tile.current, framing: saved } });
+      undo.record({
+        description,
+        undo: async () => {
+          expectOk(await saveSlotFraming(slot, tile, previous));
+          onTileChange(tile);
+          router.refresh();
+        },
+      });
+      setStatus({ kind: "saved", message: description });
+      setFraming(null);
+      router.refresh();
+      reloadPage();
+    } catch (e) {
+      const message = e instanceof Error && e.message ? e.message : GENERIC_SAVE_ERROR;
+      setFraming((current) => current && { ...current, saving: false, error: message });
+      setStatus({ kind: "error", message });
+    }
   }
 
   function renderPhotoTile(slot: PhotoSlot) {
@@ -426,6 +503,7 @@ export function PageCanvas({
         onSaved={onPhotoSaved}
         onTileChange={onTileChange}
         onStatus={setStatus}
+        onFrameOnPage={frameOnPage(slot)}
       />
     );
   }
@@ -593,6 +671,36 @@ export function PageCanvas({
             </button>
           )
         }
+        framing={
+          framing
+            ? {
+                key: `photo:${framing.slot.id}`,
+                framing: framing.draft,
+                onChange: (next) =>
+                  setFraming((current) => current && { ...current, draft: next, error: null }),
+                onUnavailable: () => {
+                  setFraming(null);
+                  setStatus({ kind: "error", message: PHOTO_NOT_SHOWING_MESSAGE });
+                },
+                onCancel: () => setFraming((current) => current && !current.saving ? null : current),
+                bar: (
+                  <PhotoFramingBar
+                    title={photoSlotTitle(framing.slot)}
+                    framing={framing.draft}
+                    saving={framing.saving}
+                    error={framing.error}
+                    onChange={(next) =>
+                      setFraming((current) => current && { ...current, draft: next, error: null })
+                    }
+                    onSave={() => void saveFraming()}
+                    onCancel={() => {
+                      if (!framing.saving) setFraming(null);
+                    }}
+                  />
+                ),
+              }
+            : undefined
+        }
         onFound={setFoundKeys}
         onPick={pickOnPage}
         onDone={() => router.push("/admin")}
@@ -605,6 +713,7 @@ export function PageCanvas({
           onSaved={onPhotoSaved}
           onTileChange={onTileChange}
           onStatus={setStatus}
+          onFrameOnPage={frameOnPage(pickedPhoto)}
           onClose={() => setPickedPhoto(null)}
         />
       )}

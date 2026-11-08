@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { buttonClass } from "@/components/admin/admin-button";
+import type { PhotoFraming } from "@/lib/photo-framing";
+import { startPageFraming, type PageFramingSession } from "./page-edit-framing";
 import {
   listenForPageEdits,
   markPageEditTargets,
@@ -10,6 +12,15 @@ import {
   type PageEditTarget,
 } from "./page-edit-targets";
 
+export type PageFraming = {
+  key: string;
+  framing: PhotoFraming;
+  onChange: (next: PhotoFraming) => void;
+  onUnavailable: () => void;
+  onCancel: () => void;
+  bar: ReactNode;
+};
+
 export function PageEditor({
   pageLabel,
   src,
@@ -17,6 +28,7 @@ export function PageEditor({
   targets,
   bar,
   actions,
+  framing,
   onFound,
   onPick,
   onDone,
@@ -27,6 +39,7 @@ export function PageEditor({
   targets: PageEditTarget[];
   bar: ReactNode;
   actions: ReactNode;
+  framing?: PageFraming;
   onFound: (keys: ReadonlySet<string>) => void;
   onPick: (keys: string[]) => void;
   onDone: () => void;
@@ -39,12 +52,41 @@ export function PageEditor({
   const lastFound = useRef("");
   const scroll = useRef({ src, top: 0 });
   const observerRef = useRef<MutationObserver | null>(null);
+  const framingRef = useRef(framing);
+  const sessionRef = useRef<PageFramingSession | null>(null);
+  const [loadedKey, setLoadedKey] = useState<number | null>(null);
 
   useEffect(() => {
     targetsRef.current = targets;
     onPickRef.current = onPick;
     onFoundRef.current = onFound;
+    framingRef.current = framing;
   });
+
+  const framingKey = framing?.key;
+  const loaded = loadedKey === reloadKey;
+  useEffect(() => {
+    const doc = frameRef.current?.contentDocument;
+    const active = framingRef.current;
+    if (!framingKey || !loaded || !doc || !active) return;
+    const session = startPageFraming(doc, framingKey, active.framing, (next) =>
+      framingRef.current?.onChange(next)
+    );
+    if (!session) {
+      active.onUnavailable();
+      return;
+    }
+    sessionRef.current = session;
+    return () => {
+      session.stop();
+      sessionRef.current = null;
+    };
+  }, [framingKey, loaded]);
+
+  const draft = framing?.framing;
+  useEffect(() => {
+    if (draft) sessionRef.current?.apply(draft);
+  }, [draft]);
 
   useEffect(() => {
     dialogRef.current?.showModal();
@@ -63,6 +105,7 @@ export function PageEditor({
     const view = frameRef.current?.contentWindow;
     const doc = frameRef.current?.contentDocument;
     if (!view || !doc?.body) return;
+    setLoadedKey(reloadKey);
 
     if (scroll.current.src === src) view.scrollTo({ top: scroll.current.top });
     else scroll.current = { src, top: 0 };
@@ -95,7 +138,10 @@ export function PageEditor({
       ref={dialogRef}
       className="page-editor"
       aria-label={`Changing the ${pageLabel}`}
-      onCancel={(event) => event.preventDefault()}
+      onCancel={(event) => {
+        event.preventDefault();
+        framingRef.current?.onCancel();
+      }}
     >
       <div className="flex shrink-0 items-start gap-3 bg-navy px-4 py-3 text-white sm:px-6">
         <div className="flex min-w-0 flex-1 flex-wrap items-center justify-between gap-x-4 gap-y-2">
@@ -136,6 +182,7 @@ export function PageEditor({
         onLoad={onFrameLoad}
         className="min-h-0 w-full flex-1 bg-paper"
       />
+      {framing?.bar}
     </dialog>
   );
 }

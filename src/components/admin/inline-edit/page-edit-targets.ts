@@ -1,3 +1,5 @@
+import { PAGE_EDIT_HOLD_ATTRIBUTE } from "@/lib/page-edit-hold";
+
 export type PageEditTarget = {
   key: string;
   label: string;
@@ -12,7 +14,7 @@ export type PageEditTarget = {
   | { kind: "record"; record: string; photo: boolean }
 );
 
-const TARGET_ATTRIBUTE = "data-page-edit";
+export const TARGET_ATTRIBUTE = "data-page-edit";
 const TURNS_ATTRIBUTE = "data-page-edit-turns";
 // The attributes this file put on an element, so they come off again when
 // React reuses the element for words that are no longer a target.
@@ -171,6 +173,11 @@ export function listenForPageEdits(doc: Document, onPick: (keys: string[]) => vo
   doc.addEventListener(
     "click",
     (event) => {
+      if (doc.documentElement.hasAttribute(PAGE_EDIT_HOLD_ATTRIBUTE)) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
       // A tab that isn't open opens first, so its own words can then be tapped.
       if (event.target instanceof view.Element && event.target.closest(CLOSED_TAB)) return;
       const keys = targetKeys(event.target);
@@ -205,6 +212,7 @@ export function listenForPageEdits(doc: Document, onPick: (keys: string[]) => vo
     "keydown",
     (event) => {
       if (event.key !== "Enter" && event.key !== " ") return;
+      if (doc.documentElement.hasAttribute(PAGE_EDIT_HOLD_ATTRIBUTE)) return;
       if (!(event.target instanceof view.Element) || !event.target.hasAttribute(TARGET_ATTRIBUTE)) return;
       if (event.target.closest(CLOSED_TAB)) return;
       const keys = targetKeys(event.target);

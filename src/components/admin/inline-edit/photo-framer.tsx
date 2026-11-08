@@ -4,6 +4,7 @@ import { useRef, useState, type PointerEvent } from "react";
 import { AdminButton } from "@/components/admin/admin-button";
 import {
   DEFAULT_FRAMING,
+  frameOverflow,
   ZOOM_MAX,
   ZOOM_MIN,
   ZOOM_STEP,
@@ -21,7 +22,7 @@ export const PHOTO_SHAPE_CLASS: Record<PhotoShape, string> = {
   square: "aspect-square",
 };
 
-const NUDGE = 10;
+export const NUDGE = 10;
 
 type NaturalSize = { width: number; height: number };
 
@@ -29,7 +30,7 @@ function third(value: number): 0 | 1 | 2 {
   return value < 34 ? 0 : value < 67 ? 1 : 2;
 }
 
-function framingLabel(framing: PhotoFraming): string {
+export function framingLabel(framing: PhotoFraming): string {
   const zoom = framing.zoom === ZOOM_MIN ? "" : `, zoomed in to ${(framing.zoom / 100).toFixed(1)}×`;
   const xThird = third(framing.x);
   const yThird = third(framing.y);
@@ -37,15 +38,6 @@ function framingLabel(framing: PhotoFraming): string {
   const xDesc = ["the left", "the middle", "the right"][xThird];
   const yDesc = ["top", "middle", "bottom"][yThird];
   return `Showing the ${yDesc} of the photo, toward ${xDesc}${zoom}.`;
-}
-
-// Dragging the full overflow of the covered image moves the focus from 0 to 100.
-function overflow(frame: DOMRect, natural: NaturalSize, zoom: number) {
-  const scale = Math.max(frame.width / natural.width, frame.height / natural.height) * (zoom / 100);
-  return {
-    x: natural.width * scale - frame.width,
-    y: natural.height * scale - frame.height,
-  };
 }
 
 export function PhotoFramer({
@@ -76,13 +68,13 @@ export function PhotoFramer({
   function onPointerMove(event: PointerEvent<HTMLDivElement>) {
     const current = drag.current;
     if (!current || current.pointerId !== event.pointerId || !natural || !frameRef.current) return;
-    const spill = overflow(frameRef.current.getBoundingClientRect(), natural, framing.zoom);
+    const spill = frameOverflow(frameRef.current.getBoundingClientRect(), natural, framing.zoom);
     const dx = event.clientX - current.startX;
     const dy = event.clientY - current.startY;
     onChange({
       ...framing,
-      x: spill.x > 0 ? clampPercent(current.from.x - (dx / spill.x) * 100) : framing.x,
-      y: spill.y > 0 ? clampPercent(current.from.y - (dy / spill.y) * 100) : framing.y,
+      x: spill.width > 0 ? clampPercent(current.from.x - (dx / spill.width) * 100) : framing.x,
+      y: spill.height > 0 ? clampPercent(current.from.y - (dy / spill.height) * 100) : framing.y,
     });
   }
 

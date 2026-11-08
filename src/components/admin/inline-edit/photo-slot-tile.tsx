@@ -73,7 +73,12 @@ type PhotoSlotEditorProps = {
   ) => void;
   onTileChange: (next: PhotoTile) => void;
   onStatus: (status: EditBarStatus) => void;
+  onFrameOnPage?: () => void;
 };
+
+export function photoSlotTitle(slot: PhotoSlot): string {
+  return `${slot.group} — ${slot.label}`;
+}
 
 export function PhotoSlotTile(props: PhotoSlotEditorProps) {
   const { slot, tile } = props;
@@ -113,6 +118,7 @@ export function PhotoSlotEditor({
   onSaved,
   onTileChange,
   onStatus,
+  onFrameOnPage,
   onClose,
 }: PhotoSlotEditorProps & { onClose: () => void }) {
   const router = useRouter();
@@ -148,7 +154,7 @@ export function PhotoSlotEditor({
   return (
     <PhotoDialog
       spot={{
-        title: `${slot.group} — ${slot.label}`,
+        title: photoSlotTitle(slot),
         shape: slot.shape,
         framable: slot.framable !== false,
         altOptional: slot.defaultAltPath === null,
@@ -165,6 +171,7 @@ export function PhotoSlotEditor({
       onSaved={handleSaved}
       onReset={handleReset}
       onStatus={onStatus}
+      onFrameOnPage={onFrameOnPage}
     />
   );
 }
@@ -177,6 +184,7 @@ export function PhotoDialog({
   onSaved,
   onReset,
   onStatus,
+  onFrameOnPage,
 }: {
   spot: PhotoSpot;
   actions: PhotoSaveActions;
@@ -185,6 +193,7 @@ export function PhotoDialog({
   onSaved: (next: PhotoTile, description: string) => void;
   onReset?: (original: PhotoTile["current"], description: string) => void;
   onStatus: (status: EditBarStatus) => void;
+  onFrameOnPage?: () => void;
 }) {
   const router = useRouter();
   const { title, altOptional } = spot;
@@ -362,14 +371,42 @@ export function PhotoDialog({
   }
 
   const pickerValue = mode === "upload" ? previewUrl : null;
+  const framesOnPage = spot.framable && Boolean(onFrameOnPage);
   const framerSrc =
-    !spot.framable
+    !spot.framable || framesOnPage
       ? null
       : (previewUrl ?? libraryUrl ?? tile.current.src);
+
+  function frameOnPage() {
+    if (saving || !onFrameOnPage || !confirmDiscardChanges(dirty)) return;
+    closeDialog();
+    onFrameOnPage();
+  }
 
   return (
     <EditDialog title={title} open busy={saving} dirty={dirty} onClose={closeDialog}>
       <div className="space-y-5">
+        {framesOnPage && !hasNewPhoto && (
+          <div>
+            <h3 className="text-lg font-semibold text-ink">Choose what shows</h3>
+            <p className="mt-1 text-sm text-ink-soft">
+              Move or zoom the photo right on the page, so you see exactly what visitors will.
+            </p>
+            <button
+              type="button"
+              onClick={frameOnPage}
+              aria-disabled={saving}
+              className={`mt-3 min-h-12 ${buttonClass("primary")}`}
+            >
+              Move or zoom this photo
+            </button>
+          </div>
+        )}
+        {framesOnPage && hasNewPhoto && (
+          <p className="text-sm text-ink-soft">
+            After you save, the new photo opens on the page so you can choose what shows.
+          </p>
+        )}
         {framerSrc && (
           <PhotoFramer
             src={framerSrc}

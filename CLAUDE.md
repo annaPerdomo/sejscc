@@ -143,7 +143,10 @@ be built from these tokens via Tailwind utility classes.
   `<dialog>` that shows a public page to change in place; the elements it
   can change carry a `data-page-edit` attribute, outlined in pink, and every
   photo on screen gets a `page-edit-photo-button` in its corner, floated in a
-  `page-edit-photo-layer`), `photo-viewer` (a full-screen
+  `page-edit-photo-layer`; while a photo is being moved or zoomed on the page
+  itself, the page root carries `data-page-edit-hold`, which hides the
+  outlines and buttons and holds every rotation, and the frame being changed
+  is outlined by `page-edit-framing-box`), `photo-viewer` (a full-screen
   dark `<dialog>` for zooming into a photo), and the
   `section-wash-*` backgrounds, and the three dark
   scenes, `section-navy-scene`, `section-midnight-scene` (ink-deep, for the

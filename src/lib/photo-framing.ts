@@ -50,6 +50,16 @@ export function framingToRow(framing: PhotoFraming | undefined): {
   return { focusX: framing.x, focusY: framing.y, zoom: framing.zoom };
 }
 
+export type FrameSize = { width: number; height: number };
+
+export function frameOverflow(frame: FrameSize, natural: FrameSize, zoom: number): FrameSize {
+  const scale = Math.max(frame.width / natural.width, frame.height / natural.height) * (zoom / 100);
+  return {
+    width: natural.width * scale - frame.width,
+    height: natural.height * scale - frame.height,
+  };
+}
+
 export function framingStyle(framing: PhotoFraming): CSSProperties {
   return {
     "--frame-x": `${framing.x}%`,

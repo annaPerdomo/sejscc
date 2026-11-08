@@ -6,6 +6,7 @@ import {
   type PointerEvent,
   type RefObject,
 } from "react";
+import { PAGE_EDIT_HOLD_ATTRIBUTE } from "@/lib/page-edit-hold";
 
 export function useReducedMotion() {
   const [reduceMotion, setReduceMotion] = useState(false);
@@ -19,6 +20,21 @@ export function useReducedMotion() {
   }, []);
 
   return reduceMotion;
+}
+
+function usePageEditHold() {
+  const [held, setHeld] = useState(false);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const sync = () => setHeld(root.hasAttribute(PAGE_EDIT_HOLD_ATTRIBUTE));
+    sync();
+    const observer = new MutationObserver(sync);
+    observer.observe(root, { attributes: true, attributeFilter: [PAGE_EDIT_HOLD_ATTRIBUTE] });
+    return () => observer.disconnect();
+  }, []);
+
+  return held;
 }
 
 // A middle-of-screen band, not a visible-fraction threshold: a fraction never
@@ -98,11 +114,12 @@ export function useRotation({
   const [focusHeld, setFocusHeld] = useState(false);
   const inView = useInView(viewRef);
   const reduceMotion = useReducedMotion();
+  const editHeld = usePageEditHold();
 
   const active = index < count ? index : 0;
   const canRotate = count > 1 && !reduceMotion;
   const rotating = canRotate && !stopped;
-  const paused = held || focusHeld || !inView;
+  const paused = held || focusHeld || editHeld || !inView;
 
   const show = (next: number) => {
     setIndex(next);
