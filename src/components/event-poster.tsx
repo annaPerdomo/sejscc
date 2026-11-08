@@ -48,7 +48,7 @@ export async function EventPoster({
       aria-hidden="true"
       className="relative block transition duration-300 ease-out group-hover:-translate-y-1.5"
     >
-      <div className="flyer-mount seigaiha-rings seigaiha-rings-gold">
+      <div data-edit-record={`event:${event.id}:details`} className="flyer-mount seigaiha-rings seigaiha-rings-gold">
         {event.flyerUrl ? (
           <span className="relative block aspect-flyer w-full">
             <Image
@@ -72,9 +72,14 @@ export async function EventPoster({
 
   const details = (
     <div className="flex items-start gap-4">
-      {month && day && <DatePage month={month} day={day} size="sm" />}
+      {month && day && (
+        <span data-edit-record={`event:${event.id}:details`} className="contents">
+          <DatePage month={month} day={day} size="sm" />
+        </span>
+      )}
       <div className="min-w-0 flex-1">
         <h3
+          data-edit-record={`event:${event.id}:title`}
           className={`font-display leading-snug font-semibold text-ink text-pretty ${
             compact ? "text-lg" : "text-xl"
           }`}
@@ -83,7 +88,7 @@ export async function EventPoster({
             {event.title}
           </Link>
         </h3>
-        <div className="mt-2 flex flex-col gap-1 text-base text-ink-soft">
+        <div data-edit-record={`event:${event.id}:details`} className="mt-2 flex flex-col gap-1 text-base text-ink-soft">
           <p className="sr-only">{formatEventDate(event.startAt, lang)}</p>
           {when && (
             <p>

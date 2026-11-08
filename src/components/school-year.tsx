@@ -56,6 +56,7 @@ export function SchoolYear({
             mounted.includes(i) ? (
               <div
                 key={item.id}
+                data-edit-record={`year:${item.id}:photo`}
                 aria-hidden={i !== active}
                 className="absolute inset-0 transition-opacity duration-700 ease-in-out"
                 style={{ opacity: i === active ? 1 : 0 }}
@@ -100,21 +101,29 @@ export function SchoolYear({
                   {labels.current}
                 </span>
               )}
-              {item.when}
+              <span data-edit-record={`year:${item.id}:when`}>{item.when}</span>
             </p>
-            <h3 className="mt-3 font-display text-3xl leading-tight font-normal text-white sm:text-4xl">
+            <h3 data-edit-record={`year:${item.id}:title`} className="mt-3 font-display text-3xl leading-tight font-normal text-white sm:text-4xl">
               {item.title}
             </h3>
             <p className="mt-2 flex flex-wrap items-baseline gap-x-3">
               {item.termJa !== item.title && (
-                <span lang="ja" className="font-accent text-2xl font-bold text-white">
+                <span
+                  lang="ja"
+                  data-edit-record={`year:${item.id}:termJa`}
+                  className="font-accent text-2xl font-bold text-white"
+                >
                   {item.termJa}
                 </span>
               )}
-              <span className="font-display text-lg text-sky">{item.gloss}</span>
+              <span data-edit-record={`year:${item.id}:gloss`} className="font-display text-lg text-sky">
+                {item.gloss}
+              </span>
             </p>
             <div aria-hidden="true" className="mt-5 h-px w-16 bg-gold" />
-            <p className="mt-5 text-lg leading-relaxed text-white/85">{item.description}</p>
+            <p data-edit-record={`year:${item.id}:description`} className="mt-5 text-lg leading-relaxed text-white/85">
+              {item.description}
+            </p>
           </div>
         ))}
       </div>
@@ -165,7 +174,7 @@ export function SchoolYear({
                 )}
               </span>
               <span className="mt-3 flex items-center gap-2 font-display text-sm font-semibold tracking-widest text-sky uppercase">
-                {item.abbr}
+                <span data-edit-record={`year:${item.id}:abbr`}>{item.abbr}</span>
                 {i === currentIndex && (
                   <>
                     <span aria-hidden="true" className="size-2 rounded-full bg-blossom" />
@@ -174,6 +183,7 @@ export function SchoolYear({
                 )}
               </span>
               <span
+                data-edit-record={`year:${item.id}:label`}
                 className={`mt-1 text-base leading-snug transition-colors ${
                   selected ? "font-semibold text-white" : "text-white/70 group-hover:text-white"
                 }`}

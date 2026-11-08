@@ -62,20 +62,29 @@ export function SchoolLevels({
               </span>
               <span className="flex min-w-0 flex-1 flex-col gap-1 py-4">
                 <span
+                  data-edit-record={`level:${item.id}:name`}
                   className={`font-display text-lg leading-snug font-semibold ${
                     current ? "text-indigo-deep" : itemNotice ? "text-ink-soft" : "text-ink"
                   }`}
                 >
                   {item.name}
                 </span>
-                <span className="text-base leading-snug text-ink-soft">
-                  {itemNotice || item.summary}
-                </span>
+                {itemNotice ? (
+                  <span className="text-base leading-snug text-ink-soft">{itemNotice}</span>
+                ) : (
+                  <span
+                    data-edit-record={`level:${item.id}:summary`}
+                    className="text-base leading-snug text-ink-soft"
+                  >
+                    {item.summary}
+                  </span>
+                )}
               </span>
               {item.kanji && (
                 <span
                   lang="ja"
                   aria-hidden="true"
+                  data-edit-record={`level:${item.id}:kanji`}
                   className={`self-center font-accent text-2xl font-bold transition-colors ${
                     current ? "text-magenta" : "text-indigo"
                   }`}
@@ -96,7 +105,7 @@ export function SchoolLevels({
         aria-labelledby={`school-level-tab-${active}`}
         className="enter-fade lg:col-span-7"
       >
-        <div className="relative">
+        <div className="relative" data-edit-record={`level:${level.id}:photo`}>
           <SitePhoto
             photo={level.photo}
             sizes="(max-width: 1024px) 100vw, 52rem"
@@ -107,13 +116,14 @@ export function SchoolLevels({
             <p
               lang="ja"
               aria-hidden="true"
+              data-edit-record={`level:${level.id}:kanji`}
               className="school-plaque absolute -top-4 right-4 font-accent text-xl font-bold tracking-[0.2em] sm:right-6 sm:text-2xl"
             >
               {level.kanji}
             </p>
           )}
         </div>
-        <h3 className="mt-7 font-display text-3xl leading-tight font-normal text-ink sm:text-4xl">
+        <h3 data-edit-record={`level:${level.id}:name`} className="mt-7 font-display text-3xl leading-tight font-normal text-ink sm:text-4xl">
           {level.name}
         </h3>
         {notice && (
@@ -121,10 +131,16 @@ export function SchoolLevels({
             {notice}
           </p>
         )}
-        <p className="mt-4 text-lg leading-relaxed text-ink-soft">{level.description}</p>
+        <p data-edit-record={`level:${level.id}:description`} className="mt-4 text-lg leading-relaxed text-ink-soft">
+          {level.description}
+        </p>
         <ul className="mt-6 grid gap-x-8 gap-y-3 sm:grid-cols-2">
-          {level.points.map((point) => (
-            <li key={point} className="flex items-baseline gap-3 text-lg text-ink">
+          {level.points.map((point, i) => (
+            <li
+              key={point}
+              data-edit-record={`level:${level.id}:points.${i}`}
+              className="flex items-baseline gap-3 text-lg text-ink"
+            >
               <span aria-hidden="true" className="size-2 shrink-0 rotate-45 bg-gold" />
               {point}
             </li>

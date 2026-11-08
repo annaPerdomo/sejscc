@@ -566,7 +566,7 @@ export default async function HomePage() {
                   <span className="block font-display text-xs font-semibold tracking-[0.14em] text-ink-soft uppercase">
                     {dict.home.contact.addressLabel}
                   </span>
-                  <span className="mt-1 block leading-relaxed text-ink">
+                  <span data-edit-record="contact:address" className="mt-1 block leading-relaxed text-ink">
                     {contact.address}
                   </span>
                 </span>
@@ -580,7 +580,7 @@ export default async function HomePage() {
                   <span className="block font-display text-xs font-semibold tracking-[0.14em] text-ink-soft uppercase">
                     {dict.home.contact.phoneLabel}
                   </span>
-                  <span className="mt-1 block leading-relaxed text-ink">
+                  <span data-edit-record="contact:phone" className="mt-1 block leading-relaxed text-ink">
                     {contact.phone}
                   </span>
                 </span>
@@ -594,7 +594,7 @@ export default async function HomePage() {
                   <span className="block font-display text-xs font-semibold tracking-[0.14em] text-ink-soft uppercase">
                     {dict.home.contact.emailLabel}
                   </span>
-                  <span className="mt-1 block leading-relaxed break-all text-ink">
+                  <span data-edit-record="contact:email" className="mt-1 block leading-relaxed break-all text-ink">
                     {contact.email}
                   </span>
                 </span>

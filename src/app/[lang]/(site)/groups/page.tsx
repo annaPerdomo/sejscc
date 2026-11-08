@@ -193,6 +193,7 @@ export default async function GroupsPage() {
                         {entries.map((group) => (
                           <li
                             key={group.id}
+                            data-edit-record={`group:${group.id}:name`}
                             className="nafuda text-center font-display text-base leading-snug font-semibold"
                           >
                             {group.name}
@@ -331,6 +332,7 @@ export default async function GroupsPage() {
               {dict.groups.useBefore}
               <a
                 href={`mailto:${contact.email}`}
+                data-edit-record="contact:email"
                 className="font-semibold text-white underline decoration-sky underline-offset-4 hover:text-sky"
               >
                 {contact.email}
@@ -338,6 +340,7 @@ export default async function GroupsPage() {
               {dict.groups.useBetween}
               <a
                 href={contact.phoneHref}
+                data-edit-record="contact:phone"
                 className="font-semibold text-white underline decoration-sky underline-offset-4 hover:text-sky"
               >
                 {contact.phone}

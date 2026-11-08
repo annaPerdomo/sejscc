@@ -67,7 +67,7 @@ export function VolunteerSection({
         <div className="grid gap-10 @volunteer-lg:grid-cols-12 @volunteer-lg:items-center @volunteer-lg:gap-14">
           <div className="reveal-swing-left @volunteer-lg:col-span-7">
             <div className="flyer-mount relative">
-              <div className="photo-develop">
+              <div className="photo-develop" data-edit-record="board:photo">
                 {edit ? edit.photo(photoImage) : photoImage}
               </div>
             </div>
@@ -79,10 +79,13 @@ export function VolunteerSection({
               tone="magenta"
               order="caption-first"
             />
-            <h3 className="mt-4 font-display text-3xl leading-snug font-normal tracking-[0.02em] text-ink @volunteer-sm:text-4xl">
+            <h3
+              data-edit-record="board:title"
+              className="mt-4 font-display text-3xl leading-snug font-normal tracking-[0.02em] text-ink @volunteer-sm:text-4xl"
+            >
               {edit ? edit.text("title", view.title) : view.title}
             </h3>
-            <p className="mt-4 text-lg leading-relaxed text-ink-soft">
+            <p data-edit-record="board:intro" className="mt-4 text-lg leading-relaxed text-ink-soft">
               {edit ? edit.text("intro", view.intro) : view.intro}
             </p>
             {(edit || view.members.length > 0) && (
@@ -92,13 +95,15 @@ export function VolunteerSection({
               >
                 {view.members.map((member) => {
                   const photoOrDot = member.photoUrl ? (
-                    <SitePhoto
-                      photo={{ src: member.photoUrl, alt: "" }}
-                      sizes="32px"
-                      placeholderLabel=""
-                      shape="circle"
-                      className="size-8 shrink-0"
-                    />
+                    <span data-edit-record={`member:${member.id}:photo`} className="contents">
+                      <SitePhoto
+                        photo={{ src: member.photoUrl, alt: "" }}
+                        sizes="32px"
+                        placeholderLabel=""
+                        shape="circle"
+                        className="size-8 shrink-0"
+                      />
+                    </span>
                   ) : (
                     <span
                       aria-hidden="true"
@@ -108,11 +113,16 @@ export function VolunteerSection({
 
                   const nameBlock = (
                     <>
-                      <span className="font-display text-base font-medium text-ink">
+                      <span
+                        data-edit-record={`member:${member.id}:name`}
+                        className="font-display text-base font-medium text-ink"
+                      >
                         {member.name}
                       </span>
                       {member.role && (
-                        <span className="text-sm text-ink-soft">{member.role}</span>
+                        <span data-edit-record={`member:${member.id}:role`} className="text-sm text-ink-soft">
+                          {member.role}
+                        </span>
                       )}
                     </>
                   );
@@ -141,21 +151,23 @@ export function VolunteerSection({
                 {edit?.afterMembers}
               </ul>
             )}
-            <p className="mt-7 leading-relaxed text-ink-soft">
+            <p data-edit-record="board:volunteersNote" className="mt-7 leading-relaxed text-ink-soft">
               {edit ? edit.text("volunteersNote", view.volunteersNote) : view.volunteersNote}
             </p>
             <p className="mt-3 leading-relaxed text-ink-soft">
-              {edit ? edit.text("contactNote", view.contactNote) : view.contactNote}{" "}
+              <span data-edit-record="board:contactNote">
+                {edit ? edit.text("contactNote", view.contactNote) : view.contactNote}
+              </span>{" "}
               {edit ? (
                 <span className={contactLinkClass}>
                   {edit.contactLink(view.contactLinkLabel, view.contactLinkUrl)}
                 </span>
               ) : view.contactLinkUrl ? (
-                <a href={view.contactLinkUrl} className={contactLinkClass}>
+                <a href={view.contactLinkUrl} data-edit-record="board:contactLinkLabel" className={contactLinkClass}>
                   {view.contactLinkLabel}
                 </a>
               ) : (
-                <Link href={contactHref} className={contactLinkClass}>
+                <Link href={contactHref} data-edit-record="board:contactLinkLabel" className={contactLinkClass}>
                   {view.contactLinkLabel}
                 </Link>
               )}

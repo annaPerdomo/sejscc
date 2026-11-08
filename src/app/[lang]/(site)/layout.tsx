@@ -49,7 +49,7 @@ export default async function SiteLayout({
         <div className="h-1 bg-gradient-to-r from-indigo via-sky via-60% to-magenta" />
         <div className="bg-navy">
           <div className="flex items-center gap-3 px-5 py-2 sm:px-10 lg:px-11">
-            <div className="flex min-w-0 flex-1 items-center justify-center gap-2 sm:gap-3">
+            <div data-edit-record="banner" className="flex min-w-0 flex-1 items-center justify-center gap-2 sm:gap-3">
               {noticeText ? (
                 <>
                   <span className="shrink-0 font-accent text-sm font-bold tracking-[0.1em] text-sky">

@@ -56,14 +56,21 @@ export async function NextEventFeature({ event }: { event: Event }) {
           {dict.events.nextUpBadge}
         </span>
         <div className="mt-5 flex items-start gap-4">
-          {month && day && <DatePage month={month} day={day} weekday={weekday} size="md" />}
+          {month && day && (
+            <span data-edit-record={`event:${event.id}:details`} className="contents">
+              <DatePage month={month} day={day} weekday={weekday} size="md" />
+            </span>
+          )}
           <div className="min-w-0">
-            <h2 className="font-display text-3xl leading-tight font-semibold text-white text-pretty xl:text-4xl">
+            <h2
+              data-edit-record={`event:${event.id}:title`}
+              className="font-display text-3xl leading-tight font-semibold text-white text-pretty xl:text-4xl"
+            >
               <Link href={href} className="hover:text-sky">
                 {event.title}
               </Link>
             </h2>
-            <div className="mt-3 flex flex-col gap-1 text-lg text-white/90">
+            <div data-edit-record={`event:${event.id}:details`} className="mt-3 flex flex-col gap-1 text-lg text-white/90">
               <p className="sr-only">{formatEventDate(event.startAt, lang)}</p>
               {time && (
                 <p>
@@ -116,7 +123,10 @@ export async function NextEventFeature({ event }: { event: Event }) {
         aria-hidden="true"
         className="block w-full max-w-xs shrink-0 transition duration-300 ease-out hover:-translate-y-1.5 md:w-64 lg:w-72 xl:w-64 2xl:w-96"
       >
-        <div className="flyer-mount seigaiha-rings seigaiha-rings-gold mx-auto w-fit max-w-full">
+        <div
+          data-edit-record={`event:${event.id}:details`}
+          className="flyer-mount seigaiha-rings seigaiha-rings-gold mx-auto w-fit max-w-full"
+        >
           {event.flyerUrl ? (
             <Image
               src={event.flyerUrl}

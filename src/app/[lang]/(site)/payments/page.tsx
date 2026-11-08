@@ -306,7 +306,7 @@ export default async function PaymentsPage() {
               <p className="mt-2 text-lg leading-relaxed text-ink-soft">
                 {dict.payments.zelleText}
               </p>
-              <p className="mt-3 text-lg leading-relaxed text-ink">
+              <p data-edit-record="donation:zelleRecipient" className="mt-3 text-lg leading-relaxed text-ink">
                 {donation.zelleRecipient ?? (
                   <>
                     {dict.payments.zelleBefore}
@@ -329,6 +329,7 @@ export default async function PaymentsPage() {
               {dict.payments.questionsBefore}
               <a
                 href={`mailto:${contact.email}`}
+                data-edit-record="contact:email"
                 className="font-semibold text-indigo hover:text-indigo-deep"
               >
                 {contact.email}
@@ -343,12 +344,14 @@ export default async function PaymentsPage() {
             </h3>
             <p className="mt-2 text-lg leading-relaxed text-ink-soft">
               {dict.payments.checkBefore}
-              <strong className="text-ink">{donation.checkPayee}</strong>
+              <strong data-edit-record="donation:checkPayee" className="text-ink">
+                {donation.checkPayee}
+              </strong>
               {dict.payments.checkAfter}
             </p>
             <div className="mt-6">
               <MailEnvelope>
-                {donation.checkPayee}
+                <span data-edit-record="donation:checkPayee">{donation.checkPayee}</span>
                 <br />
                 {(() => {
                   const commaAt = donation.checkAddress.indexOf(", ");
@@ -360,7 +363,7 @@ export default async function PaymentsPage() {
                           donation.checkAddress.slice(commaAt + 2),
                         ];
                   return lines.map((line, i) => (
-                    <span key={i}>
+                    <span key={i} data-edit-record="donation:checkAddress">
                       {i > 0 && <br />}
                       {line}
                     </span>

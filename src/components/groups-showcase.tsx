@@ -237,17 +237,25 @@ export function GroupsShowcase({
                           />
                         </span>
                       )}
-                      <h3 className="font-display text-2xl leading-tight font-semibold text-pretty sm:text-3xl lg:text-4xl">
+                      <h3
+                        data-edit-record={`group:${item.id}:name`}
+                        className="font-display text-2xl leading-tight font-semibold text-pretty sm:text-3xl lg:text-4xl"
+                      >
                         {item.name}
                       </h3>
                     </div>
                     {item.schedule && (
-                      <p className="mt-4 text-base text-white/90 sm:text-lg">
+                      <p
+                        data-edit-record={`group:${item.id}:meetingSchedule`}
+                        className="mt-4 text-base text-white/90 sm:text-lg"
+                      >
                         <EventMeta icon="repeat">{item.schedule}</EventMeta>
                       </p>
                     )}
                     {item.description && (
-                      <p className="mt-3 line-clamp-2 max-w-2xl text-base leading-relaxed text-white/85 sm:text-lg">
+                      <p
+                        data-edit-record={`group:${item.id}:description`}
+                        className="mt-3 line-clamp-2 max-w-2xl text-base leading-relaxed text-white/85 sm:text-lg">
                         {item.description}
                       </p>
                     )}
@@ -325,6 +333,7 @@ export function GroupsShowcase({
                   </span>
                   <span className="min-w-0">
                     <span
+                      data-edit-record={`group:${item.id}:name`}
                       className={`block font-display text-lg leading-snug font-semibold ${
                         isOpen ? "text-ink" : "text-ink-soft"
                       }`}
@@ -332,7 +341,10 @@ export function GroupsShowcase({
                       {item.name}
                     </span>
                     {item.schedule && (
-                      <span className="mt-0.5 block truncate text-sm text-ink-soft">
+                      <span
+                        data-edit-record={`group:${item.id}:meetingSchedule`}
+                        className="mt-0.5 block truncate text-sm text-ink-soft"
+                      >
                         {item.schedule}
                       </span>
                     )}

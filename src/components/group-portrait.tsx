@@ -65,6 +65,7 @@ export async function GroupPortrait({ group }: { group: Group }) {
 
       <div className="mt-5 flex items-start justify-between gap-4">
         <h3
+          data-edit-record={`group:${group.id}:name`}
           className={`font-display text-2xl leading-snug font-semibold ${
             muted ? "text-ink-soft" : "text-ink"
           }`}
@@ -74,6 +75,7 @@ export async function GroupPortrait({ group }: { group: Group }) {
         {group.nameJa && (
           <span
             lang="ja"
+            data-edit-record={`group:${group.id}:nameJa`}
             className={`shrink-0 pt-1 font-accent text-lg font-bold tracking-[0.12em] ${
               muted ? "text-ink-soft" : "text-magenta"
             }`}
@@ -85,7 +87,7 @@ export async function GroupPortrait({ group }: { group: Group }) {
 
       <div className="mt-2 flex flex-col gap-1 text-lg text-ink-soft">
         {group.meetingSchedule ? (
-          <p>
+          <p data-edit-record={`group:${group.id}:meetingSchedule`}>
             <EventMeta icon="repeat">{group.meetingSchedule}</EventMeta>
           </p>
         ) : (
@@ -102,7 +104,9 @@ export async function GroupPortrait({ group }: { group: Group }) {
 
       <div>
         {group.description && (
-          <p className="mt-3 text-lg leading-relaxed text-ink">{group.description}</p>
+          <p data-edit-record={`group:${group.id}:description`} className="mt-3 text-lg leading-relaxed text-ink">
+            {group.description}
+          </p>
         )}
       </div>
 
@@ -118,6 +122,7 @@ export async function GroupPortrait({ group }: { group: Group }) {
         {group.contactEmail ? (
           <a
             href={`mailto:${group.contactEmail}`}
+            data-edit-record={`group:${group.id}:contactEmail`}
             className="py-1 break-words text-indigo hover:text-indigo-deep"
           >
             {group.contactEmail}

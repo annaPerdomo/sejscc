@@ -98,6 +98,7 @@ export async function EventsHero({ events }: { events: Event[] }) {
                           rel="noreferrer"
                           tabIndex={-1}
                           aria-hidden="true"
+                          data-edit-record={`event:${event.id}:details`}
                           className="relative aspect-flyer w-16 overflow-clip rounded-xs border-2 border-white bg-cream shadow-lg shadow-ink-deep/50 transition-transform duration-300 ease-out hover:-rotate-2 hover:scale-105 lg:w-12 lg:taller:w-16"
                         >
                           <Image
@@ -111,15 +112,16 @@ export async function EventsHero({ events }: { events: Event[] }) {
                       ) : (
                         month &&
                         day && (
-                          <DatePage
-                            month={month}
-                            day={day}
-                            className="lg:w-12 lg:taller:w-16"
-                          />
+                          <span data-edit-record={`event:${event.id}:details`} className="contents">
+                            <DatePage month={month} day={day} className="lg:w-12 lg:taller:w-16" />
+                          </span>
                         )
                       )}
                       <div className="min-w-0">
-                        <h3 className="line-clamp-2 font-display text-xl leading-snug font-semibold text-pretty text-white lg:text-lg lg:tall:text-xl xl:line-clamp-1">
+                        <h3
+                          data-edit-record={`event:${event.id}:title`}
+                          className="line-clamp-2 font-display text-xl leading-snug font-semibold text-pretty text-white lg:text-lg lg:tall:text-xl xl:line-clamp-1"
+                        >
                           <ExternalLink
                             href={flyerHref ?? localePath(lang, `/events/${event.slug}`)}
                             aria-label={
@@ -133,7 +135,10 @@ export async function EventsHero({ events }: { events: Event[] }) {
                           </ExternalLink>
                         </h3>
                         {(date || time) && (
-                          <p className="mt-0.5 font-display text-base font-semibold text-white lg:taller:text-lg">
+                          <p
+                            data-edit-record={`event:${event.id}:details`}
+                            className="mt-0.5 font-display text-base font-semibold text-white lg:taller:text-lg"
+                          >
                             {[date, time].filter(Boolean).join(" · ")}
                           </p>
                         )}
