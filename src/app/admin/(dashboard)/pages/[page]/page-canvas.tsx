@@ -589,7 +589,7 @@ export function PageCanvas({
               onClick={() => setMoreOpen(true)}
               className={`min-h-12 text-lg ${buttonClass("secondary")}`}
             >
-              More to change
+              Additional changes
             </button>
           )
         }
@@ -611,14 +611,14 @@ export function PageCanvas({
 
       {picked && pickedFirst && (
         <EditDialog
-          title={picked.length > 1 ? "Which words do you mean?" : pickedTitle(pickedFirst)}
+          title={picked.length > 1 ? "Choose which one to change" : pickedTitle(pickedFirst)}
           open
           dirty={editState.isDirty}
           onClose={closePicked}
         >
           {picked.length > 1 && (
             <p className="mb-4 text-base text-ink-soft">
-              These words are used in more than one place on the website. Change the one you mean.
+              These same words appear in more than one place on the website. Changing one leaves the others as they are.
             </p>
           )}
           {picked.map((item) => {
@@ -661,7 +661,7 @@ export function PageCanvas({
 
       {moreOpen && (
         <EditDialog
-          title="More to change"
+          title="Additional changes"
           open
           dirty={editState.isDirty}
           onClose={() => {

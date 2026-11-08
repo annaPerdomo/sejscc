@@ -97,23 +97,35 @@ export function PageEditor({
       aria-label={`Changing the ${pageLabel}`}
       onCancel={(event) => event.preventDefault()}
     >
-      <div className="flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-line bg-mist px-4 py-3 sm:px-6">
-        <div className="min-w-0">
-          <h1 className="font-display text-lg text-ink sm:text-xl">{pageLabel}</h1>
-          <p className="text-base text-ink-soft sm:text-lg">
-            Tap anything with a pink outline to change it.
-          </p>
+      <div className="flex shrink-0 items-start gap-3 border-b border-line bg-mist px-4 py-3 sm:px-6">
+        <div className="flex min-w-0 flex-1 flex-wrap items-center justify-between gap-x-4 gap-y-2">
+          <div className="min-w-0">
+            <h1 className="font-display text-lg text-ink sm:text-xl">{pageLabel}</h1>
+            <p className="text-base text-ink-soft sm:text-lg">
+              Tap anything with a pink outline to change it.
+            </p>
+          </div>
+          <div className="flex shrink-0 gap-3">
+            {actions}
+            <button
+              type="button"
+              onClick={onDone}
+              className={`min-h-12 text-lg ${buttonClass("primary")}`}
+            >
+              Done
+            </button>
+          </div>
         </div>
-        <div className="flex shrink-0 gap-3">
-          {actions}
-          <button
-            type="button"
-            onClick={onDone}
-            className={`min-h-12 text-lg ${buttonClass("primary")}`}
-          >
-            Done
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={onDone}
+          aria-label={`Close the ${pageLabel}`}
+          className="flex size-12 shrink-0 items-center justify-center rounded-full text-ink hover:bg-cloud"
+        >
+          <svg viewBox="0 0 24 24" className="size-7" aria-hidden="true">
+            <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        </button>
       </div>
       {bar}
       <iframe

@@ -34,7 +34,7 @@ export function EditBar({
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-6 gap-y-3">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
           <p id={languageLabelId} className="font-display text-base font-semibold tracking-wide text-ink-soft">
-            Words shown in
+            Website shown in:
           </p>
           <div
             role="group"
