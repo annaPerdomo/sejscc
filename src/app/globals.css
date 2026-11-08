@@ -100,6 +100,20 @@ body {
 }
 
 @layer components {
+  /* The box grows by the zoom and shifts so the point at --frame-x/--frame-y
+     stays put; object-position pins the image's same point inside the box. */
+  .photo-frame {
+    position: absolute;
+    width: calc(var(--frame-zoom) * 100%);
+    height: calc(var(--frame-zoom) * 100%);
+    left: calc((1 - var(--frame-zoom)) * var(--frame-x));
+    top: calc((1 - var(--frame-zoom)) * var(--frame-y));
+  }
+
+  .photo-frame > img {
+    object-position: var(--frame-x) var(--frame-y);
+  }
+
   .section-wash-groups {
     background: linear-gradient(180deg, var(--color-paper), var(--color-cream) 70%);
   }

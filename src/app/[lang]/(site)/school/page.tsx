@@ -3,6 +3,7 @@ import Image from "next/image";
 import { ExternalLink } from "@/components/external-link";
 import { KanjiWatermark } from "@/components/kanji-watermark";
 import { PhotoHero } from "@/components/photo-hero";
+import { PhotoFrame } from "@/components/photo-frame";
 import { SchoolLevels } from "@/components/school-levels";
 import { SchoolSeal } from "@/components/school-seal";
 import { SchoolYear } from "@/components/school-year";
@@ -120,6 +121,7 @@ export default async function SchoolPage() {
       <PhotoHero
         photo={heroPhoto.src}
         photoAlt={heroPhoto.alt}
+        photoFraming={heroPhoto.framing}
         photos={heroPhotos}
         rotationLabels={{
           pause: dict.school.heroPause,
@@ -405,13 +407,15 @@ export default async function SchoolPage() {
       <SectionDivider ornament="asanoha" />
       <section id="join" className="relative isolate scroll-mt-28 overflow-clip bg-ink-deep text-white">
         <div className="absolute inset-0 -z-10">
-          <Image
-            src={joinPhoto.src}
-            alt={joinPhoto.alt}
-            fill
-            sizes="100vw"
-            className="ken-burns-in object-cover"
-          />
+          <PhotoFrame framing={joinPhoto.framing}>
+            <Image
+              src={joinPhoto.src}
+              alt={joinPhoto.alt}
+              fill
+              sizes="100vw"
+              className="ken-burns-in object-cover"
+            />
+          </PhotoFrame>
           {/* At this strength the sky heading and the white copy clear AA
               over the bright tables and paper in the photo. */}
           <div aria-hidden="true" className="absolute inset-0 bg-ink-deep/85" />

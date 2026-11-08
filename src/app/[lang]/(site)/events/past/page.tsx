@@ -61,6 +61,7 @@ export default async function PastEventsPage() {
       <PhotoHero
         photo={archivePhoto.src}
         photoAlt={archivePhoto.alt}
+        photoFraming={archivePhoto.framing}
         accent={dict.events.pastAccent}
         caption={dict.events.pastCaption}
         titleLine1={archive.titleLine1}

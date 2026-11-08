@@ -19,6 +19,8 @@ export type PhotoSlot = {
   defaultSrc: string;
   defaultAltPath: string | null;
   shape: PhotoShape;
+  /** Only false: a spot that shows the whole photo has nothing to crop. */
+  framable?: false;
 };
 
 function slide(n: number): string {
@@ -61,6 +63,7 @@ export const PHOTO_SLOTS: PhotoSlot[] = [
     defaultSrc: homePhotos.centennial.src,
     defaultAltPath: "home.centennialPhotoAlt",
     shape: "wide",
+    framable: false,
   },
   {
     id: "school.hero",

@@ -5,6 +5,7 @@ import { useRef, useState } from "react";
 import { useMountedAround, useRotation } from "@/components/carousel-hooks";
 import { CarouselDots } from "@/components/carousel-dots";
 import { CarouselPlayToggle } from "@/components/carousel-play-toggle";
+import { PhotoFrame } from "@/components/photo-frame";
 import type { HeroPhoto } from "@/components/photo-hero";
 
 type Labels = {
@@ -44,15 +45,17 @@ export function PhotoReel({
                 i === active ? "opacity-100" : "opacity-0"
               }`}
             >
-              <Image
-                src={photo.src}
-                alt={i === active ? photo.alt : ""}
-                fill
-                preload={i === 0}
-                fetchPriority={i === 0 ? "high" : undefined}
-                sizes="(max-width: 1280px) 100vw, 45vw"
-                className={`object-cover ${i === active || i === previous ? drifting : ""}`}
-              />
+              <PhotoFrame framing={photo.framing}>
+                <Image
+                  src={photo.src}
+                  alt={i === active ? photo.alt : ""}
+                  fill
+                  preload={i === 0}
+                  fetchPriority={i === 0 ? "high" : undefined}
+                  sizes="(max-width: 1280px) 100vw, 45vw"
+                  className={`object-cover ${i === active || i === previous ? drifting : ""}`}
+                />
+              </PhotoFrame>
             </div>
           ) : null,
         )}

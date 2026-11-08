@@ -6,12 +6,15 @@ import { useMountedAround, useRotation } from "@/components/carousel-hooks";
 import { CarouselDots } from "@/components/carousel-dots";
 import { CarouselPlayToggle } from "@/components/carousel-play-toggle";
 import { HeroTitle } from "@/components/hero-title";
+import { PhotoFrame } from "@/components/photo-frame";
+import type { PhotoFraming } from "@/lib/photo-framing";
 import { SectionKicker } from "@/components/section-kicker";
 import { SectionDivider } from "@/components/section-divider";
 
 export type HeroPhoto = {
   src: string | StaticImageData;
   alt: string;
+  framing?: PhotoFraming;
 };
 
 type RotationLabels = {
@@ -27,6 +30,7 @@ type RotationLabels = {
 export function PhotoHero({
   photo,
   photoAlt,
+  photoFraming,
   photos,
   rotationLabels,
   accent,
@@ -44,6 +48,7 @@ export function PhotoHero({
   photo: string | StaticImageData;
   /** Empty when the photo is only a backdrop. */
   photoAlt: string;
+  photoFraming?: PhotoFraming;
   photos?: HeroPhoto[];
   /** Without these, `photos` never rotates. */
   rotationLabels?: RotationLabels;
@@ -140,34 +145,37 @@ export function PhotoHero({
         {...rotation.focusProps}
         className="relative isolate overflow-clip bg-ink-deep text-white"
       >
-        <div className="absolute inset-x-0 top-0 -z-10 h-64 sm:h-96 lg:inset-y-0 lg:h-auto">
+        <div className="absolute inset-x-0 top-0 -z-10 h-64 overflow-clip sm:h-96 lg:inset-y-0 lg:h-auto">
           {isRotating && photos ? (
             photos.map((item, i) =>
               mounted.includes(i) ? (
-                <Image
-                  key={typeof item.src === "string" ? item.src : i}
-                  src={item.src}
-                  alt={i === active ? item.alt : ""}
-                  fill
-                  preload={i === 0}
-                  fetchPriority={i === 0 ? "high" : undefined}
-                  sizes="100vw"
-                  className={`object-cover transition-opacity duration-1000 ease-in-out ${
-                    i === 0 ? "hero-intro-photo" : ""
-                  } ${i === active ? "opacity-100" : "opacity-0"}`}
-                />
+                <PhotoFrame key={typeof item.src === "string" ? item.src : i} framing={item.framing}>
+                  <Image
+                    src={item.src}
+                    alt={i === active ? item.alt : ""}
+                    fill
+                    preload={i === 0}
+                    fetchPriority={i === 0 ? "high" : undefined}
+                    sizes="100vw"
+                    className={`object-cover transition-opacity duration-1000 ease-in-out ${
+                      i === 0 ? "hero-intro-photo" : ""
+                    } ${i === active ? "opacity-100" : "opacity-0"}`}
+                  />
+                </PhotoFrame>
               ) : null,
             )
           ) : (
-            <Image
-              src={photo}
-              alt={photoAlt}
-              fill
-              preload
-              fetchPriority="high"
-              sizes="100vw"
-              className="hero-intro-photo object-cover"
-            />
+            <PhotoFrame framing={photoFraming}>
+              <Image
+                src={photo}
+                alt={photoAlt}
+                fill
+                preload
+                fetchPriority="high"
+                sizes="100vw"
+                className="hero-intro-photo object-cover"
+              />
+            </PhotoFrame>
           )}
           <div
             aria-hidden="true"

@@ -5,6 +5,7 @@ import { DonationPanel } from "@/components/donation-panel";
 import { ExternalLink } from "@/components/external-link";
 import { HeroTitle } from "@/components/hero-title";
 import { HeroPhotos } from "@/components/hero-photos";
+import { PhotoFrame } from "@/components/photo-frame";
 import { KanjiWatermark } from "@/components/kanji-watermark";
 import { MailEnvelope } from "@/components/mail-envelope";
 import { SectionHeading } from "@/components/section-heading";
@@ -50,13 +51,15 @@ function ReasonPhoto({
 }) {
   return (
     <div className={`relative overflow-clip rounded-sm ring-1 ring-gold/60 ${className}`}>
-      <Image
-        src={photo.src}
-        alt={photo.alt}
-        fill
-        sizes="(min-width: 1024px) 14rem, (min-width: 640px) 45vw, 100vw"
-        className="object-cover"
-      />
+      <PhotoFrame framing={photo.framing}>
+        <Image
+          src={photo.src}
+          alt={photo.alt}
+          fill
+          sizes="(min-width: 1024px) 14rem, (min-width: 640px) 45vw, 100vw"
+          className="object-cover"
+        />
+      </PhotoFrame>
       <span className="absolute top-2 left-2 flex size-9 items-center justify-center rounded-full bg-ink-deep/85 text-sky ring-1 ring-gold/60">
         <Icon className="size-5" />
       </span>
@@ -105,16 +108,18 @@ export default async function PaymentsPage() {
   return (
     <>
       <section className="section-midnight-scene relative isolate overflow-clip text-white">
-        <div className="absolute inset-x-0 top-0 -z-10 h-page-hero">
-          <Image
-            src={heroPhoto.src}
-            alt={heroPhoto.alt}
-            fill
-            preload
-            fetchPriority="high"
-            sizes="100vw"
-            className="hero-intro-photo object-cover"
-          />
+        <div className="absolute inset-x-0 top-0 -z-10 h-page-hero overflow-clip">
+          <PhotoFrame framing={heroPhoto.framing}>
+            <Image
+              src={heroPhoto.src}
+              alt={heroPhoto.alt}
+              fill
+              preload
+              fetchPriority="high"
+              sizes="100vw"
+              className="hero-intro-photo object-cover"
+            />
+          </PhotoFrame>
           <div
             aria-hidden="true"
             className="absolute inset-0 bg-gradient-to-b from-ink-deep/90 via-navy/90 to-ink-deep/95 lg:bg-gradient-to-r lg:from-ink-deep/95 lg:via-navy/90 lg:via-60% lg:to-navy/10 lg:to-90%"

@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { sitePhotos } from "@/db/schema";
 import { failSoft } from "@/lib/fail-soft";
 import type { Locale } from "@/lib/i18n";
+import { framingFromRow } from "@/lib/photo-framing";
 import { photoSlot } from "@/lib/photo-slots";
 import type { SitePhotoSource } from "@/components/site-photo";
 
@@ -34,6 +35,7 @@ export function slotPhoto(
   return {
     src: row.url,
     alt: locale === "ja" ? row.altJa ?? row.alt : row.alt,
+    framing: framingFromRow(row),
     ...(row.width ? { width: row.width } : {}),
     ...(row.height ? { height: row.height } : {}),
   };

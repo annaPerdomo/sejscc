@@ -1,7 +1,9 @@
 import Image from "next/image";
+import { PhotoFrame } from "@/components/photo-frame";
 import { PhotoPlaceholder } from "@/components/photo-placeholder";
+import type { PhotoFraming } from "@/lib/photo-framing";
 
-export type SitePhotoSource = { src: string; alt: string };
+export type SitePhotoSource = { src: string; alt: string; framing?: PhotoFraming };
 
 export function SitePhoto({
   photo,
@@ -38,14 +40,16 @@ export function SitePhoto({
         dark ? "bg-white/5" : "bg-mist"
       } ${className}`}
     >
-      <Image
-        src={photo.src}
-        alt={photo.alt}
-        fill
-        preload={preload}
-        sizes={sizes}
-        className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-      />
+      <PhotoFrame framing={photo.framing}>
+        <Image
+          src={photo.src}
+          alt={photo.alt}
+          fill
+          preload={preload}
+          sizes={sizes}
+          className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+        />
+      </PhotoFrame>
     </div>
   );
 }

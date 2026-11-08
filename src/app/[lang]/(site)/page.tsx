@@ -13,6 +13,7 @@ import { SectionHeading } from "@/components/section-heading";
 import { SchoolSeal } from "@/components/school-seal";
 import { SchoolSlideshow, type SchoolSlide } from "@/components/school-slideshow";
 import { SectionKicker } from "@/components/section-kicker";
+import { PhotoFrame } from "@/components/photo-frame";
 import { SitePhoto } from "@/components/site-photo";
 import { SiteVideo } from "@/components/site-video";
 import { SectionDivider } from "@/components/section-divider";
@@ -118,7 +119,7 @@ export default async function HomePage() {
     (slideText, i) => {
       if (!homePhotos.schoolSlides[i]) return [];
       const photo = slotPhoto(photos, `home.school-slide.${i}`, slideText.alt, lang);
-      return [{ ...slideText, src: photo.src, alt: photo.alt }];
+      return [{ ...slideText, src: photo.src, alt: photo.alt, framing: photo.framing }];
     },
   );
 
@@ -150,6 +151,8 @@ export default async function HomePage() {
     const image = historyCentennialPhotos[item.id];
     return image ? [{ image, alt: item.photoAlt }] : [];
   });
+
+  const backdrop = slotPhoto(photos, "home.events-backdrop", "", lang);
 
   const centennialPhoto = slotPhoto(
     photos,
@@ -427,16 +430,18 @@ export default async function HomePage() {
             className="absolute inset-0 -z-10 mask-t-from-75% mask-b-from-70%"
           >
             <div className="parallax-drift absolute inset-x-0 -inset-y-16">
-              <Image
-                src={slotPhoto(photos, "home.events-backdrop", "", lang).src}
-                alt=""
-                fill
-                // Shares its URL with the hero photo above; a lazy copy would
-                // make Next flag the hero as a lazily loaded LCP image.
-                loading="eager"
-                sizes="100vw"
-                className="photo-develop object-cover"
-              />
+              <PhotoFrame framing={backdrop.framing}>
+                <Image
+                  src={backdrop.src}
+                  alt=""
+                  fill
+                  // Shares its URL with the hero photo above; a lazy copy would
+                  // make Next flag the hero as a lazily loaded LCP image.
+                  loading="eager"
+                  sizes="100vw"
+                  className="photo-develop object-cover"
+                />
+              </PhotoFrame>
             </div>
             {/* At 88% the wash keeps every text color at AA over the darkest
                 pixels of the photo; thin it and the kicker and captions fail. */}

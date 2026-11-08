@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { PhotoFrame } from "@/components/photo-frame";
 import Link from "next/link";
 import { DatePage } from "@/components/date-page";
 import { ExternalLink } from "@/components/external-link";
@@ -25,16 +26,18 @@ export async function EventsHero({ events }: { events: Event[] }) {
 
   return (
     <section className="relative isolate overflow-clip bg-navy lg:flex lg:min-h-page-hero">
-      <div className="relative aspect-photo lg:absolute lg:inset-0 lg:-z-10 lg:aspect-auto">
-        <Image
-          src={photo.src}
-          alt={photo.alt}
-          fill
-          preload
-          fetchPriority="high"
-          sizes="100vw"
-          className="hero-intro-photo object-cover object-right"
-        />
+      <div className="relative aspect-photo overflow-clip lg:absolute lg:inset-0 lg:-z-10 lg:aspect-auto">
+        <PhotoFrame framing={photo.framing}>
+          <Image
+            src={photo.src}
+            alt={photo.alt}
+            fill
+            preload
+            fetchPriority="high"
+            sizes="100vw"
+            className={`hero-intro-photo object-cover ${photo.framing ? "" : "object-right"}`}
+          />
+        </PhotoFrame>
       </div>
       {/* Over the white building, white text keeps AA down to a 70% wash;
           sky and blossom text would need 90%, so the words here stay white. */}

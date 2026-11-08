@@ -5,10 +5,13 @@ import Image from "next/image";
 import { useMountedAround, useRotation } from "@/components/carousel-hooks";
 import { CarouselDots } from "@/components/carousel-dots";
 import { CarouselPlayToggle } from "@/components/carousel-play-toggle";
+import { PhotoFrame } from "@/components/photo-frame";
+import type { PhotoFraming } from "@/lib/photo-framing";
 
 export type SchoolSlide = {
   src: string;
   alt: string;
+  framing?: PhotoFraming;
   label: string;
   caption: string;
 };
@@ -50,13 +53,15 @@ export function SchoolSlideshow({
               className="absolute inset-0 transition-opacity duration-700 ease-in-out"
               style={{ opacity: i === active ? 1 : 0 }}
             >
-              <Image
-                src={item.src}
-                alt={item.alt}
-                fill
-                sizes={sizes}
-                className={`object-cover ${i === active ? "hero-drift" : ""}`}
-              />
+              <PhotoFrame framing={item.framing}>
+                <Image
+                  src={item.src}
+                  alt={item.alt}
+                  fill
+                  sizes={sizes}
+                  className={`object-cover ${i === active ? "hero-drift" : ""}`}
+                />
+              </PhotoFrame>
             </div>
           ) : null,
         )}

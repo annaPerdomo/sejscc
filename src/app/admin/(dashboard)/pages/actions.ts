@@ -10,6 +10,12 @@ import { getBaseDictionaryFor } from "@/lib/dictionaries";
 import { getImageSize } from "@/lib/image-size";
 import type { Locale } from "@/lib/i18n";
 import { readPath } from "@/lib/object-path";
+import {
+  ZOOM_MAX,
+  ZOOM_MIN,
+  framingToRow,
+  type PhotoFraming,
+} from "@/lib/photo-framing";
 import { photoSlot, type PhotoSlot } from "@/lib/photo-slots";
 import { normalizeSiteLinkUrl, siteLink } from "@/lib/site-links";
 import { siteTextField } from "@/lib/site-text-fields";
@@ -21,7 +27,7 @@ const NOT_REGISTERED_PHOTO_MESSAGE = "That photo spot doesn't exist.";
 const NOT_REGISTERED_LINK_MESSAGE = "That link can't be changed here.";
 const MISSING_ALT_MESSAGE = "Please describe the photo for visitors who can't see it.";
 const NO_OVERRIDE_PHOTO_MESSAGE =
-  "This photo is back to the original, so there's no description to change.";
+  "This photo is back to the original, so there's nothing here to change.";
 const ALT_MAX = 600;
 const LIST_PAGE_LIMIT = 500;
 const LIBRARY_LIMIT = 60;
@@ -130,6 +136,21 @@ function checkedAlt(alt: string, slot: PhotoSlot): string {
   return trimmed;
 }
 
+function wholePercent(value: number, min: number, max: number): boolean {
+  return Number.isInteger(value) && value >= min && value <= max;
+}
+
+function checkedFraming(framing: PhotoFraming): PhotoFraming {
+  if (
+    !wholePercent(framing.x, 0, 100) ||
+    !wholePercent(framing.y, 0, 100) ||
+    !wholePercent(framing.zoom, ZOOM_MIN, ZOOM_MAX)
+  ) {
+    throw new AdminError("That framing isn't possible. Please move or zoom the photo again.");
+  }
+  return framing;
+}
+
 function checkedAltJa(altJa: string): string | null {
   const trimmed = altJa.trim();
   if (!trimmed) return null;
@@ -160,6 +181,7 @@ export async function updateSitePhoto(input: {
   url: string;
   alt: string;
   altJa: string;
+  framing: PhotoFraming;
 }): Promise<ActionResult> {
   return runAction(async () => {
     await requireUser();
@@ -168,24 +190,23 @@ export async function updateSitePhoto(input: {
     if (!url) throw new AdminError("That photo didn't upload correctly. Please try again.");
     const alt = checkedAlt(input.alt, slot);
     const altJa = checkedAltJa(input.altJa);
+    const framing = framingToRow(checkedFraming(input.framing));
 
     const [existing] = await db.select().from(sitePhotos).where(eq(sitePhotos.slot, slot.id));
     const size = await getImageSize(url);
+    const set = {
+      url,
+      alt,
+      altJa,
+      width: size?.width ?? null,
+      height: size?.height ?? null,
+      ...framing,
+    };
 
     await db
       .insert(sitePhotos)
-      .values({
-        slot: slot.id,
-        url,
-        alt,
-        altJa,
-        width: size?.width ?? null,
-        height: size?.height ?? null,
-      })
-      .onConflictDoUpdate({
-        target: sitePhotos.slot,
-        set: { url, alt, altJa, width: size?.width ?? null, height: size?.height ?? null },
-      });
+      .values({ slot: slot.id, ...set })
+      .onConflictDoUpdate({ target: sitePhotos.slot, set });
 
     if (existing && existing.url !== url) {
       await deleteOrphanedBlob(existing.url);
@@ -195,21 +216,26 @@ export async function updateSitePhoto(input: {
   });
 }
 
-export async function updateSitePhotoDescription(input: {
+export async function updateSitePhotoDetails(input: {
   slot: string;
   alt: string;
   altJa: string;
+  framing: PhotoFraming;
 }): Promise<ActionResult> {
   return runAction(async () => {
     await requireUser();
     const slot = checkedSlot(input.slot);
     const alt = checkedAlt(input.alt, slot);
     const altJa = checkedAltJa(input.altJa);
+    const framing = framingToRow(checkedFraming(input.framing));
 
     const [existing] = await db.select().from(sitePhotos).where(eq(sitePhotos.slot, slot.id));
     if (!existing) throw new AdminError(NO_OVERRIDE_PHOTO_MESSAGE);
 
-    await db.update(sitePhotos).set({ alt, altJa }).where(eq(sitePhotos.slot, slot.id));
+    await db
+      .update(sitePhotos)
+      .set({ alt, altJa, ...framing })
+      .where(eq(sitePhotos.slot, slot.id));
     revalidateSite();
   });
 }

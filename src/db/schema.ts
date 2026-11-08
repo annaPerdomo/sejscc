@@ -304,6 +304,10 @@ export const sitePhotos = pgTable("site_photo", {
   altJa: text("alt_ja"),
   width: integer("width"),
   height: integer("height"),
+  // Percent across and down of the point kept in view, and the zoom as a percent.
+  focusX: integer("focus_x"),
+  focusY: integer("focus_y"),
+  zoom: integer("zoom"),
   updatedAt: timestamp("updated_at", { mode: "date" })
     .notNull()
     .defaultNow()

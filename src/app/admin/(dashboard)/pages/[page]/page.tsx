@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { assertEditablePagesRegistry, editablePage } from "@/lib/editable-pages";
 import { getBaseDictionaryFor } from "@/lib/dictionaries";
 import { readPath } from "@/lib/object-path";
+import { framingFromRow } from "@/lib/photo-framing";
 import { getSitePhotos } from "@/lib/site-photos";
 import { getSiteSettings } from "@/lib/site-settings";
 import { getSiteTextOverrides } from "@/lib/site-text";
@@ -46,7 +47,9 @@ export default async function EditablePagePage({
       };
       tiles[slot.id] = {
         slot: slot.id,
-        current: row ? { src: row.url, alt: row.alt, altJa: row.altJa ?? "" } : original,
+        current: row
+          ? { src: row.url, alt: row.alt, altJa: row.altJa ?? "", framing: framingFromRow(row) }
+          : original,
         original,
         isChanged: Boolean(row),
       };

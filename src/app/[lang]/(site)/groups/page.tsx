@@ -6,6 +6,7 @@ import { DocumentLink } from "@/components/document-link";
 import { GroupPortrait } from "@/components/group-portrait";
 import { KanjiWatermark } from "@/components/kanji-watermark";
 import { PhotoHero } from "@/components/photo-hero";
+import { PhotoFrame } from "@/components/photo-frame";
 import { SectionHeading } from "@/components/section-heading";
 import { SectionKicker } from "@/components/section-kicker";
 import { SectionDivider } from "@/components/section-divider";
@@ -82,6 +83,7 @@ export default async function GroupsPage() {
       <PhotoHero
         photo={heroPhotos[0].src}
         photoAlt={heroPhotos[0].alt}
+        photoFraming={heroPhotos[0].framing}
         photos={heroPhotos}
         rotationLabels={{
           pause: dict.groups.heroPause,
@@ -298,13 +300,15 @@ export default async function GroupsPage() {
 
       <section id="start" className="relative isolate scroll-mt-28 overflow-clip bg-ink-deep text-white">
         <div className="absolute inset-0 -z-10">
-          <Image
-            src={startPhoto.src}
-            alt={startPhoto.alt}
-            fill
-            sizes="100vw"
-            className="ken-burns-out object-cover"
-          />
+          <PhotoFrame framing={startPhoto.framing}>
+            <Image
+              src={startPhoto.src}
+              alt={startPhoto.alt}
+              fill
+              sizes="100vw"
+              className="ken-burns-out object-cover"
+            />
+          </PhotoFrame>
           {/* The wash keeps white copy at AA over the bright dojo walls. */}
           <div
             aria-hidden="true"

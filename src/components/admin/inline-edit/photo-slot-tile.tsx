@@ -12,37 +12,36 @@ import { AdminTextArea } from "@/components/admin/admin-field";
 import { AdminImagePicker } from "@/components/admin/admin-image-picker";
 import type { EditBarStatus } from "@/components/admin/inline-edit/edit-bar";
 import { EditDialog } from "@/components/admin/inline-edit/edit-dialog";
+import { PHOTO_SHAPE_CLASS, PhotoFramer } from "@/components/admin/inline-edit/photo-framer";
+import { PhotoFrame } from "@/components/photo-frame";
+import { DEFAULT_FRAMING, sameFraming, type PhotoFraming } from "@/lib/photo-framing";
 import {
   confirmDiscardChanges,
   useUnsavedChangesGuard,
 } from "@/components/admin/inline-edit/use-unsaved-changes-guard";
-import type { PhotoShape, PhotoSlot } from "@/lib/photo-slots";
+import type { PhotoSlot } from "@/lib/photo-slots";
 import {
   listUploadedPhotos,
   resetSitePhoto,
   updateSitePhoto,
-  updateSitePhotoDescription,
+  updateSitePhotoDetails,
 } from "@/app/admin/(dashboard)/pages/actions";
 
 const NO_OVERRIDE_MESSAGE =
-  "This photo is back to the original, so there's no description to change.";
+  "This photo is back to the original, so there's nothing here to change.";
 const GENERIC_SAVE_ERROR = "Something went wrong saving this. Please try again.";
 const MISSING_ALT_MESSAGE = "Please describe the photo for visitors who can't see it.";
 const NOTHING_CHOSEN_MESSAGE = "Choose a new photo first, then press Save.";
 const TILE_SIZES = "(max-width: 640px) 50vw, 33vw";
 const LIBRARY_SIZES = "33vw";
 
+type TilePhoto = { src: string; alt: string; altJa: string; framing?: PhotoFraming };
+
 export type PhotoTile = {
   slot: string;
-  current: { src: string; alt: string; altJa: string };
-  original: { src: string; alt: string; altJa: string };
+  current: TilePhoto;
+  original: TilePhoto;
   isChanged: boolean;
-};
-
-const SHAPE_CLASS: Record<PhotoShape, string> = {
-  wide: "aspect-band",
-  photo: "aspect-photo",
-  square: "aspect-square",
 };
 
 type PickMode = "upload" | "library";
@@ -94,14 +93,16 @@ export function PhotoSlotTile({
 
   return (
     <div className="flex flex-col gap-2">
-      <div className={`relative overflow-clip rounded-lg bg-mist ${SHAPE_CLASS[slot.shape]}`}>
-        <Image
-          src={tile.current.src}
-          alt={tile.current.alt}
-          fill
-          sizes={TILE_SIZES}
-          className="object-cover"
-        />
+      <div className={`relative overflow-clip rounded-lg bg-mist ${PHOTO_SHAPE_CLASS[slot.shape]}`}>
+        <PhotoFrame framing={tile.current.framing}>
+          <Image
+            src={tile.current.src}
+            alt={tile.current.alt}
+            fill
+            sizes={TILE_SIZES}
+            className="object-cover"
+          />
+        </PhotoFrame>
       </div>
       <div className="flex items-center gap-2">
         <span className="text-sm font-semibold text-ink">{slot.label}</span>
@@ -158,6 +159,8 @@ function PhotoDialog({
   const [libraryError, setLibraryError] = useState<string | null>(null);
   const [altDraft, setAltDraft] = useState(tile.current.alt);
   const [altJaDraft, setAltJaDraft] = useState(tile.current.altJa);
+  const savedFraming = tile.current.framing ?? DEFAULT_FRAMING;
+  const [framingDraft, setFramingDraft] = useState(savedFraming);
   const [altError, setAltError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [preparing, setPreparing] = useState(false);
@@ -171,7 +174,10 @@ function PhotoDialog({
 
   const hasNewPhoto = Boolean(file || libraryUrl);
   const dirty =
-    hasNewPhoto || altDraft !== tile.current.alt || altJaDraft !== tile.current.altJa;
+    hasNewPhoto ||
+    altDraft !== tile.current.alt ||
+    altJaDraft !== tile.current.altJa ||
+    !sameFraming(framingDraft, savedFraming);
 
   useUnsavedChangesGuard(dirty);
 
@@ -181,6 +187,7 @@ function PhotoDialog({
     setFile(chosen);
     setPreviewUrl(URL.createObjectURL(chosen));
     setLibraryUrl(null);
+    setFramingDraft(DEFAULT_FRAMING);
     setError(null);
   }
 
@@ -205,6 +212,7 @@ function PhotoDialog({
     setError(null);
     setFile(null);
     setPreviewUrl(null);
+    setFramingDraft(DEFAULT_FRAMING);
   }
 
   async function save() {
@@ -238,14 +246,15 @@ function PhotoDialog({
         url = libraryUrl;
       }
 
+      const framing = framingDraft;
       if (hasNewPhoto) {
-        expectOk(await updateSitePhoto({ slot: tile.slot, url, alt, altJa }));
+        expectOk(await updateSitePhoto({ slot: tile.slot, url, alt, altJa, framing }));
       } else {
-        expectOk(await updateSitePhotoDescription({ slot: tile.slot, alt, altJa }));
+        expectOk(await updateSitePhotoDetails({ slot: tile.slot, alt, altJa, framing }));
       }
 
       onSaved(
-        { ...tile, current: { src: url, alt, altJa }, isChanged: true },
+        { ...tile, current: { src: url, alt, altJa, framing }, isChanged: true },
         `Changed ${slot.group}: ${slot.label}.`
       );
       onClose();
@@ -288,6 +297,10 @@ function PhotoDialog({
   }
 
   const pickerValue = mode === "upload" ? previewUrl : null;
+  const framerSrc =
+    slot.framable === false
+      ? null
+      : (previewUrl ?? libraryUrl ?? (tile.isChanged ? tile.current.src : null));
 
   return (
     <EditDialog title={title} open busy={saving} dirty={dirty} onClose={closeDialog}>
@@ -368,6 +381,16 @@ function PhotoDialog({
           >
             Use the original photo
           </button>
+        )}
+
+        {framerSrc && (
+          <PhotoFramer
+            src={framerSrc}
+            shape={slot.shape}
+            framing={framingDraft}
+            onChange={setFramingDraft}
+            disabled={saving}
+          />
         )}
 
         {tile.isChanged || hasNewPhoto ? (
