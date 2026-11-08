@@ -9,13 +9,14 @@ export type PageEditTarget = {
 } & (
   | { kind: "text"; text: string }
   | { kind: "link"; href: string }
-  | { kind: "photo"; src: string; turns: number }
+  | { kind: "photo"; src: string; turns: number; framable: boolean }
   /** Matches the public page's `data-edit-record` attribute, e.g. "level:<id>:name". */
   | { kind: "record"; record: string; photo: boolean }
 );
 
 export const TARGET_ATTRIBUTE = "data-page-edit";
 const TURNS_ATTRIBUTE = "data-page-edit-turns";
+const FRAMABLE_ATTRIBUTE = "data-page-edit-framable";
 // The attributes this file put on an element, so they come off again when
 // React reuses the element for words that are no longer a target.
 const ADDED_ATTRIBUTE = "data-page-edit-added";
@@ -137,6 +138,7 @@ export function markPageEditTargets(doc: Document, targets: PageEditTarget[]): S
     for (const name of stale.getAttribute(ADDED_ATTRIBUTE)?.split(" ") ?? []) stale.removeAttribute(name);
     stale.removeAttribute(TARGET_ATTRIBUTE);
     stale.removeAttribute(TURNS_ATTRIBUTE);
+    stale.removeAttribute(FRAMABLE_ATTRIBUTE);
     stale.removeAttribute(ADDED_ATTRIBUTE);
   }
 
@@ -151,6 +153,8 @@ export function markPageEditTargets(doc: Document, targets: PageEditTarget[]): S
     const turns = Math.max(...elTargets.map((t) => (t.kind === "photo" ? t.turns : 1)));
     if (turns > 1) el.setAttribute(TURNS_ATTRIBUTE, String(turns));
     else el.removeAttribute(TURNS_ATTRIBUTE);
+    if (elTargets.some((t) => t.kind === "photo" && t.framable)) el.setAttribute(FRAMABLE_ATTRIBUTE, "");
+    else el.removeAttribute(FRAMABLE_ATTRIBUTE);
     el.setAttribute("aria-label", accessibleName(elTargets));
     if (!FOCUSABLE_TAGS.has(el.tagName)) {
       el.setAttribute("tabindex", "0");
@@ -230,6 +234,8 @@ const BADGE_INSET = 12;
 const BADGE_REFRESH_MS = 400;
 const CAMERA_PATH =
   "M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Zm8 3.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z";
+const MOVE_PATH =
+  "M12 2l3 3h-2v6h6V9l3 3-3 3v-2h-6v6h2l-3 3-3-3h2v-6H5v2l-3-3 3-3v2h6V5H9l3-3Z";
 
 type Box = { top: number; right: number; bottom: number; left: number };
 
@@ -250,23 +256,28 @@ function visibleBox(image: Element, view: Window, headerBottom: number): Box | n
     if (view.getComputedStyle(el).overflow !== "visible") box = intersect(box, el.getBoundingClientRect());
   }
   box = intersect(box, { top: headerBottom, right: view.innerWidth, bottom: view.innerHeight, left: 0 });
-  const roomy = box.right - box.left > 80 && box.bottom - box.top > 56;
+  const minWidth = image.hasAttribute(FRAMABLE_ATTRIBUTE) ? 320 : 80;
+  const roomy = box.right - box.left > minWidth && box.bottom - box.top > 56;
   return roomy ? box : null;
 }
 
-function cameraIcon(doc: Document): SVGSVGElement {
+function icon(doc: Document, d: string): SVGSVGElement {
   const svg = doc.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("viewBox", "0 0 24 24");
   svg.setAttribute("aria-hidden", "true");
   const path = doc.createElementNS("http://www.w3.org/2000/svg", "path");
-  path.setAttribute("d", CAMERA_PATH);
+  path.setAttribute("d", d);
   path.setAttribute("fill-rule", "evenodd");
   path.setAttribute("fill", "currentColor");
   svg.append(path);
   return svg;
 }
 
-export function showPhotoButtons(doc: Document, onPick: (keys: string[]) => void): void {
+export function showPhotoButtons(
+  doc: Document,
+  onPick: (keys: string[]) => void,
+  onFrame: (key: string) => void
+): void {
   const view = doc.defaultView;
   if (!view || !doc.body) return;
 
@@ -274,26 +285,42 @@ export function showPhotoButtons(doc: Document, onPick: (keys: string[]) => void
   layer.className = PHOTO_LAYER_CLASS;
   doc.body.append(layer);
 
-  const buttons = new Map<string, HTMLButtonElement>();
+  const buttons = new Map<string, HTMLElement>();
 
-  function buttonFor(image: Element): HTMLButtonElement {
+  function buttonFor(image: Element): HTMLElement {
     const id = image.getAttribute(TARGET_ATTRIBUTE) ?? "";
     const existing = buttons.get(id);
     if (existing) return existing;
-    const button = doc.createElement("button");
-    button.type = "button";
-    button.className = "page-edit-photo-button";
+    const group = doc.createElement("div");
+    group.className = "page-edit-photo-buttons";
+    const change = doc.createElement("button");
+    change.type = "button";
+    change.className = "page-edit-photo-button";
     const turns = image.getAttribute(TURNS_ATTRIBUTE);
     if (turns) {
-      button.setAttribute("aria-label", `Change photos: ${turns} photos take turns here`);
-      button.append(cameraIcon(doc), "Change photos");
+      change.setAttribute("aria-label", `Change photos: ${turns} photos take turns here`);
+      change.append(icon(doc, CAMERA_PATH), "Change photos");
     } else {
-      button.setAttribute("aria-label", image.getAttribute("aria-label") ?? "Change photo");
-      button.append(cameraIcon(doc), "Change photo");
+      change.setAttribute("aria-label", image.getAttribute("aria-label") ?? "Change photo");
+      change.append(icon(doc, CAMERA_PATH), "Change photo");
     }
-    button.addEventListener("click", () => onPick(id.split(" ")));
-    buttons.set(id, button);
-    return button;
+    change.addEventListener("click", () => onPick(id.split(" ")));
+    group.append(change);
+    if (image.hasAttribute(FRAMABLE_ATTRIBUTE)) {
+      const move = doc.createElement("button");
+      move.type = "button";
+      move.className = "page-edit-photo-button";
+      move.setAttribute("aria-label", "Move or zoom this photo");
+      move.append(icon(doc, MOVE_PATH), "Move or zoom");
+      move.addEventListener("click", () => {
+        const keys = id.split(" ");
+        if (keys.length === 1) onFrame(keys[0]);
+        else onPick(keys);
+      });
+      group.append(move);
+    }
+    buttons.set(id, group);
+    return group;
   }
 
   function place() {
@@ -301,7 +328,7 @@ export function showPhotoButtons(doc: Document, onPick: (keys: string[]) => void
     const header = doc.querySelector("header");
     const headerBottom = header ? Math.max(0, header.getBoundingClientRect().bottom) : 0;
     const taken = new Set<string>();
-    const shown = new Set<HTMLButtonElement>();
+    const shown = new Set<HTMLElement>();
 
     for (const image of doc.querySelectorAll(`img[${TARGET_ATTRIBUTE}]`)) {
       if (!image.checkVisibility({ opacityProperty: true, visibilityProperty: true })) continue;

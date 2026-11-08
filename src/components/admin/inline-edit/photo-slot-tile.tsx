@@ -14,6 +14,8 @@ import { EditDialog } from "@/components/admin/inline-edit/edit-dialog";
 import { PHOTO_SHAPE_CLASS, PhotoFramer } from "@/components/admin/inline-edit/photo-framer";
 import { PhotoFrame } from "@/components/photo-frame";
 import { DEFAULT_FRAMING, sameFraming, type PhotoFraming } from "@/lib/photo-framing";
+import { blurryPhotoMessage } from "@/lib/photo-resolution";
+import { useNaturalSize } from "@/components/admin/inline-edit/use-natural-size";
 import {
   confirmDiscardChanges,
   useUnsavedChangesGuard,
@@ -32,6 +34,8 @@ const NO_OVERRIDE_MESSAGE =
 const GENERIC_SAVE_ERROR = "Something went wrong saving this. Please try again.";
 const MISSING_ALT_MESSAGE = "Please describe the photo for visitors who can't see it.";
 const NOTHING_CHOSEN_MESSAGE = "Choose a new photo, or move or zoom this one, then press Save.";
+const NOTHING_CHOSEN_ON_PAGE_MESSAGE =
+  "Choose a new photo, then press Save. To move or zoom the photo you have, close this and tap Move or zoom on the page.";
 const TILE_SIZES = "(max-width: 640px) 50vw, 33vw";
 const LIBRARY_SIZES = "33vw";
 
@@ -73,7 +77,7 @@ type PhotoSlotEditorProps = {
   ) => void;
   onTileChange: (next: PhotoTile) => void;
   onStatus: (status: EditBarStatus) => void;
-  onFrameOnPage?: () => void;
+  framesOnPage?: boolean;
 };
 
 export function photoSlotTitle(slot: PhotoSlot): string {
@@ -118,7 +122,7 @@ export function PhotoSlotEditor({
   onSaved,
   onTileChange,
   onStatus,
-  onFrameOnPage,
+  framesOnPage,
   onClose,
 }: PhotoSlotEditorProps & { onClose: () => void }) {
   const router = useRouter();
@@ -171,7 +175,7 @@ export function PhotoSlotEditor({
       onSaved={handleSaved}
       onReset={handleReset}
       onStatus={onStatus}
-      onFrameOnPage={onFrameOnPage}
+      framesOnPage={framesOnPage}
     />
   );
 }
@@ -184,7 +188,7 @@ export function PhotoDialog({
   onSaved,
   onReset,
   onStatus,
-  onFrameOnPage,
+  framesOnPage: framesOnPageAllowed = false,
 }: {
   spot: PhotoSpot;
   actions: PhotoSaveActions;
@@ -193,7 +197,7 @@ export function PhotoDialog({
   onSaved: (next: PhotoTile, description: string) => void;
   onReset?: (original: PhotoTile["current"], description: string) => void;
   onStatus: (status: EditBarStatus) => void;
-  onFrameOnPage?: () => void;
+  framesOnPage?: boolean;
 }) {
   const router = useRouter();
   const { title, altOptional } = spot;
@@ -270,6 +274,10 @@ export function PhotoDialog({
       return;
     }
     if (!hasNewPhoto && actions.frameOriginal && !tile.isChanged) {
+      if (framesOnPage) {
+        setError(NOTHING_CHOSEN_ON_PAGE_MESSAGE);
+        return;
+      }
       await saveOriginalFraming(actions.frameOriginal);
       return;
     }
@@ -371,36 +379,19 @@ export function PhotoDialog({
   }
 
   const pickerValue = mode === "upload" ? previewUrl : null;
-  const framesOnPage = spot.framable && Boolean(onFrameOnPage);
-  const framerSrc =
-    !spot.framable || framesOnPage
-      ? null
-      : (previewUrl ?? libraryUrl ?? tile.current.src);
-
-  function frameOnPage() {
-    if (saving || !onFrameOnPage || !confirmDiscardChanges(dirty)) return;
-    closeDialog();
-    onFrameOnPage();
-  }
+  const framesOnPage = spot.framable && framesOnPageAllowed;
+  const shownSrc = previewUrl ?? libraryUrl ?? tile.current.src;
+  const framerSrc = !spot.framable || framesOnPage ? null : shownSrc;
+  const natural = useNaturalSize(shownSrc || null);
+  const blurryMessage = natural && blurryPhotoMessage(natural, spot.shape, framingDraft.zoom);
 
   return (
     <EditDialog title={title} open busy={saving} dirty={dirty} onClose={closeDialog}>
       <div className="space-y-5">
-        {framesOnPage && !hasNewPhoto && (
-          <div>
-            <h3 className="text-lg font-semibold text-ink">Choose what shows</h3>
-            <p className="mt-1 text-sm text-ink-soft">
-              Move or zoom the photo right on the page, so you see exactly what visitors will.
-            </p>
-            <button
-              type="button"
-              onClick={frameOnPage}
-              aria-disabled={saving}
-              className={`mt-3 min-h-12 ${buttonClass("primary")}`}
-            >
-              Move or zoom this photo
-            </button>
-          </div>
+        {blurryMessage && (
+          <AdminAlert role="note" tone="warning">
+            {blurryMessage}
+          </AdminAlert>
         )}
         {framesOnPage && hasNewPhoto && (
           <p className="text-sm text-ink-soft">

@@ -1801,8 +1801,15 @@ body {
     pointer-events: none;
   }
 
-  .page-edit-photo-button {
+  .page-edit-photo-buttons {
     position: absolute;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: --spacing(2);
+  }
+
+  .page-edit-photo-button {
     display: inline-flex;
     align-items: center;
     gap: --spacing(2);

@@ -14,6 +14,9 @@ import {
   isDefaultFraming,
   type PhotoFraming,
 } from "@/lib/photo-framing";
+import { blurryPhotoMessage } from "@/lib/photo-resolution";
+import type { PhotoShape } from "@/lib/photo-slots";
+import { useNaturalSize } from "@/components/admin/inline-edit/use-natural-size";
 
 const MOVES = [
   { word: "Left", arrow: "←", dx: -NUDGE, dy: 0 },
@@ -26,6 +29,8 @@ const BIG_BUTTON = `flex min-h-12 flex-1 items-center justify-center gap-2 round
 
 export function PhotoFramingBar({
   title,
+  src,
+  shape,
   framing,
   saving,
   error,
@@ -34,6 +39,8 @@ export function PhotoFramingBar({
   onCancel,
 }: {
   title: string;
+  src: string;
+  shape: PhotoShape;
   framing: PhotoFraming;
   saving: boolean;
   error: string | null;
@@ -42,6 +49,8 @@ export function PhotoFramingBar({
   onCancel: () => void;
 }) {
   const headingId = useId();
+  const natural = useNaturalSize(src);
+  const blurryMessage = natural && blurryPhotoMessage(natural, shape, framing.zoom);
   const headingRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
@@ -162,6 +171,11 @@ export function PhotoFramingBar({
             </button>
           )}
         </div>
+        {blurryMessage && (
+          <AdminAlert role="note" tone="warning">
+            {blurryMessage}
+          </AdminAlert>
+        )}
         {error && <AdminAlert>{error}</AdminAlert>}
       </div>
     </div>

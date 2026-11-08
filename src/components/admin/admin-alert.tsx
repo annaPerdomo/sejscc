@@ -1,17 +1,21 @@
 import type { ReactNode } from "react";
 
+const TONE_CLASS = {
+  info: "border-indigo/40 bg-indigo/5 text-indigo-deep",
+  warning: "border-gold bg-butter text-ink",
+};
+
 export function AdminAlert({
   role = "alert",
+  tone = "info",
   children,
 }: {
   role?: "alert" | "note";
+  tone?: keyof typeof TONE_CLASS;
   children: ReactNode;
 }) {
   return (
-    <p
-      role={role}
-      className="rounded-lg border border-indigo/40 bg-indigo/5 px-4 py-3 text-sm text-indigo-deep"
-    >
+    <p role={role} className={`rounded-lg border px-4 py-3 text-sm ${TONE_CLASS[tone]}`}>
       {children}
     </p>
   );

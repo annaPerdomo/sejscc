@@ -454,9 +454,13 @@ export function PageCanvas({
     setFraming({ slot, draft: saved ?? DEFAULT_FRAMING, saving: false, error: null });
   }
 
-  function frameOnPage(slot: PhotoSlot): (() => void) | undefined {
-    if (slot.framable === false || !foundKeys?.has(`photo:${slot.id}`)) return undefined;
-    return () => startFraming(slot, tiles[slot.id].current.framing);
+  function framesOnPage(slot: PhotoSlot): boolean {
+    return slot.framable !== false && Boolean(foundKeys?.has(`photo:${slot.id}`));
+  }
+
+  function frameFromPage(key: string) {
+    const item = pageItems.get(key);
+    if (item?.kind === "photo" && framesOnPage(item.slot)) startFraming(item.slot, tiles[item.slot.id].current.framing);
   }
 
   async function saveFraming() {
@@ -503,7 +507,7 @@ export function PageCanvas({
         onSaved={onPhotoSaved}
         onTileChange={onTileChange}
         onStatus={setStatus}
-        onFrameOnPage={frameOnPage(slot)}
+        framesOnPage={framesOnPage(slot)}
       />
     );
   }
@@ -575,6 +579,7 @@ export function PageCanvas({
           kind: "photo",
           src: tiles[item.slot.id].current.src,
           turns: item.slot.takesTurns ? photosSharingSpot(item.slot).length : 1,
+          framable: item.slot.framable !== false,
         };
       case "record":
         return {
@@ -686,6 +691,8 @@ export function PageCanvas({
                 bar: (
                   <PhotoFramingBar
                     title={photoSlotTitle(framing.slot)}
+                    src={tiles[framing.slot.id].current.src}
+                    shape={framing.slot.shape}
                     framing={framing.draft}
                     saving={framing.saving}
                     error={framing.error}
@@ -703,6 +710,7 @@ export function PageCanvas({
         }
         onFound={setFoundKeys}
         onPick={pickOnPage}
+        onFrame={frameFromPage}
         onDone={() => router.push("/admin")}
       />
 
@@ -713,7 +721,7 @@ export function PageCanvas({
           onSaved={onPhotoSaved}
           onTileChange={onTileChange}
           onStatus={setStatus}
-          onFrameOnPage={frameOnPage(pickedPhoto)}
+          framesOnPage={framesOnPage(pickedPhoto)}
           onClose={() => setPickedPhoto(null)}
         />
       )}
