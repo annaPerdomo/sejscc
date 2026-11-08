@@ -42,6 +42,7 @@ function displayIndex(n: number): string {
 }
 
 const TUITION_PLAN_POINT_COUNTS = [4, 4, 3];
+const SCHOOL_LEDE_PARAGRAPH_COUNT = 3;
 const SCHOOL_HISTORY_PARAGRAPH_COUNT = 4;
 const SCHOOL_FACTS_COUNT = 4;
 const DONATE_REASONS_COUNT = 4;
@@ -84,7 +85,9 @@ export const SITE_TEXT_PAGES: SiteTextPage[] = [
     href: "/school",
     sections: [
       section("school-top", [
-        field("school.lede", "Opening sentence", "body"),
+        ...Array.from({ length: SCHOOL_LEDE_PARAGRAPH_COUNT }, (_, i) =>
+          field(`school.lede.${i}`, `Opening paragraph ${displayIndex(i)}`, "body")
+        ),
         ...Array.from({ length: SCHOOL_FACTS_COUNT }, (_, i) => [
           field(`school.facts.${i}.value`, `Fact ${displayIndex(i)}`, "short"),
           field(`school.facts.${i}.note`, `Fact ${displayIndex(i)}, small print`, "short"),

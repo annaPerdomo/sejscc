@@ -621,7 +621,11 @@
     "kickerCaption": "Saturdays Since 1925",
     "titleLine1": "Southeast Japanese",
     "titleLine2": "Language School",
-    "lede": "Japanese language and culture on Saturday mornings — a kindergarten program from age five, the regular program from age six, and adult classes online. No prior language knowledge required.",
+    "lede": [
+      "Southeast Gakuen also has a class for five-year-olds, who learn happily through songs and crafts. Let your child meet a foreign language while they are small.",
+      "The beginning class takes children from age six. Its lessons center on listening and speaking, and little by little the children learn to read hiragana too. Adult classes run from beginning to intermediate level.",
+      "Southeast Gakuen started in 1925 as Norwalk Gakuen. We still teach Japanese today, and we fold in Japanese culture so that students learn more richly."
+    ],
     "registerCta": "Online registration",
     "tuitionCta": "Classes & tuition",
     "photoLabel": "Photo coming soon",

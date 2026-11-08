@@ -133,7 +133,13 @@ export default async function SchoolPage() {
         caption={dict.school.kickerCaption}
         titleLine1={dict.school.titleLine1}
         titleLine2={dict.school.titleLine2}
-        lede={<p>{dict.school.lede}</p>}
+        lede={
+          <div className="flex flex-col gap-4">
+            {dict.school.lede.map((paragraph) => (
+              <p key={paragraph}>{paragraph}</p>
+            ))}
+          </div>
+        }
         actions={
           <>
             <ExternalLink
