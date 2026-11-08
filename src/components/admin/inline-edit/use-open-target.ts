@@ -64,12 +64,12 @@ export function useOpenTarget() {
     close,
     fieldProps,
     isDirty: dirty,
-    blockLanguageSwitch: () => {
+    blockSwitch: () => {
       if (openKey === null || !dirty) return null;
       revealOpenField();
       return BLOCKED_MESSAGE;
     },
-    closeForLanguageSwitch: () => {
+    closeAll: () => {
       setOpenKey(null);
       setDirty(false);
       setBlocked(null);

@@ -1,15 +1,65 @@
 import { notFound } from "next/navigation";
+import { asc, eq } from "drizzle-orm";
+import { db } from "@/db";
+import { VOLUNTEER_SECTION_ID, boardMembers, events, volunteerSection } from "@/db/schema";
+import { getActiveGroups } from "@/lib/events";
+import type { EditablePageId } from "@/lib/editable-pages";
+import { getAllSchoolYearEvents } from "@/lib/school-year-events";
 import { assertEditablePagesRegistry, editablePage } from "@/lib/editable-pages";
 import { getBaseDictionaryFor } from "@/lib/dictionaries";
 import { readPath } from "@/lib/object-path";
-import { framingFromRow } from "@/lib/photo-framing";
+import { ORIGINAL_PHOTO_URL, framingFromRow } from "@/lib/photo-framing";
+import { getAllSchoolLevels } from "@/lib/school-levels";
 import { getSitePhotos } from "@/lib/site-photos";
-import { getSiteSettings } from "@/lib/site-settings";
+import { getCenterContact, getDonationDetails, getSiteSettings } from "@/lib/site-settings";
 import { getSiteTextOverrides } from "@/lib/site-text";
+import { pageWordsFields } from "@/lib/site-text-fields";
 import type { PhotoTile } from "@/components/admin/inline-edit/photo-slot-tile";
 import { PageCanvas } from "./page-canvas";
+import type { PageRecords } from "./record-items";
 
 export const dynamic = "force-dynamic";
+
+async function loadBoard(): Promise<PageRecords["board"]> {
+  const [[section], members] = await Promise.all([
+    db.select().from(volunteerSection).where(eq(volunteerSection.id, VOLUNTEER_SECTION_ID)),
+    db
+      .select()
+      .from(boardMembers)
+      .where(eq(boardMembers.visible, true))
+      .orderBy(asc(boardMembers.sortOrder), asc(boardMembers.createdAt)),
+  ]);
+  return section ? { section, members } : null;
+}
+
+async function loadDonation(): Promise<PageRecords["donation"]> {
+  const [settings, shown] = await Promise.all([getSiteSettings(), getDonationDetails()]);
+  return {
+    zelleRecipient: settings?.zelleRecipient ?? null,
+    checkPayee: settings?.checkPayee ?? null,
+    checkAddress: settings?.checkAddress ?? null,
+    shownPayee: shown.checkPayee,
+    shownAddress: shown.checkAddress,
+  };
+}
+
+function loadEvents() {
+  return db.select({ id: events.id, title: events.title }).from(events).where(eq(events.status, "published"));
+}
+
+async function loadPageRecords(pageId: EditablePageId): Promise<PageRecords> {
+  const shows = (...pages: EditablePageId[]) => pages.includes(pageId);
+  const [levels, yearEvents, groups, board, contact, donation, eventRows] = await Promise.all([
+    shows("school") ? getAllSchoolLevels() : [],
+    shows("school") ? getAllSchoolYearEvents() : [],
+    shows("home", "groups") ? getActiveGroups() : [],
+    shows("home") ? loadBoard() : null,
+    shows("home", "groups", "donate") ? getCenterContact() : null,
+    shows("donate") ? loadDonation() : null,
+    shows("home", "events") ? loadEvents() : [],
+  ]);
+  return { levels, yearEvents, groups, board, contact, donation, events: eventRows };
+}
 
 function defaultAltAt(dict: unknown, path: string | null): string {
   if (!path) return "";
@@ -26,12 +76,13 @@ export default async function EditablePagePage({
   const page = editablePage(pageId);
   if (!page) notFound();
 
-  const [overrides, en, ja, photos, settings] = await Promise.all([
+  const [overrides, en, ja, photos, settings, records] = await Promise.all([
     getSiteTextOverrides(),
     getBaseDictionaryFor("en"),
     getBaseDictionaryFor("ja"),
     getSitePhotos(),
     getSiteSettings(),
+    loadPageRecords(page.id),
   ]);
 
   assertEditablePagesRegistry(en);
@@ -45,13 +96,16 @@ export default async function EditablePagePage({
         alt: defaultAltAt(en, slot.defaultAltPath),
         altJa: defaultAltAt(ja, slot.defaultAltPath),
       };
+      const isReplaced = Boolean(row) && row?.url !== ORIGINAL_PHOTO_URL;
       tiles[slot.id] = {
         slot: slot.id,
         current: row
-          ? { src: row.url, alt: row.alt, altJa: row.altJa ?? "", framing: framingFromRow(row) }
+          ? isReplaced
+            ? { src: row.url, alt: row.alt, altJa: row.altJa ?? "", framing: framingFromRow(row) }
+            : { ...original, framing: framingFromRow(row) }
           : original,
         original,
-        isChanged: Boolean(row),
+        isChanged: isReplaced,
       };
     }
   }
@@ -64,28 +118,15 @@ export default async function EditablePagePage({
   }
 
   return (
-    <>
-      <div className="mx-auto max-w-7xl">
-        <h1 className="font-display text-3xl text-ink">{page.label}</h1>
-        <p className="mt-1 mb-8 max-w-xl text-lg text-ink-soft">
-          Each part of this page is listed below, in the order a visitor sees
-          it. Open a part to see its words and photos
-          <span className="hidden lg:inline">
-            , and the preview on the right jumps to that part of the website
-          </span>
-          . Tap any sentence or photo to change it. Parts that come from a list, like
-          events, have a button that takes you to that list. Each change goes
-          live as soon as you press Save, and you can undo the last one.
-        </p>
-      </div>
-      <PageCanvas
-        page={page}
-        overrides={Object.fromEntries(overrides)}
-        links={links}
-        en={en}
-        ja={ja}
-        tiles={tiles}
-      />
-    </>
+    <PageCanvas
+      page={page}
+      overrides={Object.fromEntries(overrides)}
+      links={links}
+      en={en}
+      ja={ja}
+      tiles={tiles}
+      records={records}
+      pageWords={pageWordsFields(page.id, en)}
+    />
   );
 }

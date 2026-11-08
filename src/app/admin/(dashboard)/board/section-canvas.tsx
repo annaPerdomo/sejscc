@@ -83,12 +83,12 @@ export function SectionCanvas({
 
   function handleLangChange(nextLang: Locale) {
     if (nextLang === lang) return;
-    const blockedMessage = editState.blockLanguageSwitch();
+    const blockedMessage = editState.blockSwitch();
     if (blockedMessage) {
       setStatus({ kind: "error", message: blockedMessage });
       return;
     }
-    editState.closeForLanguageSwitch();
+    editState.closeAll();
     setLang(nextLang);
   }
 

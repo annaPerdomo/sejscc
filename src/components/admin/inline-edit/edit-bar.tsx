@@ -21,7 +21,7 @@ export function EditBar({
   onLangChange: (lang: Locale) => void;
   status: EditBarStatus;
   undo?: { description: string; busy: boolean; onUndo: () => void };
-  viewHref: string;
+  viewHref?: string;
 }) {
   const languageLabelId = useId();
 
@@ -104,15 +104,17 @@ export function EditBar({
               </span>
             )}
           </p>
-          <a
-            href={viewHref}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex min-h-11 items-center text-base font-semibold text-navy underline hover:text-indigo-deep"
-          >
-            View on the website
-            <span className="sr-only"> (opens in a new tab)</span>
-          </a>
+          {viewHref && (
+            <a
+              href={viewHref}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex min-h-11 items-center text-base font-semibold text-navy underline hover:text-indigo-deep"
+            >
+              View on the website
+              <span className="sr-only"> (opens in a new tab)</span>
+            </a>
+          )}
         </div>
       </div>
     </div>

@@ -21,6 +21,7 @@ export type PhotoSlot = {
   shape: PhotoShape;
   /** Only false: a spot that shows the whole photo has nothing to crop. */
   framable?: false;
+  takesTurns?: true;
 };
 
 function slide(n: number): string {
@@ -52,6 +53,7 @@ export const PHOTO_SLOTS: PhotoSlot[] = [
       defaultSrc,
       defaultAltPath: `home.japaneseSchool.slides.${i}.alt`,
       shape: "photo",
+      takesTurns: true,
     })
   ),
   {
@@ -74,6 +76,7 @@ export const PHOTO_SLOTS: PhotoSlot[] = [
     defaultSrc: schoolPhotos.hero,
     defaultAltPath: "school.heroPhotoAlt",
     shape: "wide",
+    takesTurns: true,
   },
   ...schoolPhotos.heroRotation.map(
     (defaultSrc, i): PhotoSlot => ({
@@ -85,6 +88,7 @@ export const PHOTO_SLOTS: PhotoSlot[] = [
       defaultSrc,
       defaultAltPath: `school.heroRotationAlts.${i}`,
       shape: "wide",
+      takesTurns: true,
     })
   ),
   {
@@ -127,6 +131,7 @@ export const PHOTO_SLOTS: PhotoSlot[] = [
       defaultSrc,
       defaultAltPath: `events.reel.photos.${i}.alt`,
       shape: "wide",
+      takesTurns: true,
     })
   ),
   {
@@ -149,6 +154,7 @@ export const PHOTO_SLOTS: PhotoSlot[] = [
       defaultSrc,
       defaultAltPath: `groups.heroRotationAlts.${i}`,
       shape: "wide",
+      takesTurns: true,
     })
   ),
   {

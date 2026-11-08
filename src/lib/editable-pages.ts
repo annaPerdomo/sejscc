@@ -55,12 +55,12 @@ const GROUPS_LIST: ManagedElsewhere = {
 
 type SectionSpec = { id: string; label: string; anchor?: string; manage?: ManagedElsewhere };
 
-// `anchor` must match an id on the public page; the live preview scrolls to it.
-export const PREVIEW_TOP = "top";
+// `anchor` must match an id on the public page; the page editor looks for a
+// section's words only inside it.
 
 const SECTION_ORDER: Record<EditablePageId, SectionSpec[]> = {
   home: [
-    { id: "home-top", label: "Top of the page", anchor: PREVIEW_TOP, manage: EVENTS_LIST },
+    { id: "home-top", label: "Top of the page", manage: EVENTS_LIST },
     { id: "home-japanese-school", label: "Japanese School", anchor: "school" },
     { id: "home-sports-clubs", label: "Sports, Clubs & Classes", anchor: "groups", manage: GROUPS_LIST },
     {
@@ -95,15 +95,16 @@ const SECTION_ORDER: Record<EditablePageId, SectionSpec[]> = {
     },
   ],
   school: [
-    { id: "school-top", label: "Top of the page", anchor: PREVIEW_TOP },
+    { id: "school-top", label: "Top of the page" },
     {
       id: "school-classes",
       label: "Class descriptions",
       anchor: "classes",
       manage: {
         href: "/admin/levels",
-        description: "Each class is one of your class levels.",
-        action: "Add or change class levels",
+        description:
+          "Tap a class on the page to change it. To add, remove or reorder classes, use the list of class levels.",
+        action: "Add, remove or reorder classes",
       },
     },
     {
@@ -122,17 +123,17 @@ const SECTION_ORDER: Record<EditablePageId, SectionSpec[]> = {
     { id: "school-join", label: "Join us", anchor: "join" },
   ],
   events: [
-    { id: "events-top", label: "Top of the page", anchor: PREVIEW_TOP },
+    { id: "events-top", label: "Top of the page" },
     { id: "events-upcoming", label: "Upcoming events", anchor: "upcoming", manage: EVENTS_LIST },
     { id: "events-past", label: "Past events", anchor: "past" },
   ],
   groups: [
-    { id: "groups-top", label: "Top of the page", anchor: PREVIEW_TOP },
+    { id: "groups-top", label: "Top of the page" },
     { id: "groups-directory", label: "Every group at the center", anchor: "directory", manage: GROUPS_LIST },
     { id: "groups-start", label: "Start a club", anchor: "start" },
   ],
   donate: [
-    { id: "donate-top", label: "Top of the page", anchor: PREVIEW_TOP },
+    { id: "donate-top", label: "Top of the page" },
     { id: "donate-reasons", label: "Why we need your support", anchor: "reasons" },
     { id: "donate-mosaic", label: "A Century of Gathering", anchor: "mosaic" },
     {

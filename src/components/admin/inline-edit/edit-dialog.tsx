@@ -26,6 +26,7 @@ export function EditDialog({
     if (!dialog) return;
     if (open && !dialog.open) {
       dialog.showModal();
+      dialog.querySelector<HTMLElement>("[data-inline-edit-open] :is(textarea, input)")?.focus();
     } else if (!open && dialog.open) {
       dialog.close();
     }

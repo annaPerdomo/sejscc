@@ -27,8 +27,7 @@ All design tokens live in `@theme` in [globals.css](src/app/globals.css)
 heights: `min-h-page-hero` (a page's opening photo, the screen below the
 header), `h-stack-panel` (a sticky panel in a stack) and `min-h-year-photo` (the
 school-year photo, short enough to share a screen with its caption);
-spacing: `max-h-preview` (the admin live-preview panel, one screen less its
-header) and `pb-safe-bottom` (a bar pinned to the viewport's bottom edge,
+spacing: `pb-safe-bottom` (a bar pinned to the viewport's bottom edge,
 clear of iOS's home indicator); container breakpoints: `@volunteer-sm` /
 `@volunteer-lg` (the board & volunteers section lays out by its own width,
 so the admin preview matches the home page);
@@ -140,7 +139,11 @@ be built from these tokens via Tailwind utility classes.
   inherits the page's typography, its "Change" chip, and the textarea that
   replaces it), `admin-disclosure` (a `<details>` in the admin whose summary
   draws a chevron that turns when open instead of the browser's triangle), `edit-dialog` (a native `<dialog>` that is a full-screen sheet
-  on phones and a centred panel from 40rem), `photo-viewer` (a full-screen
+  on phones and a centred panel from 40rem), `page-editor` (the admin's full-screen
+  `<dialog>` that shows a public page to change in place; the elements it
+  can change carry a `data-page-edit` attribute, outlined in pink, and every
+  photo on screen gets a `page-edit-photo-button` in its corner, floated in a
+  `page-edit-photo-layer`), `photo-viewer` (a full-screen
   dark `<dialog>` for zooming into a photo), and the
   `section-wash-*` backgrounds, and the three dark
   scenes, `section-navy-scene`, `section-midnight-scene` (ink-deep, for the
@@ -207,6 +210,13 @@ When adding a content type:
 - Keep public-site components dumb: they render whatever the database gives
   them. Business logic and validation live in the admin/server layer, not
   scattered across display components.
+- Every word and photo on an editable page must be changeable by tapping it
+  in the admin's page view (`/admin/pages/<page>`). Dictionary words are
+  found there on their own. Text that comes from the database needs a
+  `data-edit-record="<kind>:<id>:<field>"` attribute on the element that
+  shows it, plus a matching entry in
+  [record-items.ts](<src/app/admin/(dashboard)/pages/[page]/record-items.ts>);
+  forgetting either leaves that text without a pink outline.
 
 ## Accessibility
 

@@ -4,9 +4,8 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { upload } from "@vercel/blob/client";
-import { expectOk } from "@/lib/action-result";
+import { expectOk, type ActionResult } from "@/lib/action-result";
 import { AdminAlert } from "@/components/admin/admin-alert";
-import { AdminBadge } from "@/components/admin/admin-badge";
 import { buttonClass, buttonVariantClass } from "@/components/admin/admin-button";
 import { AdminTextArea } from "@/components/admin/admin-field";
 import { AdminImagePicker } from "@/components/admin/admin-image-picker";
@@ -19,10 +18,11 @@ import {
   confirmDiscardChanges,
   useUnsavedChangesGuard,
 } from "@/components/admin/inline-edit/use-unsaved-changes-guard";
-import type { PhotoSlot } from "@/lib/photo-slots";
+import type { PhotoShape, PhotoSlot } from "@/lib/photo-slots";
 import {
   listUploadedPhotos,
   resetSitePhoto,
+  updateOriginalPhotoFraming,
   updateSitePhoto,
   updateSitePhotoDetails,
 } from "@/app/admin/(dashboard)/pages/actions";
@@ -31,7 +31,7 @@ const NO_OVERRIDE_MESSAGE =
   "This photo is back to the original, so there's nothing here to change.";
 const GENERIC_SAVE_ERROR = "Something went wrong saving this. Please try again.";
 const MISSING_ALT_MESSAGE = "Please describe the photo for visitors who can't see it.";
-const NOTHING_CHOSEN_MESSAGE = "Choose a new photo first, then press Save.";
+const NOTHING_CHOSEN_MESSAGE = "Choose a new photo, or move or zoom this one, then press Save.";
 const TILE_SIZES = "(max-width: 640px) 50vw, 33vw";
 const LIBRARY_SIZES = "33vw";
 
@@ -46,13 +46,25 @@ export type PhotoTile = {
 
 type PickMode = "upload" | "library";
 
-export function PhotoSlotTile({
-  slot,
-  tile,
-  onSaved,
-  onTileChange,
-  onStatus,
-}: {
+export type PhotoSpot = {
+  title: string;
+  shape: PhotoShape;
+  framable: boolean;
+  altOptional: boolean;
+  /** False for a decorative photo (alt=""), which has no description to edit. */
+  describable?: false;
+  uploadFolder: string;
+};
+
+export type PhotoSaveActions = {
+  replace: (input: { url: string; alt: string; altJa: string; framing: PhotoFraming }) => Promise<ActionResult>;
+  /** Absent when only a new photo can be saved. */
+  updateDetails?: (input: { alt: string; altJa: string; framing: PhotoFraming }) => Promise<ActionResult>;
+  frameOriginal?: (framing: PhotoFraming) => Promise<ActionResult>;
+  reset?: () => Promise<ActionResult>;
+};
+
+type PhotoSlotEditorProps = {
   slot: PhotoSlot;
   tile: PhotoTile;
   onSaved: (
@@ -61,9 +73,49 @@ export function PhotoSlotTile({
   ) => void;
   onTileChange: (next: PhotoTile) => void;
   onStatus: (status: EditBarStatus) => void;
-}) {
-  const router = useRouter();
+};
+
+export function PhotoSlotTile(props: PhotoSlotEditorProps) {
+  const { slot, tile } = props;
   const [open, setOpen] = useState(false);
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className={`relative overflow-clip rounded-lg bg-mist ${PHOTO_SHAPE_CLASS[slot.shape]}`}>
+        <PhotoFrame framing={tile.current.framing}>
+          <Image
+            src={tile.current.src}
+            alt={tile.current.alt}
+            fill
+            sizes={TILE_SIZES}
+            className="object-cover"
+          />
+        </PhotoFrame>
+      </div>
+      <span className="text-sm font-semibold text-ink">{slot.label}</span>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-label={`Change ${slot.label}`}
+        className={`min-h-11 w-full ${buttonClass("secondary")}`}
+      >
+        Change
+      </button>
+
+      {open && <PhotoSlotEditor {...props} onClose={() => setOpen(false)} />}
+    </div>
+  );
+}
+
+export function PhotoSlotEditor({
+  slot,
+  tile,
+  onSaved,
+  onTileChange,
+  onStatus,
+  onClose,
+}: PhotoSlotEditorProps & { onClose: () => void }) {
+  const router = useRouter();
 
   function handleSaved(next: PhotoTile, description: string) {
     onSaved(
@@ -76,7 +128,9 @@ export function PhotoSlotTile({
             description,
             undo: async () => {
               expectOk(await resetSitePhoto(slot.id));
-              onTileChange({ ...tile, isChanged: false });
+              const framing = tile.current.framing;
+              if (framing) expectOk(await updateOriginalPhotoFraming({ slot: slot.id, framing }));
+              onTileChange(tile);
               router.refresh();
             },
           }
@@ -92,63 +146,48 @@ export function PhotoSlotTile({
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className={`relative overflow-clip rounded-lg bg-mist ${PHOTO_SHAPE_CLASS[slot.shape]}`}>
-        <PhotoFrame framing={tile.current.framing}>
-          <Image
-            src={tile.current.src}
-            alt={tile.current.alt}
-            fill
-            sizes={TILE_SIZES}
-            className="object-cover"
-          />
-        </PhotoFrame>
-      </div>
-      <div className="flex items-center gap-2">
-        <span className="text-sm font-semibold text-ink">{slot.label}</span>
-        {tile.isChanged && <AdminBadge tone="pending">Changed</AdminBadge>}
-      </div>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        aria-label={`Change ${slot.label}`}
-        className={`min-h-11 w-full ${buttonClass("secondary")}`}
-      >
-        Change
-      </button>
-
-      {open && (
-        <PhotoDialog
-          slot={slot}
-          tile={tile}
-          onClose={() => setOpen(false)}
-          onSaved={handleSaved}
-          onReset={handleReset}
-          onStatus={onStatus}
-        />
-      )}
-    </div>
+    <PhotoDialog
+      spot={{
+        title: `${slot.group} — ${slot.label}`,
+        shape: slot.shape,
+        framable: slot.framable !== false,
+        altOptional: slot.defaultAltPath === null,
+        uploadFolder: `site/${slot.id}`,
+      }}
+      actions={{
+        replace: (input) => updateSitePhoto({ slot: slot.id, ...input }),
+        updateDetails: (input) => updateSitePhotoDetails({ slot: slot.id, ...input }),
+        frameOriginal: (framing) => updateOriginalPhotoFraming({ slot: slot.id, framing }),
+        reset: () => resetSitePhoto(slot.id),
+      }}
+      tile={tile}
+      onClose={onClose}
+      onSaved={handleSaved}
+      onReset={handleReset}
+      onStatus={onStatus}
+    />
   );
 }
 
-function PhotoDialog({
-  slot,
+export function PhotoDialog({
+  spot,
+  actions,
   tile,
   onClose,
   onSaved,
   onReset,
   onStatus,
 }: {
-  slot: PhotoSlot;
+  spot: PhotoSpot;
+  actions: PhotoSaveActions;
   tile: PhotoTile;
   onClose: () => void;
   onSaved: (next: PhotoTile, description: string) => void;
-  onReset: (original: PhotoTile["current"], description: string) => void;
+  onReset?: (original: PhotoTile["current"], description: string) => void;
   onStatus: (status: EditBarStatus) => void;
 }) {
   const router = useRouter();
-  const title = `${slot.group} — ${slot.label}`;
-  const altOptional = slot.defaultAltPath === null;
+  const { title, altOptional } = spot;
 
   const [mode, setMode] = useState<PickMode>("upload");
   const [file, setFile] = useState<File | null>(null);
@@ -217,8 +256,12 @@ function PhotoDialog({
 
   async function save() {
     if (saving || preparing) return;
-    if (!hasNewPhoto && !tile.isChanged) {
+    if (!hasNewPhoto && (!tile.current.src || !actions.updateDetails)) {
       setError(NOTHING_CHOSEN_MESSAGE);
+      return;
+    }
+    if (!hasNewPhoto && actions.frameOriginal && !tile.isChanged) {
+      await saveOriginalFraming(actions.frameOriginal);
       return;
     }
     const alt = altDraft.trim();
@@ -237,7 +280,7 @@ function PhotoDialog({
     try {
       let url = tile.current.src;
       if (file) {
-        const result = await upload(`site/${tile.slot}/${file.name}`, file, {
+        const result = await upload(`${spot.uploadFolder}/${file.name}`, file, {
           access: "public",
           handleUploadUrl: "/api/upload",
         });
@@ -247,15 +290,15 @@ function PhotoDialog({
       }
 
       const framing = framingDraft;
-      if (hasNewPhoto) {
-        expectOk(await updateSitePhoto({ slot: tile.slot, url, alt, altJa, framing }));
+      if (hasNewPhoto || !actions.updateDetails) {
+        expectOk(await actions.replace({ url, alt, altJa, framing }));
       } else {
-        expectOk(await updateSitePhotoDetails({ slot: tile.slot, alt, altJa, framing }));
+        expectOk(await actions.updateDetails({ alt, altJa, framing }));
       }
 
       onSaved(
         { ...tile, current: { src: url, alt, altJa, framing }, isChanged: true },
-        `Changed ${slot.group}: ${slot.label}.`
+        `Changed ${title}.`
       );
       onClose();
     } catch (e) {
@@ -268,14 +311,36 @@ function PhotoDialog({
     }
   }
 
+  async function saveOriginalFraming(frameOriginal: (framing: PhotoFraming) => Promise<ActionResult>) {
+    if (sameFraming(framingDraft, savedFraming)) {
+      setError(NOTHING_CHOSEN_MESSAGE);
+      return;
+    }
+    setError(null);
+    setSaving(true);
+    onStatus({ kind: "saving" });
+    try {
+      const framing = framingDraft;
+      expectOk(await frameOriginal(framing));
+      onSaved({ ...tile, current: { ...tile.current, framing } }, `Moved ${title}.`);
+      onClose();
+    } catch (e) {
+      const message = e instanceof Error && e.message ? e.message : GENERIC_SAVE_ERROR;
+      setError(message);
+      onStatus({ kind: "error", message });
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function restoreOriginal() {
-    if (saving) return;
+    if (saving || !actions.reset) return;
     setSaving(true);
     setError(null);
     onStatus({ kind: "saving" });
     try {
-      expectOk(await resetSitePhoto(tile.slot));
-      onReset(tile.original, `Put back the original photo: ${slot.group}, ${slot.label}.`);
+      expectOk(await actions.reset());
+      onReset?.(tile.original, `Put back the original photo: ${title}.`);
       onClose();
     } catch (e) {
       const message = e instanceof Error && e.message ? e.message : GENERIC_SAVE_ERROR;
@@ -298,13 +363,24 @@ function PhotoDialog({
 
   const pickerValue = mode === "upload" ? previewUrl : null;
   const framerSrc =
-    slot.framable === false
+    !spot.framable
       ? null
-      : (previewUrl ?? libraryUrl ?? (tile.isChanged ? tile.current.src : null));
+      : (previewUrl ?? libraryUrl ?? tile.current.src);
 
   return (
     <EditDialog title={title} open busy={saving} dirty={dirty} onClose={closeDialog}>
       <div className="space-y-5">
+        {framerSrc && (
+          <PhotoFramer
+            src={framerSrc}
+            shape={spot.shape}
+            framing={framingDraft}
+            onChange={setFramingDraft}
+            disabled={saving}
+          />
+        )}
+
+        <h3 className="text-lg font-semibold text-ink">Use a different photo</h3>
         <div
           role="group"
           aria-label="Choose how to change this photo"
@@ -372,7 +448,7 @@ function PhotoDialog({
           </div>
         )}
 
-        {tile.isChanged && (
+        {tile.isChanged && actions.reset && (
           <button
             type="button"
             onClick={() => void restoreOriginal()}
@@ -383,17 +459,7 @@ function PhotoDialog({
           </button>
         )}
 
-        {framerSrc && (
-          <PhotoFramer
-            src={framerSrc}
-            shape={slot.shape}
-            framing={framingDraft}
-            onChange={setFramingDraft}
-            disabled={saving}
-          />
-        )}
-
-        {tile.isChanged || hasNewPhoto ? (
+        {spot.describable === false ? null : tile.isChanged || hasNewPhoto ? (
           <>
             <div>
               <AdminTextArea
