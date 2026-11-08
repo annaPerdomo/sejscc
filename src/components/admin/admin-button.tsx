@@ -5,6 +5,7 @@ const VARIANT_STYLES = {
   primary: "bg-indigo font-semibold text-white hover:bg-indigo-deep",
   secondary: "border border-line bg-white font-medium text-ink hover:bg-mist",
   "on-dark": "border border-white/30 font-medium text-white hover:bg-white/10",
+  "on-dark-primary": "bg-white font-semibold text-navy hover:bg-cloud",
 };
 
 export type AdminButtonVariant = keyof typeof VARIANT_STYLES;

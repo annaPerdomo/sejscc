@@ -587,7 +587,7 @@ export function PageCanvas({
             <button
               type="button"
               onClick={() => setMoreOpen(true)}
-              className={`min-h-12 text-lg ${buttonClass("secondary")}`}
+              className={`min-h-12 text-lg ${buttonClass("on-dark")}`}
             >
               Additional changes
             </button>
