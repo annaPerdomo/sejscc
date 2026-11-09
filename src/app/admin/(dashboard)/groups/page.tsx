@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { asc } from "drizzle-orm";
 import { db } from "@/db";
 import { groups } from "@/db/schema";
+import { AdminBackLink } from "@/components/admin/admin-back-link";
 import { AdminButtonLink } from "@/components/admin/admin-button";
 import { AdminEmptyState } from "@/components/admin/admin-card";
 import { GroupList } from "./group-list";
@@ -17,30 +17,22 @@ export default async function AdminGroupsPage() {
 
   return (
     <AdminPageWidth>
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <AdminBackLink href="/admin/pages/groups">← Back to the Sports &amp; Classes page</AdminBackLink>
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl text-ink">Sports &amp; Classes</h1>
           <p className="mt-1 text-stone">
-            Add and edit the community groups shown on the website.
+            Add a sport or class, change its order, or hide one from the website.
           </p>
         </div>
         <AdminButtonLink href="/admin/groups/new">
-          + Add New Group
+          + Add a sport or class
         </AdminButtonLink>
       </div>
-      <p className="mt-3">
-        <Link
-          href="/admin/pages/groups"
-          className="inline-flex min-h-11 items-center text-base font-semibold text-indigo-deep hover:underline"
-        >
-          Change the words and photos on the Sports &amp; Classes page →
-        </Link>
-      </p>
 
       {allGroups.length === 0 ? (
-        <AdminEmptyState title="No groups yet">
-          Click “Add New Group” to list a community group — all you need is its
-          name.
+        <AdminEmptyState title="No sports or classes yet">
+          Click “Add a sport or class” to list one — all you need is its name.
         </AdminEmptyState>
       ) : (
         <GroupList groups={allGroups} />
