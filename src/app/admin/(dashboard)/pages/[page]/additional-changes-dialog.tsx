@@ -5,6 +5,7 @@ import type { ManagedElsewhere, PageList } from "@/lib/editable-pages";
 
 export type NotOnPageItem = {
   key: string;
+  label?: string;
   render: () => ReactNode;
 };
 
@@ -36,21 +37,6 @@ export function AdditionalChangesDialog({
   return (
     <EditDialog title="Additional changes" open dirty={dirty} onClose={onClose}>
       <div className="space-y-8">
-        {otherViews.length > 0 && (
-          <section>
-            <h3 className="font-display text-lg text-ink">On another page</h3>
-            <ul className="mt-4 space-y-4">
-              {otherViews.map((view) => (
-                <li key={view.id} className="rounded-lg bg-mist p-4">
-                  <p className="text-base text-ink-soft">On the {view.label} page.</p>
-                  <div className="mt-3">
-                    <AdminButton onClick={view.onSelect}>Go to the {view.label} page</AdminButton>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
         {list && (
           <section>
             <h3 className="font-display text-lg text-ink">{list.recordsLabel}</h3>
@@ -63,15 +49,35 @@ export function AdditionalChangesDialog({
             </div>
           </section>
         )}
+        {otherViews.length > 0 && (
+          <section>
+            <h3 className="font-display text-lg text-ink">Also part of this page</h3>
+            <ul className="mt-4 space-y-4">
+              {otherViews.map((view) => (
+                <li key={view.id} className="rounded-lg bg-mist p-4">
+                  <p className="text-base text-ink-soft">
+                    The {view.label} page has its own words and photo. Open it to change them.
+                  </p>
+                  <div className="mt-3">
+                    <AdminButton onClick={view.onSelect}>Go to the {view.label} page</AdminButton>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
         {notOnPage.length > 0 && (
           <section>
-            <h3 className="font-display text-lg text-ink">Only shown at certain times</h3>
+            <h3 className="font-display text-lg text-ink">Not on the page right now</h3>
             <p className="mt-1 text-base text-ink-soft">
               These aren&rsquo;t on the page right now, so they can&rsquo;t be tapped there.
             </p>
             <div className="mt-4">
               {notOnPage.map((item) => (
-                <div key={item.key}>{item.render()}</div>
+                <div key={item.key}>
+                  {item.label && <p className="mt-4 font-display text-sm text-ink-soft">{item.label}</p>}
+                  {item.render()}
+                </div>
               ))}
             </div>
           </section>

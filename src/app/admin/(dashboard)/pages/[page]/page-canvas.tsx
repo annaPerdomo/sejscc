@@ -54,16 +54,17 @@ type OverrideValue = { en: string | null; ja: string | null };
 type OverridesRecord = Record<string, OverrideValue>;
 type LinksRecord = Record<string, string | null>;
 
-type PageItem =
+type PageItem = { view: string | undefined } & (
   /** False for page words found on the page rather than named in the registry. */
   | { kind: "text"; field: SiteTextField; within: string | undefined; listed: boolean }
   | { kind: "link"; link: SiteLink; within: string | undefined }
   | { kind: "photo"; slot: PhotoSlot }
-  | { kind: "record"; item: RecordItem };
+  | { kind: "record"; item: RecordItem }
+);
 
 type WordsItem =
   | Extract<PageItem, { kind: "text" | "link" }>
-  | { kind: "record"; item: RecordWords };
+  | { kind: "record"; item: RecordWords; view: string | undefined };
 
 function isWordsItem(item: PageItem): item is WordsItem {
   return item.kind === "text" || item.kind === "link" || (item.kind === "record" && item.item.kind === "recordWords");
@@ -554,14 +555,14 @@ export function PageCanvas({
   const photoSlots: PhotoSlot[] = [];
   const managedElsewhere: { label: string; manage: ManagedElsewhere }[] = [];
   for (const section of page.sections) {
-    if ((section.view ?? defaultViewId) !== currentView.id) continue;
+    const view = section.view ?? defaultViewId;
     const within = section.anchor;
     for (const field of section.fields) {
-      pageItems.set(`text:${field.path}`, { kind: "text", field, within, listed: true });
+      pageItems.set(`text:${field.path}`, { kind: "text", field, within, listed: true, view });
     }
-    for (const link of section.links) pageItems.set(`link:${link.id}`, { kind: "link", link, within });
+    for (const link of section.links) pageItems.set(`link:${link.id}`, { kind: "link", link, within, view });
     for (const slot of section.photos) {
-      pageItems.set(`photo:${slot.id}`, { kind: "photo", slot });
+      pageItems.set(`photo:${slot.id}`, { kind: "photo", slot, view });
       photoSlots.push(slot);
     }
     if (section.manage) managedElsewhere.push({ label: section.label, manage: section.manage });
@@ -582,13 +583,12 @@ export function PageCanvas({
   }
   for (const field of pageWords) {
     const group = field.path.split(".").slice(0, 2).join(".");
-    if ((viewOfGroup.get(group) ?? defaultViewId) !== currentView.id) continue;
     const within = sectionOfGroup.get(group);
-    pageItems.set(`text:${field.path}`, { kind: "text", field, within, listed: false });
+    const view = viewOfGroup.get(group) ?? defaultViewId;
+    pageItems.set(`text:${field.path}`, { kind: "text", field, within, listed: false, view });
   }
   for (const item of recordItems(records)) {
-    if (item.view !== undefined && item.view !== currentView.id) continue;
-    pageItems.set(`record:${item.record}`, { kind: "record", item });
+    pageItems.set(`record:${item.record}`, { kind: "record", item, view: item.view });
   }
 
   const otherViews: OtherView[] = page.views
@@ -615,7 +615,12 @@ export function PageCanvas({
     return photoSlots.filter((other) => other.section === slot.section && other.group === slot.group);
   }
 
-  const pageEditTargets = [...pageItems].map(([key, item]): PageEditTarget => {
+  function markedOnThisView(item: PageItem): boolean {
+    if (item.view === undefined || item.view === currentView.id) return true;
+    return item.kind === "record" || (item.kind === "text" && !item.listed && item.view === defaultViewId);
+  }
+
+  const pageEditTargets = [...pageItems].filter(([, item]) => markedOnThisView(item)).map(([key, item]): PageEditTarget => {
     switch (item.kind) {
       case "text": {
         const { value, fallback } = fieldText(item.field);
@@ -655,6 +660,7 @@ export function PageCanvas({
   const notOnPage = foundKeys
     ? [...pageItems].filter(([key, item]) => {
         if (foundKeys.has(key)) return false;
+        if (item.view !== undefined && item.view !== currentView.id) return false;
         if (item.kind === "record") return item.item.kind === "recordWords" && item.item.listWhenMissing === true;
         if (item.kind === "text" && !item.listed) return false;
         if (item.kind !== "photo") return true;
@@ -664,6 +670,7 @@ export function PageCanvas({
 
   const notOnPageItems: NotOnPageItem[] = notOnPage.map(([key, item]) => ({
     key,
+    label: item.kind === "record" && item.item.kind === "recordWords" ? item.item.title : undefined,
     render: () => {
       if (item.kind === "text") return renderField(item.field);
       if (item.kind === "link") return renderLink(item.link);
@@ -695,7 +702,6 @@ export function PageCanvas({
       else setPickedPhoto(photo.slot);
       return;
     }
-    const words = items.filter(isWordsItem);
     const [first] = words;
     if (!first) return;
     if (words.length === 1) editState.fieldProps(editKeyOf(first)).onOpen();
