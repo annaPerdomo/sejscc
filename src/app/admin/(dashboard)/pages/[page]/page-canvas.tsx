@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { flushSync } from "react-dom";
 import { useRouter } from "next/navigation";
 import { expectOk } from "@/lib/action-result";
 import { AdminButtonLink, buttonClass } from "@/components/admin/admin-button";
@@ -487,8 +488,9 @@ export function PageCanvas({
           router.refresh();
         },
       });
+      // The edit bar's live region only announces a change, so it must remount before the status does.
+      flushSync(() => setFraming(null));
       setStatus({ kind: "saved", message: description });
-      setFraming(null);
       router.refresh();
       reloadPage();
     } catch (e) {

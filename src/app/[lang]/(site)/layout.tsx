@@ -45,7 +45,7 @@ export default async function SiteLayout({
   return (
     <div className="flex min-h-screen flex-col">
       <ScrollReset />
-      <div className="sticky top-0 z-40">
+      <div className="site-header sticky top-0 z-40">
         <div className="h-1 bg-gradient-to-r from-indigo via-sky via-60% to-magenta" />
         <div className="bg-navy">
           <div className="flex items-center gap-3 px-5 py-2 sm:px-10 lg:px-11">

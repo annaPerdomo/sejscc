@@ -145,7 +145,9 @@ be built from these tokens via Tailwind utility classes.
   photo on screen gets a `page-edit-photo-button` in its corner, floated in a
   `page-edit-photo-layer`; while a photo is being moved or zoomed on the page
   itself, the page root carries `data-page-edit-hold`, which hides the
-  outlines and buttons and holds every rotation, and the frame being changed
+  outlines, the buttons and the site's own sticky header (`site-header`),
+  holds every rotation, and the editor drops its own header and language
+  bar too, so the photo gets the whole screen; the frame being changed
   is outlined by `page-edit-framing-box`), `photo-viewer` (a full-screen
   dark `<dialog>` for zooming into a photo), and the
   `section-wash-*` backgrounds, and the three dark

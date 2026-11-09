@@ -153,9 +153,7 @@ export function startPageFraming(
   doc.documentElement.setAttribute(PAGE_EDIT_HOLD_ATTRIBUTE, "");
   box.classList.add(FRAMING_BOX_CLASS);
   apply(framing);
-  const header = doc.querySelector("header");
-  const headerBottom = header ? Math.max(0, header.getBoundingClientRect().bottom) : 0;
-  view.scrollBy({ top: box.getBoundingClientRect().top - headerBottom });
+  view.scrollBy({ top: box.getBoundingClientRect().top });
 
   return {
     apply,
@@ -163,7 +161,9 @@ export function startPageFraming(
       for (const [type, listener] of listeners) doc.removeEventListener(type, listener, { capture: true });
       view.removeEventListener("blur", onBlur);
       box.classList.remove(FRAMING_BOX_CLASS);
+      const topBefore = box.getBoundingClientRect().top;
       doc.documentElement.removeAttribute(PAGE_EDIT_HOLD_ATTRIBUTE);
+      view.scrollBy({ top: box.getBoundingClientRect().top - topBefore });
       for (const [el, style] of originalStyles) {
         if (style === null) el.removeAttribute("style");
         else el.setAttribute("style", style);

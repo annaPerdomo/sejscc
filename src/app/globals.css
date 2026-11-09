@@ -1851,7 +1851,8 @@ body {
     box-shadow: none;
   }
 
-  [data-page-edit-hold] .page-edit-photo-layer {
+  [data-page-edit-hold] .page-edit-photo-layer,
+  [data-page-edit-hold] .site-header {
     display: none;
   }
 
