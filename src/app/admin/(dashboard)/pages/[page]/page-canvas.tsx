@@ -675,15 +675,18 @@ export function PageCanvas({
 
   function pickOnPage(keys: string[]) {
     const items = keys.map((key) => pageItems.get(key)).filter((item) => item !== undefined);
-    for (const item of items) {
-      if (item.kind !== "record") continue;
-      if (item.item.kind === "recordPhoto") {
-        setRecordPhoto(item.item);
-        return;
-      }
-      if (item.item.kind === "recordElsewhere") {
-        setRecordElsewhere(item.item);
-        return;
+    const words = items.filter(isWordsItem);
+    if (words.length === 0) {
+      for (const item of items) {
+        if (item.kind !== "record") continue;
+        if (item.item.kind === "recordPhoto") {
+          setRecordPhoto(item.item);
+          return;
+        }
+        if (item.item.kind === "recordElsewhere") {
+          setRecordElsewhere(item.item);
+          return;
+        }
       }
     }
     const [photo] = items.filter((item) => item.kind === "photo");

@@ -133,6 +133,17 @@ export function markPageEditTargets(doc: Document, targets: PageEditTarget[]): S
     }
   }
 
+  const ownTargets = new Map([...targetsByElement].map(([el, list]) => [el, [...list]]));
+  for (const [el, elTargets] of targetsByElement) {
+    if (el.tagName === "IMG") continue;
+    for (let outer = el.parentElement; outer; outer = outer.parentElement) {
+      const outerTargets = ownTargets.get(outer);
+      if (!outerTargets) continue;
+      for (const target of outerTargets) if (!elTargets.includes(target)) elTargets.push(target);
+      break;
+    }
+  }
+
   for (const stale of doc.querySelectorAll(`[${TARGET_ATTRIBUTE}]`)) {
     if (targetsByElement.has(stale)) continue;
     for (const name of stale.getAttribute(ADDED_ATTRIBUTE)?.split(" ") ?? []) stale.removeAttribute(name);
