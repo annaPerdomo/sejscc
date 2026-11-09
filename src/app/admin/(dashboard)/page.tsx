@@ -6,6 +6,7 @@ import { EDITABLE_PAGES, type EditablePage } from "@/lib/editable-pages";
 import { getUpcomingEvents } from "@/lib/events";
 import { getAnnouncement, getCenterContact } from "@/lib/site-settings";
 import { getSitePhotos, slotPhoto } from "@/lib/site-photos";
+import { AdminActionTiles, type AdminAction } from "@/components/admin/admin-action-tile";
 import { buttonClass } from "@/components/admin/admin-button";
 import { BallIcon, CalendarPlusIcon, MegaphoneIcon } from "@/components/admin/admin-icons";
 import { ADMIN_PAGES, type AdminPage } from "@/components/admin/admin-pages";
@@ -20,7 +21,7 @@ type PhotoSrc = ImageProps["src"];
 
 const CENTER_TIME_ZONE = "America/Los_Angeles";
 
-const QUICK_ACTIONS = [
+const QUICK_ACTIONS: AdminAction[] = [
   {
     href: "/admin/events/new",
     label: "Add a new event",
@@ -142,7 +143,7 @@ export default async function AdminDashboard() {
         photo={pagePhoto(page)}
         title={page.label}
         href={adminPage.hub}
-        action="Change this page"
+        action={adminPage.action}
         siteHref={page.href}
       >
         {adminPage.summary}
@@ -229,31 +230,7 @@ export default async function AdminDashboard() {
             </h2>
             <span aria-hidden="true" className="h-px min-w-8 flex-1 bg-gradient-to-r from-gold/60 to-transparent" />
           </div>
-          <ul className="enter-stagger mt-4 grid gap-4 sm:grid-cols-3">
-            {QUICK_ACTIONS.map((action) => (
-              <li key={action.href} className="flex">
-                <article
-                  className={`surface-card surface-card-link relative flex w-full items-center gap-4 overflow-clip bg-gradient-to-br to-white p-5 sm:flex-col sm:items-start sm:gap-5 sm:p-6 ${action.surface}`}
-                >
-                  <action.icon className="pointer-events-none absolute -right-5 -bottom-5 hidden h-32 w-32 text-ink/5 sm:block" />
-                  <span
-                    className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white text-indigo-deep shadow-md ring-4 ${action.ring}`}
-                  >
-                    <action.icon className="h-8 w-8" />
-                  </span>
-                  <span className="min-w-0">
-                    <Link
-                      href={action.href}
-                      className="card-stretch block font-display text-xl font-semibold text-ink"
-                    >
-                      {action.label}
-                    </Link>
-                    <span className="mt-1 block text-base text-ink-soft">{action.detail}</span>
-                  </span>
-                </article>
-              </li>
-            ))}
-          </ul>
+          <AdminActionTiles actions={QUICK_ACTIONS} className="enter-stagger mt-4" />
         </section>
 
         <section aria-labelledby="dashboard-tutorial" className="mt-12">
