@@ -5,6 +5,7 @@ import { flushSync } from "react-dom";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { expectOk } from "@/lib/action-result";
 import { AdminButtonLink, buttonClass } from "@/components/admin/admin-button";
+import { ADMIN_PAGES } from "@/components/admin/admin-pages";
 import { EditBar, type EditBarStatus } from "@/components/admin/inline-edit/edit-bar";
 import { EditDialog } from "@/components/admin/inline-edit/edit-dialog";
 import { EditableText } from "@/components/admin/inline-edit/editable-text";
@@ -801,7 +802,7 @@ export function PageCanvas({
         onFound={setFoundKeys}
         onPick={pickOnPage}
         onFrame={frameFromPage}
-        onDone={() => router.push("/admin")}
+        onDone={() => router.push(ADMIN_PAGES.find((adminPage) => adminPage.id === page.id)?.hub ?? "/admin")}
       />
 
       {pickedPhoto && (

@@ -6,11 +6,11 @@ import { getDictionaryFor } from "@/lib/dictionaries";
 import { splitByComingUp, type DatedEvent } from "@/lib/events";
 import { formatEventDate } from "@/lib/format";
 import { describeRepeat, type RepeatPhrases } from "@/lib/recurrence";
-import { AdminBackLink } from "@/components/admin/admin-back-link";
 import { AdminBadge, type AdminBadgeTone } from "@/components/admin/admin-badge";
-import { AdminButtonLink } from "@/components/admin/admin-button";
+import { AdminActionTiles } from "@/components/admin/admin-action-tile";
 import { AdminEmptyState } from "@/components/admin/admin-card";
 import { AdminDisclosure } from "@/components/admin/admin-disclosure";
+import { CalendarPlusIcon, PencilIcon } from "@/components/admin/admin-icons";
 import { AdminListRow } from "@/components/admin/admin-list-row";
 import { AdminPageWidth } from "@/components/admin/admin-page-width";
 
@@ -31,18 +31,31 @@ export default async function AdminEventsPage() {
 
   return (
     <AdminPageWidth>
-      <AdminBackLink href="/admin/pages/events">← Back to the Events page</AdminBackLink>
-      <div className="mt-3 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="font-display text-3xl text-ink">Events</h1>
-          <p className="mt-1 text-stone">
-            Add an event, or open one to change its date, flyer, sign-up link or wording. Drafts
-            and past events are kept here too.
-          </p>
-        </div>
-        <AdminButtonLink href="/admin/events/new">
-          + Add an event
-        </AdminButtonLink>
+      <h1 className="font-display text-3xl text-ink">Events</h1>
+      <p className="mt-1 text-lg text-stone">
+        Add an event, or change the words and photos around the events on the website.
+      </p>
+      <div className="mt-6">
+        <AdminActionTiles
+          actions={[
+            {
+              href: "/admin/events/new",
+              label: "Add an event",
+              detail: "Post the date, place and flyer.",
+              icon: CalendarPlusIcon,
+              surface: "from-peach",
+              ring: "ring-peach",
+            },
+            {
+              href: "/admin/pages/events",
+              label: "Change the Events page",
+              detail: "Tap any words or photos on the website to change them.",
+              icon: PencilIcon,
+              surface: "from-azure",
+              ring: "ring-azure",
+            },
+          ]}
+        />
       </div>
 
       {allEvents.length === 0 ? (

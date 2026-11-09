@@ -1,8 +1,8 @@
 import { asc } from "drizzle-orm";
 import { db } from "@/db";
 import { groups } from "@/db/schema";
-import { AdminBackLink } from "@/components/admin/admin-back-link";
-import { AdminButtonLink } from "@/components/admin/admin-button";
+import { AdminActionTiles } from "@/components/admin/admin-action-tile";
+import { BallIcon, PencilIcon } from "@/components/admin/admin-icons";
 import { AdminEmptyState } from "@/components/admin/admin-card";
 import { GroupList } from "./group-list";
 import { AdminPageWidth } from "@/components/admin/admin-page-width";
@@ -17,17 +17,31 @@ export default async function AdminGroupsPage() {
 
   return (
     <AdminPageWidth>
-      <AdminBackLink href="/admin/pages/groups">← Back to the Sports &amp; Classes page</AdminBackLink>
-      <div className="mt-3 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="font-display text-3xl text-ink">Sports &amp; Classes</h1>
-          <p className="mt-1 text-stone">
-            Add a sport or class, change its order, or hide one from the website.
-          </p>
-        </div>
-        <AdminButtonLink href="/admin/groups/new">
-          + Add a sport or class
-        </AdminButtonLink>
+      <h1 className="font-display text-3xl text-ink">Sports &amp; Classes</h1>
+      <p className="mt-1 text-lg text-stone">
+        Add a sport or class, or change the words and photos on the Sports &amp; Classes page.
+      </p>
+      <div className="mt-6">
+        <AdminActionTiles
+          actions={[
+            {
+              href: "/admin/groups/new",
+              label: "Add a sport or class",
+              detail: "Put a new group on the list.",
+              icon: BallIcon,
+              surface: "from-lilac",
+              ring: "ring-lilac",
+            },
+            {
+              href: "/admin/pages/groups",
+              label: "Change the Sports & Classes page",
+              detail: "Tap any words or photos on the website to change them.",
+              icon: PencilIcon,
+              surface: "from-azure",
+              ring: "ring-azure",
+            },
+          ]}
+        />
       </div>
 
       {allGroups.length === 0 ? (
