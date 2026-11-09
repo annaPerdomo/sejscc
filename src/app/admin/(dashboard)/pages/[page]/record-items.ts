@@ -50,12 +50,13 @@ export type PageRecords = {
     shownPayee: string;
     shownAddress: string;
   } | null;
-  events: { id: string; title: string; description: string | null; location: string | null }[];
+  events: { id: string; title: string; description: string | null; location: string | null; view?: string }[];
 };
 
 type RecordBase = {
   record: string;
   title: string;
+  view?: string;
 };
 
 export type RecordWords = RecordBase & {
@@ -420,12 +421,14 @@ function eventItems(event: {
   title: string;
   description: string | null;
   location: string | null;
+  view?: string;
 }): RecordItem[] {
   return [
     sharedWords(
       {
         record: `event:${event.id}:title`,
         title: `Event title (${event.title})`,
+        view: event.view,
         textKind: "heading",
         max: EVENT_TITLE_MAX,
         required: true,
@@ -437,6 +440,7 @@ function eventItems(event: {
       {
         record: `event:${event.id}:description`,
         title: `Event description (${event.title})`,
+        view: event.view,
         textKind: "body",
         max: EVENT_DESCRIPTION_MAX,
         required: false,
@@ -449,6 +453,7 @@ function eventItems(event: {
       {
         record: `event:${event.id}:location`,
         title: `Where it happens (${event.title})`,
+        view: event.view,
         textKind: "short",
         max: EVENT_LOCATION_MAX,
         required: false,
@@ -461,6 +466,7 @@ function eventItems(event: {
       kind: "recordElsewhere",
       record: `event:${event.id}:details`,
       title: event.title,
+      view: event.view,
       description:
         "The date, time, repeating dates, flyer and sign-up link of an event are changed on the event's own page.",
       href: `/admin/events/${event.id}`,

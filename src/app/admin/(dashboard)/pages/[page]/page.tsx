@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { asc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { VOLUNTEER_SECTION_ID, boardMembers, events, volunteerSection } from "@/db/schema";
-import { getActiveGroups } from "@/lib/events";
+import { getActiveGroups, splitByComingUp } from "@/lib/events";
 import type { EditablePageId } from "@/lib/editable-pages";
 import { getAllSchoolYearEvents } from "@/lib/school-year-events";
 import { assertEditablePagesRegistry, editablePage } from "@/lib/editable-pages";
@@ -43,16 +43,19 @@ async function loadDonation(): Promise<PageRecords["donation"]> {
   };
 }
 
-function loadEvents() {
-  return db
-    .select({
-      id: events.id,
-      title: events.title,
-      description: events.description,
-      location: events.location,
-    })
-    .from(events)
-    .where(eq(events.status, "published"));
+async function loadEvents(): Promise<PageRecords["events"]> {
+  const rows = await db.select().from(events).where(eq(events.status, "published"));
+  const { comingUp, past } = splitByComingUp(rows);
+  const viewById = new Map<string, "upcoming" | "past">();
+  for (const { event } of comingUp) viewById.set(event.id, "upcoming");
+  for (const { event } of past) viewById.set(event.id, "past");
+  return rows.map((event) => ({
+    id: event.id,
+    title: event.title,
+    description: event.description,
+    location: event.location,
+    view: viewById.get(event.id),
+  }));
 }
 
 async function loadPageRecords(pageId: EditablePageId): Promise<PageRecords> {
@@ -77,10 +80,13 @@ function defaultAltAt(dict: unknown, path: string | null): string {
 
 export default async function EditablePagePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ page: string }>;
+  searchParams: Promise<{ view?: string }>;
 }) {
   const { page: pageId } = await params;
+  const { view } = await searchParams;
   const page = editablePage(pageId);
   if (!page) notFound();
 
@@ -135,6 +141,7 @@ export default async function EditablePagePage({
       tiles={tiles}
       records={records}
       pageWords={pageWordsFields(page.id, en)}
+      initialView={view}
     />
   );
 }

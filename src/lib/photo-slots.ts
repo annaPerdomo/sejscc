@@ -137,7 +137,7 @@ export const PHOTO_SLOTS: PhotoSlot[] = [
   {
     id: "events.archive",
     page: "events",
-    section: "events-past",
+    section: "events-archive",
     group: "Past events",
     label: "Hero photo",
     defaultSrc: eventsPhotos.archive,

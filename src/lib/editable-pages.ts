@@ -25,11 +25,19 @@ export type PageList = {
   description: string;
 };
 
+export type PageView = {
+  id: string;
+  label: string;
+  href: string;
+};
+
 export type EditableSection = {
   id: string;
   label: string;
   anchor?: string;
   manage?: ManagedElsewhere;
+  /** A PageView id; undefined means the page's first view. */
+  view?: string;
   fields: SiteTextField[];
   links: SiteLink[];
   photos: PhotoSlot[];
@@ -39,6 +47,7 @@ export type EditablePage = {
   id: EditablePageId;
   label: string;
   href: string;
+  views: PageView[];
   sections: EditableSection[];
   list?: PageList;
 };
@@ -72,7 +81,20 @@ const PAGE_LISTS: Partial<Record<EditablePageId, PageList>> = {
   },
 };
 
-type SectionSpec = { id: string; label: string; anchor?: string; manage?: ManagedElsewhere };
+type SectionSpec = {
+  id: string;
+  label: string;
+  anchor?: string;
+  manage?: ManagedElsewhere;
+  view?: string;
+};
+
+const PAGE_VIEWS: Partial<Record<EditablePageId, PageView[]>> = {
+  events: [
+    { id: "upcoming", label: "Events", href: "/events" },
+    { id: "past", label: "Past events", href: "/events/past" },
+  ],
+};
 
 // `anchor` must match an id on the public page; the page editor looks for a
 // section's words only inside it.
@@ -161,7 +183,7 @@ const SECTION_ORDER: Record<EditablePageId, SectionSpec[]> = {
   ],
   events: [
     { id: "events-top", label: "Top of the page" },
-    { id: "events-past", label: "Past events", anchor: "past" },
+    { id: "events-archive", label: "Past events page", view: "past" },
   ],
   groups: [
     { id: "groups-top", label: "Top of the page" },
@@ -203,21 +225,27 @@ function hrefFor(pageId: EditablePageId): string {
   return page.href;
 }
 
-export const EDITABLE_PAGES: EditablePage[] = EDITABLE_PAGE_IDS.map((pageId) => ({
-  id: pageId,
-  label: PAGE_LABELS[pageId],
-  href: hrefFor(pageId),
-  list: PAGE_LISTS[pageId],
-  sections: SECTION_ORDER[pageId].map(({ id, label, anchor, manage }) => ({
-    id,
-    label,
-    anchor,
-    manage,
-    fields: fieldsFor(pageId, id),
-    links: linksFor(pageId, id),
-    photos: photosFor(pageId, id),
-  })),
-}));
+export const EDITABLE_PAGES: EditablePage[] = EDITABLE_PAGE_IDS.map((pageId) => {
+  const href = hrefFor(pageId);
+  const views = PAGE_VIEWS[pageId] ?? [{ id: "main", label: PAGE_LABELS[pageId], href }];
+  return {
+    id: pageId,
+    label: PAGE_LABELS[pageId],
+    href,
+    views,
+    list: PAGE_LISTS[pageId],
+    sections: SECTION_ORDER[pageId].map(({ id, label, anchor, manage, view }) => ({
+      id,
+      label,
+      anchor,
+      manage,
+      view,
+      fields: fieldsFor(pageId, id),
+      links: linksFor(pageId, id),
+      photos: photosFor(pageId, id),
+    })),
+  };
+});
 
 const PAGES_BY_ID = new Map<string, EditablePage>(EDITABLE_PAGES.map((page) => [page.id, page]));
 
@@ -227,6 +255,25 @@ export function editablePage(id: string): EditablePage | undefined {
 
 export function assertEditablePagesRegistry(en: unknown): void {
   assertSiteTextRegistry(en);
+
+  const pagesWithoutViews = EDITABLE_PAGES.filter((page) => page.views.length === 0).map(
+    (page) => page.id
+  );
+  if (pagesWithoutViews.length > 0) {
+    throw new Error(`These pages have no views declared: ${pagesWithoutViews.join(", ")}`);
+  }
+
+  const badViews = EDITABLE_PAGES.flatMap((page) => {
+    const viewIds = new Set(page.views.map((view) => view.id));
+    return page.sections
+      .filter((section) => section.view !== undefined && !viewIds.has(section.view))
+      .map((section) => `${page.id}:${section.id}`);
+  });
+  if (badViews.length > 0) {
+    throw new Error(
+      `These sections name a view their page doesn't have: ${badViews.join(", ")}`
+    );
+  }
 
   const emptySections = EDITABLE_PAGES.flatMap((page) =>
     page.sections

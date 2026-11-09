@@ -1,11 +1,17 @@
 import type { ReactNode } from "react";
-import { AdminButtonLink } from "@/components/admin/admin-button";
+import { AdminButton, AdminButtonLink } from "@/components/admin/admin-button";
 import { EditDialog } from "@/components/admin/inline-edit/edit-dialog";
 import type { ManagedElsewhere, PageList } from "@/lib/editable-pages";
 
 export type NotOnPageItem = {
   key: string;
   render: () => ReactNode;
+};
+
+export type OtherView = {
+  id: string;
+  label: string;
+  onSelect: () => void;
 };
 
 export function AdditionalChangesDialog({
@@ -15,6 +21,7 @@ export function AdditionalChangesDialog({
   list,
   notOnPage,
   managedElsewhere,
+  otherViews,
 }: {
   open: boolean;
   onClose: () => void;
@@ -22,12 +29,28 @@ export function AdditionalChangesDialog({
   list?: PageList;
   notOnPage: NotOnPageItem[];
   managedElsewhere: { label: string; manage: ManagedElsewhere }[];
+  otherViews: OtherView[];
 }) {
   if (!open) return null;
 
   return (
     <EditDialog title="Additional changes" open dirty={dirty} onClose={onClose}>
       <div className="space-y-8">
+        {otherViews.length > 0 && (
+          <section>
+            <h3 className="font-display text-lg text-ink">On another page</h3>
+            <ul className="mt-4 space-y-4">
+              {otherViews.map((view) => (
+                <li key={view.id} className="rounded-lg bg-mist p-4">
+                  <p className="text-base text-ink-soft">On the {view.label} page.</p>
+                  <div className="mt-3">
+                    <AdminButton onClick={view.onSelect}>Go to the {view.label} page</AdminButton>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
         {list && (
           <section>
             <h3 className="font-display text-lg text-ink">{list.recordsLabel}</h3>

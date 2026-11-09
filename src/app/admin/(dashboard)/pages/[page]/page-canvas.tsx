@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { flushSync } from "react-dom";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { expectOk } from "@/lib/action-result";
 import { AdminButtonLink, buttonClass } from "@/components/admin/admin-button";
 import { EditBar, type EditBarStatus } from "@/components/admin/inline-edit/edit-bar";
@@ -19,6 +19,7 @@ import {
   photoSlotTitle,
   type PhotoTile,
 } from "@/components/admin/inline-edit/photo-slot-tile";
+import { SegmentedSwitch } from "@/components/admin/inline-edit/segmented-switch";
 import { useOpenTarget } from "@/components/admin/inline-edit/use-open-target";
 import { useUndo, type UndoEntry } from "@/components/admin/inline-edit/use-undo";
 import { useUnsavedChangesGuard } from "@/components/admin/inline-edit/use-unsaved-changes-guard";
@@ -39,7 +40,7 @@ import {
   updateSitePhotoDetails,
   updateSiteText,
 } from "../actions";
-import { AdditionalChangesDialog, type NotOnPageItem } from "./additional-changes-dialog";
+import { AdditionalChangesDialog, type NotOnPageItem, type OtherView } from "./additional-changes-dialog";
 import {
   recordItems,
   type PageRecords,
@@ -112,6 +113,7 @@ export function PageCanvas({
   tiles: initialTiles,
   records,
   pageWords,
+  initialView,
 }: {
   page: EditablePage;
   overrides: OverridesRecord;
@@ -121,12 +123,18 @@ export function PageCanvas({
   tiles: Record<string, PhotoTile>;
   records: PageRecords;
   pageWords: SiteTextField[];
+  initialView?: string;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [overrides, setOverrides] = useState(initialOverrides);
   const [links, setLinks] = useState(initialLinks);
   const [tiles, setTiles] = useState(initialTiles);
   const [lang, setLang] = useState<Locale>("en");
+  const [viewId, setViewId] = useState(
+    () => page.views.find((view) => view.id === initialView)?.id ?? page.views[0].id
+  );
   const [status, setStatus] = useState<EditBarStatus>({ kind: "idle" });
   const [reloadKey, setReloadKey] = useState(0);
   const [picked, setPicked] = useState<WordsItem[] | null>(null);
@@ -152,6 +160,23 @@ export function PageCanvas({
     }
     editState.closeAll();
     setLang(nextLang);
+  }
+
+  function handleViewChange(nextViewId: string): boolean {
+    if (nextViewId === viewId) return true;
+    const blockedMessage = editState.blockSwitch();
+    if (blockedMessage) {
+      setStatus({ kind: "error", message: blockedMessage });
+      return false;
+    }
+    editState.closeAll();
+    setViewId(nextViewId);
+    const params = new URLSearchParams(searchParams.toString());
+    if (nextViewId === page.views[0].id) params.delete("view");
+    else params.set("view", nextViewId);
+    const query = params.toString();
+    window.history.replaceState(null, "", query ? `${pathname}?${query}` : pathname);
+    return true;
   }
 
   function overrideFor(path: string): OverrideValue {
@@ -522,10 +547,14 @@ export function PageCanvas({
     document.getElementById("admin-edit-bar")?.focus();
   }
 
+  const defaultViewId = page.views[0].id;
+  const currentView = page.views.find((view) => view.id === viewId) ?? page.views[0];
+
   const pageItems = new Map<string, PageItem>();
   const photoSlots: PhotoSlot[] = [];
   const managedElsewhere: { label: string; manage: ManagedElsewhere }[] = [];
   for (const section of page.sections) {
+    if ((section.view ?? defaultViewId) !== currentView.id) continue;
     const within = section.anchor;
     for (const field of section.fields) {
       pageItems.set(`text:${field.path}`, { kind: "text", field, within, listed: true });
@@ -539,20 +568,48 @@ export function PageCanvas({
   }
 
   const sectionOfGroup = new Map<string, string>();
+  const viewOfGroup = new Map<string, string>();
   for (const section of page.sections) {
-    if (!section.anchor) continue;
+    const sectionView = section.view ?? defaultViewId;
     for (const field of section.fields) {
       const segments = field.path.split(".");
-      if (segments.length > 2) sectionOfGroup.set(segments.slice(0, 2).join("."), section.anchor);
+      if (segments.length > 2) {
+        const group = segments.slice(0, 2).join(".");
+        viewOfGroup.set(group, sectionView);
+        if (section.anchor) sectionOfGroup.set(group, section.anchor);
+      }
     }
   }
   for (const field of pageWords) {
-    const within = sectionOfGroup.get(field.path.split(".").slice(0, 2).join("."));
+    const group = field.path.split(".").slice(0, 2).join(".");
+    if ((viewOfGroup.get(group) ?? defaultViewId) !== currentView.id) continue;
+    const within = sectionOfGroup.get(group);
     pageItems.set(`text:${field.path}`, { kind: "text", field, within, listed: false });
   }
   for (const item of recordItems(records)) {
+    if (item.view !== undefined && item.view !== currentView.id) continue;
     pageItems.set(`record:${item.record}`, { kind: "record", item });
   }
+
+  const otherViews: OtherView[] = page.views
+    .filter((view) => view.id !== currentView.id)
+    .map((view) => ({
+      id: view.id,
+      label: view.label,
+      onSelect: () => {
+        if (handleViewChange(view.id)) setMoreOpen(false);
+      },
+    }));
+
+  const viewSwitch =
+    page.views.length > 1 ? (
+      <SegmentedSwitch
+        label="Viewing:"
+        value={currentView.id}
+        options={page.views.map((view) => ({ id: view.id, label: view.label }))}
+        onChange={handleViewChange}
+      />
+    ) : undefined;
 
   function photosSharingSpot(slot: PhotoSlot): PhotoSlot[] {
     return photoSlots.filter((other) => other.section === slot.section && other.group === slot.group);
@@ -665,7 +722,7 @@ export function PageCanvas({
     <>
       <PageEditor
         pageLabel={page.label}
-        src={localizedHref(lang, page.href)}
+        src={localizedHref(lang, currentView.href)}
         reloadKey={reloadKey}
         targets={pageEditTargets}
         bar={
@@ -678,10 +735,12 @@ export function PageCanvas({
                 ? { description: undo.entry.description, busy: undo.undoing, onUndo: () => void onUndo() }
                 : undefined
             }
+            viewSwitch={viewSwitch}
+            viewHref={localizedHref(lang, currentView.href)}
           />
         }
         actions={
-          (page.list || notOnPage.length > 0 || managedElsewhere.length > 0) && (
+          (page.list || notOnPage.length > 0 || managedElsewhere.length > 0 || otherViews.length > 0) && (
             <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:gap-3">
               {page.list && (
                 <AdminButtonLink href={page.list.addHref} variant="on-dark" className="min-h-12 text-lg">
@@ -804,6 +863,7 @@ export function PageCanvas({
         list={page.list}
         notOnPage={notOnPageItems}
         managedElsewhere={managedElsewhere}
+        otherViews={otherViews}
         onClose={() => {
           editState.closeAll();
           setMoreOpen(false);
