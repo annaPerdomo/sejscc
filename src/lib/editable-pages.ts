@@ -16,6 +16,15 @@ export type ManagedElsewhere = {
   action: string;
 };
 
+export type PageList = {
+  recordsLabel: string;
+  addHref: string;
+  addLabel: string;
+  listHref: string;
+  listLabel: string;
+  description: string;
+};
+
 export type EditableSection = {
   id: string;
   label: string;
@@ -31,6 +40,7 @@ export type EditablePage = {
   label: string;
   href: string;
   sections: EditableSection[];
+  list?: PageList;
 };
 
 const PAGE_LABELS: Record<EditablePageId, string> = {
@@ -41,16 +51,25 @@ const PAGE_LABELS: Record<EditablePageId, string> = {
   donate: "Donations page",
 };
 
-const EVENTS_LIST: ManagedElsewhere = {
-  href: "/admin/events",
-  description: "The events shown here come from your list of events.",
-  action: "Add or change events",
-};
-
-const GROUPS_LIST: ManagedElsewhere = {
-  href: "/admin/groups",
-  description: "The groups shown here come from your list of sports and classes.",
-  action: "Add or change groups",
+const PAGE_LISTS: Partial<Record<EditablePageId, PageList>> = {
+  events: {
+    recordsLabel: "Events",
+    addHref: "/admin/events/new",
+    addLabel: "Add an event",
+    listHref: "/admin/events",
+    listLabel: "See all events",
+    description:
+      "Drafts, past events and the order they appear in are kept in the full list of events.",
+  },
+  groups: {
+    recordsLabel: "Sports & classes",
+    addHref: "/admin/groups/new",
+    addLabel: "Add a sport or class",
+    listHref: "/admin/groups",
+    listLabel: "See all sports & classes",
+    description:
+      "Groups that are hidden from the website, and the order they appear in, are changed in the full list.",
+  },
 };
 
 type SectionSpec = { id: string; label: string; anchor?: string; manage?: ManagedElsewhere };
@@ -60,9 +79,27 @@ type SectionSpec = { id: string; label: string; anchor?: string; manage?: Manage
 
 const SECTION_ORDER: Record<EditablePageId, SectionSpec[]> = {
   home: [
-    { id: "home-top", label: "Top of the page", manage: EVENTS_LIST },
+    {
+      id: "home-top",
+      label: "Top of the page",
+      manage: {
+        href: "/admin/pages/events",
+        description: "The events shown here come from the Events page, where you can add one or change its words.",
+        action: "Open the Events page",
+      },
+    },
     { id: "home-japanese-school", label: "Japanese School", anchor: "school" },
-    { id: "home-sports-clubs", label: "Sports, Clubs & Classes", anchor: "groups", manage: GROUPS_LIST },
+    {
+      id: "home-sports-clubs",
+      label: "Sports, Clubs & Classes",
+      anchor: "groups",
+      manage: {
+        href: "/admin/pages/groups",
+        description:
+          "The sports and classes shown here come from the Sports & Classes page, where you can add one or change its words.",
+        action: "Open the Sports & Classes page",
+      },
+    },
     {
       id: "home-history",
       label: "Our History",
@@ -124,12 +161,10 @@ const SECTION_ORDER: Record<EditablePageId, SectionSpec[]> = {
   ],
   events: [
     { id: "events-top", label: "Top of the page" },
-    { id: "events-upcoming", label: "Upcoming events", anchor: "upcoming", manage: EVENTS_LIST },
     { id: "events-past", label: "Past events", anchor: "past" },
   ],
   groups: [
     { id: "groups-top", label: "Top of the page" },
-    { id: "groups-directory", label: "Every group at the center", anchor: "directory", manage: GROUPS_LIST },
     { id: "groups-start", label: "Start a club", anchor: "start" },
   ],
   donate: [
@@ -172,6 +207,7 @@ export const EDITABLE_PAGES: EditablePage[] = EDITABLE_PAGE_IDS.map((pageId) => 
   id: pageId,
   label: PAGE_LABELS[pageId],
   href: hrefFor(pageId),
+  list: PAGE_LISTS[pageId],
   sections: SECTION_ORDER[pageId].map(({ id, label, anchor, manage }) => ({
     id,
     label,

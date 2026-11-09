@@ -162,7 +162,7 @@ export function PageEditor({
                   Tap anything with a pink outline to change it.
                 </p>
               </div>
-              <div className="flex shrink-0 gap-3">
+              <div className="flex shrink-0 items-start gap-3">
                 {actions}
                 <button
                   type="button"

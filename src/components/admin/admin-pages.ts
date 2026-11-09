@@ -15,16 +15,16 @@ const ADMIN_PAGE_DETAILS: Record<EditablePageId, Omit<AdminPage, "id">> = {
   events: {
     menuLabel: "Events",
     surface: "bg-peach",
-    hub: "/admin/events",
-    alsoActiveFor: ["/admin/pages/events"],
-    summary: "The events coming up, their flyers, and the words and photos around them.",
+    hub: "/admin/pages/events",
+    alsoActiveFor: ["/admin/events"],
+    summary: "The Events page: what's coming up, each event's flyer, and the words and photos around them.",
   },
   groups: {
     menuLabel: "Sports & Classes",
     surface: "bg-lilac",
-    hub: "/admin/groups",
-    alsoActiveFor: ["/admin/pages/groups"],
-    summary: "Every sport, club and class at the center, with its photos and description.",
+    hub: "/admin/pages/groups",
+    alsoActiveFor: ["/admin/groups"],
+    summary: "The Sports & Classes page: every sport, club and class, with its photos and description.",
   },
   home: {
     menuLabel: "Home",

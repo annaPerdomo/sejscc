@@ -39,6 +39,7 @@ import {
   updateSitePhotoDetails,
   updateSiteText,
 } from "../actions";
+import { AdditionalChangesDialog, type NotOnPageItem } from "./additional-changes-dialog";
 import {
   recordItems,
   type PageRecords,
@@ -603,6 +604,16 @@ export function PageCanvas({
       })
     : [];
 
+  const notOnPageItems: NotOnPageItem[] = notOnPage.map(([key, item]) => ({
+    key,
+    render: () => {
+      if (item.kind === "text") return renderField(item.field);
+      if (item.kind === "link") return renderLink(item.link);
+      if (item.kind === "photo") return <div className="max-w-60 py-4">{renderPhotoTile(item.slot)}</div>;
+      return null;
+    },
+  }));
+
   function pickOnPage(keys: string[]) {
     const items = keys.map((key) => pageItems.get(key)).filter((item) => item !== undefined);
     for (const item of items) {
@@ -668,14 +679,21 @@ export function PageCanvas({
           />
         }
         actions={
-          (notOnPage.length > 0 || managedElsewhere.length > 0) && (
-            <button
-              type="button"
-              onClick={() => setMoreOpen(true)}
-              className={`min-h-12 text-lg ${buttonClass("on-dark")}`}
-            >
-              Additional changes
-            </button>
+          (page.list || notOnPage.length > 0 || managedElsewhere.length > 0) && (
+            <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:gap-3">
+              {page.list && (
+                <AdminButtonLink href={page.list.addHref} variant="on-dark" className="min-h-12 text-lg">
+                  {page.list.addLabel}
+                </AdminButtonLink>
+              )}
+              <button
+                type="button"
+                onClick={() => setMoreOpen(true)}
+                className={`min-h-12 text-lg ${buttonClass("on-dark")}`}
+              >
+                Additional changes
+              </button>
+            </div>
           )
         }
         framing={
@@ -778,56 +796,17 @@ export function PageCanvas({
         </EditDialog>
       )}
 
-      {moreOpen && (
-        <EditDialog
-          title="Additional changes"
-          open
-          dirty={editState.isDirty}
-          onClose={() => {
-            editState.closeAll();
-            setMoreOpen(false);
-          }}
-        >
-          <div className="space-y-8">
-            {notOnPage.length > 0 && (
-              <section>
-                <h3 className="font-display text-lg text-ink">Only shown at certain times</h3>
-                <p className="mt-1 text-base text-ink-soft">
-                  These aren&rsquo;t on the page right now, so they can&rsquo;t be tapped there.
-                </p>
-                <div className="mt-4">
-                  {notOnPage.map(([key, item]) => {
-                    if (item.kind === "text") return renderField(item.field);
-                    if (item.kind === "link") return renderLink(item.link);
-                    if (item.kind === "record") return null;
-                    return (
-                      <div key={key} className="max-w-60 py-4">
-                        {renderPhotoTile(item.slot)}
-                      </div>
-                    );
-                  })}
-                </div>
-              </section>
-            )}
-            {managedElsewhere.length > 0 && (
-              <section>
-                <h3 className="font-display text-lg text-ink">Changed on their own pages</h3>
-                <ul className="mt-4 space-y-4">
-                  {managedElsewhere.map(({ label, manage }) => (
-                    <li key={label} className="rounded-lg bg-mist p-4">
-                      <p className="font-display text-base text-ink">{label}</p>
-                      <p className="mt-1 text-base text-ink-soft">{manage.description}</p>
-                      <div className="mt-3">
-                        <AdminButtonLink href={manage.href}>{manage.action}</AdminButtonLink>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            )}
-          </div>
-        </EditDialog>
-      )}
+      <AdditionalChangesDialog
+        open={moreOpen}
+        dirty={editState.isDirty}
+        list={page.list}
+        notOnPage={notOnPageItems}
+        managedElsewhere={managedElsewhere}
+        onClose={() => {
+          editState.closeAll();
+          setMoreOpen(false);
+        }}
+      />
     </>
   );
 }
