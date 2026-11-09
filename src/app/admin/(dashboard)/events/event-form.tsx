@@ -8,7 +8,11 @@ import { expectOk } from "@/lib/action-result";
 import { CENTER_ADDRESS, venueLabel } from "@/lib/center";
 import { composeFlyer, NO_FLYER_STYLE, type FlyerStyle, type FlyerLettering } from "@/lib/flyer-compose";
 import type { FlyerLayout } from "@/lib/flyer-layouts";
-import { EVENT_TITLE_MAX_LENGTH } from "@/lib/flyer-art";
+import {
+  EVENT_DESCRIPTION_MAX,
+  EVENT_LOCATION_MAX,
+  EVENT_TITLE_MAX,
+} from "@/lib/event-text-limits";
 import { formatShortEventDate, normalizeWebsiteUrl } from "@/lib/format";
 import { pdfFirstPageToPng } from "@/lib/pdf-preview";
 import { MAX_UPLOAD_BYTES, PHOTO_UNREADABLE_MESSAGE, asUploadablePhoto } from "@/lib/photo-upload";
@@ -422,10 +426,10 @@ export function EventForm({
             }
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            maxLength={EVENT_TITLE_MAX_LENGTH}
+            maxLength={EVENT_TITLE_MAX}
             placeholder="Enter event title…"
           />
-          <AdminCharacterCount value={title} max={EVENT_TITLE_MAX_LENGTH} />
+          <AdminCharacterCount value={title} max={EVENT_TITLE_MAX} />
         </AdminCard>
 
         <AdminCard>
@@ -514,7 +518,9 @@ export function EventForm({
               label="Location"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
+              maxLength={EVENT_LOCATION_MAX}
             />
+            <AdminCharacterCount value={location} max={EVENT_LOCATION_MAX} />
           </div>
         </AdminCard>
 
@@ -614,11 +620,11 @@ export function EventForm({
             }
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            maxLength={1000}
+            maxLength={EVENT_DESCRIPTION_MAX}
             rows={8}
             placeholder="Tell people about your event…"
           />
-          <AdminCharacterCount value={description} max={1000} />
+          <AdminCharacterCount value={description} max={EVENT_DESCRIPTION_MAX} />
         </AdminCard>
 
         <AdminCard>

@@ -1,10 +1,10 @@
 import { excerpt } from "@/lib/format";
+import { EVENT_TITLE_MAX } from "@/lib/event-text-limits";
 
 export const FLYER_ART_MODEL = "bfl/flux-3-image-klein";
 export const FLYER_ART_CHOICES = 3;
 export const FLYER_ART_DAILY_LIMIT = 30;
 export const FLYER_IDEA_MAX_LENGTH = 300;
-export const EVENT_TITLE_MAX_LENGTH = 150;
 export const OTHER_THEME = "other";
 
 const LOOK_IDS = [
@@ -239,7 +239,7 @@ export function flyerArtPrompts({
       "A wordless illustration with no lettering anywhere.",
       wish &&
         `Most important, the organizer asked for this: ${wish}. Follow that request above every other direction below.`,
-      `The event: ${title.trim().slice(0, EVENT_TITLE_MAX_LENGTH)}.${about}`,
+      `The event: ${title.trim().slice(0, EVENT_TITLE_MAX)}.${about}`,
       theme && `Show ${theme.subject}.`,
       `Drawn as ${LOOKS[look]}.`,
       BRAND,

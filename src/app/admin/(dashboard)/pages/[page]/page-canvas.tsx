@@ -597,7 +597,8 @@ export function PageCanvas({
 
   const notOnPage = foundKeys
     ? [...pageItems].filter(([key, item]) => {
-        if (foundKeys.has(key) || item.kind === "record") return false;
+        if (foundKeys.has(key)) return false;
+        if (item.kind === "record") return item.item.kind === "recordWords" && item.item.listWhenMissing === true;
         if (item.kind === "text" && !item.listed) return false;
         if (item.kind !== "photo") return true;
         return !photosSharingSpot(item.slot).some((other) => foundKeys.has(`photo:${other.id}`));
@@ -610,6 +611,7 @@ export function PageCanvas({
       if (item.kind === "text") return renderField(item.field);
       if (item.kind === "link") return renderLink(item.link);
       if (item.kind === "photo") return <div className="max-w-60 py-4">{renderPhotoTile(item.slot)}</div>;
+      if (item.kind === "record" && item.item.kind === "recordWords") return renderRecordWords(item.item);
       return null;
     },
   }));

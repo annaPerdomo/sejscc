@@ -14,6 +14,11 @@ import type { CenterContact } from "@/lib/site-settings";
 import type { SiteTextKind } from "@/lib/site-text-fields";
 import { LONG_MAX, MEMBER_TEXT_FIELDS, SECTION_TEXT_FIELDS } from "@/lib/volunteer-fields";
 import {
+  EVENT_DESCRIPTION_MAX,
+  EVENT_LOCATION_MAX,
+  EVENT_TITLE_MAX,
+} from "@/lib/event-text-limits";
+import {
   updateContactLinkLabel,
   updateMemberFields,
   updateMemberPhoto,
@@ -21,7 +26,7 @@ import {
   updateSectionPhotoDescription,
   updateSectionText,
 } from "../../board/actions";
-import { updateEventTitle } from "../../events/actions";
+import { updateEventText } from "../../events/actions";
 import { updateGroupText } from "../../groups/actions";
 import {
   updateSchoolLevelPhoto,
@@ -45,7 +50,7 @@ export type PageRecords = {
     shownPayee: string;
     shownAddress: string;
   } | null;
-  events: { id: string; title: string }[];
+  events: { id: string; title: string; description: string | null; location: string | null }[];
 };
 
 type RecordBase = {
@@ -63,6 +68,7 @@ export type RecordWords = RecordBase & {
   value: (lang: Locale) => string | null;
   /** What Undo puts back, when the value shown is a default rather than what's stored. */
   stored?: (lang: Locale) => string | null;
+  listWhenMissing?: boolean;
   placeholder?: string;
   save: (lang: Locale, value: string) => Promise<ActionResult>;
 };
@@ -409,20 +415,56 @@ function donationItems(donation: NonNullable<PageRecords["donation"]>): RecordIt
   ];
 }
 
-function eventItems(event: { id: string; title: string }): RecordItem[] {
+function eventItems(event: {
+  id: string;
+  title: string;
+  description: string | null;
+  location: string | null;
+}): RecordItem[] {
   return [
     sharedWords(
-      { record: `event:${event.id}:title`, title: `Event title (${event.title})`, textKind: "heading", max: 200, required: true, save: (_lang, title) => updateEventTitle(event.id, title) },
+      {
+        record: `event:${event.id}:title`,
+        title: `Event title (${event.title})`,
+        textKind: "heading",
+        max: EVENT_TITLE_MAX,
+        required: true,
+        save: (_lang, value) => updateEventText(event.id, "title", value),
+      },
       event.title
+    ),
+    sharedWords(
+      {
+        record: `event:${event.id}:description`,
+        title: `Event description (${event.title})`,
+        textKind: "body",
+        max: EVENT_DESCRIPTION_MAX,
+        required: false,
+        listWhenMissing: true,
+        save: (_lang, value) => updateEventText(event.id, "description", value),
+      },
+      event.description
+    ),
+    sharedWords(
+      {
+        record: `event:${event.id}:location`,
+        title: `Where it happens (${event.title})`,
+        textKind: "short",
+        max: EVENT_LOCATION_MAX,
+        required: false,
+        listWhenMissing: true,
+        save: (_lang, value) => updateEventText(event.id, "location", value),
+      },
+      event.location
     ),
     {
       kind: "recordElsewhere",
       record: `event:${event.id}:details`,
       title: event.title,
       description:
-        "The date, time, description and flyer of an event are changed on the event's own page, where repeating dates and flyers can be set up properly.",
+        "The date, time, repeating dates, flyer and sign-up link of an event are changed on the event's own page.",
       href: `/admin/events/${event.id}`,
-      action: "Change this event",
+      action: "Change this event's date or flyer",
     },
   ];
 }

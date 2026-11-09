@@ -13,6 +13,11 @@ import {
 import { AdminError, runAction, type ActionResult } from "@/lib/action-result";
 import { requireUser, revalidateSite } from "@/lib/admin";
 import {
+  EVENT_DESCRIPTION_MAX,
+  EVENT_LOCATION_MAX,
+  EVENT_TITLE_MAX,
+} from "@/lib/event-text-limits";
+import {
   FLYER_ART_CHOICES,
   FLYER_ART_DAILY_LIMIT,
   FLYER_ART_MODEL,
@@ -91,13 +96,42 @@ function checkedFlyerStyle(input: EventInput, flyerArtUrl: string | null) {
   };
 }
 
+function checkedTitle(title: string): string {
+  const trimmed = title.trim();
+  if (!trimmed) throw new AdminError("An event title is required.");
+  if (trimmed.length > EVENT_TITLE_MAX) {
+    throw new AdminError(`The title is too long — please keep it under ${EVENT_TITLE_MAX} characters.`);
+  }
+  return trimmed;
+}
+
+function checkedDescription(description: string): string | null {
+  const trimmed = description.trim();
+  if (!trimmed) return null;
+  if (trimmed.length > EVENT_DESCRIPTION_MAX) {
+    throw new AdminError(
+      `The description is too long — please keep it under ${EVENT_DESCRIPTION_MAX} characters.`
+    );
+  }
+  return trimmed;
+}
+
+function checkedLocation(location: string): string | null {
+  const trimmed = location.trim();
+  if (!trimmed) return null;
+  if (trimmed.length > EVENT_LOCATION_MAX) {
+    throw new AdminError(
+      `The location is too long — please keep it under ${EVENT_LOCATION_MAX} characters.`
+    );
+  }
+  return trimmed;
+}
+
 function eventValues(input: EventInput, userId?: string) {
-  const title = input.title.trim();
-  if (!title) throw new AdminError("An event title is required.");
   const flyerArtUrl = normalizeFlyerArtUrl(input.flyerArtUrl);
   return {
-    title,
-    description: input.description.trim() || null,
+    title: checkedTitle(input.title),
+    description: checkedDescription(input.description),
     flyerUrl: normalizeUploadedFileUrl(input.flyerUrl, "flyer"),
     flyerDownloadUrl: normalizeUploadedFileUrl(input.flyerDownloadUrl, "flyer"),
     flyerArtUrl,
@@ -106,7 +140,7 @@ function eventValues(input: EventInput, userId?: string) {
     startAt: toWallClock(input.date, input.startTime),
     endAt: input.endTime ? toWallClock(input.date, input.endTime) : null,
     ...checkedRepeat(input),
-    location: input.location.trim() || null,
+    location: checkedLocation(input.location),
     status: input.status,
     ...(userId ? { createdById: userId } : {}),
   };
@@ -299,19 +333,24 @@ async function sweepUnkeptFlyerArt() {
   }
 }
 
-const EVENT_TITLE_MAX = 200;
+export type EventTextField = "title" | "description" | "location";
 
-export async function updateEventTitle(id: string, title: string): Promise<ActionResult> {
+export async function updateEventText(
+  id: string,
+  field: EventTextField,
+  value: string
+): Promise<ActionResult> {
   return runAction(async () => {
     await requireUser();
-    const trimmed = title.trim();
-    if (!trimmed) throw new AdminError("An event title is required.");
-    if (trimmed.length > EVENT_TITLE_MAX) {
-      throw new AdminError(`The title is too long — please keep it under ${EVENT_TITLE_MAX} characters.`);
-    }
+    const update =
+      field === "title"
+        ? { title: checkedTitle(value) }
+        : field === "description"
+          ? { description: checkedDescription(value) }
+          : { location: checkedLocation(value) };
     const result = await db
       .update(events)
-      .set({ title: trimmed })
+      .set(update)
       .where(eq(events.id, id))
       .returning({ id: events.id });
     if (result.length === 0) throw new AdminError("That event no longer exists. Please reload the page.");

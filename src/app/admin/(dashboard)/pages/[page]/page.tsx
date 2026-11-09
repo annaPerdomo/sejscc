@@ -44,7 +44,15 @@ async function loadDonation(): Promise<PageRecords["donation"]> {
 }
 
 function loadEvents() {
-  return db.select({ id: events.id, title: events.title }).from(events).where(eq(events.status, "published"));
+  return db
+    .select({
+      id: events.id,
+      title: events.title,
+      description: events.description,
+      location: events.location,
+    })
+    .from(events)
+    .where(eq(events.status, "published"));
 }
 
 async function loadPageRecords(pageId: EditablePageId): Promise<PageRecords> {

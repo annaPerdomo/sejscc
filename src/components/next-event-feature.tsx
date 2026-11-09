@@ -83,7 +83,7 @@ export async function NextEventFeature({ event }: { event: Event }) {
                 </p>
               )}
               {venue && (
-                <p>
+                <p data-edit-record={`event:${event.id}:location`}>
                   <EventMeta icon="pin">{venue}</EventMeta>
                 </p>
               )}
@@ -140,6 +140,7 @@ export async function NextEventFeature({ event }: { event: Event }) {
           ) : (
             <EventDescriptionMedia
               description={event.description}
+              eventId={event.id}
               index={0}
               className="relative"
             />
