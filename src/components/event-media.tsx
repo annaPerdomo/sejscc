@@ -52,10 +52,12 @@ export function EventMedia({
 
 export function EventDescriptionMedia({
   description,
+  eventId,
   index = 0,
   className = "",
 }: {
   description: string | null;
+  eventId?: string;
   index?: number;
   className?: string;
 }) {
@@ -70,7 +72,10 @@ export function EventDescriptionMedia({
         {KANJI[index % KANJI.length]}
       </span>
       {description && (
-        <p className="relative line-clamp-4 text-center text-sm leading-relaxed text-ink-soft sm:text-base 2xl:line-clamp-7">
+        <p
+          data-edit-record={eventId ? `event:${eventId}:description` : undefined}
+          className="relative line-clamp-4 text-center text-sm leading-relaxed text-ink-soft sm:text-base 2xl:line-clamp-7"
+        >
           {excerpt(description, DESCRIPTION_MAX_CELLS)}
         </p>
       )}

@@ -30,14 +30,16 @@ export function AdminButton({
 export function AdminButtonLink({
   href,
   variant = "primary",
+  className,
   children,
 }: {
   href: string;
   variant?: AdminButtonVariant;
+  className?: string;
   children: ReactNode;
 }) {
   return (
-    <Link href={href} className={buttonClass(variant)}>
+    <Link href={href} className={`${buttonClass(variant)} ${className ?? ""}`}>
       {children}
     </Link>
   );

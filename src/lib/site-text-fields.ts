@@ -171,6 +171,12 @@ export const SITE_TEXT_PAGES: SiteTextPage[] = [
         field("events.titleLine1", "Heading", "heading"),
         field("events.lede", "Opening sentence (shown when no event is coming up)", "body"),
       ]),
+      section("events-archive", [
+        field("events.archive.titleLine1", "Heading, first line", "heading"),
+        field("events.archive.titleLine2", "Heading, second line", "heading"),
+        field("events.archive.lede", "Opening sentence", "body"),
+        field("events.archive.empty", "Shown when there are no past events", "body"),
+      ]),
     ],
   },
 ];
@@ -230,7 +236,7 @@ const PAGE_WORD_SOURCES: Record<SiteTextPage["id"], { namespaces: string[]; from
     ],
     fromDatabase: ["school.classes.levels", "school.year.events"],
   },
-  events: { namespaces: ["events", "calendar"], fromDatabase: [] },
+  events: { namespaces: ["events", "calendar", "eventDetail.back"], fromDatabase: [] },
   groups: { namespaces: ["groups"], fromDatabase: [] },
   donate: { namespaces: ["payments"], fromDatabase: [] },
 };

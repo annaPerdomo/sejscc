@@ -1,4 +1,3 @@
-import Link from "next/link";
 import Image from "next/image";
 import { desc } from "drizzle-orm";
 import { db } from "@/db";
@@ -7,6 +6,7 @@ import { getDictionaryFor } from "@/lib/dictionaries";
 import { splitByComingUp, type DatedEvent } from "@/lib/events";
 import { formatEventDate } from "@/lib/format";
 import { describeRepeat, type RepeatPhrases } from "@/lib/recurrence";
+import { AdminBackLink } from "@/components/admin/admin-back-link";
 import { AdminBadge, type AdminBadgeTone } from "@/components/admin/admin-badge";
 import { AdminButtonLink } from "@/components/admin/admin-button";
 import { AdminEmptyState } from "@/components/admin/admin-card";
@@ -31,29 +31,23 @@ export default async function AdminEventsPage() {
 
   return (
     <AdminPageWidth>
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <AdminBackLink href="/admin/pages/events">← Back to the Events page</AdminBackLink>
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl text-ink">Events</h1>
           <p className="mt-1 text-stone">
-            Add, edit, and publish events for the website.
+            Add an event, or open one to change its date, flyer, sign-up link or wording. Drafts
+            and past events are kept here too.
           </p>
         </div>
         <AdminButtonLink href="/admin/events/new">
-          + Add New Event
+          + Add an event
         </AdminButtonLink>
       </div>
-      <p className="mt-3">
-        <Link
-          href="/admin/pages/events"
-          className="inline-flex min-h-11 items-center text-base font-semibold text-indigo-deep hover:underline"
-        >
-          Change the words and photos on the Events page →
-        </Link>
-      </p>
 
       {allEvents.length === 0 ? (
         <AdminEmptyState title="No events yet">
-          Click “Add New Event” to post your first event — all you need is a
+          Click “Add an event” to post your first event — all you need is a
           title.
         </AdminEmptyState>
       ) : (
@@ -61,7 +55,7 @@ export default async function AdminEventsPage() {
           <h2 className="mt-8 font-display text-xl text-ink">Coming up</h2>
           {comingUp.length === 0 ? (
             <p className="mt-3 text-base text-ink-soft">
-              Nothing is coming up. Click “Add New Event” to post the next one.
+              Nothing is coming up. Click “Add an event” to post the next one.
             </p>
           ) : (
             <EventRows items={comingUp} repeat={dict.events.repeat} />

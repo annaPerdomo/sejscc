@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { flushSync } from "react-dom";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { expectOk } from "@/lib/action-result";
 import { AdminButtonLink, buttonClass } from "@/components/admin/admin-button";
 import { EditBar, type EditBarStatus } from "@/components/admin/inline-edit/edit-bar";
@@ -19,6 +19,7 @@ import {
   photoSlotTitle,
   type PhotoTile,
 } from "@/components/admin/inline-edit/photo-slot-tile";
+import { SegmentedSwitch } from "@/components/admin/inline-edit/segmented-switch";
 import { useOpenTarget } from "@/components/admin/inline-edit/use-open-target";
 import { useUndo, type UndoEntry } from "@/components/admin/inline-edit/use-undo";
 import { useUnsavedChangesGuard } from "@/components/admin/inline-edit/use-unsaved-changes-guard";
@@ -39,6 +40,7 @@ import {
   updateSitePhotoDetails,
   updateSiteText,
 } from "../actions";
+import { AdditionalChangesDialog, type NotOnPageItem, type OtherView } from "./additional-changes-dialog";
 import {
   recordItems,
   type PageRecords,
@@ -52,16 +54,17 @@ type OverrideValue = { en: string | null; ja: string | null };
 type OverridesRecord = Record<string, OverrideValue>;
 type LinksRecord = Record<string, string | null>;
 
-type PageItem =
+type PageItem = { view: string | undefined } & (
   /** False for page words found on the page rather than named in the registry. */
   | { kind: "text"; field: SiteTextField; within: string | undefined; listed: boolean }
   | { kind: "link"; link: SiteLink; within: string | undefined }
   | { kind: "photo"; slot: PhotoSlot }
-  | { kind: "record"; item: RecordItem };
+  | { kind: "record"; item: RecordItem }
+);
 
 type WordsItem =
   | Extract<PageItem, { kind: "text" | "link" }>
-  | { kind: "record"; item: RecordWords };
+  | { kind: "record"; item: RecordWords; view: string | undefined };
 
 function isWordsItem(item: PageItem): item is WordsItem {
   return item.kind === "text" || item.kind === "link" || (item.kind === "record" && item.item.kind === "recordWords");
@@ -111,6 +114,7 @@ export function PageCanvas({
   tiles: initialTiles,
   records,
   pageWords,
+  initialView,
 }: {
   page: EditablePage;
   overrides: OverridesRecord;
@@ -120,12 +124,18 @@ export function PageCanvas({
   tiles: Record<string, PhotoTile>;
   records: PageRecords;
   pageWords: SiteTextField[];
+  initialView?: string;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [overrides, setOverrides] = useState(initialOverrides);
   const [links, setLinks] = useState(initialLinks);
   const [tiles, setTiles] = useState(initialTiles);
   const [lang, setLang] = useState<Locale>("en");
+  const [viewId, setViewId] = useState(
+    () => page.views.find((view) => view.id === initialView)?.id ?? page.views[0].id
+  );
   const [status, setStatus] = useState<EditBarStatus>({ kind: "idle" });
   const [reloadKey, setReloadKey] = useState(0);
   const [picked, setPicked] = useState<WordsItem[] | null>(null);
@@ -151,6 +161,23 @@ export function PageCanvas({
     }
     editState.closeAll();
     setLang(nextLang);
+  }
+
+  function handleViewChange(nextViewId: string): boolean {
+    if (nextViewId === viewId) return true;
+    const blockedMessage = editState.blockSwitch();
+    if (blockedMessage) {
+      setStatus({ kind: "error", message: blockedMessage });
+      return false;
+    }
+    editState.closeAll();
+    setViewId(nextViewId);
+    const params = new URLSearchParams(searchParams.toString());
+    if (nextViewId === page.views[0].id) params.delete("view");
+    else params.set("view", nextViewId);
+    const query = params.toString();
+    window.history.replaceState(null, "", query ? `${pathname}?${query}` : pathname);
+    return true;
   }
 
   function overrideFor(path: string): OverrideValue {
@@ -521,43 +548,79 @@ export function PageCanvas({
     document.getElementById("admin-edit-bar")?.focus();
   }
 
+  const defaultViewId = page.views[0].id;
+  const currentView = page.views.find((view) => view.id === viewId) ?? page.views[0];
+
   const pageItems = new Map<string, PageItem>();
   const photoSlots: PhotoSlot[] = [];
   const managedElsewhere: { label: string; manage: ManagedElsewhere }[] = [];
   for (const section of page.sections) {
+    const view = section.view ?? defaultViewId;
     const within = section.anchor;
     for (const field of section.fields) {
-      pageItems.set(`text:${field.path}`, { kind: "text", field, within, listed: true });
+      pageItems.set(`text:${field.path}`, { kind: "text", field, within, listed: true, view });
     }
-    for (const link of section.links) pageItems.set(`link:${link.id}`, { kind: "link", link, within });
+    for (const link of section.links) pageItems.set(`link:${link.id}`, { kind: "link", link, within, view });
     for (const slot of section.photos) {
-      pageItems.set(`photo:${slot.id}`, { kind: "photo", slot });
+      pageItems.set(`photo:${slot.id}`, { kind: "photo", slot, view });
       photoSlots.push(slot);
     }
     if (section.manage) managedElsewhere.push({ label: section.label, manage: section.manage });
   }
 
   const sectionOfGroup = new Map<string, string>();
+  const viewOfGroup = new Map<string, string>();
   for (const section of page.sections) {
-    if (!section.anchor) continue;
+    const sectionView = section.view ?? defaultViewId;
     for (const field of section.fields) {
       const segments = field.path.split(".");
-      if (segments.length > 2) sectionOfGroup.set(segments.slice(0, 2).join("."), section.anchor);
+      if (segments.length > 2) {
+        const group = segments.slice(0, 2).join(".");
+        viewOfGroup.set(group, sectionView);
+        if (section.anchor) sectionOfGroup.set(group, section.anchor);
+      }
     }
   }
   for (const field of pageWords) {
-    const within = sectionOfGroup.get(field.path.split(".").slice(0, 2).join("."));
-    pageItems.set(`text:${field.path}`, { kind: "text", field, within, listed: false });
+    const group = field.path.split(".").slice(0, 2).join(".");
+    const within = sectionOfGroup.get(group);
+    const view = viewOfGroup.get(group) ?? defaultViewId;
+    pageItems.set(`text:${field.path}`, { kind: "text", field, within, listed: false, view });
   }
   for (const item of recordItems(records)) {
-    pageItems.set(`record:${item.record}`, { kind: "record", item });
+    pageItems.set(`record:${item.record}`, { kind: "record", item, view: item.view });
   }
+
+  const otherViews: OtherView[] = page.views
+    .filter((view) => view.id !== currentView.id)
+    .map((view) => ({
+      id: view.id,
+      label: view.label,
+      onSelect: () => {
+        if (handleViewChange(view.id)) setMoreOpen(false);
+      },
+    }));
+
+  const viewSwitch =
+    page.views.length > 1 ? (
+      <SegmentedSwitch
+        label="Viewing:"
+        value={currentView.id}
+        options={page.views.map((view) => ({ id: view.id, label: view.label }))}
+        onChange={handleViewChange}
+      />
+    ) : undefined;
 
   function photosSharingSpot(slot: PhotoSlot): PhotoSlot[] {
     return photoSlots.filter((other) => other.section === slot.section && other.group === slot.group);
   }
 
-  const pageEditTargets = [...pageItems].map(([key, item]): PageEditTarget => {
+  function markedOnThisView(item: PageItem): boolean {
+    if (item.view === undefined || item.view === currentView.id) return true;
+    return item.kind === "record" || (item.kind === "text" && !item.listed && item.view === defaultViewId);
+  }
+
+  const pageEditTargets = [...pageItems].filter(([, item]) => markedOnThisView(item)).map(([key, item]): PageEditTarget => {
     switch (item.kind) {
       case "text": {
         const { value, fallback } = fieldText(item.field);
@@ -596,24 +659,41 @@ export function PageCanvas({
 
   const notOnPage = foundKeys
     ? [...pageItems].filter(([key, item]) => {
-        if (foundKeys.has(key) || item.kind === "record") return false;
+        if (foundKeys.has(key)) return false;
+        if (item.view !== undefined && item.view !== currentView.id) return false;
+        if (item.kind === "record") return item.item.kind === "recordWords" && item.item.listWhenMissing === true;
         if (item.kind === "text" && !item.listed) return false;
         if (item.kind !== "photo") return true;
         return !photosSharingSpot(item.slot).some((other) => foundKeys.has(`photo:${other.id}`));
       })
     : [];
 
+  const notOnPageItems: NotOnPageItem[] = notOnPage.map(([key, item]) => ({
+    key,
+    label: item.kind === "record" && item.item.kind === "recordWords" ? item.item.title : undefined,
+    render: () => {
+      if (item.kind === "text") return renderField(item.field);
+      if (item.kind === "link") return renderLink(item.link);
+      if (item.kind === "photo") return <div className="max-w-60 py-4">{renderPhotoTile(item.slot)}</div>;
+      if (item.kind === "record" && item.item.kind === "recordWords") return renderRecordWords(item.item);
+      return null;
+    },
+  }));
+
   function pickOnPage(keys: string[]) {
     const items = keys.map((key) => pageItems.get(key)).filter((item) => item !== undefined);
-    for (const item of items) {
-      if (item.kind !== "record") continue;
-      if (item.item.kind === "recordPhoto") {
-        setRecordPhoto(item.item);
-        return;
-      }
-      if (item.item.kind === "recordElsewhere") {
-        setRecordElsewhere(item.item);
-        return;
+    const words = items.filter(isWordsItem);
+    if (words.length === 0) {
+      for (const item of items) {
+        if (item.kind !== "record") continue;
+        if (item.item.kind === "recordPhoto") {
+          setRecordPhoto(item.item);
+          return;
+        }
+        if (item.item.kind === "recordElsewhere") {
+          setRecordElsewhere(item.item);
+          return;
+        }
       }
     }
     const [photo] = items.filter((item) => item.kind === "photo");
@@ -622,7 +702,6 @@ export function PageCanvas({
       else setPickedPhoto(photo.slot);
       return;
     }
-    const words = items.filter(isWordsItem);
     const [first] = words;
     if (!first) return;
     if (words.length === 1) editState.fieldProps(editKeyOf(first)).onOpen();
@@ -652,7 +731,7 @@ export function PageCanvas({
     <>
       <PageEditor
         pageLabel={page.label}
-        src={localizedHref(lang, page.href)}
+        src={localizedHref(lang, currentView.href)}
         reloadKey={reloadKey}
         targets={pageEditTargets}
         bar={
@@ -665,17 +744,26 @@ export function PageCanvas({
                 ? { description: undo.entry.description, busy: undo.undoing, onUndo: () => void onUndo() }
                 : undefined
             }
+            viewSwitch={viewSwitch}
+            viewHref={localizedHref(lang, currentView.href)}
           />
         }
         actions={
-          (notOnPage.length > 0 || managedElsewhere.length > 0) && (
-            <button
-              type="button"
-              onClick={() => setMoreOpen(true)}
-              className={`min-h-12 text-lg ${buttonClass("on-dark")}`}
-            >
-              Additional changes
-            </button>
+          (page.list || notOnPage.length > 0 || managedElsewhere.length > 0 || otherViews.length > 0) && (
+            <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:gap-3">
+              {page.list && (
+                <AdminButtonLink href={page.list.addHref} variant="on-dark" className="min-h-12 text-lg">
+                  {page.list.addLabel}
+                </AdminButtonLink>
+              )}
+              <button
+                type="button"
+                onClick={() => setMoreOpen(true)}
+                className={`min-h-12 text-lg ${buttonClass("on-dark")}`}
+              >
+                Additional changes
+              </button>
+            </div>
           )
         }
         framing={
@@ -778,56 +866,18 @@ export function PageCanvas({
         </EditDialog>
       )}
 
-      {moreOpen && (
-        <EditDialog
-          title="Additional changes"
-          open
-          dirty={editState.isDirty}
-          onClose={() => {
-            editState.closeAll();
-            setMoreOpen(false);
-          }}
-        >
-          <div className="space-y-8">
-            {notOnPage.length > 0 && (
-              <section>
-                <h3 className="font-display text-lg text-ink">Only shown at certain times</h3>
-                <p className="mt-1 text-base text-ink-soft">
-                  These aren&rsquo;t on the page right now, so they can&rsquo;t be tapped there.
-                </p>
-                <div className="mt-4">
-                  {notOnPage.map(([key, item]) => {
-                    if (item.kind === "text") return renderField(item.field);
-                    if (item.kind === "link") return renderLink(item.link);
-                    if (item.kind === "record") return null;
-                    return (
-                      <div key={key} className="max-w-60 py-4">
-                        {renderPhotoTile(item.slot)}
-                      </div>
-                    );
-                  })}
-                </div>
-              </section>
-            )}
-            {managedElsewhere.length > 0 && (
-              <section>
-                <h3 className="font-display text-lg text-ink">Changed on their own pages</h3>
-                <ul className="mt-4 space-y-4">
-                  {managedElsewhere.map(({ label, manage }) => (
-                    <li key={label} className="rounded-lg bg-mist p-4">
-                      <p className="font-display text-base text-ink">{label}</p>
-                      <p className="mt-1 text-base text-ink-soft">{manage.description}</p>
-                      <div className="mt-3">
-                        <AdminButtonLink href={manage.href}>{manage.action}</AdminButtonLink>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            )}
-          </div>
-        </EditDialog>
-      )}
+      <AdditionalChangesDialog
+        open={moreOpen}
+        dirty={editState.isDirty}
+        list={page.list}
+        notOnPage={notOnPageItems}
+        managedElsewhere={managedElsewhere}
+        otherViews={otherViews}
+        onClose={() => {
+          editState.closeAll();
+          setMoreOpen(false);
+        }}
+      />
     </>
   );
 }

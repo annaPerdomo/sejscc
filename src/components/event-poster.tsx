@@ -62,6 +62,7 @@ export async function EventPoster({
         ) : (
           <EventDescriptionMedia
             description={event.description}
+            eventId={event.id}
             index={index}
             className="relative"
           />
@@ -101,7 +102,7 @@ export async function EventPoster({
             </p>
           )}
           {venue && !compact && (
-            <p>
+            <p data-edit-record={`event:${event.id}:location`}>
               <EventMeta icon="pin">{venue}</EventMeta>
             </p>
           )}
