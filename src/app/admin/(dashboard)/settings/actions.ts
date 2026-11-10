@@ -1,11 +1,13 @@
 "use server";
 
+import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { SITE_SETTINGS_ID, siteSettings } from "@/db/schema";
 import { AdminError, runAction, type ActionResult } from "@/lib/action-result";
 import { requireAdmin, requireUser, revalidateSite } from "@/lib/admin";
 import { CENTER_ADDRESS, CENTER_EMAIL, CENTER_PHONE } from "@/lib/center";
 import { normalizeContactEmail, wallClockNow } from "@/lib/format";
+import { japaneseFollowingEnglish, type JapaneseUpdate } from "@/lib/japanese-drafts";
 import { normalizeContactLinkUrl, tooLongMessage } from "@/lib/volunteer-fields";
 import { youtubeVideoId } from "@/lib/video";
 
@@ -220,7 +222,9 @@ function parseAnnouncementUntil(raw: string): Date | null {
   return until;
 }
 
-export async function updateAnnouncement(input: AnnouncementInput): Promise<ActionResult> {
+export async function updateAnnouncement(
+  input: AnnouncementInput
+): Promise<ActionResult<{ textJa: string | null; japanese: JapaneseUpdate | null }>> {
   return runAction(async () => {
     await requireUser();
 
@@ -234,14 +238,14 @@ export async function updateAnnouncement(input: AnnouncementInput): Promise<Acti
         announcementUntil: null,
       });
       revalidateSite();
-      return;
+      return { textJa: null, japanese: null };
     }
     if (text.length > ANNOUNCEMENT_TEXT_MAX) {
       throw new AdminError(tooLongMessage("message", ANNOUNCEMENT_TEXT_MAX));
     }
 
-    const textJa = input.textJa.trim() || null;
-    if (textJa && textJa.length > ANNOUNCEMENT_TEXT_MAX) {
+    const typedJa = input.textJa.trim() || null;
+    if (typedJa && typedJa.length > ANNOUNCEMENT_TEXT_MAX) {
       throw new AdminError(
         "The Japanese message can't be longer than 140 characters."
       );
@@ -253,6 +257,20 @@ export async function updateAnnouncement(input: AnnouncementInput): Promise<Acti
     }
     const until = parseAnnouncementUntil(input.until);
 
+    const [saved] = await db
+      .select({
+        english: siteSettings.announcementText,
+        japanese: siteSettings.announcementTextJa,
+      })
+      .from(siteSettings)
+      .where(eq(siteSettings.id, SITE_SETTINGS_ID));
+    const { japanese: textJa, update } = await japaneseFollowingEnglish({
+      english: text,
+      japanese: typedJa,
+      max: ANNOUNCEMENT_TEXT_MAX,
+      saved: saved ?? { english: null, japanese: null },
+    });
+
     await upsertSiteSettings({
       announcementText: text,
       announcementTextJa: textJa,
@@ -261,5 +279,6 @@ export async function updateAnnouncement(input: AnnouncementInput): Promise<Acti
       announcementUntil: until,
     });
     revalidateSite();
+    return { textJa, japanese: update };
   });
 }

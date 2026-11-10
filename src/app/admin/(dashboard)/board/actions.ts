@@ -8,6 +8,7 @@ import { AdminError, runAction, type ActionResult } from "@/lib/action-result";
 import { requireUser, revalidateSite } from "@/lib/admin";
 import { deleteBlobIfUnused } from "@/lib/blob-cleanup";
 import type { Locale } from "@/lib/i18n";
+import { followEnglishOrRestore, type FollowedJapanese } from "@/lib/japanese-drafts";
 import { checkedBlobImageUrl } from "@/lib/uploads";
 import {
   LONG_MAX,
@@ -38,6 +39,37 @@ function requiredField(en: string, ja: string, label: string, max: number) {
   if (trimmedEn.length > max) tooLong(label, max);
   if (trimmedJa.length > max) tooLong(`Japanese ${label}`, max);
   return { en: trimmedEn, ja: trimmedJa || null };
+}
+
+async function savedSection() {
+  const [row] = await db
+    .select()
+    .from(volunteerSection)
+    .where(eq(volunteerSection.id, VOLUNTEER_SECTION_ID));
+  return row;
+}
+
+type SectionColumn = SectionTextField | "photoAlt";
+
+const PHOTO_ALT_COLUMNS = { en: "photoAlt", ja: "photoAltJa", max: LONG_MAX } as const;
+
+async function sectionJapanese(
+  spec: { en: SectionColumn; ja: `${SectionColumn}Ja`; max: number },
+  english: string,
+  typedJapanese?: string | null,
+  restore?: string | null
+) {
+  const saved = await savedSection();
+  const savedJapanese = saved?.[spec.ja] ?? null;
+  return followEnglishOrRestore(
+    {
+      english,
+      japanese: typedJapanese === undefined ? savedJapanese : typedJapanese,
+      max: spec.max,
+      saved: { english: saved?.[spec.en] ?? null, japanese: savedJapanese },
+    },
+    restore
+  );
 }
 
 function validateText(
@@ -84,8 +116,9 @@ function checkedOrder(ids: unknown, existingIds: string[]): string[] {
 export async function updateSectionText(
   field: SectionTextField,
   lang: Locale,
-  value: string
-): Promise<ActionResult> {
+  value: string,
+  japanese?: string | null
+): Promise<ActionResult<FollowedJapanese>> {
   return runAction(async () => {
     await requireUser();
 
@@ -106,7 +139,14 @@ export async function updateSectionText(
       if (trimmed.length > max) tooLong(`Japanese ${label}`, max);
     }
 
-    const patch = sectionTextPatch(field, lang, lang === "en" ? trimmed : trimmed || null);
+    const followed =
+      lang === "en"
+        ? await sectionJapanese(SECTION_TEXT_FIELDS[field], trimmed, undefined, japanese)
+        : { japanese: trimmed || null, update: null };
+    const patch =
+      lang === "en"
+        ? { ...sectionTextPatch(field, "en", trimmed), ...sectionTextPatch(field, "ja", followed.japanese) }
+        : sectionTextPatch(field, "ja", followed.japanese);
 
     await db
       .update(volunteerSection)
@@ -114,14 +154,16 @@ export async function updateSectionText(
       .where(eq(volunteerSection.id, VOLUNTEER_SECTION_ID));
 
     revalidateSite();
+    return followed;
   });
 }
 
 export async function updateContactLink(
   lang: Locale,
   label: string,
-  url: string
-): Promise<ActionResult> {
+  url: string,
+  japanese?: string | null
+): Promise<ActionResult<FollowedJapanese>> {
   return runAction(async () => {
     await requireUser();
 
@@ -133,17 +175,22 @@ export async function updateContactLink(
     const trimmed = asOneParagraph(label).trim();
     validateText(lang, spec.label, spec.max, true, trimmed);
     const contactLinkUrl = normalizeContactLinkUrl(url);
+    const followed =
+      lang === "en"
+        ? await sectionJapanese(spec, trimmed, undefined, japanese)
+        : { japanese: trimmed || null, update: null };
 
     await db
       .update(volunteerSection)
       .set(
         lang === "en"
-          ? { contactLinkLabel: trimmed, contactLinkUrl }
-          : { contactLinkLabelJa: trimmed || null, contactLinkUrl }
+          ? { contactLinkLabel: trimmed, contactLinkLabelJa: followed.japanese, contactLinkUrl }
+          : { contactLinkLabelJa: followed.japanese, contactLinkUrl }
       )
       .where(eq(volunteerSection.id, VOLUNTEER_SECTION_ID));
 
     revalidateSite();
+    return followed;
   });
 }
 
@@ -151,7 +198,7 @@ export async function updateSectionPhoto(input: {
   photoUrl: string | null;
   photoAlt: string;
   photoAltJa: string;
-}): Promise<ActionResult> {
+}): Promise<ActionResult<FollowedJapanese>> {
   return runAction(async () => {
     await requireUser();
 
@@ -170,9 +217,11 @@ export async function updateSectionPhoto(input: {
       .from(volunteerSection)
       .where(eq(volunteerSection.id, VOLUNTEER_SECTION_ID));
 
+    const followed = await sectionJapanese(PHOTO_ALT_COLUMNS, photoAlt.en, photoAlt.ja);
+
     await db
       .update(volunteerSection)
-      .set({ photoUrl, photoAlt: photoAlt.en, photoAltJa: photoAlt.ja })
+      .set({ photoUrl, photoAlt: photoAlt.en, photoAltJa: followed.japanese })
       .where(eq(volunteerSection.id, VOLUNTEER_SECTION_ID));
 
     if (existing?.photoUrl && existing.photoUrl !== photoUrl) {
@@ -180,6 +229,7 @@ export async function updateSectionPhoto(input: {
     }
 
     revalidateSite();
+    return followed;
   });
 }
 
@@ -187,8 +237,9 @@ export async function updateSectionPhoto(input: {
 export async function updateMemberFields(
   id: string,
   lang: Locale,
-  values: { name: string; role: string }
-): Promise<ActionResult> {
+  values: { name: string; role: string },
+  roleJapanese?: string | null
+): Promise<ActionResult<FollowedJapanese>> {
   return runAction(async () => {
     await requireUser();
 
@@ -201,24 +252,40 @@ export async function updateMemberFields(
     validateText(lang, nameSpec.label, nameSpec.max, nameSpec.required, trimmedName);
     validateText(lang, roleSpec.label, roleSpec.max, roleSpec.required, trimmedRole);
 
-    const namePatch = memberTextPatch("name", lang, textFieldValue(nameSpec.required, lang, trimmedName));
-    const rolePatch = memberTextPatch("role", lang, textFieldValue(roleSpec.required, lang, trimmedRole));
+    const [existing] = await db.select().from(boardMembers).where(eq(boardMembers.id, id));
+    if (!existing) throw new AdminError(NOT_FOUND_MESSAGE);
 
-    const result = await db
+    const role = textFieldValue(roleSpec.required, lang, trimmedRole);
+    const namePatch = memberTextPatch("name", lang, textFieldValue(nameSpec.required, lang, trimmedName));
+    const followed =
+      lang === "en"
+        ? await followEnglishOrRestore(
+            {
+              english: role,
+              japanese: existing.roleJa,
+              max: roleSpec.max,
+              saved: { english: existing.role, japanese: existing.roleJa },
+            },
+            roleJapanese
+          )
+        : { japanese: role, update: null };
+    const rolePatch =
+      lang === "en" ? { role, roleJa: followed.japanese } : memberTextPatch("role", lang, role);
+
+    await db
       .update(boardMembers)
       .set({ ...namePatch, ...rolePatch } as Partial<typeof boardMembers.$inferInsert>)
-      .where(eq(boardMembers.id, id))
-      .returning({ id: boardMembers.id });
-    if (result.length === 0) throw new AdminError(NOT_FOUND_MESSAGE);
+      .where(eq(boardMembers.id, id));
 
     revalidateSite();
+    return followed;
   });
 }
 
 export async function updateMemberPhoto(
   id: string,
   photoUrl: string | null
-): Promise<ActionResult> {
+): Promise<ActionResult<FollowedJapanese>> {
   return runAction(async () => {
     await requireUser();
 
@@ -236,6 +303,7 @@ export async function updateMemberPhoto(
     }
 
     revalidateSite();
+    return { japanese: null, update: null };
   });
 }
 
@@ -310,29 +378,47 @@ export async function reorderBoardMembers(orderedIds: string[]): Promise<ActionR
   });
 }
 
-export async function updateContactLinkLabel(lang: Locale, label: string): Promise<ActionResult> {
+export async function updateContactLinkLabel(
+  lang: Locale,
+  label: string,
+  japanese?: string | null
+): Promise<ActionResult<FollowedJapanese>> {
   return runAction(async () => {
     await requireUser();
     if (lang !== "en" && lang !== "ja") throw new AdminError("That language isn't supported.");
     const spec = SECTION_TEXT_FIELDS.contactLinkLabel;
     const trimmed = asOneParagraph(label).trim();
     validateText(lang, spec.label, spec.max, true, trimmed);
+    const followed =
+      lang === "en"
+        ? await sectionJapanese(spec, trimmed, undefined, japanese)
+        : { japanese: trimmed || null, update: null };
     await db
       .update(volunteerSection)
-      .set(lang === "en" ? { contactLinkLabel: trimmed } : { contactLinkLabelJa: trimmed || null })
+      .set(
+        lang === "en"
+          ? { contactLinkLabel: trimmed, contactLinkLabelJa: followed.japanese }
+          : { contactLinkLabelJa: followed.japanese }
+      )
       .where(eq(volunteerSection.id, VOLUNTEER_SECTION_ID));
     revalidateSite();
+    return followed;
   });
 }
 
-export async function updateSectionPhotoDescription(photoAlt: string, photoAltJa: string): Promise<ActionResult> {
+export async function updateSectionPhotoDescription(
+  photoAlt: string,
+  photoAltJa: string
+): Promise<ActionResult<FollowedJapanese>> {
   return runAction(async () => {
     await requireUser();
     const alt = requiredField(photoAlt, photoAltJa, "photo description", LONG_MAX);
+    const followed = await sectionJapanese(PHOTO_ALT_COLUMNS, alt.en, alt.ja);
     await db
       .update(volunteerSection)
-      .set({ photoAlt: alt.en, photoAltJa: alt.ja })
+      .set({ photoAlt: alt.en, photoAltJa: followed.japanese })
       .where(eq(volunteerSection.id, VOLUNTEER_SECTION_ID));
     revalidateSite();
+    return followed;
   });
 }

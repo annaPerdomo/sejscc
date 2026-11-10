@@ -10,6 +10,12 @@ import { deleteBlobIfUnused } from "@/lib/blob-cleanup";
 import { getBaseDictionaryFor } from "@/lib/dictionaries";
 import { getImageSize } from "@/lib/image-size";
 import type { Locale } from "@/lib/i18n";
+import {
+  draftJapanese,
+  japaneseFollowingEnglish,
+  type FollowedJapanese,
+  type JapaneseUpdate,
+} from "@/lib/japanese-drafts";
 import { readPath } from "@/lib/object-path";
 import {
   ORIGINAL_PHOTO_URL,
@@ -39,31 +45,48 @@ function checkedLang(lang: string): Locale {
   return lang;
 }
 
-async function setSiteTextColumn(path: string, lang: Locale, value: string | null): Promise<void> {
-  const [existing] = await db.select().from(siteText).where(eq(siteText.path, path));
+type SiteTextPair = Record<Locale, string | null>;
 
+export type SavedSiteText = SiteTextPair & { japanese: JapaneseUpdate | null };
+
+async function savedSiteText(path: string): Promise<SiteTextPair> {
+  const [existing] = await db.select().from(siteText).where(eq(siteText.path, path));
+  return { en: existing?.en ?? null, ja: existing?.ja ?? null };
+}
+
+async function setSiteTextColumns(path: string, values: Partial<SiteTextPair>): Promise<SiteTextPair> {
+  const saved = await savedSiteText(path);
   const next = {
-    en: lang === "en" ? value : existing?.en ?? null,
-    ja: lang === "ja" ? value : existing?.ja ?? null,
+    en: values.en === undefined ? saved.en : values.en,
+    ja: values.ja === undefined ? saved.ja : values.ja,
   };
 
   if (next.en === null && next.ja === null) {
-    if (existing) await db.delete(siteText).where(eq(siteText.path, path));
-    return;
+    await db.delete(siteText).where(eq(siteText.path, path));
+  } else {
+    await db
+      .insert(siteText)
+      .values({ path, ...next })
+      .onConflictDoUpdate({ target: siteText.path, set: next });
   }
-
-  await db
-    .insert(siteText)
-    .values({ path, ...next })
-    .onConflictDoUpdate({ target: siteText.path, set: next });
+  return next;
 }
 
-export async function updateSiteText(path: string, lang: Locale, value: string): Promise<ActionResult> {
+async function checkedSiteTextField(path: string) {
+  const fieldSpec = editableSiteTextField(path, await getBaseDictionaryFor("en"));
+  if (!fieldSpec) throw new AdminError(NOT_REGISTERED_MESSAGE);
+  return fieldSpec;
+}
+
+export async function updateSiteText(
+  path: string,
+  lang: Locale,
+  value: string
+): Promise<ActionResult<SavedSiteText>> {
   return runAction(async () => {
     await requireUser();
 
-    const fieldSpec = editableSiteTextField(path, await getBaseDictionaryFor("en"));
-    if (!fieldSpec) throw new AdminError(NOT_REGISTERED_MESSAGE);
+    const fieldSpec = await checkedSiteTextField(path);
     const checked = checkedLang(lang);
 
     const trimmed = asOneParagraph(value).trim();
@@ -71,7 +94,46 @@ export async function updateSiteText(path: string, lang: Locale, value: string):
       throw new AdminError(tooLongMessage(fieldSpec.label, fieldSpec.max));
     }
 
-    await setSiteTextColumn(path, checked, trimmed ? await withOriginalSpacing(path, checked, trimmed) : null);
+    if (checked === "ja") {
+      const ja = trimmed ? await withOriginalSpacing(path, "ja", trimmed) : null;
+      const next = await setSiteTextColumns(path, { ja });
+      revalidateSite();
+      return { ...next, japanese: null };
+    }
+
+    if (!trimmed) return putBackOriginalEnglish(path);
+
+    const english = await withOriginalSpacing(path, "en", trimmed);
+    const saved = await savedSiteText(path);
+    const japaneseWasWritten = saved.ja !== null && saved.ja !== saved.en;
+    if (saved.en === english && japaneseWasWritten) return { ...saved, japanese: null };
+
+    const { text, update } = await japaneseForEnglish(path, english, fieldSpec.max);
+    const next = await setSiteTextColumns(path, { en: english, ja: text });
+    revalidateSite();
+    return { ...next, japanese: update };
+  });
+}
+
+export async function restoreSiteText(path: string, words: SiteTextPair): Promise<ActionResult> {
+  return runAction(async () => {
+    await requireUser();
+
+    const fieldSpec = await checkedSiteTextField(path);
+    const checkedWords = (raw: string | null) => {
+      const trimmed = raw === null ? "" : asOneParagraph(raw).trim();
+      if (trimmed.length > fieldSpec.max) {
+        throw new AdminError(tooLongMessage(fieldSpec.label, fieldSpec.max));
+      }
+      return trimmed || null;
+    };
+    const en = checkedWords(words.en);
+    const ja = checkedWords(words.ja);
+
+    await setSiteTextColumns(path, {
+      en: en && (await withOriginalSpacing(path, "en", en)),
+      ja: ja && (await withOriginalSpacing(path, "ja", ja)),
+    });
     revalidateSite();
   });
 }
@@ -83,17 +145,42 @@ async function withOriginalSpacing(path: string, lang: Locale, trimmed: string):
   return typeof original === "string" && /\s$/.test(original) ? `${trimmed} ` : trimmed;
 }
 
-export async function resetSiteText(path: string, lang: Locale): Promise<ActionResult> {
+// A null override would fall back to the original Japanese, which no longer matches.
+async function japaneseForEnglish(
+  path: string,
+  english: string,
+  max: number
+): Promise<{ text: string; update: JapaneseUpdate | null }> {
+  const draft = await draftJapanese(english.trim(), max);
+  return {
+    text: draft.japanese ? await withOriginalSpacing(path, "ja", draft.japanese) : english,
+    update: draft.update,
+  };
+}
+
+// Without an English override, a Japanese override is a person's fix to the original wording.
+async function putBackOriginalEnglish(path: string): Promise<SavedSiteText> {
+  const saved = await savedSiteText(path);
+  if (saved.en === null) return { ...saved, japanese: null };
+  const next = await setSiteTextColumns(path, { en: null, ja: null });
+  revalidateSite();
+  return { ...next, japanese: null };
+}
+
+export async function resetSiteText(path: string, lang: Locale): Promise<ActionResult<SavedSiteText>> {
   return runAction(async () => {
     await requireUser();
 
-    if (!editableSiteTextField(path, await getBaseDictionaryFor("en"))) {
-      throw new AdminError(NOT_REGISTERED_MESSAGE);
-    }
+    const fieldSpec = await checkedSiteTextField(path);
     const checked = checkedLang(lang);
 
-    await setSiteTextColumn(path, checked, null);
+    if (checked === "en") return putBackOriginalEnglish(path);
+
+    const saved = await savedSiteText(path);
+    const japanese = saved.en ? await japaneseForEnglish(path, saved.en, fieldSpec.max) : null;
+    const next = await setSiteTextColumns(path, { ja: japanese?.text ?? null });
     revalidateSite();
+    return { ...next, japanese: japanese?.update ?? null };
   });
 }
 
@@ -164,6 +251,19 @@ function checkedAltJa(altJa: string): string | null {
   return trimmed;
 }
 
+async function altJaFollowingEnglish(
+  alt: string,
+  typedAltJa: string,
+  existing: { alt: string; altJa: string | null } | undefined
+): Promise<FollowedJapanese> {
+  return japaneseFollowingEnglish({
+    english: alt || null,
+    japanese: checkedAltJa(typedAltJa),
+    max: ALT_MAX,
+    saved: { english: existing?.alt || null, japanese: existing?.altJa ?? null },
+  });
+}
+
 // Call only after the row pointing at `url` has already been updated or
 // deleted, so a remaining match means a different slot still needs the blob.
 export async function updateSitePhoto(input: {
@@ -172,17 +272,18 @@ export async function updateSitePhoto(input: {
   alt: string;
   altJa: string;
   framing: PhotoFraming;
-}): Promise<ActionResult> {
+}): Promise<ActionResult<FollowedJapanese>> {
   return runAction(async () => {
     await requireUser();
     const slot = checkedSlot(input.slot);
     const url = checkedBlobImageUrl(input.url);
     if (!url) throw new AdminError("That photo didn't upload correctly. Please try again.");
     const alt = checkedAlt(input.alt, slot);
-    const altJa = checkedAltJa(input.altJa);
     const framing = framingToRow(checkedFraming(input.framing));
 
     const [existing] = await db.select().from(sitePhotos).where(eq(sitePhotos.slot, slot.id));
+    const followed = await altJaFollowingEnglish(alt, input.altJa, existing);
+    const altJa = followed.japanese;
     const size = await getImageSize(url);
     const set = {
       url,
@@ -203,6 +304,7 @@ export async function updateSitePhoto(input: {
     }
 
     revalidateSite();
+    return followed;
   });
 }
 
@@ -211,22 +313,24 @@ export async function updateSitePhotoDetails(input: {
   alt: string;
   altJa: string;
   framing: PhotoFraming;
-}): Promise<ActionResult> {
+}): Promise<ActionResult<FollowedJapanese>> {
   return runAction(async () => {
     await requireUser();
     const slot = checkedSlot(input.slot);
     const alt = checkedAlt(input.alt, slot);
-    const altJa = checkedAltJa(input.altJa);
     const framing = framingToRow(checkedFraming(input.framing));
 
     const [existing] = await db.select().from(sitePhotos).where(eq(sitePhotos.slot, slot.id));
     if (!existing) throw new AdminError(NO_OVERRIDE_PHOTO_MESSAGE);
+    const followed = await altJaFollowingEnglish(alt, input.altJa, existing);
+    const altJa = followed.japanese;
 
     await db
       .update(sitePhotos)
       .set({ alt, altJa, ...framing })
       .where(eq(sitePhotos.slot, slot.id));
     revalidateSite();
+    return followed;
   });
 }
 

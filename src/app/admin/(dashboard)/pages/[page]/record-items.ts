@@ -1,6 +1,7 @@
 import type { PhotoSaveActions, PhotoSpot, PhotoTile } from "@/components/admin/inline-edit/photo-slot-tile";
 import type { BoardMember, SchoolLevel, SchoolYearEvent, VolunteerSectionRow } from "@/db/schema";
 import type { Group } from "@/lib/events";
+import type { FollowedJapanese } from "@/lib/japanese-drafts";
 import type { ActionResult } from "@/lib/action-result";
 import type { Locale } from "@/lib/i18n";
 import {
@@ -71,7 +72,9 @@ export type RecordWords = RecordBase & {
   stored?: (lang: Locale) => string | null;
   listWhenMissing?: boolean;
   placeholder?: string;
-  save: (lang: Locale, value: string) => Promise<ActionResult>;
+  autoJapanese: boolean;
+  /** `japanese` comes from Undo and is written as-is, never translated. */
+  save: (lang: Locale, value: string, japanese?: string | null) => Promise<ActionResult<FollowedJapanese | void>>;
 };
 
 export type RecordPhoto = RecordBase & {
@@ -90,20 +93,30 @@ export type RecordElsewhere = RecordBase & {
 
 export type RecordItem = RecordWords | RecordPhoto | RecordElsewhere;
 
-type WordsSpec = Omit<RecordWords, "kind" | "shared" | "required" | "value"> & { required: boolean };
+type WordsSpec = Omit<RecordWords, "kind" | "shared" | "required" | "value" | "autoJapanese"> & {
+  required: boolean;
+};
 
 function pairedWords(spec: WordsSpec, en: string | null, ja: string | null): RecordWords {
   return {
     ...spec,
     kind: "recordWords",
     shared: false,
+    autoJapanese: true,
     required: (lang) => spec.required && lang === "en",
     value: (lang) => (lang === "en" ? en : ja),
   };
 }
 
 function sharedWords(spec: WordsSpec, value: string | null): RecordWords {
-  return { ...spec, kind: "recordWords", shared: true, required: () => spec.required, value: () => value };
+  return {
+    ...spec,
+    kind: "recordWords",
+    shared: true,
+    autoJapanese: false,
+    required: () => spec.required,
+    value: () => value,
+  };
 }
 
 function photoTile(record: string, src: string | null, alt: string, altJa: string | null): PhotoTile {
@@ -114,8 +127,9 @@ function photoTile(record: string, src: string | null, alt: string, altJa: strin
 function levelItems(level: SchoolLevel): RecordItem[] {
   const id = level.id;
   const of = (part: string) => `level:${id}:${part}`;
-  const text = (field: "name" | "summary" | "description") => (lang: Locale, value: string) =>
-    updateSchoolLevelText({ id, field, lang, value });
+  const text =
+    (field: "name" | "summary" | "description") => (lang: Locale, value: string, japanese?: string | null) =>
+      updateSchoolLevelText({ id, field, lang, value, japanese });
   return [
     pairedWords(
       { record: of("name"), title: `Class name (${level.name})`, textKind: "heading", max: LEVEL_NAME_MAX, required: true, save: text("name") },
@@ -151,7 +165,8 @@ function levelItems(level: SchoolLevel): RecordItem[] {
           textKind: "short" as const,
           max: LEVEL_POINT_MAX,
           required: true,
-          save: (lang: Locale, value: string) => updateSchoolLevelPoint({ id, index, lang, value }),
+          save: (lang: Locale, value: string, japanese?: string | null) =>
+            updateSchoolLevelPoint({ id, index, lang, value, japanese }),
         },
         point,
         level.pointsJa[index] ?? null
@@ -192,7 +207,8 @@ function yearEventItems(row: SchoolYearEvent): RecordItem[] {
           textKind,
           max,
           required: true,
-          save: (lang, value) => updateSchoolYearEventText({ id: row.id, field, lang, value }),
+          save: (lang, value, japanese) =>
+            updateSchoolYearEventText({ id: row.id, field, lang, value, japanese }),
         },
         row[field],
         row[ja]
@@ -267,7 +283,7 @@ function boardItems(section: VolunteerSectionRow, members: BoardMember[]): Recor
         textKind: spec.max === LONG_MAX ? "body" : "heading",
         max: spec.max,
         required: true,
-        save: (lang, value) => updateSectionText(field, lang, value),
+        save: (lang, value, japanese) => updateSectionText(field, lang, value, japanese),
       },
       section[spec.en],
       section[spec.ja]
@@ -278,18 +294,21 @@ function boardItems(section: VolunteerSectionRow, members: BoardMember[]): Recor
     const nameIn = (lang: Locale) => (lang === "en" ? member.name : member.nameJa ?? "");
     const roleIn = (lang: Locale) => (lang === "en" ? member.role ?? "" : member.roleJa ?? "");
     return [
-      pairedWords(
-        {
-          record: `member:${member.id}:name`,
-          title: `Board member's ${MEMBER_TEXT_FIELDS.name.label} (${member.name})`,
-          textKind: "short",
-          max: MEMBER_TEXT_FIELDS.name.max,
-          required: true,
-          save: (lang, name) => updateMemberFields(member.id, lang, { name, role: roleIn(lang) }),
-        },
-        member.name,
-        member.nameJa
-      ),
+      {
+        ...pairedWords(
+          {
+            record: `member:${member.id}:name`,
+            title: `Board member's ${MEMBER_TEXT_FIELDS.name.label} (${member.name})`,
+            textKind: "short",
+            max: MEMBER_TEXT_FIELDS.name.max,
+            required: true,
+            save: (lang, name) => updateMemberFields(member.id, lang, { name, role: roleIn(lang) }),
+          },
+          member.name,
+          member.nameJa
+        ),
+        autoJapanese: false,
+      },
       pairedWords(
         {
           record: `member:${member.id}:role`,
@@ -297,7 +316,8 @@ function boardItems(section: VolunteerSectionRow, members: BoardMember[]): Recor
           textKind: "short",
           max: MEMBER_TEXT_FIELDS.role.max,
           required: false,
-          save: (lang, role) => updateMemberFields(member.id, lang, { name: nameIn(lang), role }),
+          save: (lang, role, japanese) =>
+            updateMemberFields(member.id, lang, { name: nameIn(lang), role }, japanese),
         },
         member.role,
         member.roleJa
@@ -330,7 +350,7 @@ function boardItems(section: VolunteerSectionRow, members: BoardMember[]): Recor
         textKind: "short",
         max: linkSpec.max,
         required: true,
-        save: (lang, label) => updateContactLinkLabel(lang, label),
+        save: (lang, label, japanese) => updateContactLinkLabel(lang, label, japanese),
       },
       section.contactLinkLabel,
       section.contactLinkLabelJa

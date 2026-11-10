@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { expectOk } from "@/lib/action-result";
+import { withJapaneseNote } from "@/lib/admin-messages";
 import type { EditBarStatus } from "@/components/admin/inline-edit/edit-bar";
 import type { UndoState } from "@/components/admin/inline-edit/use-undo";
 import type { BoardMember } from "@/db/schema";
@@ -80,14 +81,20 @@ export function useBoardLists({
         : withJapaneseMemberValue(withName, "role", role);
     };
     const description = `Changed ${member.name}.`;
+    const previousRoleJapanese = fieldLang === "en" ? member.roleJa : undefined;
 
     setMembers((current) =>
       current.map((m) => (m.id === member.id ? apply(m, nextName, nextRole) : m))
     );
     setStatus({ kind: "saving" });
     try {
-      expectOk(await updateMemberFields(member.id, fieldLang, { name: values.name, role: values.role }));
-      setStatus({ kind: "saved", message: description });
+      const saved = expectOk(
+        await updateMemberFields(member.id, fieldLang, { name: values.name, role: values.role })
+      );
+      setMembers((current) =>
+        current.map((m) => (m.id === member.id ? withJapaneseMemberValue(m, "role", saved.japanese) : m))
+      );
+      setStatus({ kind: "saved", message: withJapaneseNote(description, saved.update) });
       undo.record({
         description,
         undo: async () => {
@@ -95,10 +102,14 @@ export function useBoardLists({
             current.map((m) => (m.id === member.id ? apply(m, previousName, previousRole) : m))
           );
           try {
-            expectOk(await updateMemberFields(member.id, fieldLang, {
-              name: previousName,
-              role: previousRole,
-            }));
+            expectOk(
+              await updateMemberFields(
+                member.id,
+                fieldLang,
+                { name: previousName, role: previousRole },
+                previousRoleJapanese
+              )
+            );
             router.refresh();
           } catch (e) {
             setMembers((current) =>

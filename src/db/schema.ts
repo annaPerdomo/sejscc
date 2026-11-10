@@ -113,6 +113,13 @@ export const flyerArtDrafts = pgTable("flyer_art_draft", {
   createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
 });
 
+export const japaneseDrafts = pgTable("japanese_draft", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+});
+
 export type EventRepeat = (typeof events.$inferSelect)["repeat"];
 
 export const weekDays = [

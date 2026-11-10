@@ -5,9 +5,11 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { upload } from "@vercel/blob/client";
 import { expectOk, type ActionResult } from "@/lib/action-result";
+import { withJapaneseNote } from "@/lib/admin-messages";
+import type { FollowedJapanese } from "@/lib/japanese-drafts";
 import { AdminAlert } from "@/components/admin/admin-alert";
 import { buttonClass, buttonVariantClass } from "@/components/admin/admin-button";
-import { AdminTextArea } from "@/components/admin/admin-field";
+import { AdminAutoJapanese, AdminTextArea } from "@/components/admin/admin-field";
 import { AdminImagePicker } from "@/components/admin/admin-image-picker";
 import type { EditBarStatus } from "@/components/admin/inline-edit/edit-bar";
 import { EditDialog } from "@/components/admin/inline-edit/edit-dialog";
@@ -61,9 +63,18 @@ export type PhotoSpot = {
 };
 
 export type PhotoSaveActions = {
-  replace: (input: { url: string; alt: string; altJa: string; framing: PhotoFraming }) => Promise<ActionResult>;
+  replace: (input: {
+    url: string;
+    alt: string;
+    altJa: string;
+    framing: PhotoFraming;
+  }) => Promise<ActionResult<FollowedJapanese>>;
   /** Absent when only a new photo can be saved. */
-  updateDetails?: (input: { alt: string; altJa: string; framing: PhotoFraming }) => Promise<ActionResult>;
+  updateDetails?: (input: {
+    alt: string;
+    altJa: string;
+    framing: PhotoFraming;
+  }) => Promise<ActionResult<FollowedJapanese>>;
   frameOriginal?: (framing: PhotoFraming) => Promise<ActionResult>;
   reset?: () => Promise<ActionResult>;
 };
@@ -307,15 +318,15 @@ export function PhotoDialog({
       }
 
       const framing = framingDraft;
-      if (hasNewPhoto || !actions.updateDetails) {
-        expectOk(await actions.replace({ url, alt, altJa, framing }));
-      } else {
-        expectOk(await actions.updateDetails({ alt, altJa, framing }));
-      }
+      const saved = expectOk(
+        hasNewPhoto || !actions.updateDetails
+          ? await actions.replace({ url, alt, altJa, framing })
+          : await actions.updateDetails({ alt, altJa, framing })
+      );
 
       onSaved(
-        { ...tile, current: { src: url, alt, altJa, framing }, isChanged: true },
-        `Changed ${title}.`
+        { ...tile, current: { src: url, alt, altJa: saved.japanese ?? "", framing }, isChanged: true },
+        withJapaneseNote(`Changed ${title}.`, saved.update)
       );
       onClose();
     } catch (e) {
@@ -507,7 +518,7 @@ export function PhotoDialog({
               )}
             </div>
             <AdminTextArea
-              label="Describe the photo (Japanese, optional)"
+              label={<>Describe the photo (Japanese) <AdminAutoJapanese /></>}
               value={altJaDraft}
               onChange={(event) => setAltJaDraft(event.target.value)}
               rows={3}

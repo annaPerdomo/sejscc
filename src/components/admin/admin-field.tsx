@@ -105,6 +105,10 @@ export function AdminOptional() {
   return <span className="text-sm font-normal text-stone">Optional</span>;
 }
 
+export function AdminAutoJapanese() {
+  return <span className="text-sm font-normal text-stone">Written for you from the English</span>;
+}
+
 export function AdminCharacterCount({
   value,
   max,

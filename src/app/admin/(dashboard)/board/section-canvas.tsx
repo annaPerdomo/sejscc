@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { expectOk } from "@/lib/action-result";
+import { ENGLISH_EDIT_NOTE, JAPANESE_EDIT_NOTE, withJapaneseNote } from "@/lib/admin-messages";
 import { EditBar, type EditBarStatus } from "@/components/admin/inline-edit/edit-bar";
 import { EditableLink } from "@/components/admin/inline-edit/editable-link";
 import { EditableText } from "@/components/admin/inline-edit/editable-text";
@@ -106,12 +107,15 @@ export function SectionCanvas({
         noun={noun}
         value={value}
         fallback={lang === "ja" ? englishText : undefined}
+        english={lang === "ja" ? englishText : undefined}
+        note={lang === "en" ? ENGLISH_EDIT_NOTE : JAPANESE_EDIT_NOTE}
         multiline={FIELD_MULTILINE[field]}
         maxLength={SECTION_TEXT_FIELDS[field].max}
         required={lang === "en"}
         {...editState.fieldProps(`section:${field}`)}
         onSave={async (next) => {
           const previousRaw = lang === "en" ? englishText : japaneseSectionValue(section, field);
+          const previousJapanese = lang === "en" ? section[SECTION_TEXT_FIELDS[field].ja] : undefined;
           const previousSection = section;
           setSection(
             lang === "en"
@@ -120,8 +124,9 @@ export function SectionCanvas({
           );
           setStatus({ kind: "saving" });
           try {
-            expectOk(await updateSectionText(field, lang, next));
-            setStatus({ kind: "saved", message: description });
+            const saved = expectOk(await updateSectionText(field, lang, next));
+            setSection((current) => withJapaneseSectionValue(current, field, saved.japanese));
+            setStatus({ kind: "saved", message: withJapaneseNote(description, saved.update) });
             undo.record({
               description,
               undo: async () => {
@@ -131,7 +136,7 @@ export function SectionCanvas({
                     : withJapaneseSectionValue(previousSection, field, previousRaw || null)
                 );
                 try {
-                  expectOk(await updateSectionText(field, lang, previousRaw));
+                  expectOk(await updateSectionText(field, lang, previousRaw, previousJapanese));
                   router.refresh();
                 } catch (e) {
                   setSection(
@@ -186,19 +191,21 @@ export function SectionCanvas({
         {...editState.fieldProps(`section:${field}`)}
         onSave={async (words, url) => {
           const previousSection = section;
+          const previousJapanese = lang === "en" ? section.contactLinkLabelJa : undefined;
           const previousUrlForEditing = contactLinkUrlForEditing(section.contactLinkUrl);
           const nextUrl = normalizeContactLinkUrl(url);
           setSection(withLink(section, words, nextUrl));
           setStatus({ kind: "saving" });
           try {
-            expectOk(await updateContactLink(lang, words, url));
-            setStatus({ kind: "saved", message: description });
+            const saved = expectOk(await updateContactLink(lang, words, url));
+            setSection((current) => withJapaneseSectionValue(current, field, saved.japanese));
+            setStatus({ kind: "saved", message: withJapaneseNote(description, saved.update) });
             undo.record({
               description,
               undo: async () => {
                 setSection(previousSection);
                 try {
-                  expectOk(await updateContactLink(lang, value, previousUrlForEditing));
+                  expectOk(await updateContactLink(lang, value, previousUrlForEditing, previousJapanese));
                   router.refresh();
                 } catch (e) {
                   setSection(withLink(previousSection, words, nextUrl));

@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { flushSync } from "react-dom";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { expectOk } from "@/lib/action-result";
+import { expectOk, type ActionResult } from "@/lib/action-result";
+import { ENGLISH_EDIT_NOTE, JAPANESE_EDIT_NOTE, withJapaneseNote } from "@/lib/admin-messages";
 import { AdminButtonLink, buttonClass } from "@/components/admin/admin-button";
 import { ADMIN_PAGES } from "@/components/admin/admin-pages";
 import { EditBar, type EditBarStatus } from "@/components/admin/inline-edit/edit-bar";
@@ -36,6 +37,7 @@ import {
   resetSiteLink,
   resetSitePhoto,
   resetSiteText,
+  restoreSiteText,
   updateOriginalPhotoFraming,
   updateSiteLink,
   updateSitePhotoDetails,
@@ -98,7 +100,11 @@ function localizedHref(lang: Locale, href: string): string {
   return href === "/" ? `/${lang}` : `/${lang}${href}`;
 }
 
-function saveSlotFraming(slot: PhotoSlot, tile: PhotoTile, framing: PhotoFraming | undefined) {
+function saveSlotFraming(
+  slot: PhotoSlot,
+  tile: PhotoTile,
+  framing: PhotoFraming | undefined
+): Promise<ActionResult<unknown>> {
   if (tile.isChanged) {
     const { alt, altJa } = tile.current;
     return updateSitePhotoDetails({ slot: slot.id, alt, altJa, framing: framing ?? DEFAULT_FRAMING });
@@ -227,14 +233,15 @@ export function PageCanvas({
 
     async function save(next: string) {
       const previous = (item.stored ? item.stored(lang) : stored) ?? "";
+      const previousJapanese = lang === "en" && item.autoJapanese ? item.value("ja") : undefined;
       setStatus({ kind: "saving" });
       try {
-        expectOk(await item.save(lang, next));
-        setStatus({ kind: "saved", message: description });
+        const saved = expectOk(await item.save(lang, next));
+        setStatus({ kind: "saved", message: withJapaneseNote(description, saved ? saved.update : null) });
         undo.record({
           description,
           undo: async () => {
-            expectOk(await item.save(lang, previous));
+            expectOk(await item.save(lang, previous, previousJapanese));
             router.refresh();
           },
         });
@@ -256,6 +263,8 @@ export function PageCanvas({
           noun={item.title}
           value={stored ?? ""}
           fallback={fallback}
+          english={item.autoJapanese && lang === "ja" ? english : undefined}
+          note={item.autoJapanese ? (lang === "en" ? ENGLISH_EDIT_NOTE : JAPANESE_EDIT_NOTE) : undefined}
           placeholder={item.placeholder}
           multiline={item.textKind === "body"}
           maxLength={item.max}
@@ -291,38 +300,44 @@ export function PageCanvas({
 
     const description = `Changed ${fieldSpec.label}.`;
 
+    function showWords(words: OverrideValue) {
+      setOverrides((all) => ({ ...all, [fieldSpec.path]: words }));
+    }
+
+    function recordUndo(undoDescription: string, before: OverrideValue, after: OverrideValue) {
+      undo.record({
+        description: undoDescription,
+        undo: async () => {
+          showWords(before);
+          try {
+            expectOk(await restoreSiteText(fieldSpec.path, before));
+            router.refresh();
+          } catch (e) {
+            showWords(after);
+            const message = e instanceof Error && e.message ? e.message : GENERIC_SAVE_ERROR;
+            setStatus({ kind: "error", message });
+            throw e;
+          }
+        },
+      });
+    }
+
     async function save(next: string) {
       const trimmed = next.trim();
       const toStore = trimmed === dictValue.trim() ? "" : trimmed;
-      const previous = current[lang];
+      const before = current;
       setOverrides(withOverride(fieldSpec.path, lang, toStore || null));
       setStatus({ kind: "saving" });
       try {
-        expectOk(await updateSiteText(fieldSpec.path, lang, toStore));
-        setStatus({ kind: "saved", message: description });
-        undo.record({
-          description,
-          undo: async () => {
-            setOverrides(withOverride(fieldSpec.path, lang, previous));
-            try {
-              if (previous === null) {
-                expectOk(await resetSiteText(fieldSpec.path, lang));
-              } else {
-                expectOk(await updateSiteText(fieldSpec.path, lang, previous));
-              }
-              router.refresh();
-            } catch (e) {
-              setOverrides(withOverride(fieldSpec.path, lang, toStore || null));
-              const message = e instanceof Error && e.message ? e.message : GENERIC_SAVE_ERROR;
-              setStatus({ kind: "error", message });
-              throw e;
-            }
-          },
-        });
+        const saved = expectOk(await updateSiteText(fieldSpec.path, lang, toStore));
+        const after = { en: saved.en, ja: saved.ja };
+        showWords(after);
+        setStatus({ kind: "saved", message: withJapaneseNote(description, saved.japanese) });
+        recordUndo(description, before, after);
         router.refresh();
         reloadPage();
       } catch (e) {
-        setOverrides(withOverride(fieldSpec.path, lang, previous));
+        showWords(before);
         const message = e instanceof Error && e.message ? e.message : GENERIC_SAVE_ERROR;
         setStatus({ kind: "error", message });
         throw e;
@@ -330,32 +345,20 @@ export function PageCanvas({
     }
 
     async function reset() {
-      const previous = current[lang];
+      const before = current;
       const resetDescription = `Put back the original ${fieldSpec.label.toLowerCase()}.`;
       setOverrides(withOverride(fieldSpec.path, lang, null));
       setStatus({ kind: "saving" });
       try {
-        expectOk(await resetSiteText(fieldSpec.path, lang));
-        setStatus({ kind: "saved", message: resetDescription });
-        undo.record({
-          description: resetDescription,
-          undo: async () => {
-            setOverrides(withOverride(fieldSpec.path, lang, previous));
-            try {
-              expectOk(await updateSiteText(fieldSpec.path, lang, previous ?? ""));
-              router.refresh();
-            } catch (e) {
-              setOverrides(withOverride(fieldSpec.path, lang, null));
-              const message = e instanceof Error && e.message ? e.message : GENERIC_SAVE_ERROR;
-              setStatus({ kind: "error", message });
-              throw e;
-            }
-          },
-        });
+        const saved = expectOk(await resetSiteText(fieldSpec.path, lang));
+        const after = { en: saved.en, ja: saved.ja };
+        showWords(after);
+        setStatus({ kind: "saved", message: withJapaneseNote(resetDescription, saved.japanese) });
+        recordUndo(resetDescription, before, after);
         router.refresh();
         reloadPage();
       } catch (e) {
-        setOverrides(withOverride(fieldSpec.path, lang, previous));
+        showWords(before);
         const message = e instanceof Error && e.message ? e.message : GENERIC_SAVE_ERROR;
         setStatus({ kind: "error", message });
       }
@@ -373,6 +376,8 @@ export function PageCanvas({
             noun={fieldSpec.label}
             value={value}
             fallback={fallback}
+            english={lang === "ja" ? current.en ?? stringAt(en, fieldSpec.path) : undefined}
+            note={lang === "en" ? ENGLISH_EDIT_NOTE : JAPANESE_EDIT_NOTE}
             multiline={fieldSpec.kind !== "heading"}
             maxLength={fieldSpec.max}
             required

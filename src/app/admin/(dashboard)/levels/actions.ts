@@ -2,11 +2,24 @@
 
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { schoolLevels, schoolLevelStatuses, type SchoolLevelStatus } from "@/db/schema";
+import {
+  schoolLevels,
+  schoolLevelStatuses,
+  type SchoolLevel,
+  type SchoolLevelStatus,
+} from "@/db/schema";
 import { AdminError, runAction, type ActionResult } from "@/lib/action-result";
 import { requireUser, revalidateSite } from "@/lib/admin";
 import { deleteBlobIfUnused } from "@/lib/blob-cleanup";
 import type { Locale } from "@/lib/i18n";
+import {
+  draftJapanese,
+  followEnglishOrRestore,
+  japaneseFollowingEnglish,
+  mostNotableUpdate,
+  type FollowedJapanese,
+  type JapaneseUpdate,
+} from "@/lib/japanese-drafts";
 import { checkedBlobImageUrl } from "@/lib/uploads";
 import {
   LEVEL_DESCRIPTION_MAX,
@@ -101,6 +114,86 @@ function levelValues(input: LevelInput, requirePhotoAlt: boolean) {
   };
 }
 
+type LevelValues = ReturnType<typeof levelValues>;
+
+function sameList(a: string[], b: string[]): boolean {
+  return a.length === b.length && a.every((item, i) => item === b[i]);
+}
+
+// An empty pointsJa means /ja shows the English points, so a point that can't
+// be written in Japanese empties the whole list rather than mixing languages.
+async function pointsFollowingEnglish(
+  points: string[],
+  pointsJa: string[],
+  saved?: Pick<SchoolLevel, "points" | "pointsJa">
+): Promise<{ pointsJa: string[]; update: JapaneseUpdate | null }> {
+  if (points.length === 0) return { pointsJa: [], update: null };
+  const pointsChanged = saved !== undefined && !sameList(points, saved.points);
+  const japaneseTouched = saved === undefined || !sameList(pointsJa, saved.pointsJa);
+  if (pointsJa.length > 0 && (!pointsChanged || japaneseTouched)) return { pointsJa, update: null };
+
+  const savedJa = new Map(
+    saved && saved.pointsJa.length === saved.points.length
+      ? saved.points.map((point, i) => [point, saved.pointsJa[i]])
+      : []
+  );
+  const drafts = await Promise.all(
+    points.map((point) => {
+      const japanese = savedJa.get(point);
+      return japanese ? { japanese, update: null } : draftJapanese(point, LEVEL_POINT_MAX);
+    })
+  );
+  const translated = drafts.flatMap((draft) => (draft.japanese === null ? [] : [draft.japanese]));
+  return {
+    pointsJa: translated.length === points.length ? translated : [],
+    update: mostNotableUpdate(drafts.map((draft) => draft.update)),
+  };
+}
+
+async function withLevelJapanese(
+  values: LevelValues,
+  saved?: SchoolLevel
+): Promise<{ values: LevelValues; update: JapaneseUpdate | null }> {
+  const [name, summary, description, photoAlt, points] = await Promise.all([
+    japaneseFollowingEnglish({
+      english: values.name,
+      japanese: values.nameJa,
+      max: LEVEL_NAME_MAX,
+      saved: saved && { english: saved.name, japanese: saved.nameJa },
+    }),
+    japaneseFollowingEnglish({
+      english: values.summary,
+      japanese: values.summaryJa,
+      max: LEVEL_SUMMARY_MAX,
+      saved: saved && { english: saved.summary, japanese: saved.summaryJa },
+    }),
+    japaneseFollowingEnglish({
+      english: values.description,
+      japanese: values.descriptionJa,
+      max: LEVEL_DESCRIPTION_MAX,
+      saved: saved && { english: saved.description, japanese: saved.descriptionJa },
+    }),
+    japaneseFollowingEnglish({
+      english: values.photoAlt || null,
+      japanese: values.photoAltJa,
+      max: ALT_MAX,
+      saved: saved && { english: saved.photoAlt || null, japanese: saved.photoAltJa },
+    }),
+    pointsFollowingEnglish(values.points, values.pointsJa, saved),
+  ]);
+  return {
+    values: {
+      ...values,
+      nameJa: name.japanese,
+      summaryJa: summary.japanese,
+      descriptionJa: description.japanese,
+      photoAltJa: photoAlt.japanese,
+      pointsJa: points.pointsJa,
+    },
+    update: mostNotableUpdate([name, summary, description, photoAlt, points].map((part) => part.update)),
+  };
+}
+
 async function nextSortOrder(): Promise<number> {
   const existing = await db.select({ sortOrder: schoolLevels.sortOrder }).from(schoolLevels);
   return existing.reduce((max, row) => Math.max(max, row.sortOrder), -1) + 1;
@@ -110,11 +203,11 @@ async function nextSortOrder(): Promise<number> {
 export async function createSchoolLevel(
   input: LevelInput,
   photoUrl: string | null
-): Promise<ActionResult<{ id: string }>> {
+): Promise<ActionResult<{ id: string; japanese: JapaneseUpdate | null }>> {
   return runAction(async () => {
     await requireUser();
     const checkedPhotoUrl = checkedBlobImageUrl(photoUrl);
-    const values = levelValues(input, checkedPhotoUrl !== null);
+    const { values, update } = await withLevelJapanese(levelValues(input, checkedPhotoUrl !== null));
     const sortOrder = await nextSortOrder();
 
     const [row] = await db
@@ -123,7 +216,7 @@ export async function createSchoolLevel(
       .returning({ id: schoolLevels.id });
 
     revalidateSite();
-    return { id: row.id };
+    return { id: row.id, japanese: update };
   });
 }
 
@@ -131,7 +224,7 @@ export async function updateSchoolLevel(
   id: string,
   input: LevelInput,
   photoUrl: PhotoUrlInput
-): Promise<ActionResult> {
+): Promise<ActionResult<{ japanese: JapaneseUpdate | null }>> {
   return runAction(async () => {
     await requireUser();
     const [existing] = await db.select().from(schoolLevels).where(eq(schoolLevels.id, id));
@@ -139,7 +232,7 @@ export async function updateSchoolLevel(
 
     const nextPhotoUrl =
       photoUrl === "unchanged" ? existing.photoUrl : checkedBlobImageUrl(photoUrl);
-    const values = levelValues(input, nextPhotoUrl !== null);
+    const { values, update } = await withLevelJapanese(levelValues(input, nextPhotoUrl !== null), existing);
 
     await db
       .update(schoolLevels)
@@ -151,6 +244,7 @@ export async function updateSchoolLevel(
     }
 
     revalidateSite();
+    return { japanese: update };
   });
 }
 
@@ -244,7 +338,8 @@ export async function updateSchoolLevelText(input: {
   field: LevelTextField;
   lang: Locale;
   value: string;
-}): Promise<ActionResult> {
+  japanese?: string | null;
+}): Promise<ActionResult<FollowedJapanese>> {
   return runAction(async () => {
     await requireUser();
     if (!Object.hasOwn(LEVEL_TEXT_FIELDS, input.field)) {
@@ -252,7 +347,7 @@ export async function updateSchoolLevelText(input: {
     }
     const spec = LEVEL_TEXT_FIELDS[input.field];
     const lang = checkedLang(input.lang);
-    await existingLevel(input.id);
+    const existing = await existingLevel(input.id);
 
     const value = input.value.trim();
     if (value.length > spec.max) {
@@ -261,13 +356,40 @@ export async function updateSchoolLevelText(input: {
     const required = lang === "en" && input.field !== "kanji";
     if (required && !value) throw new AdminError(`Please enter a ${spec.noun} for this class.`);
 
-    const column = lang === "en" ? spec.en : spec.ja;
+    if (lang === "ja" || spec.en === spec.ja) {
+      await db
+        .update(schoolLevels)
+        .set({ [spec.ja]: value || null })
+        .where(eq(schoolLevels.id, input.id));
+      revalidateSite();
+      return { japanese: value || null, update: null };
+    }
+
+    const followed = await followEnglishOrRestore(
+      {
+        english: value,
+        japanese: existing[spec.ja],
+        max: spec.max,
+        saved: { english: existing[spec.en], japanese: existing[spec.ja] },
+      },
+      input.japanese
+    );
     await db
       .update(schoolLevels)
-      .set({ [column]: value || null })
+      .set({ [spec.en]: value, [spec.ja]: followed.japanese })
       .where(eq(schoolLevels.id, input.id));
     revalidateSite();
+    return followed;
   });
+}
+
+function restoredPointsJa(existing: SchoolLevel, index: number, japanese: string | null): string[] {
+  const restored = japanese?.trim() || null;
+  if (restored && restored.length > LEVEL_POINT_MAX) {
+    throw new AdminError(`The point is too long — please keep it under ${LEVEL_POINT_MAX} characters.`);
+  }
+  if (!restored || existing.pointsJa.length !== existing.points.length) return [];
+  return existing.pointsJa.map((point, i) => (i === index ? restored : point));
 }
 
 // An empty pointsJa makes /ja show the English points (getSchoolLevels), so it
@@ -277,7 +399,8 @@ export async function updateSchoolLevelPoint(input: {
   index: number;
   lang: Locale;
   value: string;
-}): Promise<ActionResult> {
+  japanese?: string | null;
+}): Promise<ActionResult<FollowedJapanese>> {
   return runAction(async () => {
     await requireUser();
     const lang = checkedLang(input.lang);
@@ -296,14 +419,21 @@ export async function updateSchoolLevelPoint(input: {
 
     if (lang === "en") {
       const points = existing.points.map((point, i) => (i === input.index ? value : point));
-      await db.update(schoolLevels).set({ points }).where(eq(schoolLevels.id, input.id));
-    } else {
-      const base = existing.pointsJa.length > 0 ? existing.pointsJa : existing.points;
-      const translated = base.map((point, i) => (i === input.index ? value || existing.points[i] : point));
-      const pointsJa = translated.every((point, i) => point === existing.points[i]) ? [] : translated;
-      await db.update(schoolLevels).set({ pointsJa }).where(eq(schoolLevels.id, input.id));
+      const { pointsJa, update } =
+        input.japanese === undefined
+          ? await pointsFollowingEnglish(points, existing.pointsJa, existing)
+          : { pointsJa: restoredPointsJa(existing, input.index, input.japanese), update: null };
+      await db.update(schoolLevels).set({ points, pointsJa }).where(eq(schoolLevels.id, input.id));
+      revalidateSite();
+      return { japanese: pointsJa[input.index] ?? null, update };
     }
+
+    const base = existing.pointsJa.length > 0 ? existing.pointsJa : existing.points;
+    const translated = base.map((point, i) => (i === input.index ? value || existing.points[i] : point));
+    const pointsJa = translated.every((point, i) => point === existing.points[i]) ? [] : translated;
+    await db.update(schoolLevels).set({ pointsJa }).where(eq(schoolLevels.id, input.id));
     revalidateSite();
+    return { japanese: pointsJa[input.index] ?? null, update: null };
   });
 }
 
@@ -312,7 +442,7 @@ export async function updateSchoolLevelPhoto(input: {
   url: string | "unchanged";
   alt: string;
   altJa: string;
-}): Promise<ActionResult> {
+}): Promise<ActionResult<FollowedJapanese>> {
   return runAction(async () => {
     await requireUser();
     const existing = await existingLevel(input.id);
@@ -325,11 +455,19 @@ export async function updateSchoolLevelPhoto(input: {
       throw new AdminError(`The description is too long — please keep it under ${ALT_MAX} characters.`);
     }
 
+    const followed = await japaneseFollowingEnglish({
+      english: photoAlt,
+      japanese: trimmedOrNull(input.altJa),
+      max: ALT_MAX,
+      saved: { english: existing.photoAlt || null, japanese: existing.photoAltJa },
+    });
+
     await db
       .update(schoolLevels)
-      .set({ photoUrl, photoAlt, photoAltJa: trimmedOrNull(input.altJa) })
+      .set({ photoUrl, photoAlt, photoAltJa: followed.japanese })
       .where(eq(schoolLevels.id, input.id));
     if (existing.photoUrl !== photoUrl) await deleteBlobIfUnused(existing.photoUrl);
     revalidateSite();
+    return followed;
   });
 }

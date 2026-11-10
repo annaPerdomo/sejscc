@@ -2,12 +2,19 @@
 
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { schoolYearEvents } from "@/db/schema";
+import { schoolYearEvents, type SchoolYearEvent } from "@/db/schema";
 import { AdminError, runAction, type ActionResult } from "@/lib/action-result";
 import { requireUser, revalidateSite } from "@/lib/admin";
 import { deleteBlobIfUnused } from "@/lib/blob-cleanup";
 import { slugify } from "@/lib/format";
 import type { Locale } from "@/lib/i18n";
+import {
+  followEnglishOrRestore,
+  japaneseFollowingEnglish,
+  mostNotableUpdate,
+  type FollowedJapanese,
+  type JapaneseUpdate,
+} from "@/lib/japanese-drafts";
 import { checkedBlobImageUrl } from "@/lib/uploads";
 
 export type SchoolYearEventFormInput = {
@@ -124,6 +131,54 @@ function eventValues(input: SchoolYearEventFormInput, requirePhotoAlt: boolean) 
   };
 }
 
+type EventValues = ReturnType<typeof eventValues>;
+type TranslatedField = "title" | "label" | "when" | "abbr" | "gloss" | "description" | "photoAlt";
+
+function followEnglish(
+  values: EventValues,
+  saved: SchoolYearEvent | undefined,
+  field: TranslatedField,
+  max: number
+) {
+  const ja = `${field}Ja` as const;
+  return japaneseFollowingEnglish({
+    english: values[field] || null,
+    japanese: values[ja],
+    max,
+    saved: saved && { english: saved[field] || null, japanese: saved[ja] },
+  });
+}
+
+async function withEventJapanese(
+  values: EventValues,
+  saved?: SchoolYearEvent
+): Promise<{ values: EventValues; update: JapaneseUpdate | null }> {
+  const [title, label, when, abbr, gloss, description, photoAlt] = await Promise.all([
+    followEnglish(values, saved, "title", TITLE_MAX),
+    followEnglish(values, saved, "label", LABEL_MAX),
+    followEnglish(values, saved, "when", WHEN_MAX),
+    followEnglish(values, saved, "abbr", ABBR_MAX),
+    followEnglish(values, saved, "gloss", GLOSS_MAX),
+    followEnglish(values, saved, "description", DESCRIPTION_MAX),
+    followEnglish(values, saved, "photoAlt", DESCRIPTION_MAX),
+  ]);
+  return {
+    values: {
+      ...values,
+      titleJa: title.japanese,
+      labelJa: label.japanese,
+      whenJa: when.japanese,
+      abbrJa: abbr.japanese,
+      glossJa: gloss.japanese,
+      descriptionJa: description.japanese,
+      photoAltJa: photoAlt.japanese,
+    },
+    update: mostNotableUpdate(
+      [title, label, when, abbr, gloss, description, photoAlt].map((part) => part.update)
+    ),
+  };
+}
+
 async function uniqueKey(title: string): Promise<string> {
   const base = slugify(title) || "event";
   const rows = await db.select({ key: schoolYearEvents.key }).from(schoolYearEvents);
@@ -144,11 +199,11 @@ async function nextSortOrder(): Promise<number> {
 export async function createSchoolYearEvent(
   input: SchoolYearEventFormInput,
   photoUrl: string | null
-): Promise<ActionResult<{ id: string }>> {
+): Promise<ActionResult<{ id: string; japanese: JapaneseUpdate | null }>> {
   return runAction(async () => {
     await requireUser();
     const checkedPhotoUrl = checkedBlobImageUrl(photoUrl);
-    const values = eventValues(input, checkedPhotoUrl !== null);
+    const { values, update } = await withEventJapanese(eventValues(input, checkedPhotoUrl !== null));
     const key = await uniqueKey(values.title);
     const sortOrder = await nextSortOrder();
 
@@ -158,7 +213,7 @@ export async function createSchoolYearEvent(
       .returning({ id: schoolYearEvents.id });
 
     revalidateSite();
-    return { id: row.id };
+    return { id: row.id, japanese: update };
   });
 }
 
@@ -166,7 +221,7 @@ export async function updateSchoolYearEvent(
   id: string,
   input: SchoolYearEventFormInput,
   photoUrl: PhotoUrlInput
-): Promise<ActionResult> {
+): Promise<ActionResult<{ japanese: JapaneseUpdate | null }>> {
   return runAction(async () => {
     await requireUser();
     const [existing] = await db.select().from(schoolYearEvents).where(eq(schoolYearEvents.id, id));
@@ -174,7 +229,7 @@ export async function updateSchoolYearEvent(
 
     const nextPhotoUrl =
       photoUrl === "unchanged" ? existing.photoUrl : checkedBlobImageUrl(photoUrl);
-    const values = eventValues(input, nextPhotoUrl !== null);
+    const { values, update } = await withEventJapanese(eventValues(input, nextPhotoUrl !== null), existing);
 
     await db
       .update(schoolYearEvents)
@@ -186,6 +241,7 @@ export async function updateSchoolYearEvent(
     }
 
     revalidateSite();
+    return { japanese: update };
   });
 }
 
@@ -242,14 +298,15 @@ export async function updateSchoolYearEventText(input: {
   field: SchoolYearTextField;
   lang: Locale;
   value: string;
-}): Promise<ActionResult> {
+  japanese?: string | null;
+}): Promise<ActionResult<FollowedJapanese>> {
   return runAction(async () => {
     await requireUser();
     if (!Object.hasOwn(TEXT_FIELDS, input.field)) {
       throw new AdminError("That part of the event can't be changed here.");
     }
     if (input.lang !== "en" && input.lang !== "ja") throw new AdminError("That language isn't supported.");
-    await existingEvent(input.id);
+    const existing = await existingEvent(input.id);
 
     const spec = TEXT_FIELDS[input.field];
     const value = input.value.trim();
@@ -259,12 +316,30 @@ export async function updateSchoolYearEventText(input: {
     const english = input.lang === "en" || input.field === "termJa";
     if (english && !value) throw new AdminError(`Please enter the ${spec.noun}.`);
 
-    const column = english ? input.field : spec.ja;
+    if (!english || input.field === "termJa") {
+      await db
+        .update(schoolYearEvents)
+        .set({ [spec.ja]: value || null })
+        .where(eq(schoolYearEvents.id, input.id));
+      revalidateSite();
+      return { japanese: value || null, update: null };
+    }
+
+    const followed = await followEnglishOrRestore(
+      {
+        english: value,
+        japanese: existing[spec.ja],
+        max: spec.max,
+        saved: { english: existing[input.field], japanese: existing[spec.ja] },
+      },
+      input.japanese
+    );
     await db
       .update(schoolYearEvents)
-      .set({ [column]: value || null })
+      .set({ [input.field]: value, [spec.ja]: followed.japanese })
       .where(eq(schoolYearEvents.id, input.id));
     revalidateSite();
+    return followed;
   });
 }
 
@@ -273,7 +348,7 @@ export async function updateSchoolYearEventPhoto(input: {
   url: string | "unchanged";
   alt: string;
   altJa: string;
-}): Promise<ActionResult> {
+}): Promise<ActionResult<FollowedJapanese>> {
   return runAction(async () => {
     await requireUser();
     const existing = await existingEvent(input.id);
@@ -286,11 +361,19 @@ export async function updateSchoolYearEventPhoto(input: {
       throw new AdminError(`The description is too long — please keep it under ${DESCRIPTION_MAX} characters.`);
     }
 
+    const followed = await japaneseFollowingEnglish({
+      english: photoAlt,
+      japanese: trimmedOrNull(input.altJa),
+      max: DESCRIPTION_MAX,
+      saved: { english: existing.photoAlt || null, japanese: existing.photoAltJa },
+    });
+
     await db
       .update(schoolYearEvents)
-      .set({ photoUrl, photoAlt, photoAltJa: trimmedOrNull(input.altJa) })
+      .set({ photoUrl, photoAlt, photoAltJa: followed.japanese })
       .where(eq(schoolYearEvents.id, input.id));
     if (existing.photoUrl !== photoUrl) await deleteBlobIfUnused(existing.photoUrl);
     revalidateSite();
+    return followed;
   });
 }

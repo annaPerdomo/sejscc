@@ -4,8 +4,9 @@ import { useId, useState, type FormEvent, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { AdminAlert } from "@/components/admin/admin-alert";
 import { AdminButton, AdminFormActions } from "@/components/admin/admin-button";
-import { AdminCharacterCount, AdminOptional, AdminTextField } from "@/components/admin/admin-field";
+import { AdminAutoJapanese, AdminCharacterCount, AdminOptional, AdminTextField } from "@/components/admin/admin-field";
 import { expectOk } from "@/lib/action-result";
+import { withJapaneseNote } from "@/lib/admin-messages";
 import en from "@/dictionaries/en.json";
 import { updateAnnouncement } from "../settings/actions";
 
@@ -135,17 +136,17 @@ export function AnnouncementForm({
     setBusy(true);
     try {
       const values = mode === "message" ? { text, textJa, url, linkLabel, until } : EMPTY_VALUES;
-      expectOk(await updateAnnouncement(values));
+      const result = expectOk(await updateAnnouncement(values));
+      setTextJa(result.textJa ?? "");
       if (mode === "next-event") {
         setText("");
-        setTextJa("");
         setUrl("");
         setLinkLabel("");
         setUntil("");
       }
       setSaved(
         mode === "message"
-          ? "Saved — your message is now at the top of every page."
+          ? withJapaneseNote("Saved — your message is now at the top of every page.", result.japanese)
           : "Saved — the banner now points to the next event on its own."
       );
       router.refresh();
@@ -217,7 +218,7 @@ export function AnnouncementForm({
               <AdminTextField
                 label={
                   <>
-                    Message (Japanese) <AdminOptional />
+                    Message (Japanese) <AdminAutoJapanese />
                   </>
                 }
                 value={textJa}

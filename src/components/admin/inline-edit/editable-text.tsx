@@ -13,6 +13,8 @@ export function EditableText({
   noun,
   value,
   fallback,
+  english,
+  note,
   placeholder,
   focusKey,
   multiline = false,
@@ -31,6 +33,8 @@ export function EditableText({
   noun: string;
   value: string;
   fallback?: string;
+  english?: string;
+  note?: string;
   placeholder?: string;
   focusKey?: string;
   multiline?: boolean;
@@ -145,13 +149,14 @@ export function EditableText({
     );
   }
 
+  const englishReference = english || (value ? undefined : fallback);
   return (
     <span ref={containerRef} data-inline-edit-open className="block">
       <label htmlFor={textareaId} className="block font-display text-base text-ink">
         {label}
       </label>
-      {fallback !== undefined && !value && (
-        <span className="mt-1 block text-base text-ink-soft">English: {fallback}</span>
+      {englishReference && (
+        <span className="mt-1 block text-base text-ink-soft">English: {englishReference}</span>
       )}
       <textarea
         id={textareaId}
@@ -164,7 +169,9 @@ export function EditableText({
         onKeyDown={handleKeyDown}
         rows={multiline ? 4 : 1}
         aria-describedby={
-          [multiline && `${textareaId}-hint`, error && `${textareaId}-error`].filter(Boolean).join(" ") ||
+          [multiline && `${textareaId}-hint`, note && `${textareaId}-note`, error && `${textareaId}-error`]
+            .filter(Boolean)
+            .join(" ") ||
           undefined
         }
         className="inline-edit-field field-sizing-content mt-2"
@@ -172,6 +179,11 @@ export function EditableText({
       {multiline && (
         <span id={`${textareaId}-hint`} className="mt-1 block font-sans text-base font-normal tracking-normal text-ink-soft">
           This box is one paragraph — the website doesn&rsquo;t keep line breaks.
+        </span>
+      )}
+      {note && (
+        <span id={`${textareaId}-note`} className="mt-2 block rounded-lg bg-azure px-3 py-2 font-sans text-base font-normal tracking-normal text-ink">
+          {note}
         </span>
       )}
       <AdminCharacterCount as="span" value={draft} max={maxLength} />

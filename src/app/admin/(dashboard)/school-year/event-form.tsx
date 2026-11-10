@@ -6,15 +6,9 @@ import { upload } from "@vercel/blob/client";
 import { AdminAlert, AdminRequirements } from "@/components/admin/admin-alert";
 import { AdminButton, AdminFormActions } from "@/components/admin/admin-button";
 import { AdminCard, AdminCardHeading, AdminStep } from "@/components/admin/admin-card";
-import {
-  AdminCharacterCount,
-  AdminOptional,
-  AdminRequired,
-  AdminSelect,
-  AdminTextArea,
-  AdminTextField,
-} from "@/components/admin/admin-field";
+import { AdminAutoJapanese, AdminCharacterCount, AdminOptional, AdminRequired, AdminSelect, AdminTextArea, AdminTextField } from "@/components/admin/admin-field";
 import { AdminImagePicker } from "@/components/admin/admin-image-picker";
+import { JapaneseNotWritten, japaneseWasNotWritten } from "@/components/admin/japanese-not-written";
 import type { SchoolYearEvent } from "@/db/schema";
 import { expectOk } from "@/lib/action-result";
 import {
@@ -61,6 +55,7 @@ export function EventForm({ event }: { event?: SchoolYearEvent }) {
   const [busy, setBusy] = useState(false);
   const [preparing, setPreparing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notWritten, setNotWritten] = useState<"limit" | "unavailable" | null>(null);
 
   const hasPhoto = previewUrl !== null;
   const missing: string[] = [];
@@ -130,12 +125,15 @@ export function EventForm({ event }: { event?: SchoolYearEvent }) {
         visible,
       };
 
-      if (event) {
-        expectOk(await updateSchoolYearEvent(event.id, input, photoUrl));
-      } else {
-        expectOk(await createSchoolYearEvent(input, photoUrl === "unchanged" ? null : photoUrl));
-      }
+      const saved = event
+        ? expectOk(await updateSchoolYearEvent(event.id, input, photoUrl))
+        : expectOk(await createSchoolYearEvent(input, photoUrl === "unchanged" ? null : photoUrl));
 
+      if (japaneseWasNotWritten(saved.japanese)) {
+        setNotWritten(saved.japanese);
+        router.refresh();
+        return;
+      }
       router.push("/admin/school-year");
       router.refresh();
     } catch (e) {
@@ -167,7 +165,7 @@ export function EventForm({ event }: { event?: SchoolYearEvent }) {
         <AdminCharacterCount value={title} max={TITLE_MAX} />
         <div className="mt-5">
           <AdminTextField
-            label="Event name (Japanese, optional)"
+            label={<>Event name (Japanese) <AdminAutoJapanese /></>}
             value={titleJa}
             onChange={(e) => setTitleJa(e.target.value)}
             maxLength={TITLE_MAX}
@@ -212,7 +210,7 @@ export function EventForm({ event }: { event?: SchoolYearEvent }) {
         </div>
         <div className="mt-5">
           <AdminTextField
-            label="Japanese (optional)"
+            label={<>Japanese <AdminAutoJapanese /></>}
             value={glossJa}
             onChange={(e) => setGlossJa(e.target.value)}
             maxLength={GLOSS_MAX}
@@ -255,7 +253,7 @@ export function EventForm({ event }: { event?: SchoolYearEvent }) {
         </div>
         <div className="mt-5">
           <AdminTextField
-            label="Japanese (optional)"
+            label={<>Japanese <AdminAutoJapanese /></>}
             value={whenJa}
             onChange={(e) => setWhenJa(e.target.value)}
             maxLength={WHEN_MAX}
@@ -281,7 +279,7 @@ export function EventForm({ event }: { event?: SchoolYearEvent }) {
         </div>
         <div className="mt-5">
           <AdminTextField
-            label="Japanese (optional)"
+            label={<>Japanese <AdminAutoJapanese /></>}
             value={labelJa}
             onChange={(e) => setLabelJa(e.target.value)}
             maxLength={LABEL_MAX}
@@ -310,7 +308,7 @@ export function EventForm({ event }: { event?: SchoolYearEvent }) {
         </div>
         <div className="mt-5">
           <AdminTextField
-            label="Japanese (optional)"
+            label={<>Japanese <AdminAutoJapanese /></>}
             value={abbrJa}
             onChange={(e) => setAbbrJa(e.target.value)}
             maxLength={ABBR_MAX}
@@ -337,7 +335,7 @@ export function EventForm({ event }: { event?: SchoolYearEvent }) {
         </div>
         <div className="mt-5">
           <AdminTextArea
-            label="Japanese (optional)"
+            label={<>Japanese <AdminAutoJapanese /></>}
             value={descriptionJa}
             onChange={(e) => setDescriptionJa(e.target.value)}
             maxLength={DESCRIPTION_MAX}
@@ -378,7 +376,7 @@ export function EventForm({ event }: { event?: SchoolYearEvent }) {
         </div>
         <div className="mt-5">
           <AdminTextField
-            label="(Japanese, optional)"
+            label={<>Japanese <AdminAutoJapanese /></>}
             value={photoAltJa}
             onChange={(e) => setPhotoAltJa(e.target.value)}
           />
@@ -404,20 +402,24 @@ export function EventForm({ event }: { event?: SchoolYearEvent }) {
         </label>
       </AdminCard>
 
-      <div className="space-y-4">
-        {error && <AdminAlert>{error}</AdminAlert>}
-        {missing.length > 0 && (
-          <AdminRequirements missing={missing} action="save this event" />
-        )}
-        <AdminFormActions>
-          <AdminButton onClick={() => router.push("/admin/school-year")}>
-            Cancel
-          </AdminButton>
-          <AdminButton type="submit" variant="primary" disabled={busy} aria-disabled={preparing}>
-            {busy ? "Saving…" : "Save"}
-          </AdminButton>
-        </AdminFormActions>
-      </div>
+      {notWritten ? (
+        <JapaneseNotWritten update={notWritten} backHref="/admin/school-year" />
+      ) : (
+        <div className="space-y-4">
+          {error && <AdminAlert>{error}</AdminAlert>}
+          {missing.length > 0 && (
+            <AdminRequirements missing={missing} action="save this event" />
+          )}
+          <AdminFormActions>
+            <AdminButton onClick={() => router.push("/admin/school-year")}>
+              Cancel
+            </AdminButton>
+            <AdminButton type="submit" variant="primary" disabled={busy} aria-disabled={preparing}>
+              {busy ? "Saving…" : "Save"}
+            </AdminButton>
+          </AdminFormActions>
+        </div>
+      )}
     </form>
   );
 }
