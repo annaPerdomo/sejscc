@@ -81,7 +81,8 @@ async function checkedSiteTextField(path: string) {
 export async function updateSiteText(
   path: string,
   lang: Locale,
-  value: string
+  value: string,
+  keepJapanese = false
 ): Promise<ActionResult<SavedSiteText>> {
   return runAction(async () => {
     await requireUser();
@@ -101,11 +102,22 @@ export async function updateSiteText(
       return { ...next, japanese: null };
     }
 
+    if (!trimmed && keepJapanese) {
+      const next = await setSiteTextColumns(path, { en: null });
+      revalidateSite();
+      return { ...next, japanese: null };
+    }
     if (!trimmed) return putBackOriginalEnglish(path);
 
     const english = await withOriginalSpacing(path, "en", trimmed);
     const saved = await savedSiteText(path);
     const japaneseWasWritten = saved.ja !== null && saved.ja !== saved.en;
+    if (keepJapanese) {
+      const showsEnglish = saved.ja !== null && saved.ja === saved.en;
+      const next = await setSiteTextColumns(path, { en: english, ja: showsEnglish ? english : undefined });
+      revalidateSite();
+      return { ...next, japanese: null };
+    }
     if (saved.en === english && japaneseWasWritten) return { ...saved, japanese: null };
 
     const { text, update } = await japaneseForEnglish(path, english, fieldSpec.max);

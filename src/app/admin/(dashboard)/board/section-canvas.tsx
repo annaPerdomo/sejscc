@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { expectOk } from "@/lib/action-result";
-import { ENGLISH_EDIT_NOTE, JAPANESE_EDIT_NOTE, withJapaneseNote } from "@/lib/admin-messages";
+import { JAPANESE_EDIT_NOTE, withJapaneseNote } from "@/lib/admin-messages";
 import { EditBar, type EditBarStatus } from "@/components/admin/inline-edit/edit-bar";
 import { EditableLink } from "@/components/admin/inline-edit/editable-link";
 import { EditableText } from "@/components/admin/inline-edit/editable-text";
@@ -100,6 +100,45 @@ export function SectionCanvas({
       lang === "en" ? SECTION_TEXT_FIELDS[field].label : `Japanese ${SECTION_TEXT_FIELDS[field].label}`;
     const description = `Changed ${FIELD_DISPLAY_LABELS[field]}.`;
 
+    async function saveIn(forLang: Locale, next: string, japanese?: string | null) {
+      const previousRaw = forLang === "en" ? englishText : japaneseSectionValue(section, field);
+      const previousJapanese = forLang === "en" ? section[SECTION_TEXT_FIELDS[field].ja] : undefined;
+      const previousSection = section;
+      const withWords = (row: VolunteerSectionRow, words: string) =>
+        forLang === "en"
+          ? withEnglishSectionValue(row, field, words)
+          : withJapaneseSectionValue(row, field, words || null);
+      setSection(withWords(section, next.trim()));
+      setStatus({ kind: "saving" });
+      try {
+        const saved = expectOk(await updateSectionText(field, forLang, next, japanese));
+        setSection((current) => withJapaneseSectionValue(current, field, saved.japanese));
+        setStatus({ kind: "saved", message: withJapaneseNote(description, saved.update) });
+        undo.record({
+          description,
+          undo: async () => {
+            setSection(withWords(previousSection, previousRaw));
+            try {
+              expectOk(await updateSectionText(field, forLang, previousRaw, previousJapanese));
+              router.refresh();
+            } catch (e) {
+              setSection(withWords(previousSection, next.trim()));
+              const message = e instanceof Error && e.message ? e.message : GENERIC_SAVE_ERROR;
+              setStatus({ kind: "error", message });
+              throw e;
+            }
+          },
+        });
+        router.refresh();
+        return saved;
+      } catch (e) {
+        setSection(previousSection);
+        const message = e instanceof Error && e.message ? e.message : GENERIC_SAVE_ERROR;
+        setStatus({ kind: "error", message });
+        throw e;
+      }
+    }
+
     return (
       <EditableText
         key={`${field}-${lang}`}
@@ -108,55 +147,30 @@ export function SectionCanvas({
         value={value}
         fallback={lang === "ja" ? englishText : undefined}
         english={lang === "ja" ? englishText : undefined}
-        note={lang === "en" ? ENGLISH_EDIT_NOTE : JAPANESE_EDIT_NOTE}
+        japanese={
+          lang === "en"
+            ? {
+                value: section[SECTION_TEXT_FIELDS[field].ja] ?? "",
+                max: SECTION_TEXT_FIELDS[field].max,
+                onSave: async (fix) => {
+                  await saveIn("ja", fix);
+                },
+              }
+            : undefined
+        }
+        note={lang === "ja" ? JAPANESE_EDIT_NOTE : undefined}
         multiline={FIELD_MULTILINE[field]}
         maxLength={SECTION_TEXT_FIELDS[field].max}
         required={lang === "en"}
         {...editState.fieldProps(`section:${field}`)}
-        onSave={async (next) => {
-          const previousRaw = lang === "en" ? englishText : japaneseSectionValue(section, field);
-          const previousJapanese = lang === "en" ? section[SECTION_TEXT_FIELDS[field].ja] : undefined;
-          const previousSection = section;
-          setSection(
-            lang === "en"
-              ? withEnglishSectionValue(section, field, next.trim())
-              : withJapaneseSectionValue(section, field, next.trim() || null)
+        onSave={async (next, keepJapanese) => {
+          const saved = await saveIn(
+            lang,
+            next,
+            keepJapanese ? section[SECTION_TEXT_FIELDS[field].ja] : undefined
           );
-          setStatus({ kind: "saving" });
-          try {
-            const saved = expectOk(await updateSectionText(field, lang, next));
-            setSection((current) => withJapaneseSectionValue(current, field, saved.japanese));
-            setStatus({ kind: "saved", message: withJapaneseNote(description, saved.update) });
-            undo.record({
-              description,
-              undo: async () => {
-                setSection(
-                  lang === "en"
-                    ? withEnglishSectionValue(previousSection, field, previousRaw)
-                    : withJapaneseSectionValue(previousSection, field, previousRaw || null)
-                );
-                try {
-                  expectOk(await updateSectionText(field, lang, previousRaw, previousJapanese));
-                  router.refresh();
-                } catch (e) {
-                  setSection(
-                    lang === "en"
-                      ? withEnglishSectionValue(previousSection, field, next.trim())
-                      : withJapaneseSectionValue(previousSection, field, next.trim() || null)
-                  );
-                  const message = e instanceof Error && e.message ? e.message : GENERIC_SAVE_ERROR;
-                  setStatus({ kind: "error", message });
-                  throw e;
-                }
-              },
-            });
-            router.refresh();
-          } catch (e) {
-            setSection(previousSection);
-            const message = e instanceof Error && e.message ? e.message : GENERIC_SAVE_ERROR;
-            setStatus({ kind: "error", message });
-            throw e;
-          }
+          if (lang !== "en") return;
+          return { english: next.trim(), japanese: saved.japanese, update: saved.update };
         }}
       />
     );
@@ -228,6 +242,7 @@ export function SectionCanvas({
   }
 
   async function onUndo() {
+    editState.closeAll();
     const error = await undo.runUndo();
     setStatus(error ? { kind: "error", message: error } : { kind: "idle" });
     document.getElementById("admin-edit-bar")?.focus();

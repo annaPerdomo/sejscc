@@ -4,7 +4,7 @@ import { useState } from "react";
 import { flushSync } from "react-dom";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { expectOk, type ActionResult } from "@/lib/action-result";
-import { ENGLISH_EDIT_NOTE, JAPANESE_EDIT_NOTE, withJapaneseNote } from "@/lib/admin-messages";
+import { JAPANESE_EDIT_NOTE, withJapaneseNote } from "@/lib/admin-messages";
 import { AdminButtonLink, buttonClass } from "@/components/admin/admin-button";
 import { ADMIN_PAGES } from "@/components/admin/admin-pages";
 import { EditBar, type EditBarStatus } from "@/components/admin/inline-edit/edit-bar";
@@ -153,6 +153,7 @@ export function PageCanvas({
   const [recordElsewhere, setRecordElsewhere] = useState<RecordElsewhere | null>(null);
   const [foundKeys, setFoundKeys] = useState<ReadonlySet<string> | null>(null);
   const [framing, setFraming] = useState<FramingDraft | null>(null);
+  const [reviewing, setReviewing] = useState<string | null>(null);
 
   const editState = useOpenTarget();
   const undo = useUndo();
@@ -207,7 +208,6 @@ export function PageCanvas({
     return {
       current,
       changed: overrideValue !== null,
-      dictValue,
       value: overrideValue ?? dictValue,
       fallback: lang === "ja" && !dictValue ? stringAt(en, fieldSpec.path) : undefined,
     };
@@ -231,22 +231,25 @@ export function PageCanvas({
     const fallback = !item.shared && lang === "ja" && !stored ? english : undefined;
     const description = `Changed ${item.title.charAt(0).toLowerCase()}${item.title.slice(1)}.`;
 
-    async function save(next: string) {
-      const previous = (item.stored ? item.stored(lang) : stored) ?? "";
-      const previousJapanese = lang === "en" && item.autoJapanese ? item.value("ja") : undefined;
+    const followsEnglish = item.autoJapanese && lang === "en";
+
+    async function saveIn(forLang: Locale, next: string, japanese?: string | null) {
+      const previous = (item.stored ? item.stored(forLang) : item.value(forLang)) ?? "";
+      const previousJapanese = forLang === "en" && item.autoJapanese ? item.value("ja") : undefined;
       setStatus({ kind: "saving" });
       try {
-        const saved = expectOk(await item.save(lang, next));
+        const saved = expectOk(await item.save(forLang, next, japanese)) ?? null;
         setStatus({ kind: "saved", message: withJapaneseNote(description, saved ? saved.update : null) });
         undo.record({
           description,
           undo: async () => {
-            expectOk(await item.save(lang, previous, previousJapanese));
+            expectOk(await item.save(forLang, previous, previousJapanese));
             router.refresh();
           },
         });
         router.refresh();
         refreshPage();
+        return saved;
       } catch (e) {
         const message = e instanceof Error && e.message ? e.message : GENERIC_SAVE_ERROR;
         setStatus({ kind: "error", message });
@@ -264,14 +267,29 @@ export function PageCanvas({
           value={stored ?? ""}
           fallback={fallback}
           english={item.autoJapanese && lang === "ja" ? english : undefined}
-          note={item.autoJapanese ? (lang === "en" ? ENGLISH_EDIT_NOTE : JAPANESE_EDIT_NOTE) : undefined}
+          japanese={
+            followsEnglish
+              ? {
+                  value: item.value("ja") ?? "",
+                  max: item.max,
+                  onSave: async (fix) => {
+                    await saveIn("ja", fix);
+                  },
+                }
+              : undefined
+          }
+          note={item.autoJapanese && lang === "ja" ? JAPANESE_EDIT_NOTE : undefined}
           placeholder={item.placeholder}
           multiline={item.textKind === "body"}
           maxLength={item.max}
           required={item.required(lang)}
           emptyMessage={EMPTY_FIELD_MESSAGE}
           {...editProps(item.record, afterClose)}
-          onSave={save}
+          onSave={async (next, keepJapanese) => {
+            const saved = await saveIn(lang, next, keepJapanese ? item.value("ja") : undefined);
+            if (!followsEnglish) return;
+            return { english: next.trim(), japanese: saved?.japanese ?? null, update: saved?.update ?? null };
+          }}
         />
       </div>
     );
@@ -296,7 +314,7 @@ export function PageCanvas({
   }
 
   function renderField(fieldSpec: SiteTextField, afterClose?: () => void) {
-    const { current, changed, dictValue, value, fallback } = fieldText(fieldSpec);
+    const { current, changed, value, fallback } = fieldText(fieldSpec);
 
     const description = `Changed ${fieldSpec.label}.`;
 
@@ -322,20 +340,22 @@ export function PageCanvas({
       });
     }
 
-    async function save(next: string) {
+    async function saveIn(forLang: Locale, next: string, keepJapanese = false) {
       const trimmed = next.trim();
-      const toStore = trimmed === dictValue.trim() ? "" : trimmed;
+      const original = stringAt(forLang === "en" ? en : ja, fieldSpec.path);
+      const toStore = trimmed === original.trim() ? "" : trimmed;
       const before = current;
-      setOverrides(withOverride(fieldSpec.path, lang, toStore || null));
+      setOverrides(withOverride(fieldSpec.path, forLang, toStore || null));
       setStatus({ kind: "saving" });
       try {
-        const saved = expectOk(await updateSiteText(fieldSpec.path, lang, toStore));
+        const saved = expectOk(await updateSiteText(fieldSpec.path, forLang, toStore, keepJapanese));
         const after = { en: saved.en, ja: saved.ja };
         showWords(after);
         setStatus({ kind: "saved", message: withJapaneseNote(description, saved.japanese) });
         recordUndo(description, before, after);
         router.refresh();
         refreshPage();
+        return saved;
       } catch (e) {
         showWords(before);
         const message = e instanceof Error && e.message ? e.message : GENERIC_SAVE_ERROR;
@@ -377,16 +397,36 @@ export function PageCanvas({
             value={value}
             fallback={fallback}
             english={lang === "ja" ? current.en ?? stringAt(en, fieldSpec.path) : undefined}
-            note={lang === "en" ? ENGLISH_EDIT_NOTE : JAPANESE_EDIT_NOTE}
+            japanese={
+              lang === "en"
+                ? {
+                    value: current.ja ?? stringAt(ja, fieldSpec.path),
+                    max: fieldSpec.max,
+                    onSave: async (fix) => {
+                      await saveIn("ja", fix);
+                    },
+                  }
+                : undefined
+            }
+            note={lang === "ja" ? JAPANESE_EDIT_NOTE : undefined}
             multiline={fieldSpec.kind !== "heading"}
             maxLength={fieldSpec.max}
             required
             emptyMessage={EMPTY_FIELD_MESSAGE}
             {...editProps(fieldSpec.path, afterClose)}
-            onSave={save}
+            onReviewChange={(on) => setReviewing(on ? fieldSpec.path : null)}
+            onSave={async (next, keepJapanese) => {
+              const saved = await saveIn(lang, next, keepJapanese);
+              if (lang !== "en") return;
+              return {
+                english: (saved.en ?? stringAt(en, fieldSpec.path)).trim(),
+                japanese: (saved.ja ?? stringAt(ja, fieldSpec.path)).trim(),
+                update: saved.japanese,
+              };
+            }}
           />
         </div>
-        {changed && (
+        {changed && reviewing !== fieldSpec.path && (
           <button
             type="button"
             onClick={() => void reset()}
@@ -726,8 +766,15 @@ export function PageCanvas({
     return item.item.title;
   }
 
+  // `picked` holds the item as it was when tapped; a save since then has newer words.
+  function currentRecordWords(item: RecordWords): RecordWords {
+    const current = pageItems.get(`record:${item.record}`);
+    return current?.kind === "record" && current.item.kind === "recordWords" ? current.item : item;
+  }
+
   function closePicked() {
     editState.closeAll();
+    setReviewing(null);
     setPicked(null);
   }
 
@@ -844,7 +891,7 @@ export function PageCanvas({
                 ? renderField(item.field, closePicked)
                 : item.kind === "link"
                   ? renderLink(item.link, closePicked)
-                  : renderRecordWords(item.item, closePicked);
+                  : renderRecordWords(currentRecordWords(item.item), closePicked);
             if (picked.length === 1) return editor;
             return (
               <div key={editKeyOf(item)}>
@@ -885,6 +932,7 @@ export function PageCanvas({
         otherViews={otherViews}
         onClose={() => {
           editState.closeAll();
+          setReviewing(null);
           setMoreOpen(false);
         }}
       />

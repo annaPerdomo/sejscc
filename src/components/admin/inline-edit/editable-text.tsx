@@ -6,7 +6,14 @@ import { buttonClass } from "@/components/admin/admin-button";
 import { AdminCharacterCount } from "@/components/admin/admin-field";
 import { asOneParagraph, requiredMessage, tooLongMessage } from "@/lib/volunteer-fields";
 import { isImeComposing } from "./ime";
+import { JapaneseReview, type SavedWords } from "./japanese-review";
 import { useInlineEditFocus } from "./use-inline-edit-focus";
+
+export type JapaneseTwin = {
+  value: string;
+  max: number;
+  onSave: (next: string) => Promise<void>;
+};
 
 export function EditableText({
   label,
@@ -14,6 +21,7 @@ export function EditableText({
   value,
   fallback,
   english,
+  japanese,
   note,
   placeholder,
   focusKey,
@@ -27,6 +35,7 @@ export function EditableText({
   onClose,
   blocked,
   onDirtyChange,
+  onReviewChange,
 }: {
   label: string;
   /** Must match the server's wording so error messages are identical. */
@@ -34,6 +43,7 @@ export function EditableText({
   value: string;
   fallback?: string;
   english?: string;
+  japanese?: JapaneseTwin;
   note?: string;
   placeholder?: string;
   focusKey?: string;
@@ -41,12 +51,13 @@ export function EditableText({
   maxLength: number;
   required?: boolean;
   emptyMessage?: string;
-  onSave: (next: string) => Promise<void>;
+  onSave: (next: string, keepJapanese: boolean) => Promise<SavedWords | void>;
   isOpen: boolean;
   onOpen: () => void;
   onClose: () => void;
   blocked?: string;
   onDirtyChange?: (dirty: boolean) => void;
+  onReviewChange?: (reviewing: boolean) => void;
 }) {
   const textareaId = useId();
   const containerRef = useRef<HTMLSpanElement>(null);
@@ -55,10 +66,15 @@ export function EditableText({
   const [draft, setDraft] = useState(value);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [updateJapanese, setUpdateJapanese] = useState(true);
+  const [review, setReview] = useState<{ saved: SavedWords; kept: boolean } | null>(null);
 
   function openField() {
     setDraft(value);
     setError(null);
+    setUpdateJapanese(true);
+    setReview(null);
+    onReviewChange?.(false);
     onDirtyChange?.(false);
     onOpen();
   }
@@ -88,8 +104,15 @@ export function EditableText({
     setSaving(true);
     setError(null);
     try {
-      await onSave(draft);
-      onClose();
+      const keepJapanese = japanese !== undefined && !updateJapanese;
+      const saved = await onSave(draft, keepJapanese);
+      if (japanese && saved) {
+        setReview({ saved, kept: keepJapanese });
+        onReviewChange?.(true);
+        onDirtyChange?.(false);
+      } else {
+        onClose();
+      }
     } catch (e) {
       setError(
         e instanceof Error && e.message
@@ -149,6 +172,26 @@ export function EditableText({
     );
   }
 
+  if (review && japanese) {
+    return (
+      <span ref={containerRef} className="block">
+        <JapaneseReview
+          saved={review.saved}
+          kept={review.kept}
+          max={japanese.max}
+          onSaveJapanese={japanese.onSave}
+          onDirtyChange={onDirtyChange}
+          onDone={() => {
+            setReview(null);
+            onReviewChange?.(false);
+            onClose();
+          }}
+        />
+      </span>
+    );
+  }
+
+  const willRewrite = japanese !== undefined && updateJapanese;
   const englishReference = english || (value ? undefined : fallback);
   return (
     <span ref={containerRef} data-inline-edit-open className="block">
@@ -187,6 +230,32 @@ export function EditableText({
         </span>
       )}
       <AdminCharacterCount as="span" value={draft} max={maxLength} />
+      {japanese && (
+        <span className="mt-3 block rounded-lg bg-azure px-3 py-2 font-sans text-base font-normal tracking-normal text-ink">
+          <label className="flex min-h-12 cursor-pointer items-center gap-3 text-lg font-semibold">
+            <input
+              type="checkbox"
+              checked={updateJapanese}
+              disabled={saving}
+              onChange={(event) => setUpdateJapanese(event.target.checked)}
+              aria-describedby={`${textareaId}-japanese`}
+              className="size-7 shrink-0 accent-indigo-deep"
+            />
+            Update the Japanese page too
+          </label>
+          <span id={`${textareaId}-japanese`} className="block pb-1">
+            {updateJapanese ? (
+              "The Japanese is rewritten to match your English. It takes a few seconds, and you'll see it before you finish."
+            ) : japanese.value ? (
+              <>
+                The Japanese page will keep saying: <span lang="ja">{japanese.value}</span>
+              </>
+            ) : (
+              "The Japanese page will stay as it is."
+            )}
+          </span>
+        </span>
+      )}
       {error && (
         <span id={`${textareaId}-error`} role="alert" className="mt-1 block text-base font-medium text-magenta-deep">
           {error}
@@ -204,7 +273,7 @@ export function EditableText({
           aria-disabled={saving}
           className={`min-h-12 ${buttonClass("primary")}`}
         >
-          {saving ? "Saving…" : "Save"}
+          {saving ? (willRewrite ? "Saving and writing the Japanese…" : "Saving…") : "Save"}
         </button>
         <button
           type="button"
