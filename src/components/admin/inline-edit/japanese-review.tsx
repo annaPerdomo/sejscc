@@ -113,32 +113,34 @@ export function JapaneseReview({
 
   if (fixing) {
     return (
-      <span data-inline-edit-open className="block font-sans text-base font-normal tracking-normal text-ink">
-        <span className="block text-ink-soft">English: {saved.english}</span>
-        <label htmlFor={textareaId} className="mt-4 block font-display text-lg text-ink">
-          Japanese
-        </label>
-        <textarea
-          id={textareaId}
-          ref={textareaRef}
-          lang="ja"
-          value={draft}
-          maxLength={max}
-          readOnly={saving}
-          aria-busy={saving}
-          onChange={(event) => updateDraft(event.target.value)}
-          onKeyDown={handleKeyDown}
-          rows={3}
-          aria-describedby={error ? `${textareaId}-error` : undefined}
-          className="inline-edit-field field-sizing-content mt-2 text-lg"
-        />
-        <AdminCharacterCount as="span" value={draft} max={max} />
-        {error && (
-          <span id={`${textareaId}-error`} role="alert" className="mt-1 block font-medium text-magenta-deep">
-            {error}
-          </span>
-        )}
-        <span className="mt-4 flex flex-wrap gap-3">
+      <span data-inline-edit-open className="flex flex-col gap-4 font-sans text-base font-normal tracking-normal text-ink">
+        <span className="flex flex-col gap-2">
+          <label htmlFor={textareaId} className="font-display text-base font-semibold text-ink">
+            Japanese
+          </label>
+          <span className="text-ink-soft">English: {saved.english}</span>
+          <textarea
+            id={textareaId}
+            ref={textareaRef}
+            lang="ja"
+            value={draft}
+            maxLength={max}
+            readOnly={saving}
+            aria-busy={saving}
+            onChange={(event) => updateDraft(event.target.value)}
+            onKeyDown={handleKeyDown}
+            rows={3}
+            aria-describedby={error ? `${textareaId}-error` : undefined}
+            className="inline-edit-field field-sizing-content text-lg"
+          />
+          <AdminCharacterCount as="span" value={draft} max={max} className="ml-auto tabular-nums text-ink-soft" />
+          {error && (
+            <span id={`${textareaId}-error`} role="alert" className="font-medium text-magenta-deep">
+              {error}
+            </span>
+          )}
+        </span>
+        <span className="flex flex-wrap gap-3">
           <button
             type="button"
             onClick={() => void saveFix()}
@@ -173,20 +175,20 @@ export function JapaneseReview({
           ✓ Saved. It&rsquo;s on the website now.
         </span>
         <span className="mt-4 block font-display text-base font-semibold text-ink-soft">English</span>
-        <span className="mt-1 block rounded-lg bg-mist px-4 py-3 text-lg leading-relaxed">{saved.english}</span>
+        <span className="mt-1 block rounded-xl bg-mist px-4 py-3 text-lg leading-relaxed">{saved.english}</span>
         <span className="mt-4 block font-display text-base font-semibold text-ink-soft">
           {japaneseHeading(saved, kept, fixed)}
         </span>
         {notWritten && saved.update ? (
-          <span className="mt-1 block rounded-lg border border-gold bg-butter px-4 py-3 text-lg leading-relaxed">
+          <span className="mt-1 block rounded-xl border border-gold bg-butter px-4 py-3 text-lg leading-relaxed">
             {japaneseNote(saved.update)}
           </span>
         ) : japanese ? (
-          <span lang="ja" className="mt-1 block rounded-lg bg-azure px-4 py-3 text-lg leading-relaxed">
+          <span lang="ja" className="mt-1 block rounded-xl bg-azure px-4 py-3 text-lg leading-relaxed">
             {japanese}
           </span>
         ) : (
-          <span className="mt-1 block rounded-lg bg-mist px-4 py-3 text-lg leading-relaxed">
+          <span className="mt-1 block rounded-xl bg-mist px-4 py-3 text-lg leading-relaxed">
             No Japanese has been written here, so the Japanese page shows the English.
           </span>
         )}

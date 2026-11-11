@@ -85,6 +85,8 @@ const EMPTY_FIELD_MESSAGE =
 
 const NO_OVERRIDE: OverrideValue = { en: null, ja: null };
 
+const OPEN_TEXT_CLASS = "font-sans text-lg leading-normal text-ink";
+
 const KIND_TEXT_CLASS: Record<SiteTextField["kind"], string> = {
   heading: "font-display text-2xl text-ink",
   body: "text-lg leading-relaxed text-ink-soft",
@@ -258,11 +260,14 @@ export function PageCanvas({
     }
 
     const languageNote = item.shared ? "the same in English and Japanese" : lang === "en" ? "English" : "Japanese";
+    const open = editState.fieldProps(item.record).isOpen;
+    const inDialog = afterClose !== undefined;
     return (
-      <div key={item.record} className={KIND_TEXT_CLASS[item.textKind]}>
+      <div key={item.record} className={open ? OPEN_TEXT_CLASS : KIND_TEXT_CLASS[item.textKind]}>
         <EditableText
           key={`${item.record}-${lang}`}
           label={`${item.title} — ${languageNote}`}
+          openLabel={inDialog ? (item.shared ? "English and Japanese" : languageNote) : undefined}
           noun={item.title}
           value={stored ?? ""}
           fallback={fallback}
@@ -317,6 +322,8 @@ export function PageCanvas({
     const { current, changed, value, fallback } = fieldText(fieldSpec);
 
     const description = `Changed ${fieldSpec.label}.`;
+    const open = editState.fieldProps(fieldSpec.path).isOpen;
+    const inDialog = afterClose !== undefined;
 
     function showWords(words: OverrideValue) {
       setOverrides((all) => ({ ...all, [fieldSpec.path]: words }));
@@ -389,10 +396,11 @@ export function PageCanvas({
         key={fieldSpec.path}
         className="border-t border-line py-4 first:border-t-0 first:pt-0"
       >
-        <div className={KIND_TEXT_CLASS[fieldSpec.kind]}>
+        <div className={open ? OPEN_TEXT_CLASS : KIND_TEXT_CLASS[fieldSpec.kind]}>
           <EditableText
             key={`${fieldSpec.path}-${lang}`}
             label={`${fieldSpec.label} — ${lang === "en" ? "English" : "Japanese"}`}
+            openLabel={inDialog ? (lang === "en" ? "English" : "Japanese") : undefined}
             noun={fieldSpec.label}
             value={value}
             fallback={fallback}

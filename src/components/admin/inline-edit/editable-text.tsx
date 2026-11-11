@@ -9,6 +9,8 @@ import { isImeComposing } from "./ime";
 import { JapaneseReview, type SavedWords } from "./japanese-review";
 import { useInlineEditFocus } from "./use-inline-edit-focus";
 
+const PLAIN_TEXT = "font-sans text-base font-normal tracking-normal";
+
 export type JapaneseTwin = {
   value: string;
   max: number;
@@ -17,6 +19,7 @@ export type JapaneseTwin = {
 
 export function EditableText({
   label,
+  openLabel,
   noun,
   value,
   fallback,
@@ -38,6 +41,7 @@ export function EditableText({
   onReviewChange,
 }: {
   label: string;
+  openLabel?: string;
   /** Must match the server's wording so error messages are identical. */
   noun: string;
   value: string;
@@ -194,44 +198,46 @@ export function EditableText({
   const willRewrite = japanese !== undefined && updateJapanese;
   const englishReference = english || (value ? undefined : fallback);
   return (
-    <span ref={containerRef} data-inline-edit-open className="block">
-      <label htmlFor={textareaId} className="block font-display text-base text-ink">
-        {label}
-      </label>
-      {englishReference && (
-        <span className="mt-1 block text-base text-ink-soft">English: {englishReference}</span>
-      )}
-      <textarea
-        id={textareaId}
-        ref={textareaRef}
-        value={draft}
-        maxLength={maxLength}
-        readOnly={saving}
-        aria-busy={saving}
-        onChange={(event) => updateDraft(event.target.value)}
-        onKeyDown={handleKeyDown}
-        rows={multiline ? 4 : 1}
-        aria-describedby={
-          [multiline && `${textareaId}-hint`, note && `${textareaId}-note`, error && `${textareaId}-error`]
-            .filter(Boolean)
-            .join(" ") ||
-          undefined
-        }
-        className="inline-edit-field field-sizing-content mt-2"
-      />
-      {multiline && (
-        <span id={`${textareaId}-hint`} className="mt-1 block font-sans text-base font-normal tracking-normal text-ink-soft">
-          This box is one paragraph — the website doesn&rsquo;t keep line breaks.
+    <span ref={containerRef} data-inline-edit-open className="flex flex-col gap-4 text-left">
+      <span className="flex flex-col gap-2">
+        <label htmlFor={textareaId} className="font-display text-base font-semibold tracking-normal text-ink">
+          {openLabel ?? label}
+        </label>
+        {englishReference && <span className={`${PLAIN_TEXT} text-ink-soft`}>English: {englishReference}</span>}
+        <textarea
+          id={textareaId}
+          ref={textareaRef}
+          value={draft}
+          maxLength={maxLength}
+          readOnly={saving}
+          aria-busy={saving}
+          onChange={(event) => updateDraft(event.target.value)}
+          onKeyDown={handleKeyDown}
+          rows={multiline ? 4 : 1}
+          aria-describedby={
+            [multiline && `${textareaId}-hint`, note && `${textareaId}-note`, error && `${textareaId}-error`]
+              .filter(Boolean)
+              .join(" ") || undefined
+          }
+          className="inline-edit-field field-sizing-content"
+        />
+        <span className={`${PLAIN_TEXT} flex flex-wrap items-baseline gap-x-4 gap-y-1 text-ink-soft`}>
+          {multiline && <span id={`${textareaId}-hint`}>One paragraph — line breaks aren&rsquo;t kept.</span>}
+          <AdminCharacterCount as="span" value={draft} max={maxLength} className="ml-auto shrink-0 tabular-nums" />
         </span>
-      )}
+        {error && (
+          <span id={`${textareaId}-error`} role="alert" className={`${PLAIN_TEXT} font-medium text-magenta-deep`}>
+            {error}
+          </span>
+        )}
+      </span>
       {note && (
-        <span id={`${textareaId}-note`} className="mt-2 block rounded-lg bg-azure px-3 py-2 font-sans text-base font-normal tracking-normal text-ink">
+        <span id={`${textareaId}-note`} className={`${PLAIN_TEXT} rounded-xl bg-azure px-4 py-3 text-ink`}>
           {note}
         </span>
       )}
-      <AdminCharacterCount as="span" value={draft} max={maxLength} />
       {japanese && (
-        <span className="mt-3 block rounded-lg bg-azure px-3 py-2 font-sans text-base font-normal tracking-normal text-ink">
+        <span className={`${PLAIN_TEXT} rounded-xl bg-azure px-4 py-3 text-ink`}>
           <label className="flex min-h-12 cursor-pointer items-center gap-3 text-lg font-semibold">
             <input
               type="checkbox"
@@ -239,11 +245,11 @@ export function EditableText({
               disabled={saving}
               onChange={(event) => setUpdateJapanese(event.target.checked)}
               aria-describedby={`${textareaId}-japanese`}
-              className="size-7 shrink-0 accent-indigo-deep"
+              className="size-6 shrink-0 accent-indigo-deep"
             />
             Update the Japanese page too
           </label>
-          <span id={`${textareaId}-japanese`} className="block pb-1">
+          <span id={`${textareaId}-japanese`} className="block pb-1 pl-9 text-ink-soft">
             {updateJapanese ? (
               "The Japanese is rewritten to match your English. It takes a few seconds, and you'll see it before you finish."
             ) : japanese.value ? (
@@ -256,17 +262,12 @@ export function EditableText({
           </span>
         </span>
       )}
-      {error && (
-        <span id={`${textareaId}-error`} role="alert" className="mt-1 block text-base font-medium text-magenta-deep">
-          {error}
-        </span>
-      )}
       {blocked && (
-        <span role="alert" className="mt-3 block rounded-lg bg-cream px-3 py-2 font-sans text-base font-medium tracking-normal text-ink">
+        <span role="alert" className={`${PLAIN_TEXT} rounded-xl bg-cream px-4 py-3 font-medium text-ink`}>
           {blocked}
         </span>
       )}
-      <span className="mt-3 flex flex-wrap gap-3 font-sans text-base tracking-normal">
+      <span className={`${PLAIN_TEXT} flex flex-wrap gap-3`}>
         <button
           type="button"
           onClick={() => void handleSave()}
