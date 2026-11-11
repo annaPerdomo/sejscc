@@ -175,6 +175,43 @@ export function markPageEditTargets(doc: Document, targets: PageEditTarget[]): S
   return found;
 }
 
+export type PagePlace = {
+  anchors: { key: string; nth: number; top: number }[];
+  depth: number;
+};
+
+export function placeOnPage(doc: Document): PagePlace | null {
+  const view = doc.defaultView;
+  if (!view) return null;
+  const seen = new Map<string, number>();
+  const anchors: PagePlace["anchors"] = [];
+  for (const el of doc.querySelectorAll(`[${TARGET_ATTRIBUTE}]`)) {
+    const key = el.getAttribute(TARGET_ATTRIBUTE) ?? "";
+    const nth = seen.get(key) ?? 0;
+    seen.set(key, nth + 1);
+    const { top, bottom } = el.getBoundingClientRect();
+    // The header is pinned to the screen, so it says nothing about how far down the reader is.
+    if (bottom > 0 && top < view.innerHeight && !el.closest(SITE_CHROME)) anchors.push({ key, nth, top });
+  }
+  const scrollable = doc.documentElement.scrollHeight - view.innerHeight;
+  return { anchors, depth: scrollable > 0 ? view.scrollY / scrollable : 0 };
+}
+
+export function returnToPlace(doc: Document, place: PagePlace): void {
+  const view = doc.defaultView;
+  if (!view) return;
+  for (const { key, nth, top } of place.anchors) {
+    const el = doc.querySelectorAll(`[${TARGET_ATTRIBUTE}="${CSS.escape(key)}"]`)[nth];
+    if (!el) continue;
+    const now = el.getBoundingClientRect();
+    if (now.width === 0 && now.height === 0) continue;
+    view.scrollBy({ top: now.top - top, behavior: "instant" });
+    return;
+  }
+  const scrollable = doc.documentElement.scrollHeight - view.innerHeight;
+  view.scrollTo({ top: place.depth * scrollable, behavior: "instant" });
+}
+
 export function listenForPageEdits(doc: Document, onPick: (keys: string[]) => void): void {
   const view = doc.defaultView;
   if (!view) return;

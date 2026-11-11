@@ -144,7 +144,7 @@ export function PageCanvas({
     () => page.views.find((view) => view.id === initialView)?.id ?? page.views[0].id
   );
   const [status, setStatus] = useState<EditBarStatus>({ kind: "idle" });
-  const [reloadKey, setReloadKey] = useState(0);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [picked, setPicked] = useState<WordsItem[] | null>(null);
   const [pickedPhoto, setPickedPhoto] = useState<PhotoSlot | null>(null);
   const [photoGroup, setPhotoGroup] = useState<PhotoSlot[] | null>(null);
@@ -196,8 +196,8 @@ export function PageCanvas({
     return { ...overrides, [path]: { ...current, [forLang]: value } };
   }
 
-  function reloadPage() {
-    setReloadKey((k) => k + 1);
+  function refreshPage() {
+    setRefreshKey((k) => k + 1);
   }
 
   function fieldText(fieldSpec: SiteTextField) {
@@ -246,7 +246,7 @@ export function PageCanvas({
           },
         });
         router.refresh();
-        reloadPage();
+        refreshPage();
       } catch (e) {
         const message = e instanceof Error && e.message ? e.message : GENERIC_SAVE_ERROR;
         setStatus({ kind: "error", message });
@@ -288,7 +288,7 @@ export function PageCanvas({
           setStatus({ kind: "saved", message });
           undo.clear();
           router.refresh();
-          reloadPage();
+          refreshPage();
         }}
         onStatus={setStatus}
       />
@@ -335,7 +335,7 @@ export function PageCanvas({
         setStatus({ kind: "saved", message: withJapaneseNote(description, saved.japanese) });
         recordUndo(description, before, after);
         router.refresh();
-        reloadPage();
+        refreshPage();
       } catch (e) {
         showWords(before);
         const message = e instanceof Error && e.message ? e.message : GENERIC_SAVE_ERROR;
@@ -356,7 +356,7 @@ export function PageCanvas({
         setStatus({ kind: "saved", message: withJapaneseNote(resetDescription, saved.japanese) });
         recordUndo(resetDescription, before, after);
         router.refresh();
-        reloadPage();
+        refreshPage();
       } catch (e) {
         showWords(before);
         const message = e instanceof Error && e.message ? e.message : GENERIC_SAVE_ERROR;
@@ -430,7 +430,7 @@ export function PageCanvas({
           },
         });
         router.refresh();
-        reloadPage();
+        refreshPage();
       } catch (e) {
         setLinks((current) => ({ ...current, [link.id]: previous }));
         const errorMessage = e instanceof Error && e.message ? e.message : GENERIC_SAVE_ERROR;
@@ -475,7 +475,7 @@ export function PageCanvas({
     onTileChange(next);
     if (undoEntry) undo.record(undoEntry);
     else undo.clear();
-    reloadPage();
+    refreshPage();
     const slot = photoSlot(next.slot);
     const isNewPhoto = next.isChanged && next.current.src !== previous.current.src;
     const onPage = foundKeys?.has(`photo:${next.slot}`);
@@ -525,7 +525,7 @@ export function PageCanvas({
       flushSync(() => setFraming(null));
       setStatus({ kind: "saved", message: description });
       router.refresh();
-      reloadPage();
+      refreshPage();
     } catch (e) {
       const message = e instanceof Error && e.message ? e.message : GENERIC_SAVE_ERROR;
       setFraming((current) => current && { ...current, saving: false, error: message });
@@ -550,7 +550,7 @@ export function PageCanvas({
   async function onUndo() {
     const error = await undo.runUndo();
     setStatus(error ? { kind: "error", message: error } : { kind: "idle" });
-    reloadPage();
+    refreshPage();
     document.getElementById("admin-edit-bar")?.focus();
   }
 
@@ -738,7 +738,8 @@ export function PageCanvas({
       <PageEditor
         pageLabel={page.label}
         src={localizedHref(lang, currentView.href)}
-        reloadKey={reloadKey}
+        viewId={currentView.id}
+        refreshKey={refreshKey}
         targets={pageEditTargets}
         bar={
           <EditBar

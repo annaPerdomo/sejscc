@@ -2,13 +2,17 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { buttonClass } from "@/components/admin/admin-button";
+import { PREVIEW_REFRESH_EVENT, PREVIEW_SHOWN_EVENT, PREVIEW_SHOW_EVENT } from "@/lib/page-edit-preview";
 import type { PhotoFraming } from "@/lib/photo-framing";
 import { startPageFraming, type PageFramingSession } from "./page-edit-framing";
 import {
   listenForPageEdits,
   markPageEditTargets,
   PHOTO_LAYER_CLASS,
+  placeOnPage,
+  returnToPlace,
   showPhotoButtons,
+  type PagePlace,
   type PageEditTarget,
 } from "./page-edit-targets";
 
@@ -21,10 +25,20 @@ export type PageFraming = {
   bar: ReactNode;
 };
 
+function askPreview(frame: HTMLIFrameElement | null, name: string, detail?: string): boolean {
+  const doc = frame?.contentDocument;
+  const view = doc?.defaultView;
+  if (!doc || !view) return false;
+  // Built in the frame's own realm, or its `instanceof CustomEvent` check fails.
+  const event = new view.CustomEvent(name, { detail, cancelable: true });
+  return !doc.dispatchEvent(event);
+}
+
 export function PageEditor({
   pageLabel,
   src,
-  reloadKey,
+  viewId,
+  refreshKey,
   targets,
   bar,
   actions,
@@ -36,7 +50,8 @@ export function PageEditor({
 }: {
   pageLabel: string;
   src: string;
-  reloadKey: number;
+  viewId: string;
+  refreshKey: number;
   targets: PageEditTarget[];
   bar: ReactNode;
   actions: ReactNode;
@@ -54,10 +69,27 @@ export function PageEditor({
   const onFoundRef = useRef(onFound);
   const lastFound = useRef("");
   const scroll = useRef({ src, top: 0 });
+  const shown = useRef({ src, viewId, refreshKey });
+  const place = useRef<PagePlace | null>(null);
+  const [frame, setFrame] = useState({ src, load: 0 });
   const observerRef = useRef<MutationObserver | null>(null);
   const framingRef = useRef(framing);
   const sessionRef = useRef<PageFramingSession | null>(null);
   const [loadedKey, setLoadedKey] = useState<number | null>(null);
+
+  useEffect(() => {
+    const was = shown.current;
+    if (was.src === src && was.refreshKey === refreshKey) return;
+    shown.current = { src, viewId, refreshKey };
+    if (was.src === src) {
+      place.current = null;
+      if (!askPreview(frameRef.current, PREVIEW_REFRESH_EVENT)) setFrame((f) => ({ src, load: f.load + 1 }));
+      return;
+    }
+    const doc = frameRef.current?.contentDocument;
+    place.current = was.viewId === viewId && doc ? placeOnPage(doc) : null;
+    if (!askPreview(frameRef.current, PREVIEW_SHOW_EVENT, src)) setFrame((f) => ({ src, load: f.load + 1 }));
+  }, [src, viewId, refreshKey]);
 
   useEffect(() => {
     targetsRef.current = targets;
@@ -68,7 +100,7 @@ export function PageEditor({
   });
 
   const framingKey = framing?.key;
-  const loaded = loadedKey === reloadKey;
+  const loaded = loadedKey === frame.load;
   useEffect(() => {
     const doc = frameRef.current?.contentDocument;
     const active = framingRef.current;
@@ -110,16 +142,23 @@ export function PageEditor({
     const view = frameRef.current?.contentWindow;
     const doc = frameRef.current?.contentDocument;
     if (!view || !doc?.body) return;
-    setLoadedKey(reloadKey);
-
-    if (scroll.current.src === src) view.scrollTo({ top: scroll.current.top });
-    else scroll.current = { src, top: 0 };
-    view.addEventListener("scroll", () => {
-      scroll.current = { src, top: view.scrollY };
-    }, { passive: true });
+    setLoadedKey(frame.load);
 
     listenForPageEdits(doc, (keys) => onPickRef.current(keys));
     markTargets(doc);
+
+    // The place is kept, not used up: the page can report itself showing more than once per switch.
+    function returnReader() {
+      if (!doc || !place.current) return;
+      markTargets(doc);
+      returnToPlace(doc, place.current);
+    }
+    if (place.current) returnReader();
+    else if (scroll.current.src === frame.src) view.scrollTo({ top: scroll.current.top });
+    view.addEventListener("scroll", () => {
+      scroll.current = { src: shown.current.src, top: view.scrollY };
+    }, { passive: true });
+    doc.addEventListener(PREVIEW_SHOWN_EVENT, returnReader);
     showPhotoButtons(
       doc,
       (keys) => onPickRef.current(keys),
@@ -188,9 +227,9 @@ export function PageEditor({
         </>
       )}
       <iframe
-        key={reloadKey}
+        key={frame.load}
         ref={frameRef}
-        src={src}
+        src={frame.src}
         title={`The ${pageLabel}, ready to change`}
         onLoad={onFrameLoad}
         className="min-h-0 w-full flex-1 bg-paper"

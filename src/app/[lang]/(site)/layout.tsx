@@ -4,6 +4,7 @@ import { ExternalLink } from "@/components/external-link";
 import { LanguageToggle } from "@/components/language-toggle";
 import { MadeWithLove } from "@/components/made-with-love";
 import { MobileNav } from "@/components/mobile-nav";
+import { PageEditPreviewBridge } from "@/components/page-edit-preview-bridge";
 import { ScrollReset } from "@/components/scroll-reset";
 import { SiteLogo } from "@/components/site-logo";
 import { SiteNav } from "@/components/site-nav";
@@ -45,6 +46,7 @@ export default async function SiteLayout({
   return (
     <div className="flex min-h-screen flex-col">
       <ScrollReset />
+      <PageEditPreviewBridge />
       <div className="site-header sticky top-0 z-40">
         <div className="h-1 bg-gradient-to-r from-indigo via-sky via-60% to-magenta" />
         <div className="bg-navy">
