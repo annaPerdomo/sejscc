@@ -807,7 +807,10 @@ export function PageCanvas({
         onFound={setFoundKeys}
         onPick={pickOnPage}
         onFrame={frameFromPage}
-        onDone={() => router.push(ADMIN_PAGES.find((adminPage) => adminPage.id === page.id)?.hub ?? "/admin")}
+        onDone={() => {
+          const hub = ADMIN_PAGES.find((adminPage) => adminPage.id === page.id)?.hub;
+          router.push(hub && hub !== pathname ? hub : "/admin");
+        }}
       />
 
       {pickedPhoto && (
