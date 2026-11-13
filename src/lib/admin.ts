@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { allowedEmails, users } from "@/db/schema";
 import { SIGN_IN_AGAIN_MESSAGE } from "@/lib/admin-messages";
 import { AdminError } from "@/lib/action-result";
+import { isAdminRole } from "@/lib/format";
 
 // A JWT session outlives removal and carries a stale role, so access is
 // re-read here rather than trusted from the cookie.
@@ -27,7 +28,7 @@ export async function requireUser() {
 
 export async function requireAdmin() {
   const user = await requireUser();
-  if (user.role !== "admin") {
+  if (!isAdminRole(user.role)) {
     throw new AdminError("Only administrators can manage who has access.");
   }
   return user;

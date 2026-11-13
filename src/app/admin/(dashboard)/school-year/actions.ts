@@ -6,6 +6,7 @@ import { schoolYearEvents, type SchoolYearEvent } from "@/db/schema";
 import { AdminError, runAction, type ActionResult } from "@/lib/action-result";
 import { requireUser, revalidateSite } from "@/lib/admin";
 import { deleteBlobIfUnused } from "@/lib/blob-cleanup";
+import { trackChange } from "@/lib/change-log";
 import { slugify } from "@/lib/format";
 import type { Locale } from "@/lib/i18n";
 import {
@@ -201,19 +202,19 @@ export async function createSchoolYearEvent(
   photoUrl: string | null
 ): Promise<ActionResult<{ id: string; japanese: JapaneseUpdate | null }>> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
     const checkedPhotoUrl = checkedBlobImageUrl(photoUrl);
     const { values, update } = await withEventJapanese(eventValues(input, checkedPhotoUrl !== null));
     const key = await uniqueKey(values.title);
     const sortOrder = await nextSortOrder();
 
-    const [row] = await db
-      .insert(schoolYearEvents)
-      .values({ ...values, key, photoUrl: checkedPhotoUrl, sortOrder })
-      .returning({ id: schoolYearEvents.id });
+    const id = crypto.randomUUID();
+    await trackChange(editor, "schoolYearEvent", id, () =>
+      db.insert(schoolYearEvents).values({ ...values, key, photoUrl: checkedPhotoUrl, sortOrder, id })
+    );
 
     revalidateSite();
-    return { id: row.id, japanese: update };
+    return { id, japanese: update };
   });
 }
 
@@ -223,7 +224,7 @@ export async function updateSchoolYearEvent(
   photoUrl: PhotoUrlInput
 ): Promise<ActionResult<{ japanese: JapaneseUpdate | null }>> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
     const [existing] = await db.select().from(schoolYearEvents).where(eq(schoolYearEvents.id, id));
     if (!existing) throw new AdminError(NOT_FOUND_MESSAGE);
 
@@ -231,10 +232,12 @@ export async function updateSchoolYearEvent(
       photoUrl === "unchanged" ? existing.photoUrl : checkedBlobImageUrl(photoUrl);
     const { values, update } = await withEventJapanese(eventValues(input, nextPhotoUrl !== null), existing);
 
-    await db
-      .update(schoolYearEvents)
-      .set({ ...values, photoUrl: nextPhotoUrl })
-      .where(eq(schoolYearEvents.id, id));
+    await trackChange(editor, "schoolYearEvent", id, () =>
+      db
+        .update(schoolYearEvents)
+        .set({ ...values, photoUrl: nextPhotoUrl })
+        .where(eq(schoolYearEvents.id, id))
+    );
 
     if (existing.photoUrl && existing.photoUrl !== nextPhotoUrl) {
       await deleteBlobIfUnused(existing.photoUrl);
@@ -247,11 +250,13 @@ export async function updateSchoolYearEvent(
 
 export async function deleteSchoolYearEvent(id: string): Promise<ActionResult> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
     const [existing] = await db.select().from(schoolYearEvents).where(eq(schoolYearEvents.id, id));
     if (!existing) return;
 
-    await db.delete(schoolYearEvents).where(eq(schoolYearEvents.id, id));
+    await trackChange(editor, "schoolYearEvent", id, () =>
+      db.delete(schoolYearEvents).where(eq(schoolYearEvents.id, id))
+    );
     await deleteBlobIfUnused(existing.photoUrl);
 
     revalidateSite();
@@ -263,12 +268,14 @@ export async function setSchoolYearEventVisible(
   visible: boolean
 ): Promise<ActionResult> {
   return runAction(async () => {
-    await requireUser();
-    const result = await db
-      .update(schoolYearEvents)
-      .set({ visible })
-      .where(eq(schoolYearEvents.id, id))
-      .returning({ id: schoolYearEvents.id });
+    const editor = await requireUser();
+    const result = await trackChange(editor, "schoolYearEvent", id, () =>
+      db
+        .update(schoolYearEvents)
+        .set({ visible })
+        .where(eq(schoolYearEvents.id, id))
+        .returning({ id: schoolYearEvents.id })
+    );
     if (result.length === 0) throw new AdminError(NOT_FOUND_MESSAGE);
 
     revalidateSite();
@@ -301,7 +308,7 @@ export async function updateSchoolYearEventText(input: {
   japanese?: string | null;
 }): Promise<ActionResult<FollowedJapanese>> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
     if (!Object.hasOwn(TEXT_FIELDS, input.field)) {
       throw new AdminError("That part of the event can't be changed here.");
     }
@@ -317,10 +324,12 @@ export async function updateSchoolYearEventText(input: {
     if (english && !value) throw new AdminError(`Please enter the ${spec.noun}.`);
 
     if (!english || input.field === "termJa") {
-      await db
-        .update(schoolYearEvents)
-        .set({ [spec.ja]: value || null })
-        .where(eq(schoolYearEvents.id, input.id));
+      await trackChange(editor, "schoolYearEvent", input.id, () =>
+        db
+          .update(schoolYearEvents)
+          .set({ [spec.ja]: value || null })
+          .where(eq(schoolYearEvents.id, input.id))
+      );
       revalidateSite();
       return { japanese: value || null, update: null };
     }
@@ -334,10 +343,12 @@ export async function updateSchoolYearEventText(input: {
       },
       input.japanese
     );
-    await db
-      .update(schoolYearEvents)
-      .set({ [input.field]: value, [spec.ja]: followed.japanese })
-      .where(eq(schoolYearEvents.id, input.id));
+    await trackChange(editor, "schoolYearEvent", input.id, () =>
+      db
+        .update(schoolYearEvents)
+        .set({ [input.field]: value, [spec.ja]: followed.japanese })
+        .where(eq(schoolYearEvents.id, input.id))
+    );
     revalidateSite();
     return followed;
   });
@@ -350,7 +361,7 @@ export async function updateSchoolYearEventPhoto(input: {
   altJa: string;
 }): Promise<ActionResult<FollowedJapanese>> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
     const existing = await existingEvent(input.id);
     const photoUrl = input.url === "unchanged" ? existing.photoUrl : checkedBlobImageUrl(input.url);
     if (!photoUrl) throw new AdminError("That photo didn't upload correctly. Please try again.");
@@ -368,10 +379,12 @@ export async function updateSchoolYearEventPhoto(input: {
       saved: { english: existing.photoAlt || null, japanese: existing.photoAltJa },
     });
 
-    await db
-      .update(schoolYearEvents)
-      .set({ photoUrl, photoAlt, photoAltJa: followed.japanese })
-      .where(eq(schoolYearEvents.id, input.id));
+    await trackChange(editor, "schoolYearEvent", input.id, () =>
+      db
+        .update(schoolYearEvents)
+        .set({ photoUrl, photoAlt, photoAltJa: followed.japanese })
+        .where(eq(schoolYearEvents.id, input.id))
+    );
     if (existing.photoUrl !== photoUrl) await deleteBlobIfUnused(existing.photoUrl);
     revalidateSite();
     return followed;

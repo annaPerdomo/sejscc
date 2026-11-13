@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { groups, weekDays, type GroupStatus, type WeekDay } from "@/db/schema";
 import { AdminError, runAction, type ActionResult } from "@/lib/action-result";
 import { requireUser, revalidateSite } from "@/lib/admin";
+import { trackChange, trackOrder } from "@/lib/change-log";
 import { MAX_GROUP_PHOTOS } from "@/lib/groups";
 import {
   normalizeContactEmail,
@@ -78,25 +79,30 @@ async function deleteImages(urls: string[]) {
 
 export async function createGroup(input: GroupInput): Promise<ActionResult> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
     const slug = `${slugify(input.name) || "group"}-${crypto
       .randomUUID()
       .slice(0, 6)}`;
     const existing = await db.select({ sortOrder: groups.sortOrder }).from(groups);
     const sortOrder =
       existing.reduce((max, row) => Math.max(max, row.sortOrder), -1) + 1;
-    await db.insert(groups).values({ ...groupValues(input), slug, sortOrder });
+    const id = crypto.randomUUID();
+    await trackChange(editor, "group", id, () =>
+      db.insert(groups).values({ ...groupValues(input), id, slug, sortOrder })
+    );
     revalidateSite();
   });
 }
 
 export async function updateGroup(id: string, input: GroupInput): Promise<ActionResult> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
     const [existing] = await db.select().from(groups).where(eq(groups.id, id));
     if (!existing) throw new AdminError("Group not found.");
     const values = groupValues(input);
-    await db.update(groups).set(values).where(eq(groups.id, id));
+    await trackChange(editor, "group", id, () =>
+      db.update(groups).set(values).where(eq(groups.id, id))
+    );
 
     const kept = new Set([values.imageUrl, ...values.photoUrls]);
     await deleteImages(
@@ -111,10 +117,10 @@ export async function updateGroup(id: string, input: GroupInput): Promise<Action
 
 export async function deleteGroup(id: string): Promise<ActionResult> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
     const [existing] = await db.select().from(groups).where(eq(groups.id, id));
     if (!existing) return;
-    await db.delete(groups).where(eq(groups.id, id));
+    await trackChange(editor, "group", id, () => db.delete(groups).where(eq(groups.id, id)));
 
     await deleteImages(
       [existing.imageUrl, ...existing.photoUrls].filter(
@@ -132,7 +138,7 @@ export async function reorderGroups(
   orderedIds: string[]
 ): Promise<ActionResult<ReorderResult>> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
     const existing = await db
       .select({ id: groups.id, sortOrder: groups.sortOrder })
       .from(groups);
@@ -158,7 +164,7 @@ export async function reorderGroups(
       db.update(groups).set({ sortOrder: index }).where(eq(groups.id, id))
     );
     if (!firstUpdate) return { ok: true };
-    await db.batch([firstUpdate, ...restUpdates]);
+    await trackOrder(editor, "group", () => db.batch([firstUpdate, ...restUpdates]));
 
     revalidateSite();
     return { ok: true };
@@ -185,15 +191,17 @@ function checkedGroupText(field: GroupTextField, raw: string): string | null {
 
 export async function updateGroupText(id: string, field: GroupTextField, value: string): Promise<ActionResult> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
     if (!["name", "nameJa", "meetingSchedule", "description", "contactEmail"].includes(field)) {
       throw new AdminError("That part of the group can't be changed here.");
     }
-    const result = await db
-      .update(groups)
-      .set({ [field]: checkedGroupText(field, value) })
-      .where(eq(groups.id, id))
-      .returning({ id: groups.id });
+    const result = await trackChange(editor, "group", id, () =>
+      db
+        .update(groups)
+        .set({ [field]: checkedGroupText(field, value) })
+        .where(eq(groups.id, id))
+        .returning({ id: groups.id })
+    );
     if (result.length === 0) throw new AdminError("Group not found.");
     revalidateSite();
   });

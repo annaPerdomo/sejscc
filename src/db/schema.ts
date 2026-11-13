@@ -1,6 +1,8 @@
 import {
   boolean,
+  index,
   integer,
+  jsonb,
   pgTable,
   primaryKey,
   text,
@@ -20,7 +22,7 @@ export const users = pgTable("user", {
   email: text("email").unique().notNull(),
   emailVerified: timestamp("email_verified", { mode: "date" }),
   image: text("image"),
-  role: text("role", { enum: ["admin", "editor"] })
+  role: text("role", { enum: ["owner", "admin", "editor"] })
     .notNull()
     .default("editor"),
 });
@@ -320,3 +322,28 @@ export const sitePhotos = pgTable("site_photo", {
     .defaultNow()
     .$onUpdate(() => new Date()),
 });
+
+export const changeActions = ["added", "changed", "removed", "reordered"] as const;
+
+// Who and when are copied, not referenced: removing a volunteer keeps their history.
+export const changeLog = pgTable(
+  "change_log",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    changedAt: timestamp("changed_at", { mode: "date" }).notNull().defaultNow(),
+    editorEmail: text("editor_email"),
+    editorName: text("editor_name"),
+    kind: text("kind").notNull(),
+    recordId: text("record_id").notNull(),
+    label: text("label").notNull(),
+    action: text("action", { enum: changeActions }).notNull(),
+    before: jsonb("before").$type<Record<string, unknown>>(),
+    after: jsonb("after").$type<Record<string, unknown>>(),
+  },
+  (table) => [index("change_log_changed_at_idx").on(table.changedAt)]
+);
+
+export type ChangeLogEntry = typeof changeLog.$inferSelect;
+export type ChangeAction = (typeof changeActions)[number];

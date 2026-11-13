@@ -2,9 +2,10 @@
 
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { allowedEmails, verificationTokens } from "@/db/schema";
+import { allowedEmails, users, verificationTokens } from "@/db/schema";
 import { AdminError, runAction, type ActionResult } from "@/lib/action-result";
 import { requireAdmin } from "@/lib/admin";
+import { trackChange } from "@/lib/change-log";
 
 // The form caps this too, but the column is unbounded text and a server
 // action can be called directly, so the ceiling has to be enforced here.
@@ -14,7 +15,7 @@ export async function addAllowedEmail(
   raw: string
 ): Promise<ActionResult<{ email: string; alreadyListed: boolean }>> {
   return runAction(async () => {
-    await requireAdmin();
+    const admin = await requireAdmin();
     const email = raw.trim().toLowerCase();
     if (
       email.length > MAX_EMAIL_LENGTH ||
@@ -24,11 +25,9 @@ export async function addAllowedEmail(
         "That doesn’t look like an email address. It should be something like name@example.org."
       );
     }
-    const [inserted] = await db
-      .insert(allowedEmails)
-      .values({ email })
-      .onConflictDoNothing()
-      .returning();
+    const [inserted] = await trackChange(admin, "signInAccess", email, () =>
+      db.insert(allowedEmails).values({ email }).onConflictDoNothing().returning()
+    );
     return { email, alreadyListed: !inserted };
   });
 }
@@ -39,7 +38,16 @@ export async function removeAllowedEmail(email: string): Promise<ActionResult> {
     if (email.trim().toLowerCase() === admin.email?.trim().toLowerCase()) {
       throw new AdminError("You can’t remove your own access.");
     }
-    await db.delete(allowedEmails).where(eq(allowedEmails.email, email));
+    const [target] = await db
+      .select({ role: users.role })
+      .from(users)
+      .where(eq(users.email, email.trim().toLowerCase()));
+    if (target?.role === "owner" && admin.role !== "owner") {
+      throw new AdminError("Only the site owner can remove the site owner’s access.");
+    }
+    await trackChange(admin, "signInAccess", email, () =>
+      db.delete(allowedEmails).where(eq(allowedEmails.email, email))
+    );
     // Nothing cascades to verification_token. src/auth.ts already rejects a
     // pending link on redeem; this keeps none stored for a revoked address.
     await db

@@ -6,29 +6,29 @@ import { SITE_SETTINGS_ID, siteSettings } from "@/db/schema";
 import { AdminError, runAction, type ActionResult } from "@/lib/action-result";
 import { requireAdmin, requireUser, revalidateSite } from "@/lib/admin";
 import { CENTER_ADDRESS, CENTER_EMAIL, CENTER_PHONE } from "@/lib/center";
+import { trackChange, type Editor } from "@/lib/change-log";
 import { normalizeContactEmail, wallClockNow } from "@/lib/format";
 import { japaneseFollowingEnglish, type JapaneseUpdate } from "@/lib/japanese-drafts";
 import { normalizeContactLinkUrl, tooLongMessage } from "@/lib/volunteer-fields";
 import { youtubeVideoId } from "@/lib/video";
 
-async function upsertSiteSettings(set: Partial<typeof siteSettings.$inferInsert>) {
-  await db
-    .insert(siteSettings)
-    .values({ id: SITE_SETTINGS_ID, ...set })
-    .onConflictDoUpdate({ target: siteSettings.id, set });
+async function upsertSiteSettings(
+  editor: Editor,
+  set: Partial<typeof siteSettings.$inferInsert>
+) {
+  await trackChange(editor, "siteSettings", SITE_SETTINGS_ID, () =>
+    db
+      .insert(siteSettings)
+      .values({ id: SITE_SETTINGS_ID, ...set })
+      .onConflictDoUpdate({ target: siteSettings.id, set })
+  );
 }
 
 export async function updateAccessRequestEmail(raw: string): Promise<ActionResult<string | null>> {
   return runAction(async () => {
-    await requireAdmin();
+    const editor = await requireAdmin();
     const email = normalizeContactEmail(raw);
-    await db
-      .insert(siteSettings)
-      .values({ id: SITE_SETTINGS_ID, accessRequestEmail: email })
-      .onConflictDoUpdate({
-        target: siteSettings.id,
-        set: { accessRequestEmail: email },
-      });
+    await upsertSiteSettings(editor, { accessRequestEmail: email });
     return email;
   });
 }
@@ -37,7 +37,7 @@ const MAX_ABOUT_VIDEOS = 6;
 
 export async function updateAboutVideoUrls(raw: string): Promise<ActionResult<string[]>> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
     const lines = raw
       .split("\n")
       .map((line) => line.trim())
@@ -57,13 +57,7 @@ export async function updateAboutVideoUrls(raw: string): Promise<ActionResult<st
       return `https://www.youtube.com/watch?v=${videoId}`;
     });
 
-    await db
-      .insert(siteSettings)
-      .values({ id: SITE_SETTINGS_ID, aboutVideoUrls: urls })
-      .onConflictDoUpdate({
-        target: siteSettings.id,
-        set: { aboutVideoUrls: urls },
-      });
+    await upsertSiteSettings(editor, { aboutVideoUrls: urls });
     revalidateSite();
     return urls;
   });
@@ -101,8 +95,8 @@ export async function updateContactDetails(
   input: ContactDetailsInput
 ): Promise<ActionResult> {
   return runAction(async () => {
-    await requireUser();
-    await upsertSiteSettings({
+    const editor = await requireUser();
+    await upsertSiteSettings(editor, {
       address: checkedAddress(input.address),
       phone: checkedPhone(input.phone),
       email: checkedEmail(input.email),
@@ -116,9 +110,9 @@ export async function updateContactField(
   value: string
 ): Promise<ActionResult> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
     if (!Object.hasOwn(CONTACT_CHECKS, field)) throw new AdminError("That contact detail doesn't exist.");
-    await upsertSiteSettings({ [field]: CONTACT_CHECKS[field](value) });
+    await upsertSiteSettings(editor, { [field]: CONTACT_CHECKS[field](value) });
     revalidateSite();
   });
 }
@@ -169,8 +163,8 @@ export async function updateDonationDetails(
   input: DonationDetailsInput
 ): Promise<ActionResult> {
   return runAction(async () => {
-    await requireUser();
-    await upsertSiteSettings({
+    const editor = await requireUser();
+    await upsertSiteSettings(editor, {
       zelleRecipient: checkedDonationText("zelleRecipient", input.zelleRecipient),
       checkPayee: checkedDonationText("checkPayee", input.checkPayee),
       checkAddress: checkedDonationText("checkAddress", input.checkAddress),
@@ -185,9 +179,9 @@ export async function updateDonationField(
   value: string
 ): Promise<ActionResult> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
     if (!Object.hasOwn(DONATION_TEXT_LIMITS, field)) throw new AdminError("That donation detail doesn't exist.");
-    await upsertSiteSettings({ [field]: checkedDonationText(field, value) });
+    await upsertSiteSettings(editor, { [field]: checkedDonationText(field, value) });
     revalidateSite();
   });
 }
@@ -226,11 +220,11 @@ export async function updateAnnouncement(
   input: AnnouncementInput
 ): Promise<ActionResult<{ textJa: string | null; japanese: JapaneseUpdate | null }>> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
 
     const text = input.text.trim();
     if (!text) {
-      await upsertSiteSettings({
+      await upsertSiteSettings(editor, {
         announcementText: null,
         announcementTextJa: null,
         announcementUrl: null,
@@ -271,7 +265,7 @@ export async function updateAnnouncement(
       saved: saved ?? { english: null, japanese: null },
     });
 
-    await upsertSiteSettings({
+    await upsertSiteSettings(editor, {
       announcementText: text,
       announcementTextJa: textJa,
       announcementUrl: url,

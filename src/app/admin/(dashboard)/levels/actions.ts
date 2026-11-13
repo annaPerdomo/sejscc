@@ -11,6 +11,7 @@ import {
 import { AdminError, runAction, type ActionResult } from "@/lib/action-result";
 import { requireUser, revalidateSite } from "@/lib/admin";
 import { deleteBlobIfUnused } from "@/lib/blob-cleanup";
+import { trackChange, trackOrder } from "@/lib/change-log";
 import type { Locale } from "@/lib/i18n";
 import {
   draftJapanese,
@@ -205,18 +206,18 @@ export async function createSchoolLevel(
   photoUrl: string | null
 ): Promise<ActionResult<{ id: string; japanese: JapaneseUpdate | null }>> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
     const checkedPhotoUrl = checkedBlobImageUrl(photoUrl);
     const { values, update } = await withLevelJapanese(levelValues(input, checkedPhotoUrl !== null));
     const sortOrder = await nextSortOrder();
 
-    const [row] = await db
-      .insert(schoolLevels)
-      .values({ ...values, photoUrl: checkedPhotoUrl, sortOrder })
-      .returning({ id: schoolLevels.id });
+    const id = crypto.randomUUID();
+    await trackChange(editor, "schoolLevel", id, () =>
+      db.insert(schoolLevels).values({ ...values, photoUrl: checkedPhotoUrl, sortOrder, id })
+    );
 
     revalidateSite();
-    return { id: row.id, japanese: update };
+    return { id, japanese: update };
   });
 }
 
@@ -226,7 +227,7 @@ export async function updateSchoolLevel(
   photoUrl: PhotoUrlInput
 ): Promise<ActionResult<{ japanese: JapaneseUpdate | null }>> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
     const [existing] = await db.select().from(schoolLevels).where(eq(schoolLevels.id, id));
     if (!existing) throw new AdminError(NOT_FOUND_MESSAGE);
 
@@ -234,10 +235,12 @@ export async function updateSchoolLevel(
       photoUrl === "unchanged" ? existing.photoUrl : checkedBlobImageUrl(photoUrl);
     const { values, update } = await withLevelJapanese(levelValues(input, nextPhotoUrl !== null), existing);
 
-    await db
-      .update(schoolLevels)
-      .set({ ...values, photoUrl: nextPhotoUrl })
-      .where(eq(schoolLevels.id, id));
+    await trackChange(editor, "schoolLevel", id, () =>
+      db
+        .update(schoolLevels)
+        .set({ ...values, photoUrl: nextPhotoUrl })
+        .where(eq(schoolLevels.id, id))
+    );
 
     if (existing.photoUrl && existing.photoUrl !== nextPhotoUrl) {
       await deleteBlobIfUnused(existing.photoUrl);
@@ -250,11 +253,13 @@ export async function updateSchoolLevel(
 
 export async function deleteSchoolLevel(id: string): Promise<ActionResult> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
     const [existing] = await db.select().from(schoolLevels).where(eq(schoolLevels.id, id));
     if (!existing) return;
 
-    await db.delete(schoolLevels).where(eq(schoolLevels.id, id));
+    await trackChange(editor, "schoolLevel", id, () =>
+      db.delete(schoolLevels).where(eq(schoolLevels.id, id))
+    );
     await deleteBlobIfUnused(existing.photoUrl);
 
     revalidateSite();
@@ -266,12 +271,14 @@ export async function setSchoolLevelVisible(
   visible: boolean
 ): Promise<ActionResult> {
   return runAction(async () => {
-    await requireUser();
-    const result = await db
-      .update(schoolLevels)
-      .set({ visible })
-      .where(eq(schoolLevels.id, id))
-      .returning({ id: schoolLevels.id });
+    const editor = await requireUser();
+    const result = await trackChange(editor, "schoolLevel", id, () =>
+      db
+        .update(schoolLevels)
+        .set({ visible })
+        .where(eq(schoolLevels.id, id))
+        .returning({ id: schoolLevels.id })
+    );
     if (result.length === 0) throw new AdminError(NOT_FOUND_MESSAGE);
 
     revalidateSite();
@@ -284,7 +291,7 @@ export async function reorderSchoolLevels(
   orderedIds: string[]
 ): Promise<ActionResult<ReorderResult>> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
     const existing = await db
       .select({ id: schoolLevels.id, sortOrder: schoolLevels.sortOrder })
       .from(schoolLevels);
@@ -306,7 +313,7 @@ export async function reorderSchoolLevels(
       db.update(schoolLevels).set({ sortOrder: index }).where(eq(schoolLevels.id, id))
     );
     if (!firstUpdate) return { ok: true };
-    await db.batch([firstUpdate, ...restUpdates]);
+    await trackOrder(editor, "schoolLevel", () => db.batch([firstUpdate, ...restUpdates]));
 
     revalidateSite();
     return { ok: true };
@@ -341,7 +348,7 @@ export async function updateSchoolLevelText(input: {
   japanese?: string | null;
 }): Promise<ActionResult<FollowedJapanese>> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
     if (!Object.hasOwn(LEVEL_TEXT_FIELDS, input.field)) {
       throw new AdminError("That part of the class can't be changed here.");
     }
@@ -357,10 +364,12 @@ export async function updateSchoolLevelText(input: {
     if (required && !value) throw new AdminError(`Please enter a ${spec.noun} for this class.`);
 
     if (lang === "ja" || spec.en === spec.ja) {
-      await db
-        .update(schoolLevels)
-        .set({ [spec.ja]: value || null })
-        .where(eq(schoolLevels.id, input.id));
+      await trackChange(editor, "schoolLevel", input.id, () =>
+        db
+          .update(schoolLevels)
+          .set({ [spec.ja]: value || null })
+          .where(eq(schoolLevels.id, input.id))
+      );
       revalidateSite();
       return { japanese: value || null, update: null };
     }
@@ -374,10 +383,12 @@ export async function updateSchoolLevelText(input: {
       },
       input.japanese
     );
-    await db
-      .update(schoolLevels)
-      .set({ [spec.en]: value, [spec.ja]: followed.japanese })
-      .where(eq(schoolLevels.id, input.id));
+    await trackChange(editor, "schoolLevel", input.id, () =>
+      db
+        .update(schoolLevels)
+        .set({ [spec.en]: value, [spec.ja]: followed.japanese })
+        .where(eq(schoolLevels.id, input.id))
+    );
     revalidateSite();
     return followed;
   });
@@ -402,7 +413,7 @@ export async function updateSchoolLevelPoint(input: {
   japanese?: string | null;
 }): Promise<ActionResult<FollowedJapanese>> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
     const lang = checkedLang(input.lang);
     const existing = await existingLevel(input.id);
     if (!Number.isInteger(input.index) || input.index < 0 || input.index >= existing.points.length) {
@@ -423,7 +434,9 @@ export async function updateSchoolLevelPoint(input: {
         input.japanese === undefined
           ? await pointsFollowingEnglish(points, existing.pointsJa, existing)
           : { pointsJa: restoredPointsJa(existing, input.index, input.japanese), update: null };
-      await db.update(schoolLevels).set({ points, pointsJa }).where(eq(schoolLevels.id, input.id));
+      await trackChange(editor, "schoolLevel", input.id, () =>
+        db.update(schoolLevels).set({ points, pointsJa }).where(eq(schoolLevels.id, input.id))
+      );
       revalidateSite();
       return { japanese: pointsJa[input.index] ?? null, update };
     }
@@ -431,7 +444,9 @@ export async function updateSchoolLevelPoint(input: {
     const base = existing.pointsJa.length > 0 ? existing.pointsJa : existing.points;
     const translated = base.map((point, i) => (i === input.index ? value || existing.points[i] : point));
     const pointsJa = translated.every((point, i) => point === existing.points[i]) ? [] : translated;
-    await db.update(schoolLevels).set({ pointsJa }).where(eq(schoolLevels.id, input.id));
+    await trackChange(editor, "schoolLevel", input.id, () =>
+      db.update(schoolLevels).set({ pointsJa }).where(eq(schoolLevels.id, input.id))
+    );
     revalidateSite();
     return { japanese: pointsJa[input.index] ?? null, update: null };
   });
@@ -444,7 +459,7 @@ export async function updateSchoolLevelPhoto(input: {
   altJa: string;
 }): Promise<ActionResult<FollowedJapanese>> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
     const existing = await existingLevel(input.id);
     const photoUrl = input.url === "unchanged" ? existing.photoUrl : checkedBlobImageUrl(input.url);
     if (!photoUrl) throw new AdminError("That photo didn't upload correctly. Please try again.");
@@ -462,10 +477,12 @@ export async function updateSchoolLevelPhoto(input: {
       saved: { english: existing.photoAlt || null, japanese: existing.photoAltJa },
     });
 
-    await db
-      .update(schoolLevels)
-      .set({ photoUrl, photoAlt, photoAltJa: followed.japanese })
-      .where(eq(schoolLevels.id, input.id));
+    await trackChange(editor, "schoolLevel", input.id, () =>
+      db
+        .update(schoolLevels)
+        .set({ photoUrl, photoAlt, photoAltJa: followed.japanese })
+        .where(eq(schoolLevels.id, input.id))
+    );
     if (existing.photoUrl !== photoUrl) await deleteBlobIfUnused(existing.photoUrl);
     revalidateSite();
     return followed;

@@ -6,6 +6,7 @@ import { db } from "@/db";
 import { users } from "@/db/schema";
 import { AdminError, runAction, type ActionResult } from "@/lib/action-result";
 import { requireUser } from "@/lib/admin";
+import { trackChange } from "@/lib/change-log";
 
 export async function updateProfileName(name: string): Promise<ActionResult> {
   return runAction(async () => {
@@ -15,7 +16,9 @@ export async function updateProfileName(name: string): Promise<ActionResult> {
     if (trimmed.length > 100) {
       throw new AdminError("That name is too long. Please use 100 characters or fewer.");
     }
-    await db.update(users).set({ name: trimmed }).where(eq(users.id, user.id));
+    await trackChange(user, "profile", user.id, () =>
+      db.update(users).set({ name: trimmed }).where(eq(users.id, user.id))
+    );
     await unstable_update({ user: { name: trimmed } });
   });
 }

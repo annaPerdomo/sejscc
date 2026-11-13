@@ -9,6 +9,7 @@ import { AdminUserIdentity } from "@/components/admin/admin-user-identity";
 import { ADMIN_PAGES } from "@/components/admin/admin-pages";
 import { ADMIN_TUTORIAL_URL } from "@/components/admin/admin-tutorial";
 import type { UserRole } from "@/db/schema";
+import { isAdminRole } from "@/lib/format";
 import { signOutAction } from "./sign-out-action";
 
 type NavItem = {
@@ -16,6 +17,7 @@ type NavItem = {
   label: string;
   surface?: string;
   adminOnly?: boolean;
+  ownerOnly?: boolean;
   alsoActiveFor?: string[];
   external?: boolean;
 };
@@ -55,6 +57,7 @@ const NAV_GROUPS: NavGroup[] = [
     heading: "Admin only",
     items: [
       { href: "/admin/volunteers", label: "Who can sign in", adminOnly: true },
+      { href: "/admin/history", label: "Change history", ownerOnly: true },
     ],
   },
 ];
@@ -139,7 +142,11 @@ export function AdminSidebar({
       >
         <nav aria-label="Admin sections" className="flex flex-col pt-2">
           {NAV_GROUPS.map((group, index) => {
-            const items = group.items.filter((item) => !item.adminOnly || user.role === "admin");
+            const items = group.items.filter(
+              (item) =>
+                (!item.adminOnly || isAdminRole(user.role)) &&
+                (!item.ownerOnly || user.role === "owner")
+            );
             if (items.length === 0) return null;
             const headingId = `${navGroupBaseId}-${index}`;
             return (

@@ -12,6 +12,7 @@ import {
 } from "@/db/schema";
 import { AdminError, runAction, type ActionResult } from "@/lib/action-result";
 import { requireUser, revalidateSite } from "@/lib/admin";
+import { trackChange } from "@/lib/change-log";
 import {
   EVENT_DESCRIPTION_MAX,
   EVENT_LOCATION_MAX,
@@ -158,18 +159,23 @@ export async function createEvent(input: EventInput): Promise<ActionResult> {
     const slug = `${slugify(input.title) || "event"}-${crypto
       .randomUUID()
       .slice(0, 6)}`;
-    await db.insert(events).values({ ...eventValues(input, user.id), slug });
+    const id = crypto.randomUUID();
+    await trackChange(user, "event", id, () =>
+      db.insert(events).values({ ...eventValues(input, user.id), id, slug })
+    );
     revalidateSite();
   });
 }
 
 export async function updateEvent(id: string, input: EventInput): Promise<ActionResult> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
     const [existing] = await db.select().from(events).where(eq(events.id, id));
     if (!existing) throw new AdminError("Event not found.");
     const values = eventValues(input);
-    await db.update(events).set(values).where(eq(events.id, id));
+    await trackChange(editor, "event", id, () =>
+      db.update(events).set(values).where(eq(events.id, id))
+    );
 
     // Best-effort cleanup of flyers this update dropped or replaced.
     const kept = new Set([
@@ -196,10 +202,10 @@ export async function updateEvent(id: string, input: EventInput): Promise<Action
 
 export async function deleteEvent(id: string): Promise<ActionResult> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
     const [existing] = await db.select().from(events).where(eq(events.id, id));
     if (!existing) return;
-    await db.delete(events).where(eq(events.id, id));
+    await trackChange(editor, "event", id, () => db.delete(events).where(eq(events.id, id)));
 
     // Best-effort cleanup of uploaded flyers; the event row is already gone.
     const blobs = blobUrls([
@@ -341,18 +347,16 @@ export async function updateEventText(
   value: string
 ): Promise<ActionResult> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
     const update =
       field === "title"
         ? { title: checkedTitle(value) }
         : field === "description"
           ? { description: checkedDescription(value) }
           : { location: checkedLocation(value) };
-    const result = await db
-      .update(events)
-      .set(update)
-      .where(eq(events.id, id))
-      .returning({ id: events.id });
+    const result = await trackChange(editor, "event", id, () =>
+      db.update(events).set(update).where(eq(events.id, id)).returning({ id: events.id })
+    );
     if (result.length === 0) throw new AdminError("That event no longer exists. Please reload the page.");
     revalidateSite();
   });

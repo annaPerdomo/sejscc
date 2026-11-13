@@ -7,6 +7,7 @@ import type { SectionTextField } from "@/components/volunteer-section";
 import { AdminError, runAction, type ActionResult } from "@/lib/action-result";
 import { requireUser, revalidateSite } from "@/lib/admin";
 import { deleteBlobIfUnused } from "@/lib/blob-cleanup";
+import { trackChange, trackOrder } from "@/lib/change-log";
 import type { Locale } from "@/lib/i18n";
 import { followEnglishOrRestore, type FollowedJapanese } from "@/lib/japanese-drafts";
 import { checkedBlobImageUrl } from "@/lib/uploads";
@@ -120,7 +121,7 @@ export async function updateSectionText(
   japanese?: string | null
 ): Promise<ActionResult<FollowedJapanese>> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
 
     if (!isSectionTextField(field)) {
       throw new AdminError("That field doesn't exist.");
@@ -148,10 +149,12 @@ export async function updateSectionText(
         ? { ...sectionTextPatch(field, "en", trimmed), ...sectionTextPatch(field, "ja", followed.japanese) }
         : sectionTextPatch(field, "ja", followed.japanese);
 
-    await db
-      .update(volunteerSection)
-      .set(patch as Partial<typeof volunteerSection.$inferInsert>)
-      .where(eq(volunteerSection.id, VOLUNTEER_SECTION_ID));
+    await trackChange(editor, "volunteerSection", VOLUNTEER_SECTION_ID, () =>
+      db
+        .update(volunteerSection)
+        .set(patch as Partial<typeof volunteerSection.$inferInsert>)
+        .where(eq(volunteerSection.id, VOLUNTEER_SECTION_ID))
+    );
 
     revalidateSite();
     return followed;
@@ -165,7 +168,7 @@ export async function updateContactLink(
   japanese?: string | null
 ): Promise<ActionResult<FollowedJapanese>> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
 
     if (lang !== "en" && lang !== "ja") {
       throw new AdminError("That language isn't supported.");
@@ -180,14 +183,16 @@ export async function updateContactLink(
         ? await sectionJapanese(spec, trimmed, undefined, japanese)
         : { japanese: trimmed || null, update: null };
 
-    await db
-      .update(volunteerSection)
-      .set(
-        lang === "en"
-          ? { contactLinkLabel: trimmed, contactLinkLabelJa: followed.japanese, contactLinkUrl }
-          : { contactLinkLabelJa: followed.japanese, contactLinkUrl }
-      )
-      .where(eq(volunteerSection.id, VOLUNTEER_SECTION_ID));
+    await trackChange(editor, "volunteerSection", VOLUNTEER_SECTION_ID, () =>
+      db
+        .update(volunteerSection)
+        .set(
+          lang === "en"
+            ? { contactLinkLabel: trimmed, contactLinkLabelJa: followed.japanese, contactLinkUrl }
+            : { contactLinkLabelJa: followed.japanese, contactLinkUrl }
+        )
+        .where(eq(volunteerSection.id, VOLUNTEER_SECTION_ID))
+    );
 
     revalidateSite();
     return followed;
@@ -200,7 +205,7 @@ export async function updateSectionPhoto(input: {
   photoAltJa: string;
 }): Promise<ActionResult<FollowedJapanese>> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
 
     // Required even with no custom photo, since the bundled fallback still
     // needs alt text for visitors who can't see it.
@@ -219,10 +224,12 @@ export async function updateSectionPhoto(input: {
 
     const followed = await sectionJapanese(PHOTO_ALT_COLUMNS, photoAlt.en, photoAlt.ja);
 
-    await db
-      .update(volunteerSection)
-      .set({ photoUrl, photoAlt: photoAlt.en, photoAltJa: followed.japanese })
-      .where(eq(volunteerSection.id, VOLUNTEER_SECTION_ID));
+    await trackChange(editor, "volunteerSection", VOLUNTEER_SECTION_ID, () =>
+      db
+        .update(volunteerSection)
+        .set({ photoUrl, photoAlt: photoAlt.en, photoAltJa: followed.japanese })
+        .where(eq(volunteerSection.id, VOLUNTEER_SECTION_ID))
+    );
 
     if (existing?.photoUrl && existing.photoUrl !== photoUrl) {
       await deleteBlobIfUnused(existing.photoUrl);
@@ -241,7 +248,7 @@ export async function updateMemberFields(
   roleJapanese?: string | null
 ): Promise<ActionResult<FollowedJapanese>> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
 
     if (lang !== "en" && lang !== "ja") throw new AdminError("That language isn't supported.");
 
@@ -272,10 +279,12 @@ export async function updateMemberFields(
     const rolePatch =
       lang === "en" ? { role, roleJa: followed.japanese } : memberTextPatch("role", lang, role);
 
-    await db
-      .update(boardMembers)
-      .set({ ...namePatch, ...rolePatch } as Partial<typeof boardMembers.$inferInsert>)
-      .where(eq(boardMembers.id, id));
+    await trackChange(editor, "boardMember", id, () =>
+      db
+        .update(boardMembers)
+        .set({ ...namePatch, ...rolePatch } as Partial<typeof boardMembers.$inferInsert>)
+        .where(eq(boardMembers.id, id))
+    );
 
     revalidateSite();
     return followed;
@@ -287,7 +296,7 @@ export async function updateMemberPhoto(
   photoUrl: string | null
 ): Promise<ActionResult<FollowedJapanese>> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
 
     const [existing] = await db
       .select({ photoUrl: boardMembers.photoUrl })
@@ -296,7 +305,9 @@ export async function updateMemberPhoto(
     if (!existing) throw new AdminError(NOT_FOUND_MESSAGE);
 
     const checkedUrl = checkedBlobImageUrl(photoUrl);
-    await db.update(boardMembers).set({ photoUrl: checkedUrl }).where(eq(boardMembers.id, id));
+    await trackChange(editor, "boardMember", id, () =>
+      db.update(boardMembers).set({ photoUrl: checkedUrl }).where(eq(boardMembers.id, id))
+    );
 
     if (existing.photoUrl && existing.photoUrl !== checkedUrl) {
       await deleteBlobIfUnused(existing.photoUrl);
@@ -309,33 +320,35 @@ export async function updateMemberPhoto(
 
 export async function addBoardMember(name: string): Promise<ActionResult<{ id: string }>> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
 
     const trimmed = name.trim();
     const { label, max } = MEMBER_TEXT_FIELDS.name;
     validateText("en", label, max, true, trimmed);
 
     const sortOrder = await nextSortOrder(boardMembers);
-    const [row] = await db
-      .insert(boardMembers)
-      .values({ name: trimmed, sortOrder })
-      .returning({ id: boardMembers.id });
+    const id = crypto.randomUUID();
+    await trackChange(editor, "boardMember", id, () =>
+      db.insert(boardMembers).values({ id, name: trimmed, sortOrder })
+    );
 
     revalidateSite();
-    return { id: row.id };
+    return { id };
   });
 }
 
 export async function deleteBoardMember(id: string): Promise<ActionResult> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
     const [existing] = await db
       .select()
       .from(boardMembers)
       .where(eq(boardMembers.id, id));
     if (!existing) throw new AdminError(NOT_FOUND_MESSAGE);
 
-    await db.delete(boardMembers).where(eq(boardMembers.id, id));
+    await trackChange(editor, "boardMember", id, () =>
+      db.delete(boardMembers).where(eq(boardMembers.id, id))
+    );
     await deleteBlobIfUnused(existing.photoUrl);
 
     revalidateSite();
@@ -347,12 +360,10 @@ export async function setBoardMemberVisible(
   visible: boolean
 ): Promise<ActionResult> {
   return runAction(async () => {
-    await requireUser();
-    const result = await db
-      .update(boardMembers)
-      .set({ visible })
-      .where(eq(boardMembers.id, id))
-      .returning({ id: boardMembers.id });
+    const editor = await requireUser();
+    const result = await trackChange(editor, "boardMember", id, () =>
+      db.update(boardMembers).set({ visible }).where(eq(boardMembers.id, id)).returning({ id: boardMembers.id })
+    );
     if (result.length === 0) throw new AdminError(NOT_FOUND_MESSAGE);
 
     revalidateSite();
@@ -361,7 +372,7 @@ export async function setBoardMemberVisible(
 
 export async function reorderBoardMembers(orderedIds: string[]): Promise<ActionResult> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
     const existing = await db.select({ id: boardMembers.id }).from(boardMembers);
     const ids = checkedOrder(
       orderedIds,
@@ -372,7 +383,7 @@ export async function reorderBoardMembers(orderedIds: string[]): Promise<ActionR
       db.update(boardMembers).set({ sortOrder: index }).where(eq(boardMembers.id, id))
     );
     if (!firstUpdate) return;
-    await db.batch([firstUpdate, ...restUpdates]);
+    await trackOrder(editor, "boardMember", () => db.batch([firstUpdate, ...restUpdates]));
 
     revalidateSite();
   });
@@ -384,7 +395,7 @@ export async function updateContactLinkLabel(
   japanese?: string | null
 ): Promise<ActionResult<FollowedJapanese>> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
     if (lang !== "en" && lang !== "ja") throw new AdminError("That language isn't supported.");
     const spec = SECTION_TEXT_FIELDS.contactLinkLabel;
     const trimmed = asOneParagraph(label).trim();
@@ -393,14 +404,16 @@ export async function updateContactLinkLabel(
       lang === "en"
         ? await sectionJapanese(spec, trimmed, undefined, japanese)
         : { japanese: trimmed || null, update: null };
-    await db
-      .update(volunteerSection)
-      .set(
-        lang === "en"
-          ? { contactLinkLabel: trimmed, contactLinkLabelJa: followed.japanese }
-          : { contactLinkLabelJa: followed.japanese }
-      )
-      .where(eq(volunteerSection.id, VOLUNTEER_SECTION_ID));
+    await trackChange(editor, "volunteerSection", VOLUNTEER_SECTION_ID, () =>
+      db
+        .update(volunteerSection)
+        .set(
+          lang === "en"
+            ? { contactLinkLabel: trimmed, contactLinkLabelJa: followed.japanese }
+            : { contactLinkLabelJa: followed.japanese }
+        )
+        .where(eq(volunteerSection.id, VOLUNTEER_SECTION_ID))
+    );
     revalidateSite();
     return followed;
   });
@@ -411,13 +424,15 @@ export async function updateSectionPhotoDescription(
   photoAltJa: string
 ): Promise<ActionResult<FollowedJapanese>> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
     const alt = requiredField(photoAlt, photoAltJa, "photo description", LONG_MAX);
     const followed = await sectionJapanese(PHOTO_ALT_COLUMNS, alt.en, alt.ja);
-    await db
-      .update(volunteerSection)
-      .set({ photoAlt: alt.en, photoAltJa: followed.japanese })
-      .where(eq(volunteerSection.id, VOLUNTEER_SECTION_ID));
+    await trackChange(editor, "volunteerSection", VOLUNTEER_SECTION_ID, () =>
+      db
+        .update(volunteerSection)
+        .set({ photoAlt: alt.en, photoAltJa: followed.japanese })
+        .where(eq(volunteerSection.id, VOLUNTEER_SECTION_ID))
+    );
     revalidateSite();
     return followed;
   });

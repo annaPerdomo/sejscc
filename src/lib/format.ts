@@ -204,7 +204,12 @@ export function normalizeContactEmail(raw: string): string | null {
   return trimmed;
 }
 
+export function isAdminRole(role: UserRole): boolean {
+  return role === "owner" || role === "admin";
+}
+
 export const ROLE_LABELS: Record<UserRole, string> = {
+  owner: "Site owner",
   admin: "Administrator",
   editor: "Volunteer",
 };

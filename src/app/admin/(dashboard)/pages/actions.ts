@@ -7,6 +7,7 @@ import { SITE_SETTINGS_ID, sitePhotos, siteSettings, siteText } from "@/db/schem
 import { AdminError, runAction, type ActionResult } from "@/lib/action-result";
 import { requireUser, revalidateSite } from "@/lib/admin";
 import { deleteBlobIfUnused } from "@/lib/blob-cleanup";
+import { trackChange, type Editor } from "@/lib/change-log";
 import { getBaseDictionaryFor } from "@/lib/dictionaries";
 import { getImageSize } from "@/lib/image-size";
 import type { Locale } from "@/lib/i18n";
@@ -54,21 +55,27 @@ async function savedSiteText(path: string): Promise<SiteTextPair> {
   return { en: existing?.en ?? null, ja: existing?.ja ?? null };
 }
 
-async function setSiteTextColumns(path: string, values: Partial<SiteTextPair>): Promise<SiteTextPair> {
+async function setSiteTextColumns(
+  editor: Editor,
+  path: string,
+  values: Partial<SiteTextPair>
+): Promise<SiteTextPair> {
   const saved = await savedSiteText(path);
   const next = {
     en: values.en === undefined ? saved.en : values.en,
     ja: values.ja === undefined ? saved.ja : values.ja,
   };
 
-  if (next.en === null && next.ja === null) {
-    await db.delete(siteText).where(eq(siteText.path, path));
-  } else {
-    await db
-      .insert(siteText)
-      .values({ path, ...next })
-      .onConflictDoUpdate({ target: siteText.path, set: next });
-  }
+  await trackChange(editor, "siteText", path, async () => {
+    if (next.en === null && next.ja === null) {
+      await db.delete(siteText).where(eq(siteText.path, path));
+    } else {
+      await db
+        .insert(siteText)
+        .values({ path, ...next })
+        .onConflictDoUpdate({ target: siteText.path, set: next });
+    }
+  });
   return next;
 }
 
@@ -85,7 +92,7 @@ export async function updateSiteText(
   keepJapanese = false
 ): Promise<ActionResult<SavedSiteText>> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
 
     const fieldSpec = await checkedSiteTextField(path);
     const checked = checkedLang(lang);
@@ -97,31 +104,31 @@ export async function updateSiteText(
 
     if (checked === "ja") {
       const ja = trimmed ? await withOriginalSpacing(path, "ja", trimmed) : null;
-      const next = await setSiteTextColumns(path, { ja });
+      const next = await setSiteTextColumns(editor, path, { ja });
       revalidateSite();
       return { ...next, japanese: null };
     }
 
     if (!trimmed && keepJapanese) {
-      const next = await setSiteTextColumns(path, { en: null });
+      const next = await setSiteTextColumns(editor, path, { en: null });
       revalidateSite();
       return { ...next, japanese: null };
     }
-    if (!trimmed) return putBackOriginalEnglish(path);
+    if (!trimmed) return putBackOriginalEnglish(editor, path);
 
     const english = await withOriginalSpacing(path, "en", trimmed);
     const saved = await savedSiteText(path);
     const japaneseWasWritten = saved.ja !== null && saved.ja !== saved.en;
     if (keepJapanese) {
       const showsEnglish = saved.ja !== null && saved.ja === saved.en;
-      const next = await setSiteTextColumns(path, { en: english, ja: showsEnglish ? english : undefined });
+      const next = await setSiteTextColumns(editor, path, { en: english, ja: showsEnglish ? english : undefined });
       revalidateSite();
       return { ...next, japanese: null };
     }
     if (saved.en === english && japaneseWasWritten) return { ...saved, japanese: null };
 
     const { text, update } = await japaneseForEnglish(path, english, fieldSpec.max);
-    const next = await setSiteTextColumns(path, { en: english, ja: text });
+    const next = await setSiteTextColumns(editor, path, { en: english, ja: text });
     revalidateSite();
     return { ...next, japanese: update };
   });
@@ -129,7 +136,7 @@ export async function updateSiteText(
 
 export async function restoreSiteText(path: string, words: SiteTextPair): Promise<ActionResult> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
 
     const fieldSpec = await checkedSiteTextField(path);
     const checkedWords = (raw: string | null) => {
@@ -142,7 +149,7 @@ export async function restoreSiteText(path: string, words: SiteTextPair): Promis
     const en = checkedWords(words.en);
     const ja = checkedWords(words.ja);
 
-    await setSiteTextColumns(path, {
+    await setSiteTextColumns(editor, path, {
       en: en && (await withOriginalSpacing(path, "en", en)),
       ja: ja && (await withOriginalSpacing(path, "ja", ja)),
     });
@@ -171,55 +178,57 @@ async function japaneseForEnglish(
 }
 
 // Without an English override, a Japanese override is a person's fix to the original wording.
-async function putBackOriginalEnglish(path: string): Promise<SavedSiteText> {
+async function putBackOriginalEnglish(editor: Editor, path: string): Promise<SavedSiteText> {
   const saved = await savedSiteText(path);
   if (saved.en === null) return { ...saved, japanese: null };
-  const next = await setSiteTextColumns(path, { en: null, ja: null });
+  const next = await setSiteTextColumns(editor, path, { en: null, ja: null });
   revalidateSite();
   return { ...next, japanese: null };
 }
 
 export async function resetSiteText(path: string, lang: Locale): Promise<ActionResult<SavedSiteText>> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
 
     const fieldSpec = await checkedSiteTextField(path);
     const checked = checkedLang(lang);
 
-    if (checked === "en") return putBackOriginalEnglish(path);
+    if (checked === "en") return putBackOriginalEnglish(editor, path);
 
     const saved = await savedSiteText(path);
     const japanese = saved.en ? await japaneseForEnglish(path, saved.en, fieldSpec.max) : null;
-    const next = await setSiteTextColumns(path, { ja: japanese?.text ?? null });
+    const next = await setSiteTextColumns(editor, path, { ja: japanese?.text ?? null });
     revalidateSite();
     return { ...next, japanese: japanese?.update ?? null };
   });
 }
 
-async function setSiteLink(id: string, url: string | null): Promise<void> {
+async function setSiteLink(editor: Editor, id: string, url: string | null): Promise<void> {
   const link = siteLink(id);
   if (!link) throw new AdminError(NOT_REGISTERED_LINK_MESSAGE);
   const set = { [link.column]: url };
-  await db
-    .insert(siteSettings)
-    .values({ id: SITE_SETTINGS_ID, ...set })
-    .onConflictDoUpdate({ target: siteSettings.id, set });
+  await trackChange(editor, "siteSettings", SITE_SETTINGS_ID, () =>
+    db
+      .insert(siteSettings)
+      .values({ id: SITE_SETTINGS_ID, ...set })
+      .onConflictDoUpdate({ target: siteSettings.id, set })
+  );
   revalidateSite();
 }
 
 export async function updateSiteLink(id: string, url: string): Promise<ActionResult> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
     const normalized = normalizeSiteLinkUrl(url);
     if (!normalized) throw new AdminError("Please paste the form's web address, or press Cancel to keep the current link.");
-    await setSiteLink(id, normalized);
+    await setSiteLink(editor, id, normalized);
   });
 }
 
 export async function resetSiteLink(id: string): Promise<ActionResult> {
   return runAction(async () => {
-    await requireUser();
-    await setSiteLink(id, null);
+    const editor = await requireUser();
+    await setSiteLink(editor, id, null);
   });
 }
 
@@ -286,7 +295,7 @@ export async function updateSitePhoto(input: {
   framing: PhotoFraming;
 }): Promise<ActionResult<FollowedJapanese>> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
     const slot = checkedSlot(input.slot);
     const url = checkedBlobImageUrl(input.url);
     if (!url) throw new AdminError("That photo didn't upload correctly. Please try again.");
@@ -306,10 +315,12 @@ export async function updateSitePhoto(input: {
       ...framing,
     };
 
-    await db
-      .insert(sitePhotos)
-      .values({ slot: slot.id, ...set })
-      .onConflictDoUpdate({ target: sitePhotos.slot, set });
+    await trackChange(editor, "sitePhoto", slot.id, () =>
+      db
+        .insert(sitePhotos)
+        .values({ slot: slot.id, ...set })
+        .onConflictDoUpdate({ target: sitePhotos.slot, set })
+    );
 
     if (existing && existing.url !== url) {
       await deleteBlobIfUnused(existing.url);
@@ -327,7 +338,7 @@ export async function updateSitePhotoDetails(input: {
   framing: PhotoFraming;
 }): Promise<ActionResult<FollowedJapanese>> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
     const slot = checkedSlot(input.slot);
     const alt = checkedAlt(input.alt, slot);
     const framing = framingToRow(checkedFraming(input.framing));
@@ -337,10 +348,9 @@ export async function updateSitePhotoDetails(input: {
     const followed = await altJaFollowingEnglish(alt, input.altJa, existing);
     const altJa = followed.japanese;
 
-    await db
-      .update(sitePhotos)
-      .set({ alt, altJa, ...framing })
-      .where(eq(sitePhotos.slot, slot.id));
+    await trackChange(editor, "sitePhoto", slot.id, () =>
+      db.update(sitePhotos).set({ alt, altJa, ...framing }).where(eq(sitePhotos.slot, slot.id))
+    );
     revalidateSite();
     return followed;
   });
@@ -351,7 +361,7 @@ export async function updateOriginalPhotoFraming(input: {
   framing: PhotoFraming;
 }): Promise<ActionResult> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
     const slot = checkedSlot(input.slot);
     if (slot.framable === false) throw new AdminError("This photo always shows in full.");
     const framing = framingToRow(checkedFraming(input.framing));
@@ -362,23 +372,27 @@ export async function updateOriginalPhotoFraming(input: {
     }
 
     const set = { url: ORIGINAL_PHOTO_URL, alt: "", altJa: null, width: null, height: null, ...framing };
-    await db
-      .insert(sitePhotos)
-      .values({ slot: slot.id, ...set })
-      .onConflictDoUpdate({ target: sitePhotos.slot, set });
+    await trackChange(editor, "sitePhoto", slot.id, () =>
+      db
+        .insert(sitePhotos)
+        .values({ slot: slot.id, ...set })
+        .onConflictDoUpdate({ target: sitePhotos.slot, set })
+    );
     revalidateSite();
   });
 }
 
 export async function resetSitePhoto(slotId: string): Promise<ActionResult> {
   return runAction(async () => {
-    await requireUser();
+    const editor = await requireUser();
     const slot = checkedSlot(slotId);
 
     const [existing] = await db.select().from(sitePhotos).where(eq(sitePhotos.slot, slot.id));
     if (!existing) return;
 
-    await db.delete(sitePhotos).where(eq(sitePhotos.slot, slot.id));
+    await trackChange(editor, "sitePhoto", slot.id, () =>
+      db.delete(sitePhotos).where(eq(sitePhotos.slot, slot.id))
+    );
     await deleteBlobIfUnused(existing.url);
 
     revalidateSite();

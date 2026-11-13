@@ -6,7 +6,7 @@ import { AdminCard, AdminEmptyState } from "@/components/admin/admin-card";
 import { ConfirmDeleteButton } from "@/components/admin/confirm-delete-button";
 import { getCurrentUser } from "@/lib/admin";
 import { getSiteSettings } from "@/lib/site-settings";
-import { ROLE_LABELS } from "@/lib/format";
+import { ROLE_LABELS, isAdminRole } from "@/lib/format";
 import { AccessRequestEmailForm } from "./access-request-email-form";
 import { AddVolunteerForm } from "./add-volunteer-form";
 import { removeAllowedEmail } from "./actions";
@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 
 export default async function VolunteersPage() {
   const user = await getCurrentUser();
-  if (user?.role !== "admin") redirect("/admin");
+  if (!user || !isAdminRole(user.role)) redirect("/admin");
   const currentEmail = user.email?.trim().toLowerCase();
 
   const [allowed, accounts, settings] = await Promise.all([
@@ -70,12 +70,12 @@ export default async function VolunteersPage() {
                         <span className="text-sm font-medium text-stone">
                           That’s you
                         </span>
-                      ) : (
+                      ) : account?.role === "owner" && user.role !== "owner" ? null : (
                         <ConfirmDeleteButton
                           action={removeAllowedEmail.bind(null, row.email)}
                           label="Remove"
                           prompt={
-                            account?.role === "admin"
+                            account && isAdminRole(account.role)
                               ? "Remove this administrator’s access?"
                               : "Remove this person’s access?"
                           }
