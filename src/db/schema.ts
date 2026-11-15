@@ -12,6 +12,7 @@ import type { AdapterAccountType } from "next-auth/adapters";
 // Relative, not "@/": drizzle-kit loads this file outside Next's path aliases.
 import { CENTER_ADDRESS } from "../lib/center";
 import { FLYER_LAYOUTS } from "../lib/flyer-layouts";
+import { PHOTO_FITS } from "../lib/photo-framing";
 
 // The four tables below are shaped by @auth/drizzle-adapter, not by us.
 export const users = pgTable("user", {
@@ -318,6 +319,8 @@ export const sitePhotos = pgTable("site_photo", {
   focusX: integer("focus_x"),
   focusY: integer("focus_y"),
   zoom: integer("zoom"),
+  // Null fills the spot, cropping what doesn't fit.
+  fit: text("fit", { enum: PHOTO_FITS }),
   updatedAt: timestamp("updated_at", { mode: "date" })
     .notNull()
     .defaultNow()

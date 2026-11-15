@@ -12,7 +12,10 @@ export function PhotoFrame({
 }) {
   if (!framing) return children;
   return (
-    <div className="photo-frame" style={framingStyle(framing)}>
+    <div
+      className={`photo-frame ${framing.fit === "whole" ? "photo-frame-whole" : ""}`}
+      style={framingStyle(framing)}
+    >
       {children}
     </div>
   );

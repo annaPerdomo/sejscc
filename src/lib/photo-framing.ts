@@ -1,23 +1,35 @@
 import type { CSSProperties } from "react";
 
-export type PhotoFraming = { x: number; y: number; zoom: number };
+export const PHOTO_FITS = ["fill", "whole"] as const;
+export type PhotoFit = (typeof PHOTO_FITS)[number];
+
+export type PhotoFraming = { x: number; y: number; zoom: number; fit: PhotoFit };
 
 // A site_photo row with this address keeps the spot's own photo and only
 // stores how it is framed, so renaming a bundled photo can't orphan it.
 export const ORIGINAL_PHOTO_URL = "";
 
+// Marks a slide that sits in its own box inside a stage of slides, so the
+// admin's framing tool hides the stage's other slides, not just the box's.
+export const PHOTO_SLIDE_ATTRIBUTE = "data-photo-slide";
+
 export const ZOOM_MIN = 100;
 export const ZOOM_MAX = 300;
 export const ZOOM_STEP = 10;
 
-export const DEFAULT_FRAMING: PhotoFraming = { x: 50, y: 50, zoom: ZOOM_MIN };
-
-export function isDefaultFraming(framing: PhotoFraming): boolean {
-  return framing.x === 50 && framing.y === 50 && framing.zoom === ZOOM_MIN;
-}
+export const DEFAULT_FRAMING: PhotoFraming = { x: 50, y: 50, zoom: ZOOM_MIN, fit: "fill" };
 
 export function sameFraming(a: PhotoFraming, b: PhotoFraming): boolean {
-  return a.x === b.x && a.y === b.y && a.zoom === b.zoom;
+  return a.x === b.x && a.y === b.y && a.zoom === b.zoom && a.fit === b.fit;
+}
+
+export function isDefaultFraming(framing: PhotoFraming): boolean {
+  return sameFraming(framing, DEFAULT_FRAMING);
+}
+
+// A whole photo has nothing to zoom into; it can only slide within the room left around it.
+export function withFit(framing: PhotoFraming, fit: PhotoFit): PhotoFraming {
+  return fit === "whole" ? { ...DEFAULT_FRAMING, fit } : { ...framing, fit };
 }
 
 export function clampPercent(value: number): number {
@@ -28,35 +40,50 @@ export function clampZoom(value: number): number {
   return Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Math.round(value)));
 }
 
-export function framingFromRow(row: {
+type FramingRow = {
   focusX: number | null;
   focusY: number | null;
   zoom: number | null;
-}): PhotoFraming | undefined {
-  if (row.focusX === null && row.focusY === null && row.zoom === null) return undefined;
+  fit: PhotoFit | null;
+};
+
+export function framingFromRow(row: FramingRow): PhotoFraming | undefined {
+  if (row.focusX === null && row.focusY === null && row.zoom === null && row.fit === null) return undefined;
   return {
     x: row.focusX ?? DEFAULT_FRAMING.x,
     y: row.focusY ?? DEFAULT_FRAMING.y,
     zoom: row.zoom ?? DEFAULT_FRAMING.zoom,
+    fit: row.fit ?? DEFAULT_FRAMING.fit,
   };
 }
 
-export function framingToRow(framing: PhotoFraming | undefined): {
-  focusX: number | null;
-  focusY: number | null;
-  zoom: number | null;
-} {
-  if (!framing || isDefaultFraming(framing)) return { focusX: null, focusY: null, zoom: null };
-  return { focusX: framing.x, focusY: framing.y, zoom: framing.zoom };
+export function framingToRow(framing: PhotoFraming | undefined): FramingRow {
+  if (!framing || isDefaultFraming(framing)) return { focusX: null, focusY: null, zoom: null, fit: null };
+  return { focusX: framing.x, focusY: framing.y, zoom: framing.zoom, fit: framing.fit };
 }
 
 export type FrameSize = { width: number; height: number };
 
-export function frameOverflow(frame: FrameSize, natural: FrameSize, zoom: number): FrameSize {
-  const scale = Math.max(frame.width / natural.width, frame.height / natural.height) * (zoom / 100);
+// How far the photo spills past its frame. A whole photo is smaller than the
+// frame on one side, so that side comes back negative: the room it can slide in.
+export function frameOverflow(frame: FrameSize, natural: FrameSize, framing: PhotoFraming): FrameSize {
+  const fill = Math.max(frame.width / natural.width, frame.height / natural.height) * (framing.zoom / 100);
+  const whole = Math.min(frame.width / natural.width, frame.height / natural.height);
+  const scale = framing.fit === "whole" ? whole : fill;
   return {
     width: natural.width * scale - frame.width,
     height: natural.height * scale - frame.height,
+  };
+}
+
+const DRAG_SLACK_PX = 1;
+
+// The point of the photo under the pointer follows it, whichever way the photo overflows.
+export function draggedFraming(from: PhotoFraming, spill: FrameSize, dx: number, dy: number): PhotoFraming {
+  return {
+    ...from,
+    x: Math.abs(spill.width) > DRAG_SLACK_PX ? clampPercent(from.x - (dx / spill.width) * 100) : from.x,
+    y: Math.abs(spill.height) > DRAG_SLACK_PX ? clampPercent(from.y - (dy / spill.height) * 100) : from.y,
   };
 }
 

@@ -111,6 +111,13 @@ body {
     object-position: var(--frame-x) var(--frame-y);
   }
 
+  /* !important outranks the object-cover utility every photo carries. The
+     slow zooms go too: they would push the photo's edges back out of view. */
+  .photo-frame-whole > img {
+    object-fit: contain !important;
+    animation: none !important;
+  }
+
   .section-wash-groups {
     background: linear-gradient(180deg, var(--color-paper), var(--color-cream) 70%);
   }

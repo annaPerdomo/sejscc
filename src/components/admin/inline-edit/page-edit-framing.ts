@@ -1,5 +1,11 @@
 import { PAGE_EDIT_HOLD_ATTRIBUTE } from "@/lib/page-edit-hold";
-import { clampPercent, clampZoom, frameOverflow, type PhotoFraming } from "@/lib/photo-framing";
+import {
+  PHOTO_SLIDE_ATTRIBUTE,
+  clampZoom,
+  draggedFraming,
+  frameOverflow,
+  type PhotoFraming,
+} from "@/lib/photo-framing";
 import { TARGET_ATTRIBUTE } from "./page-edit-targets";
 
 export const FRAMING_BOX_CLASS = "page-edit-framing-box";
@@ -42,8 +48,9 @@ export function startPageFraming(
     set(el.style);
   }
 
-  const slide = slideOf(image, box);
-  for (const sibling of box.children) {
+  const stage = box.hasAttribute(PHOTO_SLIDE_ATTRIBUTE) && box.parentElement ? box.parentElement : box;
+  const slide = slideOf(image, stage);
+  for (const sibling of stage.children) {
     if (sibling === slide || !(sibling instanceof view.HTMLElement)) continue;
     if (sibling.tagName === "IMG" || sibling.querySelector("img")) {
       restyle(sibling, (style) => {
@@ -51,7 +58,7 @@ export function startPageFraming(
       });
     }
   }
-  for (let el: HTMLElement | null = image; el && el !== box; el = el.parentElement) {
+  for (let el: HTMLElement | null = image; el && el !== stage; el = el.parentElement) {
     restyle(el, (style) => {
       style.opacity = "1";
       style.transition = "none";
@@ -62,6 +69,9 @@ export function startPageFraming(
   let current = framing;
   function apply(next: PhotoFraming) {
     current = next;
+    restyle(image, (style) => {
+      style.setProperty("object-fit", next.fit === "whole" ? "contain" : "cover", "important");
+    });
     if (wrapper) {
       restyle(wrapper, (style) => {
         style.setProperty("--frame-x", `${next.x}%`);
@@ -109,20 +119,16 @@ export function startPageFraming(
     const point = { x: event.clientX, y: event.clientY };
     pointers.set(event.pointerId, point);
     if (pinchFrom && pointers.size === 2) {
+      if (current.fit === "whole") return;
       onChange({ ...current, zoom: clampZoom((pinchFrom.zoom * pinchDistance()) / pinchFrom.distance) });
       return;
     }
     if (!dragFrom || !image.naturalWidth) return;
     const natural = { width: image.naturalWidth, height: image.naturalHeight };
-    const spill = frameOverflow(box.getBoundingClientRect(), natural, dragFrom.framing.zoom);
+    const spill = frameOverflow(box.getBoundingClientRect(), natural, dragFrom.framing);
     const dx = point.x - dragFrom.pointer.x;
     const dy = point.y - dragFrom.pointer.y;
-    const from = dragFrom.framing;
-    onChange({
-      ...from,
-      x: spill.width > 0 ? clampPercent(from.x - (dx / spill.width) * 100) : from.x,
-      y: spill.height > 0 ? clampPercent(from.y - (dy / spill.height) * 100) : from.y,
-    });
+    onChange(draggedFraming(dragFrom.framing, spill, dx, dy));
   }
 
   function onPointerEnd(event: PointerEvent) {

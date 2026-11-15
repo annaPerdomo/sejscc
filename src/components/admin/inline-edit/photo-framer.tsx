@@ -2,8 +2,10 @@
 
 import { useRef, useState, type PointerEvent } from "react";
 import { AdminButton } from "@/components/admin/admin-button";
+import { SegmentedSwitch } from "@/components/admin/inline-edit/segmented-switch";
 import {
   DEFAULT_FRAMING,
+  draggedFraming,
   frameOverflow,
   ZOOM_MAX,
   ZOOM_MIN,
@@ -12,6 +14,8 @@ import {
   clampZoom,
   framingStyle,
   isDefaultFraming,
+  withFit,
+  type PhotoFit,
   type PhotoFraming,
 } from "@/lib/photo-framing";
 import type { PhotoShape } from "@/lib/photo-slots";
@@ -30,7 +34,30 @@ function third(value: number): 0 | 1 | 2 {
   return value < 34 ? 0 : value < 67 ? 1 : 2;
 }
 
+const FIT_OPTIONS: { id: PhotoFit; label: string }[] = [
+  { id: "fill", label: "Fill the space" },
+  { id: "whole", label: "Show the whole picture" },
+];
+
+export function PhotoFitSwitch({
+  framing,
+  onChange,
+}: {
+  framing: PhotoFraming;
+  onChange: (next: PhotoFraming) => void;
+}) {
+  return (
+    <SegmentedSwitch
+      label="This photo should:"
+      value={framing.fit}
+      options={FIT_OPTIONS}
+      onChange={(fit) => onChange(withFit(framing, fit))}
+    />
+  );
+}
+
 export function framingLabel(framing: PhotoFraming): string {
+  if (framing.fit === "whole") return "Showing the whole picture, with nothing cut off.";
   const zoom = framing.zoom === ZOOM_MIN ? "" : `, zoomed in to ${(framing.zoom / 100).toFixed(1)}×`;
   const xThird = third(framing.x);
   const yThird = third(framing.y);
@@ -68,14 +95,10 @@ export function PhotoFramer({
   function onPointerMove(event: PointerEvent<HTMLDivElement>) {
     const current = drag.current;
     if (!current || current.pointerId !== event.pointerId || !natural || !frameRef.current) return;
-    const spill = frameOverflow(frameRef.current.getBoundingClientRect(), natural, framing.zoom);
+    const spill = frameOverflow(frameRef.current.getBoundingClientRect(), natural, framing);
     const dx = event.clientX - current.startX;
     const dy = event.clientY - current.startY;
-    onChange({
-      ...framing,
-      x: spill.width > 0 ? clampPercent(current.from.x - (dx / spill.width) * 100) : framing.x,
-      y: spill.height > 0 ? clampPercent(current.from.y - (dy / spill.height) * 100) : framing.y,
-    });
+    onChange(draggedFraming({ ...framing, x: current.from.x, y: current.from.y }, spill, dx, dy));
   }
 
   function onPointerEnd(event: PointerEvent<HTMLDivElement>) {
@@ -99,9 +122,13 @@ export function PhotoFramer({
         Choose what shows
       </h3>
       <p className="mt-1 text-sm text-ink-soft">
-        This is the part of the photo visitors will see. Drag the photo to move it, use the
-        arrows to look further up, down, left or right, and use the slider to zoom in.
+        This is the part of the photo visitors will see. Fill the space and the edges that
+        don&rsquo;t fit are cut off; show the whole picture and nothing is. Drag the photo or use
+        the arrows to move it, and use the slider to zoom in.
       </p>
+      <div className="mt-3">
+        <PhotoFitSwitch framing={framing} onChange={(next) => !disabled && onChange(next)} />
+      </div>
 
       <div className="mt-3 grid gap-5 sm:grid-cols-2 sm:items-start">
         <div
@@ -115,7 +142,10 @@ export function PhotoFramer({
             disabled ? "" : "cursor-move"
           } ${PHOTO_SHAPE_CLASS[shape]}`}
         >
-          <div className="photo-frame" style={framingStyle(framing)}>
+          <div
+            className={`photo-frame ${framing.fit === "whole" ? "photo-frame-whole" : ""}`}
+            style={framingStyle(framing)}
+          >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               key={src}
@@ -145,7 +175,7 @@ export function PhotoFramer({
               max={ZOOM_MAX}
               step={ZOOM_STEP}
               value={framing.zoom}
-              disabled={disabled}
+              disabled={disabled || framing.fit === "whole"}
               onChange={(event) => onChange({ ...framing, zoom: clampZoom(Number(event.target.value)) })}
               className="mt-2 block h-11 w-full accent-indigo"
             />
@@ -164,7 +194,7 @@ export function PhotoFramer({
           </div>
           {!isDefaultFraming(framing) && (
             <AdminButton aria-disabled={disabled} onClick={() => !disabled && onChange(DEFAULT_FRAMING)}>
-              Show the whole photo again
+              Start over
             </AdminButton>
           )}
         </div>

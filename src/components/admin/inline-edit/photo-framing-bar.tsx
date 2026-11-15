@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef } from "react";
 import { AdminAlert } from "@/components/admin/admin-alert";
 import { buttonClass, buttonVariantClass } from "@/components/admin/admin-button";
-import { framingLabel, NUDGE } from "@/components/admin/inline-edit/photo-framer";
+import { framingLabel, NUDGE, PhotoFitSwitch } from "@/components/admin/inline-edit/photo-framer";
 import {
   DEFAULT_FRAMING,
   ZOOM_MAX,
@@ -62,8 +62,10 @@ export function PhotoFramingBar({
     onChange({ ...framing, x: clampPercent(framing.x + dx), y: clampPercent(framing.y + dy) });
   }
 
+  const zoomLocked = saving || framing.fit === "whole";
+
   function zoomBy(steps: number) {
-    if (saving) return;
+    if (zoomLocked) return;
     onChange({ ...framing, zoom: clampZoom(framing.zoom + steps * ZOOM_STEP) });
   }
 
@@ -98,11 +100,13 @@ export function PhotoFramingBar({
           </div>
         </div>
 
+        <PhotoFitSwitch framing={framing} onChange={(next) => !saving && onChange(next)} />
+
         <div className="grid gap-2 lg:grid-cols-2 lg:gap-x-10">
           <div className="flex items-center gap-2">
             <button
               type="button"
-              aria-disabled={saving || framing.zoom <= ZOOM_MIN}
+              aria-disabled={zoomLocked || framing.zoom <= ZOOM_MIN}
               onClick={() => zoomBy(-2)}
               className={`${BIG_BUTTON} sm:flex-none`}
             >
@@ -119,14 +123,14 @@ export function PhotoFramingBar({
                 max={ZOOM_MAX}
                 step={ZOOM_STEP}
                 value={framing.zoom}
-                disabled={saving}
+                disabled={zoomLocked}
                 onChange={(event) => onChange({ ...framing, zoom: clampZoom(Number(event.target.value)) })}
                 className="block h-12 w-full accent-indigo"
               />
             </label>
             <button
               type="button"
-              aria-disabled={saving || framing.zoom >= ZOOM_MAX}
+              aria-disabled={zoomLocked || framing.zoom >= ZOOM_MAX}
               onClick={() => zoomBy(2)}
               className={`${BIG_BUTTON} sm:flex-none`}
             >
@@ -162,12 +166,12 @@ export function PhotoFramingBar({
           {!isDefaultFraming(framing) && (
             <button
               type="button"
-              aria-label="Reset the photo to show the whole picture"
+              aria-label="Start over: fill the space with the middle of the photo"
               aria-disabled={saving}
               onClick={() => !saving && onChange(DEFAULT_FRAMING)}
               className={`min-h-11 ${buttonClass("secondary")}`}
             >
-              Reset
+              Start over
             </button>
           )}
         </div>

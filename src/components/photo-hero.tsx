@@ -7,7 +7,7 @@ import { CarouselDots } from "@/components/carousel-dots";
 import { CarouselPlayToggle } from "@/components/carousel-play-toggle";
 import { HeroTitle } from "@/components/hero-title";
 import { PhotoFrame } from "@/components/photo-frame";
-import type { PhotoFraming } from "@/lib/photo-framing";
+import { PHOTO_SLIDE_ATTRIBUTE, type PhotoFraming } from "@/lib/photo-framing";
 import { SectionKicker } from "@/components/section-kicker";
 import { SectionDivider } from "@/components/section-divider";
 
@@ -24,6 +24,31 @@ type RotationLabels = {
   /** Template with `{n}` and `{total}` placeholders. */
   photo: string;
 };
+
+// A whole photo would be half hidden under the wash that keeps the words
+// readable, so on wide screens it stands clear of them, beside the text.
+function HeroPhotoFrame({
+  framing,
+  beside,
+  aboveRow,
+  children,
+}: {
+  framing?: PhotoFraming;
+  beside: boolean;
+  aboveRow: boolean;
+  children: ReactNode;
+}) {
+  const frame = <PhotoFrame framing={framing}>{children}</PhotoFrame>;
+  if (framing?.fit !== "whole") return frame;
+  const place = beside
+    ? `lg:top-12 lg:right-16 lg:left-2/3 lg:z-10 xl:left-3/5 ${aboveRow ? "lg:bottom-60" : "lg:bottom-12"}`
+    : "";
+  return (
+    <div {...{ [PHOTO_SLIDE_ATTRIBUTE]: "" }} className={`absolute inset-0 overflow-clip ${place}`}>
+      {frame}
+    </div>
+  );
+}
 
 // Darkening the wash is safe; thinning it drops the sky title line and the
 // white lede under AA where the photo is brightest.
@@ -76,14 +101,21 @@ export function PhotoHero({
   const { active } = rotation;
   const mounted = useMountedAround(active, photos?.length ?? 1);
 
+  const showsWholePhoto =
+    isRotating && photos
+      ? photos.some((item) => item.framing?.fit === "whole")
+      : photoFraming?.fit === "whole";
+  const photoBeside = showsWholePhoto && !asideAtEnd;
+  const frameProps = { beside: photoBeside, aboveRow: Boolean(below) };
+
   const text = (
     <div
       className={`enter-stagger ${
         asideAtEnd
           ? "lg:col-span-7"
           : asideAtStart
-            ? "max-w-3xl lg:max-w-xl xl:max-w-2xl"
-            : "max-w-3xl"
+            ? `max-w-3xl ${photoBeside ? "lg:max-w-md xl:max-w-xl" : "lg:max-w-xl xl:max-w-2xl"}`
+            : `max-w-3xl ${photoBeside ? "lg:max-w-md xl:max-w-xl" : ""}`
       }`}
     >
       {eyebrow && <div className="mb-6">{eyebrow}</div>}
@@ -149,7 +181,11 @@ export function PhotoHero({
           {isRotating && photos ? (
             photos.map((item, i) =>
               mounted.includes(i) ? (
-                <PhotoFrame key={typeof item.src === "string" ? item.src : i} framing={item.framing}>
+                <HeroPhotoFrame
+                  key={typeof item.src === "string" ? item.src : i}
+                  framing={item.framing}
+                  {...frameProps}
+                >
                   <Image
                     src={item.src}
                     alt={i === active ? item.alt : ""}
@@ -161,11 +197,11 @@ export function PhotoHero({
                       i === 0 ? "hero-intro-photo" : ""
                     } ${i === active ? "opacity-100" : "opacity-0"}`}
                   />
-                </PhotoFrame>
+                </HeroPhotoFrame>
               ) : null,
             )
           ) : (
-            <PhotoFrame framing={photoFraming}>
+            <HeroPhotoFrame framing={photoFraming} {...frameProps}>
               <Image
                 src={photo}
                 alt={photoAlt}
@@ -175,7 +211,7 @@ export function PhotoHero({
                 sizes="100vw"
                 className="hero-intro-photo object-cover"
               />
-            </PhotoFrame>
+            </HeroPhotoFrame>
           )}
           <div
             aria-hidden="true"
