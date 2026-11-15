@@ -14,10 +14,10 @@ import {
   ZOOM_MIN,
   ZOOM_STEP,
   clampPercent,
-  clampWash,
   clampZoom,
   isDefaultFraming,
   withSize,
+  withWash,
   type PhotoFraming,
 } from "@/lib/photo-framing";
 import type { PagePlacement } from "@/components/admin/inline-edit/page-edit-framing";
@@ -46,7 +46,8 @@ type StepScale = {
 
 function StepRow({ scale }: { scale: StepScale }) {
   function stepBy(steps: number) {
-    if (!scale.locked) scale.set(scale.value + steps * scale.step);
+    const atEnd = steps < 0 ? scale.value <= scale.min : scale.value >= scale.max;
+    if (!scale.locked && !atEnd) scale.set(scale.value + steps * scale.step);
   }
 
   return (
@@ -170,10 +171,10 @@ export function PhotoFramingBar({
     more: "More blue",
     value: framing.wash || washRange.auto,
     min: washRange.min,
-    max: washRange.max,
+    max: washRange.auto,
     step: WASH_STEP,
     locked: saving,
-    set: (value: number) => onChange({ ...framing, wash: clampWash(value, washRange.min, washRange.max) }),
+    set: (value: number) => onChange(withWash(framing, value, washRange)),
   };
 
   return (
@@ -238,7 +239,11 @@ export function PhotoFramingBar({
             {sizing ? sizeLabel(framing.size) : framingLabel(framing)}{" "}
             {sizing
               ? `Press Bigger or Smaller, or drag one of the round pink handles on the page.${
-                  shade ? " The blue handle, or Less blue and More blue, moves the blue shade off or over the picture." : ""
+                  shade
+                    ? ` ${
+                        framing.wash ? "The blue shade has been pulled back off the picture." : "The blue shade is where it started."
+                      } Less blue and More blue move it, or drag the handle on its edge.`
+                    : ""
                 } Drag the photo itself to move it.`
               : "Drag the photo on the page to move it, or use the buttons."}
           </p>

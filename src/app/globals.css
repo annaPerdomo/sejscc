@@ -178,11 +178,18 @@ body {
       z-index: 10;
     }
 
-    /* A shade the admin has moved is measured from the left edge of the page's
-       content, where the words start, so it keeps its distance from them on
-       every screen width. */
-    .hero-slide-beside[data-photo-slide="whole"][data-photo-wash] {
-      --slide-wash-to: calc(max(0px, (100% - var(--container-wide)) / 2) + var(--photo-wash));
+    /* A shade the admin has pulled back is measured from the left edge of the
+       page's content, where the words start. It never stops short of the words
+       themselves: the hero measures how far they reach on this screen
+       (--hero-words-end), and until it has, the shade stays where the design
+       puts it. It never reaches further than the design's place either. */
+    [data-hero-words] > .hero-slide-beside[data-photo-slide="whole"][data-photo-wash] {
+      --slide-wash-to: min(
+        var(--slide-left),
+        calc(
+          max(0px, (100% - var(--container-wide)) / 2) + max(var(--photo-wash), var(--hero-words-end) + 4rem)
+        )
+      );
       --slide-wash-from: calc(var(--slide-wash-to) - 4rem);
     }
 
@@ -218,12 +225,9 @@ body {
   }
 
   @media (width >= 80rem) {
-    .hero-slide-beside[data-photo-slide="whole"]:not([data-photo-wash]) {
-      --slide-wash-from: 60%;
-    }
-
     .hero-slide-beside[data-photo-slide="whole"] {
       --slide-left: 66%;
+      --slide-wash-from: 60%;
     }
 
     .hero-slide-beside.hero-slide-above-row[data-photo-slide="whole"] {

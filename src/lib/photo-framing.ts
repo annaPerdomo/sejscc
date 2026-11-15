@@ -17,6 +17,11 @@ export const ORIGINAL_PHOTO_URL = "";
 // admin's framing tool can hide the stage's other slides and preview a change of fit.
 export const PHOTO_SLIDE_ATTRIBUTE = "data-photo-slide";
 
+// Set on a hero's photo stage once its words are measured, alongside
+// --hero-words-end: how far the words reach from the content's left edge.
+export const HERO_WORDS_ATTRIBUTE = "data-hero-words";
+export const ROOT_PX = 16;
+
 // Set on a hero slide whose blue shade has been moved, alongside --photo-wash.
 export const PHOTO_WASH_ATTRIBUTE = "data-photo-wash";
 
@@ -73,9 +78,18 @@ const RIGHT_EDGE = 100;
 // back into the frame, it goes back to the middle.
 export function withSize(framing: PhotoFraming, size: number): PhotoFraming {
   const next = clampSize(size);
-  if (framing.size === SIZE_MIN && framing.x === DEFAULT_FRAMING.x) return { ...framing, size: next, x: RIGHT_EDGE };
-  if (next === SIZE_MIN && framing.x === RIGHT_EDGE) return { ...framing, size: next, x: DEFAULT_FRAMING.x };
-  return { ...framing, size: next };
+  if (next === SIZE_MIN) {
+    const x = framing.x === RIGHT_EDGE ? DEFAULT_FRAMING.x : framing.x;
+    return { ...framing, size: next, x, wash: WASH_AUTO };
+  }
+  const unmoved = framing.size === SIZE_MIN && framing.x === DEFAULT_FRAMING.x;
+  return { ...framing, size: next, x: unmoved ? RIGHT_EDGE : framing.x };
+}
+
+// A shade pushed back out to where the design puts it is no longer a moved shade.
+export function withWash(framing: PhotoFraming, wash: number, range: { auto: number; min: number }): PhotoFraming {
+  const next = clampWash(wash, range.min, range.auto);
+  return { ...framing, wash: next >= range.auto ? WASH_AUTO : next };
 }
 
 export function clampWash(value: number, min = WASH_MIN, max = WASH_MAX): number {
@@ -145,8 +159,6 @@ export function draggedFraming(from: PhotoFraming, spill: FrameSize, dx: number,
     y: Math.abs(spill.height) > DRAG_SLACK_PX ? clampPercent(from.y - (dy / spill.height) * 100) : from.y,
   };
 }
-
-const ROOT_PX = 16;
 
 export function slideSizeStyle(framing: PhotoFraming | undefined): CSSProperties {
   return {

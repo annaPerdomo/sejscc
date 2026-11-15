@@ -2,12 +2,12 @@ import { PAGE_EDIT_HOLD_ATTRIBUTE } from "@/lib/page-edit-hold";
 import {
   PHOTO_SLIDE_ATTRIBUTE,
   PHOTO_WASH_ATTRIBUTE,
+  ROOT_PX,
   SIZE_MAX,
   SIZE_MIN,
-  WASH_MAX,
-  WASH_MIN,
   clampWash,
   withSize,
+  withWash,
   clampZoom,
   draggedFraming,
   frameOverflow,
@@ -17,8 +17,8 @@ import { TARGET_ATTRIBUTE, icon } from "./page-edit-targets";
 
 export const FRAMING_BOX_CLASS = "page-edit-framing-box";
 
-/** The blue shade's edge, in `PhotoFraming.wash` units: where the design puts it, and how far it can move. */
-export type WashRange = { auto: number; min: number; max: number };
+/** The blue shade's edge, in `PhotoFraming.wash` units: where the design puts it, and how far back it can be pulled. */
+export type WashRange = { auto: number; min: number };
 
 export type PagePlacement = {
   /** Whether this photo can grow from a frame beside the words to the full hero. */
@@ -35,7 +35,6 @@ export type PageFramingSession = {
 const WHOLE_CLASS = "photo-frame-whole";
 const SIZE_HANDLE_CLASS = "page-edit-size-handle";
 const WASH_HANDLE_CLASS = "page-edit-wash-handle";
-const ROOT_PX = 16;
 // Must match the fade in `.hero-slide-beside[data-photo-wash]`.
 const WASH_FADE_REM = 4;
 const SIDEWAYS_PATH = "M2 12l5-5v3.5h10V7l5 5-5 5v-3.5H7V17l-5-5Z";
@@ -114,30 +113,18 @@ export function startPageFraming(
     return ((clientX - contentLeft()) / rem) * ROOT_PX;
   }
 
-  function wordsRight(): number {
-    const words = fitSlide?.closest("section")?.querySelector("h1")?.parentElement;
-    if (!words) return contentLeft();
-    const range = doc.createRange();
-    const walker = doc.createTreeWalker(words, NodeFilter.SHOW_TEXT);
-    let right = contentLeft();
-    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-      range.selectNodeContents(node);
-      for (const rect of range.getClientRects()) right = Math.max(right, rect.right);
-    }
-    return right;
-  }
-
-  // The shade can't be pulled left of the words it is there to keep readable:
-  // it stays at full strength to their right edge and fades out over WASH_FADE_REM past it.
-  function washRange(): PagePlacement["wash"] {
+  // The hero measures how far its own words reach; the shade can be pulled
+  // back to just past them and pushed out again no further than the design's place.
+  function washRange(): WashRange {
     const stageBox = stage.getBoundingClientRect();
     const framedLeft = fitSlide ? parseFloat(getComputedStyle(fitSlide).getPropertyValue("--slide-left")) : NaN;
     const designed = stageBox.left + (stageBox.width * (Number.isFinite(framedLeft) ? framedLeft : 66)) / 100;
-    const min = clampWash(washAt(wordsRight() + WASH_FADE_REM * rem));
-    const max = Math.max(min, clampWash(washAt(stageBox.right)));
-    return { auto: clampWash(washAt(designed), min, max), min, max };
+    const auto = clampWash(washAt(designed));
+    const wordsEnd = parseFloat(getComputedStyle(stage).getPropertyValue("--hero-words-end"));
+    if (!Number.isFinite(wordsEnd)) return { auto, min: auto };
+    return { auto, min: Math.min(auto, clampWash((wordsEnd + WASH_FADE_REM) * ROOT_PX)) };
   }
-  const wash = sizable ? washRange() : { auto: WASH_MIN, min: WASH_MIN, max: WASH_MAX };
+  const wash = washRange();
   for (const sibling of stage.children) {
     if (sibling === slide || !(sibling instanceof view.HTMLElement)) continue;
     if (sibling.tagName === "IMG" || sibling.querySelector("img")) {
@@ -221,14 +208,17 @@ export function startPageFraming(
 
   function onPointerDown(event: PointerEvent) {
     const point = { x: event.clientX, y: event.clientY };
-    if (event.button !== 0 || !contains(box.getBoundingClientRect(), point)) return;
-    event.preventDefault();
-    // The page's words lie over the photo, so a handle is found by where it is, not as the target.
+    if (event.button !== 0) return;
+    // The page's words lie over the photo, so a handle is found by where it is,
+    // not as the target; the shade's can sit left of the photo's box.
     if (washHandle && !washHandle.hidden && contains(washHandle.getBoundingClientRect(), point)) {
+      event.preventDefault();
       washPointer = event.pointerId;
       box.setPointerCapture(event.pointerId);
       return;
     }
+    if (!contains(box.getBoundingClientRect(), point)) return;
+    event.preventDefault();
     if (handles.some((handle) => !handle.hidden && contains(handle.getBoundingClientRect(), point))) {
       startResize(event);
       return;
@@ -240,7 +230,7 @@ export function startPageFraming(
 
   function onPointerMove(event: PointerEvent) {
     if (washPointer === event.pointerId) {
-      onChange({ ...current, wash: clampWash(washAt(event.clientX), wash.min, wash.max) });
+      onChange(withWash(current, washAt(event.clientX), wash));
       return;
     }
     if (resizeFrom?.pointerId === event.pointerId) {
@@ -317,10 +307,13 @@ export function startPageFraming(
       const topBefore = box.getBoundingClientRect().top;
       doc.documentElement.removeAttribute(PAGE_EDIT_HOLD_ATTRIBUTE);
       view.scrollBy({ top: box.getBoundingClientRect().top - topBefore });
+      // A photo that finished loading meanwhile had its shape written to this same attribute.
+      const ratio = wrapper?.style.getPropertyValue("--photo-ratio");
       for (const [el, style] of originalStyles) {
         if (style === null) el.removeAttribute("style");
         else el.setAttribute("style", style);
       }
+      if (ratio) wrapper?.style.setProperty("--photo-ratio", ratio);
     },
   };
 }

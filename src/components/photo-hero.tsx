@@ -1,7 +1,7 @@
 "use client";
 
 import Image, { type StaticImageData } from "next/image";
-import { useRef, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { useMountedAround, useRotation } from "@/components/carousel-hooks";
 import { CarouselDots } from "@/components/carousel-dots";
 import { CarouselPlayToggle } from "@/components/carousel-play-toggle";
@@ -9,7 +9,9 @@ import { HeroTitle } from "@/components/hero-title";
 import { PhotoFrame } from "@/components/photo-frame";
 import {
   DEFAULT_FRAMING,
+  HERO_WORDS_ATTRIBUTE,
   PHOTO_SLIDE_ATTRIBUTE,
+  ROOT_PX,
   PHOTO_WASH_ATTRIBUTE,
   slideSizeStyle,
   type PhotoFraming,
@@ -22,6 +24,19 @@ export type HeroPhoto = {
   alt: string;
   framing?: PhotoFraming;
 };
+
+// How far the words reach from the left edge of `content`, in rem at a 16px
+// root: a moved shade is held to this on every screen, whatever the words say.
+function wordsEnd(words: HTMLElement, content: HTMLElement): number {
+  const range = document.createRange();
+  const walker = document.createTreeWalker(words, NodeFilter.SHOW_TEXT);
+  let right = 0;
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    range.selectNodeContents(node);
+    for (const rect of range.getClientRects()) right = Math.max(right, rect.right);
+  }
+  return Math.max(0, right - content.getBoundingClientRect().left) / ROOT_PX;
+}
 
 type RotationLabels = {
   pause: string;
@@ -105,6 +120,27 @@ export function PhotoHero({
 
   const isRotating = Boolean(photos && photos.length > 1 && rotationLabels);
   const sectionRef = useRef<HTMLElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const wordsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const stage = stageRef.current;
+    const content = contentRef.current;
+    const words = wordsRef.current;
+    if (!stage || !content || !words) return;
+    const measure = () => {
+      const rootPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || ROOT_PX;
+      stage.style.setProperty("--hero-words-end", `${(wordsEnd(words, content) * ROOT_PX) / rootPx}rem`);
+      stage.setAttribute(HERO_WORDS_ATTRIBUTE, "");
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(words);
+    observer.observe(content);
+    void document.fonts.ready.then(measure);
+    return () => observer.disconnect();
+  }, []);
   const rotation = useRotation({
     count: isRotating && photos ? photos.length : 1,
     viewRef: sectionRef,
@@ -121,6 +157,7 @@ export function PhotoHero({
 
   const text = (
     <div
+      ref={wordsRef}
       className={`enter-stagger ${
         asideAtEnd
           ? "lg:col-span-7"
@@ -188,7 +225,10 @@ export function PhotoHero({
         {...rotation.focusProps}
         className="relative isolate overflow-clip bg-ink-deep text-white"
       >
-        <div className="absolute inset-x-0 top-0 -z-10 h-64 overflow-clip sm:h-96 lg:inset-y-0 lg:h-auto">
+        <div
+          ref={stageRef}
+          className="absolute inset-x-0 top-0 -z-10 h-64 overflow-clip sm:h-96 lg:inset-y-0 lg:h-auto"
+        >
           {isRotating && photos ? (
             photos.map((item, i) =>
               mounted.includes(i) ? (
@@ -238,6 +278,7 @@ export function PhotoHero({
         </div>
 
         <div
+          ref={contentRef}
           className={`relative mx-auto flex max-w-wide flex-col justify-center gap-12 px-5 pt-72 pb-16 sm:px-10 sm:pt-104 sm:pb-20 lg:pt-18 lg:min-h-page-hero lg:px-16 ${asideAtEnd ? "lg:grid lg:grid-cols-12 lg:items-center lg:gap-10" : ""}`}
         >
           {asideAtStart ? (

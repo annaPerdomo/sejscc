@@ -319,7 +319,7 @@ function checkedFraming(framing: PhotoFraming): PhotoFraming {
     !wholePercent(size, SIZE_MIN, SIZE_MAX) ||
     (fit === "fill" && size !== SIZE_MIN) ||
     (wash !== WASH_AUTO && !wholePercent(wash, WASH_MIN, WASH_MAX)) ||
-    (fit === "fill" && wash !== WASH_AUTO)
+    (size === SIZE_MIN && wash !== WASH_AUTO)
   ) {
     throw new AdminError("That framing isn't possible. Please move or zoom the photo again.");
   }
