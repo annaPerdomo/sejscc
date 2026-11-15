@@ -76,9 +76,12 @@ be built from these tokens via Tailwind utility classes.
   `surface-card` (plus `surface-card-link` for a clickable card),
   `button-primary`, `button-donate`, `photo-frame` (how a photo sits in its
   spot: the point kept in view and the zoom, plus `photo-frame-whole` when the
-  admin chose to show the whole picture instead of filling the spot),
-  `hero-slide` (a photo at the top of a page; a whole one stands beside the
-  hero's words from 64rem up instead of under the wash), `flyer-mount` (a flyer, or the donation form, on a cream
+  admin chose to show the whole picture instead of filling the spot, which
+  mounts it like a print with a cream border and a gold rule),
+  `hero-slide` (a photo at the top of a page, with its `hero-slide-box` and
+  `hero-slide-wash`; from 64rem up a whole one stands in a frame beside the
+  hero's words, and `--photo-size` grows it from there to the full hero, its
+  own wash dimming whatever part reaches under the words), `flyer-mount` (a flyer, or the donation form, on a cream
   board with gold rules; pair it with the gold rings), `asanoha-frame` (a
   navy band of gold hemp-leaf lattice around the featured group photo),
   `school-plaque` (a cream name board set in vertical Japanese, like a

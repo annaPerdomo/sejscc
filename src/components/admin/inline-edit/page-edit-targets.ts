@@ -1,3 +1,4 @@
+import { PHOTO_SLIDE_ATTRIBUTE } from "@/lib/photo-framing";
 import { PAGE_EDIT_HOLD_ATTRIBUTE } from "@/lib/page-edit-hold";
 
 export type PageEditTarget = {
@@ -381,7 +382,8 @@ export function showPhotoButtons(
     for (const image of doc.querySelectorAll(`img[${TARGET_ATTRIBUTE}]`)) {
       if (!image.checkVisibility({ opacityProperty: true, visibilityProperty: true })) continue;
       // A slide fading out is still faintly there, and may not share its spot with the one fading in.
-      if (Number(view.getComputedStyle(image).opacity) < 0.5) continue;
+      const fading = image.closest(`[${PHOTO_SLIDE_ATTRIBUTE}]`) ?? image;
+      if (Number(view.getComputedStyle(fading).opacity) < 0.5) continue;
       const box = visibleBox(image, view, headerBottom);
       if (!box) continue;
       const spot = `${Math.round(box.top)}:${Math.round(box.right)}`;

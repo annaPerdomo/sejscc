@@ -74,7 +74,7 @@ function isWordsItem(item: PageItem): item is WordsItem {
   return item.kind === "text" || item.kind === "link" || (item.kind === "record" && item.item.kind === "recordWords");
 }
 
-type FramingDraft = { slot: PhotoSlot; draft: PhotoFraming; saving: boolean; error: string | null };
+type FramingDraft = { slot: PhotoSlot; draft: PhotoFraming; sizable: boolean; saving: boolean; error: string | null };
 
 const GENERIC_SAVE_ERROR = "Something went wrong saving this. Please try again.";
 const UNMOVED_PHOTO_MESSAGE =
@@ -613,7 +613,7 @@ export function PageCanvas({
   function startFraming(slot: PhotoSlot, saved: PhotoFraming | undefined) {
     setPickedPhoto(null);
     setPhotoGroup(null);
-    setFraming({ slot, draft: saved ?? DEFAULT_FRAMING, saving: false, error: null });
+    setFraming({ slot, draft: saved ?? DEFAULT_FRAMING, sizable: false, saving: false, error: null });
   }
 
   function framesOnPage(slot: PhotoSlot): boolean {
@@ -915,6 +915,7 @@ export function PageCanvas({
                 framing: framing.draft,
                 onChange: (next) =>
                   setFraming((current) => current && { ...current, draft: next, error: null }),
+                onSizable: (sizable) => setFraming((current) => current && { ...current, sizable }),
                 onUnavailable: () => {
                   setFraming(null);
                   setStatus({ kind: "error", message: PHOTO_NOT_SHOWING_MESSAGE });
@@ -926,6 +927,7 @@ export function PageCanvas({
                     src={tiles[framing.slot.id].current.src}
                     shape={framing.slot.shape}
                     framing={framing.draft}
+                    sizable={framing.sizable}
                     saving={framing.saving}
                     error={framing.error}
                     onChange={(next) =>

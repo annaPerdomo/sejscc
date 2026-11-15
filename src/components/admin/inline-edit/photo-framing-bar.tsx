@@ -6,12 +6,16 @@ import { buttonClass, buttonVariantClass } from "@/components/admin/admin-button
 import { framingLabel, NUDGE, PhotoFitSwitch } from "@/components/admin/inline-edit/photo-framer";
 import {
   DEFAULT_FRAMING,
+  SIZE_MAX,
+  SIZE_MIN,
+  SIZE_STEP,
   ZOOM_MAX,
   ZOOM_MIN,
   ZOOM_STEP,
   clampPercent,
   clampZoom,
   isDefaultFraming,
+  withSize,
   type PhotoFraming,
 } from "@/lib/photo-framing";
 import { blurryPhotoMessage } from "@/lib/photo-resolution";
@@ -32,6 +36,7 @@ export function PhotoFramingBar({
   src,
   shape,
   framing,
+  sizable = false,
   saving,
   error,
   onChange,
@@ -42,6 +47,8 @@ export function PhotoFramingBar({
   src: string;
   shape: PhotoShape;
   framing: PhotoFraming;
+  /** A whole photo that can grow from a frame beside the words to the full hero. */
+  sizable?: boolean;
   saving: boolean;
   error: string | null;
   onChange: (next: PhotoFraming) => void;
@@ -62,11 +69,34 @@ export function PhotoFramingBar({
     onChange({ ...framing, x: clampPercent(framing.x + dx), y: clampPercent(framing.y + dy) });
   }
 
-  const zoomLocked = saving || framing.fit === "whole";
+  // A whole photo has nothing to zoom into, so the same row sets how big it is instead.
+  const sizing = sizable && framing.fit === "whole";
+  const scale = sizing
+    ? {
+        name: "Picture size",
+        less: "Smaller",
+        more: "Bigger",
+        value: framing.size,
+        min: SIZE_MIN,
+        max: SIZE_MAX,
+        step: SIZE_STEP,
+        locked: saving,
+        set: (value: number) => onChange(withSize(framing, value)),
+      }
+    : {
+        name: "Zoom",
+        less: "Zoom out",
+        more: "Zoom in",
+        value: framing.zoom,
+        min: ZOOM_MIN,
+        max: ZOOM_MAX,
+        step: ZOOM_STEP,
+        locked: saving || framing.fit === "whole",
+        set: (value: number) => onChange({ ...framing, zoom: clampZoom(value) }),
+      };
 
-  function zoomBy(steps: number) {
-    if (zoomLocked) return;
-    onChange({ ...framing, zoom: clampZoom(framing.zoom + steps * ZOOM_STEP) });
+  function scaleBy(steps: number) {
+    if (!scale.locked) scale.set(scale.value + steps * scale.step);
   }
 
   return (
@@ -106,38 +136,38 @@ export function PhotoFramingBar({
           <div className="flex items-center gap-2">
             <button
               type="button"
-              aria-disabled={zoomLocked || framing.zoom <= ZOOM_MIN}
-              onClick={() => zoomBy(-2)}
+              aria-disabled={scale.locked || scale.value <= scale.min}
+              onClick={() => scaleBy(-2)}
               className={`${BIG_BUTTON} sm:flex-none`}
             >
               <span aria-hidden="true" className="text-2xl leading-none">
                 −
               </span>
-              Zoom out
+              {scale.less}
             </button>
             <label className="hidden min-w-0 flex-1 sm:block">
-              <span className="sr-only">Zoom</span>
+              <span className="sr-only">{scale.name}</span>
               <input
                 type="range"
-                min={ZOOM_MIN}
-                max={ZOOM_MAX}
-                step={ZOOM_STEP}
-                value={framing.zoom}
-                disabled={zoomLocked}
-                onChange={(event) => onChange({ ...framing, zoom: clampZoom(Number(event.target.value)) })}
+                min={scale.min}
+                max={scale.max}
+                step={scale.step}
+                value={scale.value}
+                disabled={scale.locked}
+                onChange={(event) => scale.set(Number(event.target.value))}
                 className="block h-12 w-full accent-indigo"
               />
             </label>
             <button
               type="button"
-              aria-disabled={zoomLocked || framing.zoom >= ZOOM_MAX}
-              onClick={() => zoomBy(2)}
+              aria-disabled={scale.locked || scale.value >= scale.max}
+              onClick={() => scaleBy(2)}
               className={`${BIG_BUTTON} sm:flex-none`}
             >
               <span aria-hidden="true" className="text-2xl leading-none">
                 +
               </span>
-              Zoom in
+              {scale.more}
             </button>
           </div>
           <div role="group" aria-label="Move the photo a little" className="grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -161,7 +191,10 @@ export function PhotoFramingBar({
 
         <div className="flex flex-wrap items-center gap-x-6 gap-y-1">
           <p role="status" aria-live="polite" className="text-base text-ink-soft">
-            {framingLabel(framing)} Drag the photo on the page to move it, or use the buttons.
+            {framingLabel(framing)}{" "}
+            {sizing
+              ? "Press Bigger or Smaller, or drag one of the round pink handles on the page. Drag the photo itself to move it."
+              : "Drag the photo on the page to move it, or use the buttons."}
           </p>
           {!isDefaultFraming(framing) && (
             <button

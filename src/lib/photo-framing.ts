@@ -3,7 +3,9 @@ import type { CSSProperties } from "react";
 export const PHOTO_FITS = ["fill", "whole"] as const;
 export type PhotoFit = (typeof PHOTO_FITS)[number];
 
-export type PhotoFraming = { x: number; y: number; zoom: number; fit: PhotoFit };
+// `size` is how far a whole photo at the top of a page has grown from its
+// frame beside the words (0) to the full width of the hero (100).
+export type PhotoFraming = { x: number; y: number; zoom: number; fit: PhotoFit; size: number };
 
 // A site_photo row with this address keeps the spot's own photo and only
 // stores how it is framed, so renaming a bundled photo can't orphan it.
@@ -17,10 +19,14 @@ export const ZOOM_MIN = 100;
 export const ZOOM_MAX = 300;
 export const ZOOM_STEP = 10;
 
-export const DEFAULT_FRAMING: PhotoFraming = { x: 50, y: 50, zoom: ZOOM_MIN, fit: "fill" };
+export const SIZE_MIN = 0;
+export const SIZE_MAX = 100;
+export const SIZE_STEP = 10;
+
+export const DEFAULT_FRAMING: PhotoFraming = { x: 50, y: 50, zoom: ZOOM_MIN, fit: "fill", size: SIZE_MIN };
 
 export function sameFraming(a: PhotoFraming, b: PhotoFraming): boolean {
-  return a.x === b.x && a.y === b.y && a.zoom === b.zoom && a.fit === b.fit;
+  return a.x === b.x && a.y === b.y && a.zoom === b.zoom && a.fit === b.fit && a.size === b.size;
 }
 
 export function isDefaultFraming(framing: PhotoFraming): boolean {
@@ -29,11 +35,22 @@ export function isDefaultFraming(framing: PhotoFraming): boolean {
 
 // A whole photo has nothing to zoom into; it can only slide within the room left around it.
 export function withFit(framing: PhotoFraming, fit: PhotoFit): PhotoFraming {
-  return fit === "whole" ? { ...DEFAULT_FRAMING, fit } : { ...framing, fit };
+  return fit === "whole" ? { ...DEFAULT_FRAMING, fit } : { ...framing, fit, size: SIZE_MIN };
 }
 
 export function clampPercent(value: number): number {
   return Math.min(100, Math.max(0, Math.round(value)));
+}
+
+export function clampSize(value: number): number {
+  return Math.min(SIZE_MAX, Math.max(SIZE_MIN, Math.round(value)));
+}
+
+// The photo grows leftward out of its frame, so one nobody has moved keeps to
+// the right edge instead of drifting to the middle, under the words.
+export function withSize(framing: PhotoFraming, size: number): PhotoFraming {
+  const unmoved = framing.size === SIZE_MIN && framing.x === DEFAULT_FRAMING.x;
+  return { ...framing, size: clampSize(size), x: unmoved ? 100 : framing.x };
 }
 
 export function clampZoom(value: number): number {
@@ -45,21 +62,27 @@ type FramingRow = {
   focusY: number | null;
   zoom: number | null;
   fit: PhotoFit | null;
+  size: number | null;
 };
 
 export function framingFromRow(row: FramingRow): PhotoFraming | undefined {
-  if (row.focusX === null && row.focusY === null && row.zoom === null && row.fit === null) return undefined;
+  if (row.focusX === null && row.focusY === null && row.zoom === null && row.fit === null && row.size === null) {
+    return undefined;
+  }
   return {
     x: row.focusX ?? DEFAULT_FRAMING.x,
     y: row.focusY ?? DEFAULT_FRAMING.y,
     zoom: row.zoom ?? DEFAULT_FRAMING.zoom,
     fit: row.fit ?? DEFAULT_FRAMING.fit,
+    size: row.size ?? DEFAULT_FRAMING.size,
   };
 }
 
 export function framingToRow(framing: PhotoFraming | undefined): FramingRow {
-  if (!framing || isDefaultFraming(framing)) return { focusX: null, focusY: null, zoom: null, fit: null };
-  return { focusX: framing.x, focusY: framing.y, zoom: framing.zoom, fit: framing.fit };
+  if (!framing || isDefaultFraming(framing)) {
+    return { focusX: null, focusY: null, zoom: null, fit: null, size: null };
+  }
+  return { focusX: framing.x, focusY: framing.y, zoom: framing.zoom, fit: framing.fit, size: framing.size };
 }
 
 export type FrameSize = { width: number; height: number };
@@ -84,6 +107,10 @@ export function draggedFraming(from: PhotoFraming, spill: FrameSize, dx: number,
     x: Math.abs(spill.width) > DRAG_SLACK_PX ? clampPercent(from.x - (dx / spill.width) * 100) : from.x,
     y: Math.abs(spill.height) > DRAG_SLACK_PX ? clampPercent(from.y - (dy / spill.height) * 100) : from.y,
   };
+}
+
+export function slideSizeStyle(framing: PhotoFraming | undefined): CSSProperties {
+  return { "--photo-size": (framing?.size ?? SIZE_MIN) / SIZE_MAX };
 }
 
 export function framingStyle(framing: PhotoFraming): CSSProperties {

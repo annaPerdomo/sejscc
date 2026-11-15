@@ -7,7 +7,7 @@ import { CarouselDots } from "@/components/carousel-dots";
 import { CarouselPlayToggle } from "@/components/carousel-play-toggle";
 import { HeroTitle } from "@/components/hero-title";
 import { PhotoFrame } from "@/components/photo-frame";
-import { PHOTO_SLIDE_ATTRIBUTE, type PhotoFraming } from "@/lib/photo-framing";
+import { DEFAULT_FRAMING, PHOTO_SLIDE_ATTRIBUTE, slideSizeStyle, type PhotoFraming } from "@/lib/photo-framing";
 import { SectionKicker } from "@/components/section-kicker";
 import { SectionDivider } from "@/components/section-divider";
 
@@ -29,19 +29,27 @@ function HeroPhotoFrame({
   framing,
   beside,
   aboveRow,
+  shown = true,
   children,
 }: {
   framing?: PhotoFraming;
   beside: boolean;
   aboveRow: boolean;
+  shown?: boolean;
   children: ReactNode;
 }) {
   return (
     <div
       {...{ [PHOTO_SLIDE_ATTRIBUTE]: framing?.fit ?? "fill" }}
-      className={`hero-slide ${beside ? "hero-slide-beside" : ""} ${aboveRow ? "hero-slide-above-row" : ""}`}
+      style={slideSizeStyle(framing)}
+      className={`hero-slide ${beside ? "hero-slide-beside" : ""} ${aboveRow ? "hero-slide-above-row" : ""} ${
+        shown ? "opacity-100" : "opacity-0"
+      }`}
     >
-      <PhotoFrame framing={framing}>{children}</PhotoFrame>
+      <div className="hero-slide-box">
+        <PhotoFrame framing={framing ?? DEFAULT_FRAMING}>{children}</PhotoFrame>
+      </div>
+      <div aria-hidden="true" className="hero-slide-wash" />
     </div>
   );
 }
@@ -180,6 +188,7 @@ export function PhotoHero({
                 <HeroPhotoFrame
                   key={typeof item.src === "string" ? item.src : i}
                   framing={item.framing}
+                  shown={i === active}
                   {...frameProps}
                 >
                   <Image
@@ -189,9 +198,7 @@ export function PhotoHero({
                     preload={i === 0}
                     fetchPriority={i === 0 ? "high" : undefined}
                     sizes="100vw"
-                    className={`object-cover transition-opacity duration-1000 ease-in-out ${
-                      i === 0 ? "hero-intro-photo" : ""
-                    } ${i === active ? "opacity-100" : "opacity-0"}`}
+                    className={`object-cover ${i === 0 ? "hero-intro-photo" : ""}`}
                   />
                 </HeroPhotoFrame>
               ) : null,

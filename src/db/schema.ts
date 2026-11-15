@@ -321,6 +321,8 @@ export const sitePhotos = pgTable("site_photo", {
   zoom: integer("zoom"),
   // Null fills the spot, cropping what doesn't fit.
   fit: text("fit", { enum: PHOTO_FITS }),
+  // Percent a whole hero photo has grown from its frame to the hero's full width.
+  size: integer("size"),
   updatedAt: timestamp("updated_at", { mode: "date" })
     .notNull()
     .defaultNow()

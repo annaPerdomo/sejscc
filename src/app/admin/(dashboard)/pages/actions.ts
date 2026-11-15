@@ -22,6 +22,8 @@ import {
   ORIGINAL_PHOTO_URL,
   ZOOM_MAX,
   PHOTO_FITS,
+  SIZE_MAX,
+  SIZE_MIN,
   ZOOM_MIN,
   framingToRow,
   type PhotoFraming,
@@ -304,17 +306,19 @@ function wholePercent(value: number, min: number, max: number): boolean {
 }
 
 function checkedFraming(framing: PhotoFraming): PhotoFraming {
-  const { x, y, zoom, fit } = framing;
+  const { x, y, zoom, fit, size } = framing;
   if (
     !wholePercent(x, 0, 100) ||
     !wholePercent(y, 0, 100) ||
     !wholePercent(zoom, ZOOM_MIN, ZOOM_MAX) ||
     !PHOTO_FITS.includes(fit) ||
-    (fit === "whole" && zoom !== ZOOM_MIN)
+    (fit === "whole" && zoom !== ZOOM_MIN) ||
+    !wholePercent(size, SIZE_MIN, SIZE_MAX) ||
+    (fit === "fill" && size !== SIZE_MIN)
   ) {
     throw new AdminError("That framing isn't possible. Please move or zoom the photo again.");
   }
-  return { x, y, zoom, fit };
+  return { x, y, zoom, fit, size };
 }
 
 function checkedAltJa(altJa: string): string | null {

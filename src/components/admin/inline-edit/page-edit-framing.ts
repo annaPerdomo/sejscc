@@ -1,6 +1,8 @@
 import { PAGE_EDIT_HOLD_ATTRIBUTE } from "@/lib/page-edit-hold";
 import {
   PHOTO_SLIDE_ATTRIBUTE,
+  SIZE_MAX,
+  withSize,
   clampZoom,
   draggedFraming,
   frameOverflow,
@@ -13,7 +15,14 @@ export const FRAMING_BOX_CLASS = "page-edit-framing-box";
 export type PageFramingSession = {
   apply: (framing: PhotoFraming) => void;
   stop: () => void;
+  /** Whether this photo can grow from a frame beside the words to the full hero. */
+  sizable: boolean;
 };
+
+const WHOLE_CLASS = "photo-frame-whole";
+const SIZE_HANDLE_CLASS = "page-edit-size-handle";
+const SIZABLE_SLIDE = ".hero-slide-beside";
+const SIZABLE_SCREEN = "(width >= 64rem)";
 
 type Point = { x: number; y: number };
 
@@ -48,9 +57,23 @@ export function startPageFraming(
     set(el.style);
   }
 
-  const slideFit = box.getAttribute(PHOTO_SLIDE_ATTRIBUTE);
-  const stage = slideFit !== null && box.parentElement ? box.parentElement : box;
+  const fitSlide = box.closest<HTMLElement>(`[${PHOTO_SLIDE_ATTRIBUTE}]`);
+  const slideFit = fitSlide?.getAttribute(PHOTO_SLIDE_ATTRIBUTE) ?? null;
+  const wasWhole = wrapper?.classList.contains(WHOLE_CLASS) ?? false;
+  const stage: HTMLElement = fitSlide?.parentElement ?? box;
   const slide = slideOf(image, stage);
+  const sizable = Boolean(fitSlide?.matches(SIZABLE_SLIDE)) && view.matchMedia(SIZABLE_SCREEN).matches;
+
+  const handles = sizable
+    ? ["top", "bottom"].map((edge) => {
+        const handle = doc.createElement("div");
+        handle.className = SIZE_HANDLE_CLASS;
+        handle.textContent = "↔";
+        handle.style.setProperty(edge, "0");
+        box.append(handle);
+        return handle;
+      })
+    : [];
   for (const sibling of stage.children) {
     if (sibling === slide || !(sibling instanceof view.HTMLElement)) continue;
     if (sibling.tagName === "IMG" || sibling.querySelector("img")) {
@@ -70,11 +93,16 @@ export function startPageFraming(
   let current = framing;
   function apply(next: PhotoFraming) {
     current = next;
-    if (slideFit !== null) box.setAttribute(PHOTO_SLIDE_ATTRIBUTE, next.fit);
-    restyle(image, (style) => {
-      style.setProperty("object-fit", next.fit === "whole" ? "contain" : "cover", "important");
-    });
+    const whole = next.fit === "whole";
+    if (fitSlide) {
+      fitSlide.setAttribute(PHOTO_SLIDE_ATTRIBUTE, next.fit);
+      restyle(fitSlide, (style) => {
+        style.setProperty("--photo-size", String(next.size / SIZE_MAX));
+      });
+    }
+    for (const handle of handles) handle.hidden = !whole;
     if (wrapper) {
+      wrapper.classList.toggle(WHOLE_CLASS, whole);
       restyle(wrapper, (style) => {
         style.setProperty("--frame-x", `${next.x}%`);
         style.setProperty("--frame-y", `${next.y}%`);
@@ -83,6 +111,7 @@ export function startPageFraming(
       return;
     }
     restyle(image, (style) => {
+      style.setProperty("object-fit", whole ? "contain" : "cover", "important");
       style.maxWidth = "none";
       style.width = `${next.zoom}%`;
       style.height = `${next.zoom}%`;
@@ -94,6 +123,16 @@ export function startPageFraming(
 
   const pointers = new Map<number, Point>();
   let dragFrom: { pointer: Point; framing: PhotoFraming } | null = null;
+  let resizeFrom: { pointerId: number; x: number; size: number; travel: number } | null = null;
+
+  // The box's left edge follows the handle: `travel` is how far it moves from frame to full width.
+  function startResize(event: PointerEvent) {
+    const offset = box.getBoundingClientRect().left - stage.getBoundingClientRect().left;
+    const rest = 1 - current.size / SIZE_MAX;
+    const travel = rest > 0 ? offset / rest : stage.getBoundingClientRect().width / 2;
+    resizeFrom = { pointerId: event.pointerId, x: event.clientX, size: current.size, travel };
+    box.setPointerCapture(event.pointerId);
+  }
   let pinchFrom: { distance: number; zoom: number } | null = null;
 
   function pinchDistance(): number {
@@ -111,12 +150,22 @@ export function startPageFraming(
     const point = { x: event.clientX, y: event.clientY };
     if (event.button !== 0 || !contains(box.getBoundingClientRect(), point)) return;
     event.preventDefault();
+    // The page's words lie over the photo, so the handle is found by where it is, not as the target.
+    if (handles.some((handle) => !handle.hidden && contains(handle.getBoundingClientRect(), point))) {
+      startResize(event);
+      return;
+    }
     box.setPointerCapture(event.pointerId);
     pointers.set(event.pointerId, point);
     rebase();
   }
 
   function onPointerMove(event: PointerEvent) {
+    if (resizeFrom?.pointerId === event.pointerId) {
+      const grown = ((resizeFrom.x - event.clientX) / resizeFrom.travel) * SIZE_MAX;
+      onChange(withSize(current, resizeFrom.size + grown));
+      return;
+    }
     if (!pointers.has(event.pointerId)) return;
     const point = { x: event.clientX, y: event.clientY };
     pointers.set(event.pointerId, point);
@@ -134,12 +183,18 @@ export function startPageFraming(
   }
 
   function onPointerEnd(event: PointerEvent) {
+    if (resizeFrom?.pointerId === event.pointerId) {
+      resizeFrom = null;
+      if (box.hasPointerCapture(event.pointerId)) box.releasePointerCapture(event.pointerId);
+      return;
+    }
     if (!pointers.delete(event.pointerId)) return;
     if (box.hasPointerCapture(event.pointerId)) box.releasePointerCapture(event.pointerId);
     rebase();
   }
 
   function onBlur() {
+    resizeFrom = null;
     pointers.clear();
     rebase();
   }
@@ -165,11 +220,14 @@ export function startPageFraming(
 
   return {
     apply,
+    sizable,
     stop() {
       for (const [type, listener] of listeners) doc.removeEventListener(type, listener, { capture: true });
       view.removeEventListener("blur", onBlur);
       box.classList.remove(FRAMING_BOX_CLASS);
-      if (slideFit !== null) box.setAttribute(PHOTO_SLIDE_ATTRIBUTE, slideFit);
+      for (const handle of handles) handle.remove();
+      if (fitSlide && slideFit !== null) fitSlide.setAttribute(PHOTO_SLIDE_ATTRIBUTE, slideFit);
+      wrapper?.classList.toggle(WHOLE_CLASS, wasWhole);
       const topBefore = box.getBoundingClientRect().top;
       doc.documentElement.removeAttribute(PAGE_EDIT_HOLD_ATTRIBUTE);
       view.scrollBy({ top: box.getBoundingClientRect().top - topBefore });

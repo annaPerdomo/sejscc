@@ -21,6 +21,7 @@ export type PageFraming = {
   framing: PhotoFraming;
   onChange: (next: PhotoFraming) => void;
   onUnavailable: () => void;
+  onSizable: (sizable: boolean) => void;
   onCancel: () => void;
   bar: ReactNode;
 };
@@ -113,6 +114,7 @@ export function PageEditor({
       return;
     }
     sessionRef.current = session;
+    active.onSizable(session.sizable);
     return () => {
       session.stop();
       sessionRef.current = null;
