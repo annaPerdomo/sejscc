@@ -25,10 +25,13 @@ export type GroupInput = {
   websiteUrl: string;
   contactEmail: string;
   meetingSchedule: string;
+  room: string;
   meetingDays: WeekDay[];
   active: boolean;
   status: GroupStatus;
 };
+
+const ROOM_MAX = 60;
 
 function checkedPhotoUrls(raw: string[]) {
   if (!Array.isArray(raw)) return [];
@@ -67,6 +70,7 @@ function groupValues(input: GroupInput) {
     websiteUrl: normalizeWebsiteUrl(input.websiteUrl),
     contactEmail: normalizeContactEmail(input.contactEmail),
     meetingSchedule: trimmed(input.meetingSchedule, 100),
+    room: trimmed(input.room, ROOM_MAX),
     meetingDays: checkedMeetingDays(input.meetingDays),
     active: input.active,
     status: input.status,
@@ -171,12 +175,13 @@ export async function reorderGroups(
   });
 }
 
-export type GroupTextField = "name" | "nameJa" | "meetingSchedule" | "description" | "contactEmail";
+export type GroupTextField = "name" | "nameJa" | "meetingSchedule" | "room" | "description" | "contactEmail";
 
 const GROUP_TEXT_LIMITS: Record<Exclude<GroupTextField, "contactEmail">, { noun: string; max: number }> = {
   name: { noun: "group name", max: 100 },
   nameJa: { noun: "Japanese name", max: 60 },
   meetingSchedule: { noun: "meeting times", max: 100 },
+  room: { noun: "room", max: ROOM_MAX },
   description: { noun: "description", max: 500 },
 };
 
@@ -192,7 +197,7 @@ function checkedGroupText(field: GroupTextField, raw: string): string | null {
 export async function updateGroupText(id: string, field: GroupTextField, value: string): Promise<ActionResult> {
   return runAction(async () => {
     const editor = await requireUser();
-    if (!["name", "nameJa", "meetingSchedule", "description", "contactEmail"].includes(field)) {
+    if (!["name", "nameJa", "meetingSchedule", "room", "description", "contactEmail"].includes(field)) {
       throw new AdminError("That part of the group can't be changed here.");
     }
     const result = await trackChange(editor, "group", id, () =>

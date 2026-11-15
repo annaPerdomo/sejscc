@@ -149,6 +149,7 @@ export const groups = pgTable("group", {
   websiteUrl: text("website_url"),
   contactEmail: text("contact_email"),
   meetingSchedule: text("meeting_schedule"),
+  room: text("room"),
   meetingDays: text("meeting_days", { enum: weekDays }).array().notNull().default([]),
   sortOrder: integer("sort_order").notNull().default(0),
   active: boolean("active").notNull().default(true),

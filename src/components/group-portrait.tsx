@@ -97,9 +97,11 @@ export async function GroupPortrait({ group }: { group: Group }) {
             </p>
           )
         )}
-        <p>
-          <EventMeta icon="pin">{dict.groups.meetsAtCenter}</EventMeta>
-        </p>
+        {group.room && (
+          <p data-edit-record={`group:${group.id}:room`}>
+            <EventMeta icon="pin">{group.room}</EventMeta>
+          </p>
+        )}
       </div>
 
       <div>

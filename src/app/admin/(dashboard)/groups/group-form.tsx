@@ -37,6 +37,7 @@ type ExistingGroup = {
   websiteUrl: string | null;
   contactEmail: string | null;
   meetingSchedule: string | null;
+  room: string | null;
   meetingDays: WeekDay[];
   active: boolean;
   status: GroupStatus;
@@ -72,6 +73,7 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
   const [meetingSchedule, setMeetingSchedule] = useState(
     group?.meetingSchedule ?? ""
   );
+  const [room, setRoom] = useState(group?.room ?? "");
   const [meetingDays, setMeetingDays] = useState<WeekDay[]>(
     group?.meetingDays ?? []
   );
@@ -215,6 +217,7 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
         nameJa,
         description,
         meetingSchedule,
+        room,
         meetingDays,
         websiteUrl,
         contactEmail,
@@ -442,6 +445,18 @@ export function GroupForm({ group }: { group?: ExistingGroup }) {
         </div>
         <p className="mt-2 text-xs text-stone">
           Printed on the group’s card word for word. {daysReminder}
+        </p>
+        <div className="mt-5">
+          <AdminTextField
+            label="Where it meets"
+            value={room}
+            onChange={(e) => setRoom(e.target.value)}
+            maxLength={60}
+            placeholder="e.g. Dojo, Gym or Classroom"
+          />
+        </div>
+        <p className="mt-2 text-xs text-stone">
+          The room at the center, shown on the group’s card. Leave it empty to show nothing.
         </p>
         <div className="mt-5">
           <AdminTextArea

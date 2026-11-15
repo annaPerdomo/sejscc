@@ -263,6 +263,18 @@ function groupItems(row: Group): RecordItem[] {
       row.meetingSchedule
     ),
     sharedWords(
+      {
+        record: of("room"),
+        title: `Where it meets (${row.name})`,
+        textKind: "short",
+        max: 60,
+        required: false,
+        placeholder: "For example: Dojo, Gym or Classroom",
+        save: (_lang, value) => updateGroupText(row.id, "room", value),
+      },
+      row.room
+    ),
+    sharedWords(
       { record: of("description"), title: `Description (${row.name})`, textKind: "body", max: 500, required: false, save: (_lang, value) => updateGroupText(row.id, "description", value) },
       row.description
     ),
