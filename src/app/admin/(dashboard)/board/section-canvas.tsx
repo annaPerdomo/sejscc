@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { expectOk } from "@/lib/action-result";
-import { JAPANESE_EDIT_NOTE, withJapaneseNote } from "@/lib/admin-messages";
+import { JAPANESE_EDIT_NOTE, languageName, withJapaneseNote, withLanguageName } from "@/lib/admin-messages";
 import { EditBar, type EditBarStatus } from "@/components/admin/inline-edit/edit-bar";
 import { EditableLink } from "@/components/admin/inline-edit/editable-link";
 import { EditableText } from "@/components/admin/inline-edit/editable-text";
@@ -142,7 +142,7 @@ export function SectionCanvas({
     return (
       <EditableText
         key={`${field}-${lang}`}
-        label={`${FIELD_DISPLAY_LABELS[field]} — ${lang === "en" ? "English" : "Japanese"}`}
+        label={withLanguageName(FIELD_DISPLAY_LABELS[field], languageName(lang))}
         noun={noun}
         value={value}
         fallback={lang === "ja" ? englishText : undefined}
@@ -195,7 +195,7 @@ export function SectionCanvas({
     return (
       <EditableLink
         key={`${field}-${lang}`}
-        label={`Contact link — ${lang === "en" ? "English" : "Japanese"}`}
+        label={withLanguageName("Contact link", languageName(lang))}
         noun={noun}
         value={value}
         fallback={lang === "ja" ? englishText : undefined}

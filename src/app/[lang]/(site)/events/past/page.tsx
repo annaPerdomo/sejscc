@@ -5,7 +5,7 @@ import { KanjiWatermark } from "@/components/kanji-watermark";
 import { PhotoHero } from "@/components/photo-hero";
 import { getPastEvents, type Event } from "@/lib/events";
 import { getDictionary, getDictionaryFor, getLocale } from "@/lib/dictionaries";
-import { hasLocale, localePath } from "@/lib/i18n";
+import { hasLocale, languageAlternates, localePath } from "@/lib/i18n";
 import { getSitePhotos, slotPhoto } from "@/lib/site-photos";
 
 export const revalidate = 300;
@@ -22,14 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: dict.events.archive.metaTitle,
     description: dict.events.archive.metaDescription,
-    alternates: {
-      canonical: localePath(lang, "/events/past"),
-      languages: {
-        en: "/events/past",
-        ja: "/ja/events/past",
-        "x-default": "/events/past",
-      },
-    },
+    alternates: languageAlternates(lang, "/events/past"),
   };
 }
 

@@ -9,7 +9,7 @@ import { SectionHeading } from "@/components/section-heading";
 import { SectionKicker } from "@/components/section-kicker";
 import { getPastEvents, getUpcomingEvents } from "@/lib/events";
 import { getDictionary, getDictionaryFor, getLocale } from "@/lib/dictionaries";
-import { hasLocale, localePath } from "@/lib/i18n";
+import { hasLocale, languageAlternates, localePath } from "@/lib/i18n";
 import { eventsPhotos } from "@/lib/photos";
 import { getSitePhotos, slotPhoto } from "@/lib/site-photos";
 
@@ -29,14 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: dict.events.metaTitle,
     description: dict.events.metaDescription,
-    alternates: {
-      canonical: localePath(lang, "/events"),
-      languages: {
-        en: "/events",
-        ja: "/ja/events",
-        "x-default": "/events",
-      },
-    },
+    alternates: languageAlternates(lang, "/events"),
   };
 }
 

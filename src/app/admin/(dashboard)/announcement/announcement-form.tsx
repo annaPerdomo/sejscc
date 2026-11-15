@@ -4,7 +4,7 @@ import { useId, useState, type FormEvent, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { AdminAlert } from "@/components/admin/admin-alert";
 import { AdminButton, AdminFormActions } from "@/components/admin/admin-button";
-import { AdminAutoJapanese, AdminCharacterCount, AdminOptional, AdminTextField } from "@/components/admin/admin-field";
+import { AdminAutoJapanese, JapaneseOnly, AdminCharacterCount, AdminOptional, AdminTextField } from "@/components/admin/admin-field";
 import { expectOk } from "@/lib/action-result";
 import { withJapaneseNote } from "@/lib/admin-messages";
 import en from "@/dictionaries/en.json";
@@ -215,17 +215,19 @@ export function AnnouncementForm({
                 <AdminCharacterCount value={text} max={TEXT_MAX} />
               </div>
 
-              <AdminTextField
-                label={
-                  <>
-                    Message (Japanese) <AdminAutoJapanese />
-                  </>
-                }
-                value={textJa}
-                onChange={(e) => setTextJa(e.target.value)}
-                maxLength={TEXT_MAX}
-                autoComplete="off"
-              />
+              <JapaneseOnly>
+                <AdminTextField
+                  label={
+                    <>
+                      Message (Japanese) <AdminAutoJapanese />
+                    </>
+                  }
+                  value={textJa}
+                  onChange={(e) => setTextJa(e.target.value)}
+                  maxLength={TEXT_MAX}
+                  autoComplete="off"
+                />
+              </JapaneseOnly>
 
               <div>
                 <AdminTextField
@@ -259,8 +261,8 @@ export function AnnouncementForm({
                     autoComplete="off"
                   />
                   <p className="mt-1.5 text-sm text-stone">
-                    For example “Sign up”, “Read the letter” or “Email us”. The
-                    Japanese site always says 詳しく見る.
+                    For example “Sign up”, “Read the letter” or “Email us”.
+                    <JapaneseOnly> The Japanese site always says 詳しく見る.</JapaneseOnly>
                   </p>
                 </div>
               )}

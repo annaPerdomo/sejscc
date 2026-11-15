@@ -19,7 +19,7 @@ import {
   NEW_CLUB_PROCEDURE_URL,
 } from "@/lib/groups";
 import { getDictionary, getDictionaryFor, getLocale } from "@/lib/dictionaries";
-import { hasLocale, localePath } from "@/lib/i18n";
+import { hasLocale, languageAlternates, localePath } from "@/lib/i18n";
 import { getCenterContact } from "@/lib/site-settings";
 import { groupsPhotos } from "@/lib/photos";
 import { getSitePhotos, slotPhoto } from "@/lib/site-photos";
@@ -45,14 +45,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: dict.groups.metaTitle,
     description: dict.groups.metaDescription,
-    alternates: {
-      canonical: localePath(lang, "/groups"),
-      languages: {
-        en: "/groups",
-        ja: "/ja/groups",
-        "x-default": "/groups",
-      },
-    },
+    alternates: languageAlternates(lang, "/groups"),
   };
 }
 

@@ -293,12 +293,28 @@ applying a schema change against production data.
 
 ## Internationalization
 
-The site is bilingual (English/Japanese) via
-[getDictionary()](src/lib/dictionaries.ts) and the JSON files in
-[src/dictionaries/](src/dictionaries/). Every user-facing string on the
-public site must be added to both `en.json` and `ja.json` and read through
-the dictionary — never hardcode English text in a component. A string in
-one language file and not the other is a bug.
+The public site is English only for now. The center asked for the Japanese
+pages to come down, so `publishedLocales` in [i18n.ts](src/lib/i18n.ts) lists
+just `en`: the proxy sends every `/ja` address to its English page, the
+language toggle is gone, and the admin shows no Japanese switch, Japanese
+inputs or review step and never calls the translator. The Japanese words on
+the English pages (kickers, kanji, name plaques) are decoration and stay.
+
+Nothing Japanese was deleted. `ja.json`, the `*Ja` columns and the stored
+Japanese text are all still there, and adding `"ja"` back to
+`publishedLocales` turns the pages, the toggle and the admin's Japanese
+tools on again. Japanese saved before the switch can be out of date: while
+it is off, changing a sentence's English clears that sentence's Japanese, so
+it falls back to English until it is rewritten.
+
+So keep the code bilingual. Every user-facing string on the public site is
+still read through [getDictionary()](src/lib/dictionaries.ts) and must be
+added to both `en.json` and `ja.json` in
+[src/dictionaries/](src/dictionaries/) — never hardcode English text in a
+component. A string in one language file and not the other is a bug. Wrap
+anything in the admin that exists only for Japanese in `JapaneseOnly`
+([admin-field.tsx](src/components/admin/admin-field.tsx)) or check
+`japaneseEnabled`.
 
 ## Dependencies
 

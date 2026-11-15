@@ -6,7 +6,7 @@ import { upload } from "@vercel/blob/client";
 import { AdminAlert, AdminRequirements } from "@/components/admin/admin-alert";
 import { AdminButton, AdminFormActions } from "@/components/admin/admin-button";
 import { AdminCard, AdminCardHeading, AdminStep } from "@/components/admin/admin-card";
-import { AdminAutoJapanese, AdminCharacterCount, AdminOptional, AdminRequired, AdminSelect, AdminTextArea, AdminTextField } from "@/components/admin/admin-field";
+import { AdminAutoJapanese, JapaneseOnly, AdminCharacterCount, AdminOptional, AdminRequired, AdminSelect, AdminTextArea, AdminTextField } from "@/components/admin/admin-field";
 import { AdminImagePicker } from "@/components/admin/admin-image-picker";
 import { JapaneseNotWritten, japaneseWasNotWritten } from "@/components/admin/japanese-not-written";
 import type { SchoolYearEvent } from "@/db/schema";
@@ -163,15 +163,17 @@ export function EventForm({ event }: { event?: SchoolYearEvent }) {
           placeholder="e.g. Undokai"
         />
         <AdminCharacterCount value={title} max={TITLE_MAX} />
-        <div className="mt-5">
-          <AdminTextField
-            label={<>Event name (Japanese) <AdminAutoJapanese /></>}
-            value={titleJa}
-            onChange={(e) => setTitleJa(e.target.value)}
-            maxLength={TITLE_MAX}
-            placeholder="e.g. 運動会"
-          />
-        </div>
+        <JapaneseOnly>
+          <div className="mt-5">
+            <AdminTextField
+              label={<>Event name (Japanese) <AdminAutoJapanese /></>}
+              value={titleJa}
+              onChange={(e) => setTitleJa(e.target.value)}
+              maxLength={TITLE_MAX}
+              placeholder="e.g. 運動会"
+            />
+          </div>
+        </JapaneseOnly>
       </AdminCard>
 
       <AdminCard>
@@ -208,14 +210,16 @@ export function EventForm({ event }: { event?: SchoolYearEvent }) {
           />
           <AdminCharacterCount value={gloss} max={GLOSS_MAX} />
         </div>
-        <div className="mt-5">
-          <AdminTextField
-            label={<>Japanese <AdminAutoJapanese /></>}
-            value={glossJa}
-            onChange={(e) => setGlossJa(e.target.value)}
-            maxLength={GLOSS_MAX}
-          />
-        </div>
+        <JapaneseOnly>
+          <div className="mt-5">
+            <AdminTextField
+              label={<>Japanese <AdminAutoJapanese /></>}
+              value={glossJa}
+              onChange={(e) => setGlossJa(e.target.value)}
+              maxLength={GLOSS_MAX}
+            />
+          </div>
+        </JapaneseOnly>
       </AdminCard>
 
       <AdminCard>
@@ -251,14 +255,16 @@ export function EventForm({ event }: { event?: SchoolYearEvent }) {
           />
           <AdminCharacterCount value={when} max={WHEN_MAX} />
         </div>
-        <div className="mt-5">
-          <AdminTextField
-            label={<>Japanese <AdminAutoJapanese /></>}
-            value={whenJa}
-            onChange={(e) => setWhenJa(e.target.value)}
-            maxLength={WHEN_MAX}
-          />
-        </div>
+        <JapaneseOnly>
+          <div className="mt-5">
+            <AdminTextField
+              label={<>Japanese <AdminAutoJapanese /></>}
+              value={whenJa}
+              onChange={(e) => setWhenJa(e.target.value)}
+              maxLength={WHEN_MAX}
+            />
+          </div>
+        </JapaneseOnly>
       </AdminCard>
 
       <AdminCard>
@@ -277,14 +283,16 @@ export function EventForm({ event }: { event?: SchoolYearEvent }) {
           />
           <AdminCharacterCount value={label} max={LABEL_MAX} />
         </div>
-        <div className="mt-5">
-          <AdminTextField
-            label={<>Japanese <AdminAutoJapanese /></>}
-            value={labelJa}
-            onChange={(e) => setLabelJa(e.target.value)}
-            maxLength={LABEL_MAX}
-          />
-        </div>
+        <JapaneseOnly>
+          <div className="mt-5">
+            <AdminTextField
+              label={<>Japanese <AdminAutoJapanese /></>}
+              value={labelJa}
+              onChange={(e) => setLabelJa(e.target.value)}
+              maxLength={LABEL_MAX}
+            />
+          </div>
+        </JapaneseOnly>
         <p className="mt-3 text-xs text-stone">
           Shown on the small tab the reader taps to jump to this event.
         </p>
@@ -306,14 +314,16 @@ export function EventForm({ event }: { event?: SchoolYearEvent }) {
           />
           <AdminCharacterCount value={abbr} max={ABBR_MAX} />
         </div>
-        <div className="mt-5">
-          <AdminTextField
-            label={<>Japanese <AdminAutoJapanese /></>}
-            value={abbrJa}
-            onChange={(e) => setAbbrJa(e.target.value)}
-            maxLength={ABBR_MAX}
-          />
-        </div>
+        <JapaneseOnly>
+          <div className="mt-5">
+            <AdminTextField
+              label={<>Japanese <AdminAutoJapanese /></>}
+              value={abbrJa}
+              onChange={(e) => setAbbrJa(e.target.value)}
+              maxLength={ABBR_MAX}
+            />
+          </div>
+        </JapaneseOnly>
       </AdminCard>
 
       <AdminCard>
@@ -333,15 +343,17 @@ export function EventForm({ event }: { event?: SchoolYearEvent }) {
           />
           <AdminCharacterCount value={description} max={DESCRIPTION_MAX} />
         </div>
-        <div className="mt-5">
-          <AdminTextArea
-            label={<>Japanese <AdminAutoJapanese /></>}
-            value={descriptionJa}
-            onChange={(e) => setDescriptionJa(e.target.value)}
-            maxLength={DESCRIPTION_MAX}
-            rows={6}
-          />
-        </div>
+        <JapaneseOnly>
+          <div className="mt-5">
+            <AdminTextArea
+              label={<>Japanese <AdminAutoJapanese /></>}
+              value={descriptionJa}
+              onChange={(e) => setDescriptionJa(e.target.value)}
+              maxLength={DESCRIPTION_MAX}
+              rows={6}
+            />
+          </div>
+        </JapaneseOnly>
       </AdminCard>
 
       <AdminCard>
@@ -374,13 +386,15 @@ export function EventForm({ event }: { event?: SchoolYearEvent }) {
             placeholder="e.g. Students racing on the field during Undokai"
           />
         </div>
-        <div className="mt-5">
-          <AdminTextField
-            label={<>Japanese <AdminAutoJapanese /></>}
-            value={photoAltJa}
-            onChange={(e) => setPhotoAltJa(e.target.value)}
-          />
-        </div>
+        <JapaneseOnly>
+          <div className="mt-5">
+            <AdminTextField
+              label={<>Japanese <AdminAutoJapanese /></>}
+              value={photoAltJa}
+              onChange={(e) => setPhotoAltJa(e.target.value)}
+            />
+          </div>
+        </JapaneseOnly>
         <p className="mt-3 text-xs text-stone">
           Describe the photo for people who can&apos;t see it. An event
           without a photo won&apos;t appear on the website.

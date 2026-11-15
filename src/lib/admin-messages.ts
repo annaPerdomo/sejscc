@@ -1,3 +1,4 @@
+import { japaneseEnabled, type Locale } from "@/lib/i18n";
 import type { JapaneseUpdate } from "@/lib/japanese-drafts";
 
 export const SIGN_IN_AGAIN_MESSAGE =
@@ -21,3 +22,12 @@ export function withJapaneseNote(message: string, update: JapaneseUpdate | null)
 
 export const JAPANESE_EDIT_NOTE =
   "This Japanese is written for you from the English. Change it only to fix the Japanese. Your fix stays until the English changes.";
+
+export function languageName(lang: Locale): string | undefined {
+  if (!japaneseEnabled) return undefined;
+  return lang === "en" ? "English" : "Japanese";
+}
+
+export function withLanguageName(label: string, language: string | undefined): string {
+  return language ? `${label} — ${language}` : label;
+}

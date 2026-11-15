@@ -28,7 +28,7 @@ import {
   formatWeekday,
   wallClockNow,
 } from "@/lib/format";
-import { hasLocale, localePath } from "@/lib/i18n";
+import { hasLocale, languageAlternates, localePath } from "@/lib/i18n";
 import { eventsPhotos } from "@/lib/photos";
 import { getSitePhotos, slotPhoto } from "@/lib/site-photos";
 
@@ -52,14 +52,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: dict.events.calendars.metaTitle,
     description: dict.events.calendars.metaDescription,
-    alternates: {
-      canonical: localePath(lang, "/calendar"),
-      languages: {
-        en: "/calendar",
-        ja: "/ja/calendar",
-        "x-default": "/calendar",
-      },
-    },
+    alternates: languageAlternates(lang, "/calendar"),
   };
 }
 

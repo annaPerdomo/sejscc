@@ -12,7 +12,7 @@ import { SectionKicker } from "@/components/section-kicker";
 import { SitePhoto } from "@/components/site-photo";
 import { SectionDivider } from "@/components/section-divider";
 import { getDictionary, getDictionaryFor, getLocale } from "@/lib/dictionaries";
-import { hasLocale, localePath } from "@/lib/i18n";
+import { hasLocale, languageAlternates } from "@/lib/i18n";
 import { schoolPhotos } from "@/lib/photos";
 import { getSchoolLevels } from "@/lib/school-levels";
 import { getSitePhotos, slotPhoto } from "@/lib/site-photos";
@@ -73,14 +73,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: dict.school.metaTitle,
     description: dict.school.metaDescription,
-    alternates: {
-      canonical: localePath(lang, "/school"),
-      languages: {
-        en: "/school",
-        ja: "/ja/school",
-        "x-default": "/school",
-      },
-    },
+    alternates: languageAlternates(lang, "/school"),
   };
 }
 

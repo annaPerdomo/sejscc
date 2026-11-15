@@ -3,14 +3,14 @@ import {
   LOCALE_COOKIE,
   LOCALE_COOKIE_MAX_AGE,
   defaultLocale,
-  hasLocale,
+  isPublishedLocale,
   locales,
   type Locale,
 } from "@/lib/i18n";
 
 function preferredLocale(request: NextRequest): Locale {
   const cookie = request.cookies.get(LOCALE_COOKIE)?.value;
-  if (cookie && hasLocale(cookie)) return cookie;
+  if (cookie && isPublishedLocale(cookie)) return cookie;
 
   const header = request.headers.get("accept-language");
   if (header) {
@@ -18,8 +18,8 @@ function preferredLocale(request: NextRequest): Locale {
     for (const part of header.split(",")) {
       const tag = part.split(";")[0].trim().toLowerCase();
       const base = tag.split("-")[0];
-      if (hasLocale(tag)) return tag;
-      if (hasLocale(base)) return base;
+      if (isPublishedLocale(tag)) return tag;
+      if (isPublishedLocale(base)) return base;
     }
   }
   return defaultLocale;
@@ -31,11 +31,12 @@ export function proxy(request: NextRequest) {
     (locale) => pathname === `/${locale}` || pathname.startsWith(`/${locale}/`)
   );
 
-  // /en/events → /events. The cookie must be set here, or a Japanese
-  // Accept-Language header would bounce the prefix-less follow-up back to /ja.
-  if (pathLocale === defaultLocale) {
+  // /en/events → /events, and the same for a locale that isn't published. The
+  // cookie must be set here, or a Japanese Accept-Language header would bounce
+  // the prefix-less follow-up back to /ja.
+  if (pathLocale && (pathLocale === defaultLocale || !isPublishedLocale(pathLocale))) {
     const url = request.nextUrl.clone();
-    url.pathname = pathname.slice(defaultLocale.length + 1) || "/";
+    url.pathname = pathname.slice(pathLocale.length + 1) || "/";
     const response = NextResponse.redirect(url);
     response.cookies.set(LOCALE_COOKIE, defaultLocale, {
       path: "/",
