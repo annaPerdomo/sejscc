@@ -25,8 +25,6 @@ type RotationLabels = {
   photo: string;
 };
 
-// A whole photo would be half hidden under the wash that keeps the words
-// readable, so on wide screens it stands clear of them, beside the text.
 function HeroPhotoFrame({
   framing,
   beside,
@@ -38,14 +36,12 @@ function HeroPhotoFrame({
   aboveRow: boolean;
   children: ReactNode;
 }) {
-  const frame = <PhotoFrame framing={framing}>{children}</PhotoFrame>;
-  if (framing?.fit !== "whole") return frame;
-  const place = beside
-    ? `lg:top-12 lg:right-16 lg:left-2/3 lg:z-10 xl:left-3/5 ${aboveRow ? "lg:bottom-60" : "lg:bottom-12"}`
-    : "";
   return (
-    <div {...{ [PHOTO_SLIDE_ATTRIBUTE]: "" }} className={`absolute inset-0 overflow-clip ${place}`}>
-      {frame}
+    <div
+      {...{ [PHOTO_SLIDE_ATTRIBUTE]: framing?.fit ?? "fill" }}
+      className={`hero-slide ${beside ? "hero-slide-beside" : ""} ${aboveRow ? "hero-slide-above-row" : ""}`}
+    >
+      <PhotoFrame framing={framing}>{children}</PhotoFrame>
     </div>
   );
 }
@@ -106,7 +102,7 @@ export function PhotoHero({
       ? photos.some((item) => item.framing?.fit === "whole")
       : photoFraming?.fit === "whole";
   const photoBeside = showsWholePhoto && !asideAtEnd;
-  const frameProps = { beside: photoBeside, aboveRow: Boolean(below) };
+  const frameProps = { beside: !asideAtEnd, aboveRow: Boolean(below) };
 
   const text = (
     <div

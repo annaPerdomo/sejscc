@@ -9,8 +9,8 @@ export type PhotoFraming = { x: number; y: number; zoom: number; fit: PhotoFit }
 // stores how it is framed, so renaming a bundled photo can't orphan it.
 export const ORIGINAL_PHOTO_URL = "";
 
-// Marks a slide that sits in its own box inside a stage of slides, so the
-// admin's framing tool hides the stage's other slides, not just the box's.
+// Marks a slide's own box inside a stage of slides and carries its fit, so the
+// admin's framing tool can hide the stage's other slides and preview a change of fit.
 export const PHOTO_SLIDE_ATTRIBUTE = "data-photo-slide";
 
 export const ZOOM_MIN = 100;

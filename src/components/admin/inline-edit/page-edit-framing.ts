@@ -48,7 +48,8 @@ export function startPageFraming(
     set(el.style);
   }
 
-  const stage = box.hasAttribute(PHOTO_SLIDE_ATTRIBUTE) && box.parentElement ? box.parentElement : box;
+  const slideFit = box.getAttribute(PHOTO_SLIDE_ATTRIBUTE);
+  const stage = slideFit !== null && box.parentElement ? box.parentElement : box;
   const slide = slideOf(image, stage);
   for (const sibling of stage.children) {
     if (sibling === slide || !(sibling instanceof view.HTMLElement)) continue;
@@ -69,6 +70,7 @@ export function startPageFraming(
   let current = framing;
   function apply(next: PhotoFraming) {
     current = next;
+    if (slideFit !== null) box.setAttribute(PHOTO_SLIDE_ATTRIBUTE, next.fit);
     restyle(image, (style) => {
       style.setProperty("object-fit", next.fit === "whole" ? "contain" : "cover", "important");
     });
@@ -167,6 +169,7 @@ export function startPageFraming(
       for (const [type, listener] of listeners) doc.removeEventListener(type, listener, { capture: true });
       view.removeEventListener("blur", onBlur);
       box.classList.remove(FRAMING_BOX_CLASS);
+      if (slideFit !== null) box.setAttribute(PHOTO_SLIDE_ATTRIBUTE, slideFit);
       const topBefore = box.getBoundingClientRect().top;
       doc.documentElement.removeAttribute(PAGE_EDIT_HOLD_ATTRIBUTE);
       view.scrollBy({ top: box.getBoundingClientRect().top - topBefore });

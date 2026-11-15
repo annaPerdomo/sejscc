@@ -74,7 +74,11 @@ be built from these tokens via Tailwind utility classes.
 - Shared visual treatments that aren't components in their own right live as
   classes in `@layer components` in [globals.css](src/app/globals.css):
   `surface-card` (plus `surface-card-link` for a clickable card),
-  `button-primary`, `button-donate`, `flyer-mount` (a flyer, or the donation form, on a cream
+  `button-primary`, `button-donate`, `photo-frame` (how a photo sits in its
+  spot: the point kept in view and the zoom, plus `photo-frame-whole` when the
+  admin chose to show the whole picture instead of filling the spot),
+  `hero-slide` (a photo at the top of a page; a whole one stands beside the
+  hero's words from 64rem up instead of under the wash), `flyer-mount` (a flyer, or the donation form, on a cream
   board with gold rules; pair it with the gold rings), `asanoha-frame` (a
   navy band of gold hemp-leaf lattice around the featured group photo),
   `school-plaque` (a cream name board set in vertical Japanese, like a

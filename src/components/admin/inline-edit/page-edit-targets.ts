@@ -380,6 +380,8 @@ export function showPhotoButtons(
 
     for (const image of doc.querySelectorAll(`img[${TARGET_ATTRIBUTE}]`)) {
       if (!image.checkVisibility({ opacityProperty: true, visibilityProperty: true })) continue;
+      // A slide fading out is still faintly there, and may not share its spot with the one fading in.
+      if (Number(view.getComputedStyle(image).opacity) < 0.5) continue;
       const box = visibleBox(image, view, headerBottom);
       if (!box) continue;
       const spot = `${Math.round(box.top)}:${Math.round(box.right)}`;

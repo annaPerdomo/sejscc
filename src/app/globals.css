@@ -118,6 +118,31 @@ body {
     animation: none !important;
   }
 
+  .hero-slide {
+    position: absolute;
+    inset: 0;
+    overflow: clip;
+  }
+
+  /* A whole photo would be half hidden under the wash that keeps the hero's
+     words readable, so on wide screens it stands above the wash, beside them. */
+  @media (width >= 64rem) {
+    .hero-slide-beside[data-photo-slide="whole"] {
+      z-index: 10;
+      inset: 3rem 4rem 3rem 66%;
+    }
+
+    .hero-slide-beside.hero-slide-above-row[data-photo-slide="whole"] {
+      bottom: 15rem;
+    }
+  }
+
+  @media (width >= 80rem) {
+    .hero-slide-beside[data-photo-slide="whole"] {
+      left: 60%;
+    }
+  }
+
   .section-wash-groups {
     background: linear-gradient(180deg, var(--color-paper), var(--color-cream) 70%);
   }
