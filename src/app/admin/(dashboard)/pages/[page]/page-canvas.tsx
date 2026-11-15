@@ -434,10 +434,14 @@ export function PageCanvas({
     }
 
     const neighbours = siteTextNeighbours(fieldSpec.path);
-    // After a move the original words show in a sibling's place; putting them
-    // back here too would say them twice and lose the sibling's.
-    const original = stringAt(lang === "en" ? en : ja, fieldSpec.path);
-    const originalMoved = siteTextSiblings(fieldSpec.path).some((sibling) => fieldText(sibling).value === original);
+    // After a move, this place shows a sibling's original or a sibling shows
+    // this one's. Putting the original back here would then say one paragraph
+    // twice and lose the other.
+    const originals = lang === "en" ? en : ja;
+    const original = stringAt(originals, fieldSpec.path);
+    const originalMoved = siteTextSiblings(fieldSpec.path).some(
+      (sibling) => fieldText(sibling).value === original || stringAt(originals, sibling.path) === value
+    );
     const moves = [
       { neighbour: neighbours.before, direction: "up", label: "↑ Move up" },
       { neighbour: neighbours.after, direction: "down", label: "↓ Move down" },

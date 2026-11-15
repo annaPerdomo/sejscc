@@ -78,7 +78,6 @@ export function frameOverflow(frame: FrameSize, natural: FrameSize, framing: Pho
 
 const DRAG_SLACK_PX = 1;
 
-// The point of the photo under the pointer follows it, whichever way the photo overflows.
 export function draggedFraming(from: PhotoFraming, spill: FrameSize, dx: number, dy: number): PhotoFraming {
   return {
     ...from,
