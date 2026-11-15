@@ -201,6 +201,16 @@ export function siteTextField(path: string): SiteTextField | undefined {
   return FIELDS_BY_PATH.get(path);
 }
 
+export type SiteTextNeighbours = { before?: SiteTextField; after?: SiteTextField };
+
+export function siteTextNeighbours(path: string): SiteTextNeighbours {
+  const cut = path.lastIndexOf(".");
+  const position = path.slice(cut + 1);
+  if (!FIELDS_BY_PATH.has(path) || !/^\d+$/.test(position)) return {};
+  const at = (index: number) => FIELDS_BY_PATH.get(`${path.slice(0, cut)}.${index}`);
+  return { before: at(Number(position) - 1), after: at(Number(position) + 1) };
+}
+
 export function assertSiteTextRegistry(en: unknown): void {
   const badPaths = [...FIELDS_BY_PATH.keys()].filter(
     (path) => typeof readPath(en, path) !== "string"

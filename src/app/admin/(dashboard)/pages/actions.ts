@@ -27,11 +27,12 @@ import {
 } from "@/lib/photo-framing";
 import { photoSlot, type PhotoSlot } from "@/lib/photo-slots";
 import { normalizeSiteLinkUrl, siteLink } from "@/lib/site-links";
-import { editableSiteTextField } from "@/lib/site-text-fields";
+import { editableSiteTextField, siteTextNeighbours } from "@/lib/site-text-fields";
 import { checkedBlobImageUrl } from "@/lib/uploads";
 import { asOneParagraph, tooLongMessage } from "@/lib/volunteer-fields";
 
 const NOT_REGISTERED_MESSAGE = "That sentence can't be changed here.";
+const NOT_NEIGHBOURS_MESSAGE = "Those two can't trade places. Please reload the page and try again.";
 const NOT_REGISTERED_PHOTO_MESSAGE = "That photo spot doesn't exist.";
 const NOT_REGISTERED_LINK_MESSAGE = "That link can't be changed here.";
 const MISSING_ALT_MESSAGE = "Please describe the photo for visitors who can't see it.";
@@ -154,6 +155,49 @@ export async function restoreSiteText(path: string, words: SiteTextPair): Promis
       ja: ja && (await withOriginalSpacing(path, "ja", ja)),
     });
     revalidateSite();
+  });
+}
+
+async function shownSiteText(path: string): Promise<Record<Locale, string>> {
+  const saved = await savedSiteText(path);
+  return {
+    en: saved.en ?? (await originalSiteText(path, "en")),
+    ja: saved.ja ?? (await originalSiteText(path, "ja")),
+  };
+}
+
+async function originalSiteText(path: string, lang: Locale): Promise<string> {
+  const original = readPath(await getBaseDictionaryFor(lang), path);
+  return typeof original === "string" ? original : "";
+}
+
+// Japanese stays written out beside changed English, so a later save doesn't rewrite it.
+async function asOverride(path: string, shown: Record<Locale, string>): Promise<SiteTextPair> {
+  const en = shown.en === (await originalSiteText(path, "en")) ? null : shown.en;
+  const ja = en === null && shown.ja === (await originalSiteText(path, "ja")) ? null : shown.ja;
+  return { en, ja };
+}
+
+export async function swapSiteText(
+  path: string,
+  neighbourPath: string
+): Promise<ActionResult<Record<string, SiteTextPair>>> {
+  return runAction(async () => {
+    const editor = await requireUser();
+
+    await checkedSiteTextField(path);
+    const { before, after } = siteTextNeighbours(path);
+    if (neighbourPath !== before?.path && neighbourPath !== after?.path) {
+      throw new AdminError(NOT_NEIGHBOURS_MESSAGE);
+    }
+
+    const [shown, neighbourShown] = [await shownSiteText(path), await shownSiteText(neighbourPath)];
+    const saved = {
+      [path]: await setSiteTextColumns(editor, path, await asOverride(path, neighbourShown)),
+      [neighbourPath]: await setSiteTextColumns(editor, neighbourPath, await asOverride(neighbourPath, shown)),
+    };
+    revalidateSite();
+    return saved;
   });
 }
 

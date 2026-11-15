@@ -32,12 +32,13 @@ import type { Dictionary } from "@/lib/dictionaries";
 import type { Locale } from "@/lib/i18n";
 import { readPath } from "@/lib/object-path";
 import { normalizeSiteLinkUrl, type SiteLink } from "@/lib/site-links";
-import type { SiteTextField } from "@/lib/site-text-fields";
+import { siteTextNeighbours, type SiteTextField } from "@/lib/site-text-fields";
 import {
   resetSiteLink,
   resetSitePhoto,
   resetSiteText,
   restoreSiteText,
+  swapSiteText,
   updateOriginalPhotoFraming,
   updateSiteLink,
   updateSitePhotoDetails,
@@ -82,6 +83,11 @@ const PHOTO_NOT_SHOWING_MESSAGE =
   "That photo isn't showing on the page right now. Try again when it comes back around.";
 const EMPTY_FIELD_MESSAGE =
   "This spot on the website can't be left empty. Please type something, or press Cancel to keep the words as they are.";
+
+const UNSAVED_MOVE_MESSAGE = "Save or cancel what you've typed first, then move it.";
+
+const TEXT_BUTTON_CLASS =
+  "inline-flex min-h-11 items-center text-sm font-semibold text-indigo-deep hover:underline";
 
 const NO_OVERRIDE: OverrideValue = { en: null, ja: null };
 
@@ -156,6 +162,7 @@ export function PageCanvas({
   const [foundKeys, setFoundKeys] = useState<ReadonlySet<string> | null>(null);
   const [framing, setFraming] = useState<FramingDraft | null>(null);
   const [reviewing, setReviewing] = useState<string | null>(null);
+  const [moveBlocked, setMoveBlocked] = useState<string | null>(null);
 
   const editState = useOpenTarget();
   const undo = useUndo();
@@ -391,6 +398,47 @@ export function PageCanvas({
       }
     }
 
+    async function tradePlaces(neighbour: SiteTextField, direction: "up" | "down") {
+      if (status.kind === "saving") return;
+      if (editState.isDirty) {
+        setMoveBlocked(fieldSpec.path);
+        return;
+      }
+      setMoveBlocked(null);
+      const moveDescription = `Moved ${fieldSpec.label.toLowerCase()} ${direction}.`;
+      setStatus({ kind: "saving" });
+      try {
+        const saved = expectOk(await swapSiteText(fieldSpec.path, neighbour.path));
+        setOverrides((all) => ({ ...all, ...saved }));
+        setStatus({ kind: "saved", message: moveDescription });
+        undo.record({
+          description: moveDescription,
+          undo: async () => {
+            const restored = expectOk(await swapSiteText(fieldSpec.path, neighbour.path));
+            setOverrides((all) => ({ ...all, ...restored }));
+            router.refresh();
+          },
+        });
+        router.refresh();
+        refreshPage();
+        const moved = pageItems.get(`text:${neighbour.path}`);
+        if (inDialog && moved?.kind === "text") {
+          setReviewing(null);
+          editState.fieldProps(neighbour.path).onOpen();
+          setPicked([moved]);
+        }
+      } catch (e) {
+        const message = e instanceof Error && e.message ? e.message : GENERIC_SAVE_ERROR;
+        setStatus({ kind: "error", message });
+      }
+    }
+
+    const neighbours = siteTextNeighbours(fieldSpec.path);
+    const moves = [
+      { neighbour: neighbours.before, direction: "up", label: "↑ Move up" },
+      { neighbour: neighbours.after, direction: "down", label: "↓ Move down" },
+    ] as const;
+
     return (
       <div
         key={fieldSpec.path}
@@ -438,10 +486,34 @@ export function PageCanvas({
           <button
             type="button"
             onClick={() => void reset()}
-            className="mt-2 inline-flex min-h-11 items-center text-sm font-semibold text-indigo-deep hover:underline"
+            className={`mt-2 ${TEXT_BUTTON_CLASS}`}
           >
             Put the original words back
           </button>
+        )}
+        {reviewing !== fieldSpec.path && (neighbours.before || neighbours.after) && (
+          <div className="mt-2 flex flex-wrap gap-x-6">
+            {moves.map(
+              ({ neighbour, direction, label }) =>
+                neighbour && (
+                  <button
+                    key={direction}
+                    type="button"
+                    onClick={() => void tradePlaces(neighbour, direction)}
+                    aria-disabled={status.kind === "saving"}
+                    className={TEXT_BUTTON_CLASS}
+                  >
+                    {label}
+                    <span className="sr-only">: {fieldSpec.label}</span>
+                  </button>
+                )
+            )}
+          </div>
+        )}
+        {moveBlocked === fieldSpec.path && (
+          <p role="alert" className="text-base font-medium text-magenta-deep">
+            {UNSAVED_MOVE_MESSAGE}
+          </p>
         )}
       </div>
     );
@@ -505,7 +577,7 @@ export function PageCanvas({
             onClick={() =>
               void applyLink(null, `Put back the original ${link.label.toLowerCase()}.`).catch(() => undefined)
             }
-            className="mt-2 inline-flex min-h-11 items-center text-sm font-semibold text-indigo-deep hover:underline"
+            className={`mt-2 ${TEXT_BUTTON_CLASS}`}
           >
             Put the original link back
           </button>
