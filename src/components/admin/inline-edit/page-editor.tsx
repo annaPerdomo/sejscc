@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { buttonClass } from "@/components/admin/admin-button";
 import { PREVIEW_REFRESH_EVENT, PREVIEW_SHOWN_EVENT, PREVIEW_SHOW_EVENT } from "@/lib/page-edit-preview";
 import type { PhotoFraming } from "@/lib/photo-framing";
-import { startPageFraming, type PageFramingSession } from "./page-edit-framing";
+import { startPageFraming, type PageFramingSession, type PagePlacement } from "./page-edit-framing";
 import {
   listenForPageEdits,
   markPageEditTargets,
@@ -21,7 +21,7 @@ export type PageFraming = {
   framing: PhotoFraming;
   onChange: (next: PhotoFraming) => void;
   onUnavailable: () => void;
-  onSizable: (sizable: boolean) => void;
+  onPlacement: (placement: PagePlacement) => void;
   onCancel: () => void;
   bar: ReactNode;
 };
@@ -114,7 +114,7 @@ export function PageEditor({
       return;
     }
     sessionRef.current = session;
-    active.onSizable(session.sizable);
+    active.onPlacement(session.placement);
     return () => {
       session.stop();
       sessionRef.current = null;

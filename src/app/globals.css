@@ -174,7 +174,16 @@ body {
       --slide-wash-from: 62%;
       --slide-row: 0rem;
       --slide-bottom: 3rem;
+      --slide-wash-to: var(--slide-left);
       z-index: 10;
+    }
+
+    /* A shade the admin has moved is measured from the left edge of the page's
+       content, where the words start, so it keeps its distance from them on
+       every screen width. */
+    .hero-slide-beside[data-photo-slide="whole"][data-photo-wash] {
+      --slide-wash-to: calc(max(0px, (100% - var(--container-wide)) / 2) + var(--photo-wash));
+      --slide-wash-from: calc(var(--slide-wash-to) - 4rem);
     }
 
     .hero-slide-beside.hero-slide-above-row[data-photo-slide="whole"] {
@@ -203,15 +212,18 @@ body {
           to right,
           --alpha(var(--color-ink-deep) / 95%),
           --alpha(var(--color-navy) / 90%) var(--slide-wash-from),
-          transparent var(--slide-left)
+          transparent var(--slide-wash-to)
         );
     }
   }
 
   @media (width >= 80rem) {
+    .hero-slide-beside[data-photo-slide="whole"]:not([data-photo-wash]) {
+      --slide-wash-from: 60%;
+    }
+
     .hero-slide-beside[data-photo-slide="whole"] {
       --slide-left: 66%;
-      --slide-wash-from: 60%;
     }
 
     .hero-slide-beside.hero-slide-above-row[data-photo-slide="whole"] {
@@ -1961,16 +1973,23 @@ body {
     border-radius: 9999px;
     background: var(--color-magenta);
     color: var(--color-white);
-    font-size: var(--text-2xl);
-    line-height: 1;
-    user-select: none;
     box-shadow: 0 2px 8px --alpha(var(--color-ink-deep) / 50%);
     cursor: ew-resize;
     touch-action: none;
   }
 
+  .page-edit-size-handle > svg {
+    width: --spacing(7);
+    height: --spacing(7);
+  }
+
   .page-edit-size-handle[hidden] {
     display: none;
+  }
+
+  .page-edit-wash-handle {
+    top: calc(50% - --spacing(6));
+    background: var(--color-indigo-deep);
   }
 
   [role="tab"][aria-selected="false"] [data-page-edit] {

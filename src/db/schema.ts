@@ -323,6 +323,8 @@ export const sitePhotos = pgTable("site_photo", {
   fit: text("fit", { enum: PHOTO_FITS }),
   // Percent a whole hero photo has grown from its frame to the hero's full width.
   size: integer("size"),
+  // Where the hero's blue shade stops over that photo; null leaves it to the design.
+  wash: integer("wash"),
   updatedAt: timestamp("updated_at", { mode: "date" })
     .notNull()
     .defaultNow()

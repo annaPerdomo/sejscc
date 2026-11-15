@@ -310,7 +310,7 @@ function visibleBox(image: Element, view: Window, headerBottom: number): Box | n
   return roomy ? box : null;
 }
 
-function icon(doc: Document, d: string): SVGSVGElement {
+export function icon(doc: Document, d: string): SVGSVGElement {
   const svg = doc.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("viewBox", "0 0 24 24");
   svg.setAttribute("aria-hidden", "true");

@@ -1,26 +1,44 @@
 import { PAGE_EDIT_HOLD_ATTRIBUTE } from "@/lib/page-edit-hold";
 import {
   PHOTO_SLIDE_ATTRIBUTE,
+  PHOTO_WASH_ATTRIBUTE,
   SIZE_MAX,
+  SIZE_MIN,
+  WASH_MAX,
+  WASH_MIN,
+  clampWash,
   withSize,
   clampZoom,
   draggedFraming,
   frameOverflow,
   type PhotoFraming,
 } from "@/lib/photo-framing";
-import { TARGET_ATTRIBUTE } from "./page-edit-targets";
+import { TARGET_ATTRIBUTE, icon } from "./page-edit-targets";
 
 export const FRAMING_BOX_CLASS = "page-edit-framing-box";
+
+/** The blue shade's edge, in `PhotoFraming.wash` units: where the design puts it, and how far it can move. */
+export type WashRange = { auto: number; min: number; max: number };
+
+export type PagePlacement = {
+  /** Whether this photo can grow from a frame beside the words to the full hero. */
+  sizable: boolean;
+  wash: WashRange;
+};
 
 export type PageFramingSession = {
   apply: (framing: PhotoFraming) => void;
   stop: () => void;
-  /** Whether this photo can grow from a frame beside the words to the full hero. */
-  sizable: boolean;
+  placement: PagePlacement;
 };
 
 const WHOLE_CLASS = "photo-frame-whole";
 const SIZE_HANDLE_CLASS = "page-edit-size-handle";
+const WASH_HANDLE_CLASS = "page-edit-wash-handle";
+const ROOT_PX = 16;
+// Must match the fade in `.hero-slide-beside[data-photo-wash]`.
+const WASH_FADE_REM = 4;
+const SIDEWAYS_PATH = "M2 12l5-5v3.5h10V7l5 5-5 5v-3.5H7V17l-5-5Z";
 const SIZABLE_SLIDE = ".hero-slide-beside";
 const SIZABLE_SCREEN = "(width >= 64rem)";
 
@@ -64,16 +82,62 @@ export function startPageFraming(
   const slide = slideOf(image, stage);
   const sizable = Boolean(fitSlide?.matches(SIZABLE_SLIDE)) && view.matchMedia(SIZABLE_SCREEN).matches;
 
+  function sidewaysHandle(className: string): HTMLElement {
+    const handle = doc.createElement("div");
+    handle.className = className;
+    handle.append(icon(doc, SIDEWAYS_PATH));
+    return handle;
+  }
+
   const handles = sizable
     ? ["top", "bottom"].map((edge) => {
-        const handle = doc.createElement("div");
-        handle.className = SIZE_HANDLE_CLASS;
-        handle.textContent = "↔";
+        const handle = sidewaysHandle(SIZE_HANDLE_CLASS);
         handle.style.setProperty(edge, "0");
         box.append(handle);
         return handle;
       })
     : [];
+
+  const washHandle = sizable && fitSlide ? sidewaysHandle(`${SIZE_HANDLE_CLASS} ${WASH_HANDLE_CLASS}`) : null;
+  if (washHandle) fitSlide?.append(washHandle);
+  const hadWash = fitSlide?.hasAttribute(PHOTO_WASH_ATTRIBUTE) ?? false;
+
+  // The shade is measured from the left edge of the page's content, in px at a 16px root.
+  const rootStyle = getComputedStyle(doc.documentElement);
+  const rem = parseFloat(rootStyle.fontSize) || ROOT_PX;
+  function contentLeft(): number {
+    const stageBox = stage.getBoundingClientRect();
+    const wide = parseFloat(rootStyle.getPropertyValue("--container-wide")) * rem;
+    return stageBox.left + (Number.isFinite(wide) ? Math.max(0, (stageBox.width - wide) / 2) : 0);
+  }
+  function washAt(clientX: number): number {
+    return ((clientX - contentLeft()) / rem) * ROOT_PX;
+  }
+
+  function wordsRight(): number {
+    const words = fitSlide?.closest("section")?.querySelector("h1")?.parentElement;
+    if (!words) return contentLeft();
+    const range = doc.createRange();
+    const walker = doc.createTreeWalker(words, NodeFilter.SHOW_TEXT);
+    let right = contentLeft();
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      range.selectNodeContents(node);
+      for (const rect of range.getClientRects()) right = Math.max(right, rect.right);
+    }
+    return right;
+  }
+
+  // The shade can't be pulled left of the words it is there to keep readable:
+  // it stays at full strength to their right edge and fades out over WASH_FADE_REM past it.
+  function washRange(): PagePlacement["wash"] {
+    const stageBox = stage.getBoundingClientRect();
+    const framedLeft = fitSlide ? parseFloat(getComputedStyle(fitSlide).getPropertyValue("--slide-left")) : NaN;
+    const designed = stageBox.left + (stageBox.width * (Number.isFinite(framedLeft) ? framedLeft : 66)) / 100;
+    const min = clampWash(washAt(wordsRight() + WASH_FADE_REM * rem));
+    const max = Math.max(min, clampWash(washAt(stageBox.right)));
+    return { auto: clampWash(washAt(designed), min, max), min, max };
+  }
+  const wash = sizable ? washRange() : { auto: WASH_MIN, min: WASH_MIN, max: WASH_MAX };
   for (const sibling of stage.children) {
     if (sibling === slide || !(sibling instanceof view.HTMLElement)) continue;
     if (sibling.tagName === "IMG" || sibling.querySelector("img")) {
@@ -96,11 +160,19 @@ export function startPageFraming(
     const whole = next.fit === "whole";
     if (fitSlide) {
       fitSlide.setAttribute(PHOTO_SLIDE_ATTRIBUTE, next.fit);
+      fitSlide.toggleAttribute(PHOTO_WASH_ATTRIBUTE, Boolean(next.wash));
       restyle(fitSlide, (style) => {
         style.setProperty("--photo-size", String(next.size / SIZE_MAX));
+        if (next.wash) style.setProperty("--photo-wash", `${next.wash / ROOT_PX}rem`);
+        else style.removeProperty("--photo-wash");
       });
     }
     for (const handle of handles) handle.hidden = !whole;
+    if (washHandle) {
+      washHandle.hidden = !whole || next.size === SIZE_MIN;
+      const edge = contentLeft() + ((next.wash || wash.auto) / ROOT_PX) * rem - stage.getBoundingClientRect().left;
+      washHandle.style.left = `calc(${edge}px - 1.5rem)`;
+    }
     if (wrapper) {
       wrapper.classList.toggle(WHOLE_CLASS, whole);
       restyle(wrapper, (style) => {
@@ -124,6 +196,7 @@ export function startPageFraming(
   const pointers = new Map<number, Point>();
   let dragFrom: { pointer: Point; framing: PhotoFraming } | null = null;
   let resizeFrom: { pointerId: number; x: number; size: number; travel: number } | null = null;
+  let washPointer: number | null = null;
 
   // The box's left edge follows the handle: `travel` is how far it moves from frame to full width.
   function startResize(event: PointerEvent) {
@@ -150,7 +223,12 @@ export function startPageFraming(
     const point = { x: event.clientX, y: event.clientY };
     if (event.button !== 0 || !contains(box.getBoundingClientRect(), point)) return;
     event.preventDefault();
-    // The page's words lie over the photo, so the handle is found by where it is, not as the target.
+    // The page's words lie over the photo, so a handle is found by where it is, not as the target.
+    if (washHandle && !washHandle.hidden && contains(washHandle.getBoundingClientRect(), point)) {
+      washPointer = event.pointerId;
+      box.setPointerCapture(event.pointerId);
+      return;
+    }
     if (handles.some((handle) => !handle.hidden && contains(handle.getBoundingClientRect(), point))) {
       startResize(event);
       return;
@@ -161,6 +239,10 @@ export function startPageFraming(
   }
 
   function onPointerMove(event: PointerEvent) {
+    if (washPointer === event.pointerId) {
+      onChange({ ...current, wash: clampWash(washAt(event.clientX), wash.min, wash.max) });
+      return;
+    }
     if (resizeFrom?.pointerId === event.pointerId) {
       const grown = ((resizeFrom.x - event.clientX) / resizeFrom.travel) * SIZE_MAX;
       onChange(withSize(current, resizeFrom.size + grown));
@@ -183,7 +265,8 @@ export function startPageFraming(
   }
 
   function onPointerEnd(event: PointerEvent) {
-    if (resizeFrom?.pointerId === event.pointerId) {
+    if (washPointer === event.pointerId || resizeFrom?.pointerId === event.pointerId) {
+      washPointer = null;
       resizeFrom = null;
       if (box.hasPointerCapture(event.pointerId)) box.releasePointerCapture(event.pointerId);
       return;
@@ -194,6 +277,7 @@ export function startPageFraming(
   }
 
   function onBlur() {
+    washPointer = null;
     resizeFrom = null;
     pointers.clear();
     rebase();
@@ -220,12 +304,14 @@ export function startPageFraming(
 
   return {
     apply,
-    sizable,
+    placement: { sizable, wash },
     stop() {
       for (const [type, listener] of listeners) doc.removeEventListener(type, listener, { capture: true });
       view.removeEventListener("blur", onBlur);
       box.classList.remove(FRAMING_BOX_CLASS);
       for (const handle of handles) handle.remove();
+      washHandle?.remove();
+      fitSlide?.toggleAttribute(PHOTO_WASH_ATTRIBUTE, hadWash);
       if (fitSlide && slideFit !== null) fitSlide.setAttribute(PHOTO_SLIDE_ATTRIBUTE, slideFit);
       wrapper?.classList.toggle(WHOLE_CLASS, wasWhole);
       const topBefore = box.getBoundingClientRect().top;

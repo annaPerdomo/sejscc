@@ -81,7 +81,9 @@ be built from these tokens via Tailwind utility classes.
   `hero-slide` (a photo at the top of a page, with its `hero-slide-box` and
   `hero-slide-wash`; from 64rem up a whole one stands in a frame beside the
   hero's words, and `--photo-size` grows it from there to the full hero, its
-  own wash dimming whatever part reaches under the words), `flyer-mount` (a flyer, or the donation form, on a cream
+  own wash dimming whatever part reaches under the words; the admin can move
+  that wash's edge per photo with `--photo-wash`, never left of the words),
+  `flyer-mount` (a flyer, or the donation form, on a cream
   board with gold rules; pair it with the gold rings), `asanoha-frame` (a
   navy band of gold hemp-leaf lattice around the featured group photo),
   `school-plaque` (a cream name board set in vertical Japanese, like a

@@ -11,6 +11,7 @@ import { EditBar, type EditBarStatus } from "@/components/admin/inline-edit/edit
 import { EditDialog } from "@/components/admin/inline-edit/edit-dialog";
 import { EditableText } from "@/components/admin/inline-edit/editable-text";
 import { EditableUrl } from "@/components/admin/inline-edit/editable-url";
+import type { PagePlacement } from "@/components/admin/inline-edit/page-edit-framing";
 import type { PageEditTarget } from "@/components/admin/inline-edit/page-edit-targets";
 import { PageEditor } from "@/components/admin/inline-edit/page-editor";
 import { PhotoFramingBar } from "@/components/admin/inline-edit/photo-framing-bar";
@@ -74,7 +75,13 @@ function isWordsItem(item: PageItem): item is WordsItem {
   return item.kind === "text" || item.kind === "link" || (item.kind === "record" && item.item.kind === "recordWords");
 }
 
-type FramingDraft = { slot: PhotoSlot; draft: PhotoFraming; sizable: boolean; saving: boolean; error: string | null };
+type FramingDraft = {
+  slot: PhotoSlot;
+  draft: PhotoFraming;
+  placement: PagePlacement | null;
+  saving: boolean;
+  error: string | null;
+};
 
 const GENERIC_SAVE_ERROR = "Something went wrong saving this. Please try again.";
 const UNMOVED_PHOTO_MESSAGE =
@@ -613,7 +620,7 @@ export function PageCanvas({
   function startFraming(slot: PhotoSlot, saved: PhotoFraming | undefined) {
     setPickedPhoto(null);
     setPhotoGroup(null);
-    setFraming({ slot, draft: saved ?? DEFAULT_FRAMING, sizable: false, saving: false, error: null });
+    setFraming({ slot, draft: saved ?? DEFAULT_FRAMING, placement: null, saving: false, error: null });
   }
 
   function framesOnPage(slot: PhotoSlot): boolean {
@@ -915,7 +922,7 @@ export function PageCanvas({
                 framing: framing.draft,
                 onChange: (next) =>
                   setFraming((current) => current && { ...current, draft: next, error: null }),
-                onSizable: (sizable) => setFraming((current) => current && { ...current, sizable }),
+                onPlacement: (placement) => setFraming((current) => current && { ...current, placement }),
                 onUnavailable: () => {
                   setFraming(null);
                   setStatus({ kind: "error", message: PHOTO_NOT_SHOWING_MESSAGE });
@@ -927,7 +934,7 @@ export function PageCanvas({
                     src={tiles[framing.slot.id].current.src}
                     shape={framing.slot.shape}
                     framing={framing.draft}
-                    sizable={framing.sizable}
+                    placement={framing.placement}
                     saving={framing.saving}
                     error={framing.error}
                     onChange={(next) =>

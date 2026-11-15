@@ -24,6 +24,9 @@ import {
   PHOTO_FITS,
   SIZE_MAX,
   SIZE_MIN,
+  WASH_AUTO,
+  WASH_MAX,
+  WASH_MIN,
   ZOOM_MIN,
   framingToRow,
   type PhotoFraming,
@@ -306,7 +309,7 @@ function wholePercent(value: number, min: number, max: number): boolean {
 }
 
 function checkedFraming(framing: PhotoFraming): PhotoFraming {
-  const { x, y, zoom, fit, size } = framing;
+  const { x, y, zoom, fit, size, wash } = framing;
   if (
     !wholePercent(x, 0, 100) ||
     !wholePercent(y, 0, 100) ||
@@ -314,11 +317,13 @@ function checkedFraming(framing: PhotoFraming): PhotoFraming {
     !PHOTO_FITS.includes(fit) ||
     (fit === "whole" && zoom !== ZOOM_MIN) ||
     !wholePercent(size, SIZE_MIN, SIZE_MAX) ||
-    (fit === "fill" && size !== SIZE_MIN)
+    (fit === "fill" && size !== SIZE_MIN) ||
+    (wash !== WASH_AUTO && !wholePercent(wash, WASH_MIN, WASH_MAX)) ||
+    (fit === "fill" && wash !== WASH_AUTO)
   ) {
     throw new AdminError("That framing isn't possible. Please move or zoom the photo again.");
   }
-  return { x, y, zoom, fit, size };
+  return { x, y, zoom, fit, size, wash };
 }
 
 function checkedAltJa(altJa: string): string | null {
