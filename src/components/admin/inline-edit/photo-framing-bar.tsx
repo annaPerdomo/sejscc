@@ -107,8 +107,10 @@ export function PhotoFramingBar({
   placement,
   saving,
   error,
+  setSize,
   onChange,
   onSave,
+  onSaveAll,
   onCancel,
 }: {
   title: string;
@@ -119,11 +121,16 @@ export function PhotoFramingBar({
   placement: PagePlacement | null;
   saving: boolean;
   error: string | null;
+  /** How many photos take turns in this spot, this one included. */
+  setSize: number;
   onChange: (next: PhotoFraming) => void;
   onSave: () => void;
+  onSaveAll: () => void;
   onCancel: () => void;
 }) {
   const headingId = useId();
+  const setHintId = useId();
+  const inSet = setSize > 1;
   const natural = useNaturalSize(src);
   const blurryMessage = natural && blurryPhotoMessage(natural, shape, framing.zoom);
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -188,15 +195,26 @@ export function PhotoFramingBar({
           <h2 id={headingId} ref={headingRef} tabIndex={-1} className="font-display text-lg text-ink outline-none">
             Move or zoom: {title}
           </h2>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
             <button
               type="button"
               onClick={onSave}
               aria-disabled={saving}
               className={`min-h-12 ${buttonClass("primary")}`}
             >
-              {saving ? "Saving…" : "Save"}
+              {saving ? "Saving…" : inSet ? "Save this photo" : "Save"}
             </button>
+            {inSet && (
+              <button
+                type="button"
+                onClick={onSaveAll}
+                aria-disabled={saving}
+                aria-describedby={setHintId}
+                className={`min-h-12 ${buttonClass("secondary")}`}
+              >
+                Save for all {setSize} photos
+              </button>
+            )}
             <button
               type="button"
               onClick={onCancel}
@@ -207,6 +225,13 @@ export function PhotoFramingBar({
             </button>
           </div>
         </div>
+
+        {inSet && (
+          <p id={setHintId} className="text-base text-ink-soft">
+            {setSize} photos take turns here. “Save for all {setSize} photos” gives every one of them this same look.
+            You can still adjust any one on its own afterwards.
+          </p>
+        )}
 
         <PhotoFitSwitch framing={framing} onChange={(next) => !saving && onChange(next)} />
 

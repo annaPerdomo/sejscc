@@ -29,9 +29,10 @@ import {
   WASH_MIN,
   ZOOM_MIN,
   framingToRow,
+  isDefaultFraming,
   type PhotoFraming,
 } from "@/lib/photo-framing";
-import { photoSlot, type PhotoSlot } from "@/lib/photo-slots";
+import { PHOTO_SLOTS, photoSlot, type PhotoSlot } from "@/lib/photo-slots";
 import { normalizeSiteLinkUrl, siteLink } from "@/lib/site-links";
 import { editableSiteTextField, siteTextNeighbours } from "@/lib/site-text-fields";
 import { checkedBlobImageUrl } from "@/lib/uploads";
@@ -442,6 +443,54 @@ export async function updateOriginalPhotoFraming(input: {
         .onConflictDoUpdate({ target: sitePhotos.slot, set })
     );
     revalidateSite();
+  });
+}
+
+async function writeSlotFraming(editor: Editor, slot: PhotoSlot, framing: PhotoFraming): Promise<void> {
+  const columns = framingToRow(framing);
+  const [existing] = await db.select().from(sitePhotos).where(eq(sitePhotos.slot, slot.id));
+
+  if (existing && existing.url !== ORIGINAL_PHOTO_URL) {
+    await trackChange(editor, "sitePhoto", slot.id, () =>
+      db.update(sitePhotos).set(columns).where(eq(sitePhotos.slot, slot.id))
+    );
+    return;
+  }
+  if (isDefaultFraming(framing)) {
+    if (!existing) return;
+    await trackChange(editor, "sitePhoto", slot.id, () =>
+      db.delete(sitePhotos).where(eq(sitePhotos.slot, slot.id))
+    );
+    return;
+  }
+  const set = { url: ORIGINAL_PHOTO_URL, alt: "", altJa: null, width: null, height: null, ...columns };
+  await trackChange(editor, "sitePhoto", slot.id, () =>
+    db
+      .insert(sitePhotos)
+      .values({ slot: slot.id, ...set })
+      .onConflictDoUpdate({ target: sitePhotos.slot, set })
+  );
+}
+
+export async function updatePhotoFramings(
+  input: { slot: string; framing: PhotoFraming }[]
+): Promise<ActionResult> {
+  return runAction(async () => {
+    const editor = await requireUser();
+    if (!Array.isArray(input) || input.length === 0 || input.length > PHOTO_SLOTS.length) {
+      throw new AdminError(NOT_REGISTERED_PHOTO_MESSAGE);
+    }
+    const entries = input.map((entry) => {
+      const slot = checkedSlot(entry.slot);
+      if (slot.framable === false) throw new AdminError("This photo always shows in full.");
+      return { slot, framing: checkedFraming(entry.framing) };
+    });
+
+    try {
+      for (const { slot, framing } of entries) await writeSlotFraming(editor, slot, framing);
+    } finally {
+      revalidateSite();
+    }
   });
 }
 

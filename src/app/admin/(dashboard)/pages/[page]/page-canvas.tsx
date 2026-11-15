@@ -28,7 +28,7 @@ import { useUndo, type UndoEntry } from "@/components/admin/inline-edit/use-undo
 import { useUnsavedChangesGuard } from "@/components/admin/inline-edit/use-unsaved-changes-guard";
 import type { EditablePage, ManagedElsewhere } from "@/lib/editable-pages";
 import { DEFAULT_FRAMING, isDefaultFraming, sameFraming, type PhotoFraming } from "@/lib/photo-framing";
-import { photoSlot, type PhotoSlot } from "@/lib/photo-slots";
+import { photoSlot, photosTakingTurnsWith, type PhotoSlot } from "@/lib/photo-slots";
 import type { Dictionary } from "@/lib/dictionaries";
 import { japaneseEnabled, type Locale } from "@/lib/i18n";
 import { readPath } from "@/lib/object-path";
@@ -41,6 +41,7 @@ import {
   restoreSiteText,
   swapSiteText,
   updateOriginalPhotoFraming,
+  updatePhotoFramings,
   updateSiteLink,
   updateSitePhotoDetails,
   updateSiteText,
@@ -86,6 +87,8 @@ type FramingDraft = {
 const GENERIC_SAVE_ERROR = "Something went wrong saving this. Please try again.";
 const UNMOVED_PHOTO_MESSAGE =
   "Move or zoom the photo first, or press Cancel to leave it as it is.";
+const UNMOVED_PHOTOS_MESSAGE =
+  "Every photo here already looks like this one. Move or zoom it first, or press Cancel.";
 const PHOTO_NOT_SHOWING_MESSAGE =
   "That photo isn't showing on the page right now. Try again when it comes back around.";
 const EMPTY_FIELD_MESSAGE =
@@ -632,27 +635,46 @@ export function PageCanvas({
     if (item?.kind === "photo" && framesOnPage(item.slot)) startFraming(item.slot, tiles[item.slot.id].current.framing);
   }
 
-  async function saveFraming() {
+  async function saveFraming(scope: "one" | "all") {
     if (!framing || framing.saving) return;
     const { slot, draft } = framing;
-    const tile = tiles[slot.id];
-    const previous = tile.current.framing;
-    if (sameFraming(draft, previous ?? DEFAULT_FRAMING)) {
-      setFraming({ ...framing, error: UNMOVED_PHOTO_MESSAGE });
+    const slots = scope === "all" ? photosTakingTurnsWith(slot) : [slot];
+    const before = slots.map((each) => tiles[each.id]);
+    if (before.every((tile) => sameFraming(draft, tile.current.framing ?? DEFAULT_FRAMING))) {
+      setFraming({ ...framing, error: scope === "all" ? UNMOVED_PHOTOS_MESSAGE : UNMOVED_PHOTO_MESSAGE });
       return;
     }
     setFraming({ ...framing, saving: true, error: null });
     setStatus({ kind: "saving" });
-    const description = `Moved ${photoSlotTitle(slot)}.`;
+    const description =
+      scope === "all" ? `Moved all ${slots.length} photos in ${slot.group}.` : `Moved ${photoSlotTitle(slot)}.`;
+    const saved = isDefaultFraming(draft) ? undefined : draft;
+    const tile = tiles[slot.id];
+
+    function showTiles(next: PhotoTile[]) {
+      setTiles((current) => ({ ...current, ...Object.fromEntries(next.map((each) => [each.slot, each])) }));
+    }
+
     try {
-      const saved = isDefaultFraming(draft) ? undefined : draft;
-      expectOk(await saveSlotFraming(slot, tile, saved));
-      onTileChange({ ...tile, current: { ...tile.current, framing: saved } });
+      if (scope === "all") {
+        expectOk(await updatePhotoFramings(slots.map((each) => ({ slot: each.id, framing: draft }))));
+      } else {
+        expectOk(await saveSlotFraming(slot, tile, saved));
+      }
+      showTiles(before.map((each) => ({ ...each, current: { ...each.current, framing: saved } })));
       undo.record({
         description,
         undo: async () => {
-          expectOk(await saveSlotFraming(slot, tile, previous));
-          onTileChange(tile);
+          if (scope === "all") {
+            expectOk(
+              await updatePhotoFramings(
+                before.map((each) => ({ slot: each.slot, framing: each.current.framing ?? DEFAULT_FRAMING }))
+              )
+            );
+          } else {
+            expectOk(await saveSlotFraming(slot, tile, tile.current.framing));
+          }
+          showTiles(before);
           router.refresh();
         },
       });
@@ -940,7 +962,9 @@ export function PageCanvas({
                     onChange={(next) =>
                       setFraming((current) => current && { ...current, draft: next, error: null })
                     }
-                    onSave={() => void saveFraming()}
+                    setSize={photosTakingTurnsWith(framing.slot).length}
+                    onSave={() => void saveFraming("one")}
+                    onSaveAll={() => void saveFraming("all")}
                     onCancel={() => {
                       if (!framing.saving) setFraming(null);
                     }}

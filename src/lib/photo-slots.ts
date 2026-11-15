@@ -231,3 +231,15 @@ const SLOTS_BY_ID = new Map(PHOTO_SLOTS.map((slot) => [slot.id, slot]));
 export function photoSlot(id: string): PhotoSlot | undefined {
   return SLOTS_BY_ID.get(id);
 }
+
+export function photosTakingTurnsWith(slot: PhotoSlot): PhotoSlot[] {
+  if (!slot.takesTurns || slot.framable === false) return [slot];
+  return PHOTO_SLOTS.filter(
+    (other) =>
+      other.takesTurns &&
+      other.framable !== false &&
+      other.page === slot.page &&
+      other.section === slot.section &&
+      other.group === slot.group
+  );
+}
