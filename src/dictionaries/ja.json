@@ -8,7 +8,6 @@
   "header": {
     "orgTop": "サウスイースト日本語学園",
     "orgBottom": "コミュニティセンター",
-    "donate": "寄付する",
     "openMenu": "メニューを開く",
     "closeMenu": "メニューを閉じる",
     "announcementAccent": "次回",
@@ -23,10 +22,10 @@
     "about": "私たちについて",
     "japaneseSchool": "日本語学校",
     "events": "イベント",
+    "calendar": "カレンダー",
     "groups": "スポーツ・教室",
     "payments": "ご支援",
-    "contact": "お問い合わせ",
-    "volunteerSignIn": "ボランティアログイン"
+    "adminSignIn": "管理者ログイン"
   },
   "footer": {
     "orgName": "サウスイースト日本語学園・コミュニティセンター",
@@ -39,7 +38,6 @@
     "madeBy": "by"
   },
   "home": {
-    "photoSoon": "写真は準備中です",
     "welcome": {
       "kicker": "Welcome",
       "heading": "文化でつながる"
@@ -50,6 +48,7 @@
       "flyerAria": "{title}（チラシを新しいタブで開く）"
     },
     "viewAll": "すべてのイベントを見る",
+    "calendarCta": "施設カレンダー",
     "noEvents": "新しいイベントを準備中です。またご確認いただくか、センター（(562) 863-5996）までお電話ください。",
     "japaneseSchool": {
       "kickerAccent": "日本語学校",
@@ -121,11 +120,6 @@
           "alt": "2003年、筆で日本語の文字を書く生徒"
         },
         {
-          "label": "現在",
-          "caption": "習字の授業",
-          "alt": "机に向かって習字を練習する生徒たちと、後ろで見守る先生。壁には書き上げた作品"
-        },
-        {
           "label": "2017",
           "caption": "年賀状コンクールの入賞者",
           "alt": "2017年の年賀状コンクールの賞状を手にした生徒たち"
@@ -151,11 +145,6 @@
           "alt": "2025年、そろって記念撮影をする学園の先生とスタッフ"
         }
       ],
-      "classesAccent": "クラス案内",
-      "classesCaption": "Kindergarten to Adults",
-      "classesHeading": "どの年齢にも、学べるクラスを",
-      "classesFacts": "毎週土曜日 8:45〜12:15 ・ 大人クラスはオンライン",
-      "classesCta": "すべてのクラスを見る",
       "primaryCta": "授業料・登録案内",
       "secondaryCta": "スポーツ・教室を見る"
     },
@@ -185,6 +174,8 @@
       "videoCaption": "センターの様子や、歴史・伝統をご紹介します。",
       "photoLabel": "歴史的写真は準備中です",
       "centennialPhotoCaption": "創立100周年記念式典 · 2025年7月26日",
+      "centennialCta": "創立100周年を見る",
+      "timelineLabel": "1925年から今日までの歩み",
       "foundersLabel": "礎を築いた人々",
       "founders": [
         {
@@ -403,6 +394,10 @@
       "mapTitle": "カリフォルニア州ノーウォークにあるセンターの地図"
     }
   },
+  "about": {
+    "metaTitle": "私たちについて",
+    "metaDescription": "1925年から今日まで、カリフォルニア州ノーウォークのサウスイースト日本語学園・コミュニティセンターの歴史と、運営する理事会のご紹介。"
+  },
   "events": {
     "metaTitle": "イベント",
     "metaDescription": "カリフォルニア州ノーウォークのサウスイースト日本語学園・コミュニティセンターで開催されるイベントのご案内。",
@@ -466,13 +461,82 @@
       ],
       "until": "{schedule}（{date}まで）"
     },
+    "calendarCta": "施設カレンダー",
+    "calendarSectionCta": "カレンダーを見る",
     "calendars": {
       "accent": "スケジュール",
-      "caption": "Room Bookings",
-      "title": "教室・施設カレンダー",
-      "lede": "センターが日々使用している2つのカレンダーです。各クラブ・クラスの施設予約と、学園の休校日やセンター全体の行事をご覧いただけます。",
-      "heroCta": "カレンダーを見る",
-      "sectionCta": "カレンダーをすべて見る",
+      "caption": "Calendar",
+      "metaTitle": "カレンダー",
+      "metaDescription": "カリフォルニア州ノーウォークのサウスイースト日本語学園・コミュニティセンターの施設カレンダー。クラス・クラブ・イベントの施設予約と、学園の休校日・休館日をご覧いただけます。",
+      "pageTitleLine1": "センターの",
+      "pageTitleLine2": "毎日の予定",
+      "reel": {
+        "list": "センターの様子の写真",
+        "pause": "写真の自動切り替えを止める",
+        "play": "写真を自動で切り替える",
+        "photo": "写真 {n} / {total}",
+        "photos": [
+          {
+            "alt": "センターコートにSEJSCCの紋章が描かれた体育館の床"
+          },
+          {
+            "alt": "門下生一人ひとりの名札が並ぶ、道場の木製の名札掛け"
+          },
+          {
+            "alt": "2018年、教室の床に座って先生の箏の演奏を見つめる日本語学園の生徒たち"
+          },
+          {
+            "alt": "ビンゴナイトの日、デザートが並ぶカウンターを前にセンターのキッチンに立つ太鼓のボランティア"
+          },
+          {
+            "alt": "2025年、磨かれた体育館の床でステップを踏む社交ダンスのペアの足元"
+          },
+          {
+            "alt": "2023年のパンケーキ・ブレックファストで、センターの屋外で調理するボランティア"
+          }
+        ]
+      },
+      "monthCta": "1か月の予定を見る",
+      "datesCta": "休校日・センターの行事",
+      "pageLede": "クラス、クラブ、イベントなど、センターの毎日の施設予約をご覧いただけます。",
+      "today": {
+        "heading": "今日のセンター",
+        "none": "今日の予定はありません。",
+        "next": "次の予定：{date}"
+      },
+      "month": {
+        "accent": "月間予定",
+        "caption": "Month by Month",
+        "previous": "前の月",
+        "next": "次の月",
+        "today": "今日",
+        "backToToday": "今日に戻る",
+        "filter": "場所で絞り込む",
+        "allSpaces": "すべての場所",
+        "none": "静かな一日です。予定は入っていません。",
+        "noneInSpace": "この日、この場所の予約はありません。",
+        "allDay": "終日",
+        "more": "ほか{count}件",
+        "dayNone": "{date}、予約なし",
+        "dayOne": "{date}、予約1件",
+        "dayMany": "{date}、予約{count}件"
+      },
+      "spaces": {
+        "gym": "体育館",
+        "dojo": "道場",
+        "school": "日本語学園",
+        "rooms": "教室",
+        "kitchen": "キッチン",
+        "outdoors": "駐車場",
+        "whole": "センター全体",
+        "other": "その他"
+      },
+      "dates": {
+        "accent": "年間予定",
+        "caption": "Dates to Know",
+        "range": "{start}～{end}",
+        "none": "現在、掲載されている予定はありません。"
+      },
       "openLabel": "Google カレンダーで開く",
       "facilities": {
         "label": "施設カレンダー",
@@ -480,7 +544,7 @@
         "frameTitle": "SEJSCC 施設カレンダー（クラブ・クラスの施設予約）"
       },
       "comingEvents": {
-        "label": "今後の予定",
+        "label": "休校日・センターの行事",
         "description": "学園の休校日・休館日、6月の文化祭などセンター全体の行事。",
         "frameTitle": "サウスイースト日本語学園・コミュニティセンターの今後の予定"
       }
@@ -556,7 +620,6 @@
     "directoryCaption": "Who Meets Here",
     "directoryTitle": "センターで活動する全グループ",
     "website": "ウェブサイト",
-    "meetsAtCenter": "センターにて",
     "askCta": "センターに問い合わせる",
     "pausedLabel": "休止中",
     "cancelledLabel": "終了",
@@ -621,6 +684,7 @@
     "kickerCaption": "Saturdays Since 1925",
     "titleLine1": "サウスイースト",
     "titleLine2": "日本語学園",
+    "heroLede": "5歳から大人まで、日本語と日本の文化を学べます。日本語の経験がなくても大丈夫です。",
     "lede": [
       "サウスイースト学園では、五歳のお子さんの為のクラスもあります。うたや工作をしながら楽しく学べます。幼児の時から外国語に触れさせましょう。",
       "入門クラスは六歳から受け付けています。「聞きましょう。」「話しましょう。」がメインポイントの授業です。少しずつひらがなも読めるようになります。成人クラスも初級から中級まであります。",
@@ -669,7 +733,6 @@
       "caption": "Class Descriptions",
       "titleLead": "はじめての言葉から、",
       "titleRest": "自由な会話まで",
-      "lede": "5歳のお子さまのための幼稚園クラスがあります。通常クラスは6歳以上のお子さまにおすすめしています。大人クラスはオンラインで開講しています。",
       "tablistLabel": "クラス一覧",
       "statusUnavailable": "現在お休みしています",
       "levels": [
@@ -696,7 +759,7 @@
             "「聞く・話す」を中心に",
             "文化の学習と工作"
           ],
-          "photoAlt": "先生と一緒に並ぶレベル1のクラス"
+          "photoAlt": "先生と一緒に並ぶ初級クラス"
         },
         {
           "name": "小学クラス",
@@ -985,7 +1048,7 @@
       "registerCta": "オンライン登録",
       "emailCta": "学園にメールする",
       "note": "地域外からのお電話には折り返しいたしかねます。",
-      "photoAlt": "長机に並んで、先生と一緒に習字を練習する生徒たち"
+      "photoAlt": "2015年の運動会で、おそろいの青いシャツと赤いはちまき姿の生徒たちがスプーンに卵をのせてリレーをする様子"
     }
   },
   "payments": {

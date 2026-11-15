@@ -79,12 +79,12 @@ export function VolunteerSection({
               tone="magenta"
               order="caption-first"
             />
-            <h3
+            <h2
               data-edit-record="board:title"
               className="mt-4 font-display text-3xl leading-snug font-normal tracking-[0.02em] text-ink @volunteer-sm:text-4xl"
             >
               {edit ? edit.text("title", view.title) : view.title}
-            </h3>
+            </h2>
             <p data-edit-record="board:intro" className="mt-4 text-lg leading-relaxed text-ink-soft">
               {edit ? edit.text("intro", view.intro) : view.intro}
             </p>

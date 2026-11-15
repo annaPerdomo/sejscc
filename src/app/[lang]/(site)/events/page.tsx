@@ -2,15 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { EventPoster } from "@/components/event-poster";
 import { NextEventFeature } from "@/components/next-event-feature";
-import { GoogleCalendar } from "@/components/google-calendar";
 import { KanjiWatermark } from "@/components/kanji-watermark";
-import { HeroTitle } from "@/components/hero-title";
-import { PhotoReel } from "@/components/photo-reel";
+import { PhotoHero } from "@/components/photo-hero";
 import { RevealMore } from "@/components/reveal-more";
 import { SectionHeading } from "@/components/section-heading";
 import { SectionKicker } from "@/components/section-kicker";
-import { SectionDivider } from "@/components/section-divider";
-import { calendarSources } from "@/lib/calendars";
 import { getPastEvents, getUpcomingEvents } from "@/lib/events";
 import { getDictionary, getDictionaryFor, getLocale } from "@/lib/dictionaries";
 import { hasLocale, localePath } from "@/lib/i18n";
@@ -60,55 +56,46 @@ export default async function EventsPage() {
 
   return (
     <>
-      <section className="section-navy-scene relative isolate flex flex-col overflow-clip text-white xl:block">
-        <div className="relative mx-auto grid w-full max-w-wide px-5 pt-6 pb-16 sm:px-10 sm:pb-20 lg:px-16 xl:min-h-page-hero xl:grid-cols-12 xl:items-center xl:pt-14">
-          <div className="enter-stagger xl:col-span-7">
-            <SectionKicker
-              accent={dict.events.kickerAccent}
-              caption={dict.events.kickerCaption}
-              tone="photo"
-              size="lg"
-              entrance="load"
-            />
-            <HeroTitle line1={dict.events.titleLine1} />
-            {next ? (
-              <NextEventFeature event={next} />
-            ) : (
-              <div className="mt-7 max-w-2xl text-lg leading-relaxed text-white/90 sm:text-xl">
-                <p>{dict.events.lede}</p>
-                <p className="mt-4">{dict.events.empty}</p>
-              </div>
-            )}
-            <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-2">
-              {later.length > 0 && (
-                <a
-                  href="#upcoming"
-                  className="link-arrow py-2 font-display text-lg font-semibold text-sky hover:text-white"
-                >
-                  {dict.events.moreUpcomingCta}
-                </a>
-              )}
-              <a
-                href="#calendars"
-                className="link-arrow py-2 font-display text-lg font-semibold text-sky hover:text-white"
-              >
-                {dict.events.calendars.heroCta}
-              </a>
+      <PhotoHero
+        photo={heroPhotos[0].src}
+        photoAlt={heroPhotos[0].alt}
+        photoFraming={heroPhotos[0].framing}
+        photos={heroPhotos}
+        rotationLabels={{
+          pause: reel.pause,
+          play: reel.play,
+          list: reel.list,
+          photo: reel.photo,
+        }}
+        accent={dict.events.kickerAccent}
+        caption={dict.events.kickerCaption}
+        titleLine1={dict.events.titleLine1}
+        lede={
+          next ? (
+            <NextEventFeature event={next} />
+          ) : (
+            <div className="flex flex-col gap-4">
+              <p>{dict.events.lede}</p>
+              <p>{dict.events.empty}</p>
             </div>
-          </div>
-        </div>
-        <PhotoReel
-          photos={heroPhotos}
-          labels={{
-            pause: reel.pause,
-            play: reel.play,
-            list: reel.list,
-            photo: reel.photo,
-          }}
-          className="relative order-first h-72 sm:h-96 xl:absolute xl:inset-y-0 xl:right-0 xl:h-auto xl:w-5/12"
-        />
-      </section>
-      <SectionDivider ornament="crest" />
+          )
+        }
+        actions={
+          <>
+            {later.length > 0 && (
+              <a href="#upcoming" className="button-light px-7 py-4 text-base">
+                {dict.events.moreUpcomingCta}
+              </a>
+            )}
+            <Link
+              href={localePath(locale, "/calendar")}
+              className="link-arrow py-2 font-display text-lg font-semibold text-sky hover:text-white"
+            >
+              {dict.events.calendarCta}
+            </Link>
+          </>
+        }
+      />
 
       {later.length > 0 && (
         <section
@@ -152,49 +139,16 @@ export default async function EventsPage() {
                 ) : undefined
               }
             >
-              <a
-                href="#calendars"
+              <Link
+                href={localePath(locale, "/calendar")}
                 className="link-arrow py-2 font-display text-lg font-semibold text-indigo hover:text-indigo-deep"
               >
-                {dict.events.calendars.sectionCta}
-              </a>
+                {dict.events.calendarSectionCta}
+              </Link>
             </RevealMore>
           </div>
         </section>
       )}
-
-      <section
-        id="calendars"
-        className="seigaiha-rings seigaiha-rings-fade relative scroll-mt-28 bg-paper pt-16 pb-20 sm:pt-20 sm:pb-28"
-      >
-        <KanjiWatermark char="週" className="top-24 -right-14 text-indigo/5" />
-        <div className="relative mx-auto max-w-6xl px-5 sm:px-10">
-          <div className="reveal-rise mb-12 max-w-3xl">
-            <SectionKicker
-              accent={dict.events.calendars.accent}
-              caption={dict.events.calendars.caption}
-              size="lg"
-            />
-            <SectionHeading className="mt-4 sm:text-5xl">{dict.events.calendars.title}</SectionHeading>
-            <p className="mt-5 text-lg leading-relaxed text-ink-soft">
-              {dict.events.calendars.lede}
-            </p>
-          </div>
-          <div className="grid gap-14">
-            {calendarSources.map((source) => (
-              <GoogleCalendar
-                key={source.key}
-                source={source}
-                locale={locale}
-                label={dict.events.calendars[source.key].label}
-                description={dict.events.calendars[source.key].description}
-                frameTitle={dict.events.calendars[source.key].frameTitle}
-                openLabel={dict.events.calendars.openLabel}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
 
       {past.length > 0 && (
         <section id="past" className="relative scroll-mt-28 overflow-clip bg-mist pt-16 pb-20 sm:pt-20 sm:pb-28">

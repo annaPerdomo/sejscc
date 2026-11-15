@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ExternalLink } from "@/components/external-link";
 import { LanguageToggle } from "@/components/language-toggle";
@@ -8,7 +7,6 @@ import { PageEditPreviewBridge } from "@/components/page-edit-preview-bridge";
 import { ScrollReset } from "@/components/scroll-reset";
 import { SiteLogo } from "@/components/site-logo";
 import { SiteNav } from "@/components/site-nav";
-import { VolunteerSignInLink } from "@/components/volunteer-sign-in-link";
 import { getUpcomingEvents } from "@/lib/events";
 import { formatEventDate } from "@/lib/format";
 import { getDictionary, getLocale } from "@/lib/dictionaries";
@@ -35,13 +33,13 @@ export default async function SiteLayout({
     : null;
 
   const nav = [
-    { href: `${href("/")}#history`, label: dict.nav.about },
     { href: href("/school"), label: dict.nav.japaneseSchool },
     { href: href("/events"), label: dict.nav.events },
     { href: href("/groups"), label: dict.nav.groups },
-    { href: href("/payments"), label: dict.nav.payments },
-    { href: `${href("/")}#contact`, label: dict.nav.contact },
+    { href: href("/calendar"), label: dict.nav.calendar },
+    { href: href("/about"), label: dict.nav.about },
   ];
+  const supportUs = { href: href("/payments"), label: dict.nav.payments };
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -140,24 +138,17 @@ export default async function SiteLayout({
             </Link>
             <div className="flex shrink-0 items-center gap-2 sm:gap-3 lg:gap-5">
               <SiteNav items={nav} />
-              <VolunteerSignInLink
-                label={dict.nav.volunteerSignIn}
-                className="max-lg:hidden"
-                labelClassName="max-xl:sr-only"
-              />
               <Link
-                href={`${localePath(lang, "/payments")}#donate`}
+                href={supportUs.href}
                 className="button-donate rounded-lg px-3.5 py-2.5 font-display text-sm font-semibold text-white sm:px-5"
               >
-                {dict.header.donate}
+                {supportUs.label}
               </Link>
               <MobileNav
                 items={nav}
                 openLabel={dict.header.openMenu}
                 closeLabel={dict.header.closeMenu}
-              >
-                <VolunteerSignInLink label={dict.nav.volunteerSignIn} />
-              </MobileNav>
+              />
             </div>
           </div>
         </header>
@@ -165,15 +156,10 @@ export default async function SiteLayout({
 
       <main className="flex-1">{children}</main>
 
-      <footer className="seigaiha-rings seigaiha-rings-sky seigaiha-rings-drift bg-navy text-white">
+      <footer className="border-t-4 border-gold bg-navy text-white">
         <div className="mx-auto grid max-w-6xl grid-cols-2 gap-x-4 gap-y-8 px-4 py-8 sm:grid-cols-3 sm:gap-10 lg:grid-cols-4 sm:px-6 sm:py-10">
           <div className="col-span-2 sm:col-span-1">
-            <div className="flex items-center gap-3">
-              <Image src="/logo-mark-white.png" alt="" width={40} height={40} />
-              <p className="font-display text-sm leading-snug font-semibold tracking-[0.06em] uppercase">
-                {dict.footer.orgName}
-              </p>
-            </div>
+            <SiteLogo label={dict.footer.orgName} className="h-12 w-auto max-w-full text-white" />
             <p className="mt-4 text-sm leading-relaxed text-white/70">
               {contact.address.split(", ").map((line, i) => (
                 <span key={line}>
@@ -202,7 +188,7 @@ export default async function SiteLayout({
               {dict.footer.visit}
             </p>
             <ul className="mt-4 space-y-2 text-white/80 lg:grid lg:grid-cols-2 lg:gap-x-6 lg:gap-y-2 lg:space-y-0">
-              {nav.map((item) => (
+              {[...nav, supportUs].map((item) => (
                 <li key={item.href}>
                   <Link
                     href={item.href}
@@ -217,7 +203,7 @@ export default async function SiteLayout({
                   href="/admin"
                   className="inline-block transition duration-200 hover:translate-x-1 hover:text-white"
                 >
-                  {dict.nav.volunteerSignIn}
+                  {dict.nav.adminSignIn}
                 </Link>
               </li>
             </ul>

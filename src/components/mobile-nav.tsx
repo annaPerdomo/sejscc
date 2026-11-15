@@ -9,12 +9,10 @@ export function MobileNav({
   items,
   openLabel,
   closeLabel,
-  children,
 }: {
   items: NavItem[];
   openLabel: string;
   closeLabel: string;
-  children?: React.ReactNode;
 }) {
   const isCurrentPage = useIsCurrentPage();
   const pathname = usePathname();
@@ -73,9 +71,6 @@ export function MobileNav({
               );
             })}
           </ul>
-          {children && (
-            <div className="border-t border-line px-7 py-4">{children}</div>
-          )}
         </nav>
       )}
     </div>

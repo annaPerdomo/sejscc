@@ -2,6 +2,7 @@ import Image from "next/image";
 import { PhotoFrame } from "@/components/photo-frame";
 import Link from "next/link";
 import { DatePage } from "@/components/date-page";
+import { EventMeta } from "@/components/event-meta";
 import { ExternalLink } from "@/components/external-link";
 import type { Event } from "@/lib/events";
 import {
@@ -66,14 +67,22 @@ export async function EventsHero({ events }: { events: Event[] }) {
 
           <div className="hero-intro-follow enter-stagger">
             <h2 className="sr-only">{copy.panelTitle}</h2>
-            {events.length > 0 && (
+            <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 lg:mt-3 lg:tall:mt-6">
               <Link
-                href={localePath(lang, "/events")}
-                className="link-arrow mt-8 inline-block py-1 font-display text-lg font-semibold tracking-[0.06em] text-white decoration-sky decoration-2 underline-offset-4 hover:underline lg:mt-3 lg:tall:mt-6"
+                href={localePath(lang, "/calendar")}
+                className="button-outline-light px-5 py-2.5 text-base tracking-[0.03em]"
               >
-                {dict.home.viewAll}
+                <EventMeta icon="calendar">{dict.home.calendarCta}</EventMeta>
               </Link>
-            )}
+              {events.length > 0 && (
+                <Link
+                  href={localePath(lang, "/events")}
+                  className="link-arrow py-1 font-display text-lg font-semibold tracking-[0.06em] text-white decoration-sky decoration-2 underline-offset-4 hover:underline"
+                >
+                  {dict.home.viewAll}
+                </Link>
+              )}
+            </div>
             {events.length === 0 ? (
               <p className="mt-4 text-xl leading-relaxed text-white/90">
                 {dict.home.noEvents}

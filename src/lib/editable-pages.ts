@@ -6,7 +6,7 @@ import {
   type SiteTextField,
 } from "@/lib/site-text-fields";
 
-const EDITABLE_PAGE_IDS = ["home", "school", "events", "groups", "donate"] as const;
+const EDITABLE_PAGE_IDS = ["home", "about", "school", "events", "groups", "donate"] as const;
 
 export type EditablePageId = (typeof EDITABLE_PAGE_IDS)[number];
 
@@ -54,6 +54,7 @@ export type EditablePage = {
 
 const PAGE_LABELS: Record<EditablePageId, string> = {
   home: "Home page",
+  about: "About Us page",
   school: "Japanese School page",
   events: "Events page",
   groups: "Sports & Classes page",
@@ -92,6 +93,7 @@ type SectionSpec = {
 const PAGE_VIEWS: Partial<Record<EditablePageId, PageView[]>> = {
   events: [
     { id: "upcoming", label: "Events", href: "/events" },
+    { id: "calendar", label: "Calendar", href: "/calendar" },
     { id: "past", label: "Past events", href: "/events/past" },
   ],
 };
@@ -123,17 +125,21 @@ const SECTION_ORDER: Record<EditablePageId, SectionSpec[]> = {
       },
     },
     {
-      id: "home-history",
-      label: "Our History",
-      anchor: "history",
+      id: "home-videos",
+      label: "Videos",
+      anchor: "videos",
       manage: {
         href: "/admin/videos",
         description: "The videos in this section come from a list of YouTube links.",
         action: "Change the videos",
       },
     },
+    { id: "home-centennial", label: "100th anniversary", anchor: "anniversary" },
+  ],
+  about: [
+    { id: "about-top", label: "Top of the page" },
     {
-      id: "home-board",
+      id: "about-board",
       label: "Board of Directors",
       anchor: "board",
       manage: {
@@ -143,7 +149,7 @@ const SECTION_ORDER: Record<EditablePageId, SectionSpec[]> = {
       },
     },
     {
-      id: "home-connect",
+      id: "about-connect",
       label: "Our Community",
       anchor: "contact",
       manage: {
@@ -183,6 +189,7 @@ const SECTION_ORDER: Record<EditablePageId, SectionSpec[]> = {
   ],
   events: [
     { id: "events-top", label: "Top of the page" },
+    { id: "events-calendar", label: "Calendar page", view: "calendar" },
     { id: "events-archive", label: "Past events page", view: "past" },
   ],
   groups: [

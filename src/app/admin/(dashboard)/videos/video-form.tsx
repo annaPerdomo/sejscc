@@ -57,8 +57,8 @@ export function AboutVideoForm({ initialUrls }: { initialUrls: string[] }) {
           autoComplete="off"
         />
         <p className="mt-3 text-sm leading-relaxed text-stone">
-          One link per line, up to 6 videos. They play in the &ldquo;Our
-          History&rdquo; section of the home page, in the order listed here.
+          One link per line, up to 6 videos. They play in the videos section
+          of the home page, in the order listed here.
           Leave blank to show no videos.
         </p>
         <div className="mt-4">

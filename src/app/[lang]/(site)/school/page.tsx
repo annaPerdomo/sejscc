@@ -133,13 +133,7 @@ export default async function SchoolPage() {
         caption={dict.school.kickerCaption}
         titleLine1={dict.school.titleLine1}
         titleLine2={dict.school.titleLine2}
-        lede={
-          <div className="flex flex-col gap-4">
-            {dict.school.lede.map((paragraph) => (
-              <p key={paragraph}>{paragraph}</p>
-            ))}
-          </div>
-        }
+        lede={<p>{dict.school.heroLede}</p>}
         actions={
           <>
             <ExternalLink
@@ -198,19 +192,23 @@ export default async function SchoolPage() {
       >
         <KanjiWatermark char="語" className="-top-10 -right-10 text-indigo/5" />
         <div className="relative mx-auto max-w-wide px-5 sm:px-10 lg:px-16">
-          <div className="reveal-rise mb-12 max-w-3xl">
-            <SectionKicker
-              accent={dict.school.classes.accent}
-              caption={dict.school.classes.caption}
-              size="lg"
-            />
-            <SectionHeading className="mt-4 sm:text-5xl">
-              <span className="text-indigo">{dict.school.classes.titleLead}</span>{" "}
-              {dict.school.classes.titleRest}
-            </SectionHeading>
-            <p className="mt-5 text-lg leading-relaxed text-ink-soft">
-              {dict.school.classes.lede}
-            </p>
+          <div className="reveal-rise mb-12 grid gap-5 lg:grid-cols-12 lg:gap-14">
+            <div className="lg:col-span-5">
+              <SectionKicker
+                accent={dict.school.classes.accent}
+                caption={dict.school.classes.caption}
+                size="lg"
+              />
+              <SectionHeading className="mt-4 sm:text-5xl">
+                <span className="text-indigo">{dict.school.classes.titleLead}</span>{" "}
+                {dict.school.classes.titleRest}
+              </SectionHeading>
+            </div>
+            <div className="flex flex-col gap-4 text-lg leading-relaxed text-ink-soft lg:col-span-7 lg:pt-10">
+              {dict.school.lede.map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
+            </div>
           </div>
           <SchoolLevels
             levels={levels}

@@ -30,7 +30,7 @@ export function CentennialEmaki({
   const scenes = splitIntoScenes(photos, Math.max(interludes.length - 1, 1));
   const closing = interludes.length > 1 ? interludes[interludes.length - 1] : undefined;
   return (
-    <div className="emaki section-midnight-scene seigaiha-rings seigaiha-rings-gold">
+    <div className="emaki">
       <div className="emaki-stage">
         <KanjiWatermark char="百" className="inset-x-0 top-1/4 text-center text-gold/10" />
 

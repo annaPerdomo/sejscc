@@ -11,8 +11,7 @@ export default async function VideosPage() {
     <AdminPageWidth>
       <h1 className="font-display text-3xl text-ink">Home page videos</h1>
       <p className="mt-1 mb-8 max-w-xl text-stone">
-        The YouTube videos that play in the &ldquo;Our History&rdquo; section
-        of the home page.
+        The YouTube videos that play in the videos section of the home page.
       </p>
 
       <div className="max-w-2xl">

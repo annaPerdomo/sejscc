@@ -59,7 +59,7 @@ export function GoogleCalendar({
   return (
     <article className="reveal-rise overflow-clip rounded-sm bg-white shadow-xl ring-1 ring-ink/5">
       <div className="border-t-4 border-gold bg-navy px-6 pt-7 pb-6 sm:px-8">
-        <h3 className="font-display text-2xl font-semibold text-white">{label}</h3>
+        <h2 className="font-display text-2xl font-semibold text-white sm:text-3xl">{label}</h2>
         <p className="mt-2 max-w-2xl text-base leading-relaxed text-white/85">
           {description}
         </p>

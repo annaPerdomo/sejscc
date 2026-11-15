@@ -16,7 +16,7 @@ export type SiteTextSection = {
 };
 
 export type SiteTextPage = {
-  id: "home" | "school" | "donate" | "groups" | "events";
+  id: "home" | "about" | "school" | "donate" | "groups" | "events";
   href: string;
   sections: SiteTextSection[];
 };
@@ -61,20 +61,25 @@ export const SITE_TEXT_PAGES: SiteTextPage[] = [
         field("home.japaneseSchool.headingLine2", "Heading, second line", "heading"),
         field("home.japaneseSchool.subheading", "Subheading", "short"),
         field("home.japaneseSchool.body", "Paragraph", "body"),
-        field("home.japaneseSchool.classesFacts", "Class days and times", "short"),
       ]),
       section("home-sports-clubs", [
         field("home.sportsClubs.headingLine1", "Heading, first line", "heading"),
         field("home.sportsClubs.headingLine2", "Heading, second line", "heading"),
         field("home.sportsClubs.body", "Paragraph", "body"),
       ]),
-      section("home-history", [
+    ],
+  },
+  {
+    id: "about",
+    href: "/about",
+    sections: [
+      section("about-top", [
         field("home.history.headingLine1", "Heading, first line", "heading"),
         field("home.history.headingLine2", "Heading, second line", "heading"),
         field("home.history.body", "Paragraph", "body"),
         field("home.history.missionText", "Mission statement", "body"),
       ]),
-      section("home-connect", [
+      section("about-connect", [
         field("home.connectTitle", "Heading", "heading"),
         field("home.connectText", "Paragraph", "body"),
       ]),
@@ -85,16 +90,16 @@ export const SITE_TEXT_PAGES: SiteTextPage[] = [
     href: "/school",
     sections: [
       section("school-top", [
-        ...Array.from({ length: SCHOOL_LEDE_PARAGRAPH_COUNT }, (_, i) =>
-          field(`school.lede.${i}`, `Opening paragraph ${displayIndex(i)}`, "body")
-        ),
+        field("school.heroLede", "Opening sentence", "body"),
         ...Array.from({ length: SCHOOL_FACTS_COUNT }, (_, i) => [
           field(`school.facts.${i}.value`, `Fact ${displayIndex(i)}`, "short"),
           field(`school.facts.${i}.note`, `Fact ${displayIndex(i)}, small print`, "short"),
         ]).flat(),
       ]),
       section("school-classes", [
-        field("school.classes.lede", "Opening sentence", "body"),
+        ...Array.from({ length: SCHOOL_LEDE_PARAGRAPH_COUNT }, (_, i) =>
+          field(`school.lede.${i}`, `Paragraph ${displayIndex(i)}`, "body")
+        ),
       ]),
       section("school-tuition", [
         field("school.tuition.lede", "Opening sentence", "body"),
@@ -171,6 +176,13 @@ export const SITE_TEXT_PAGES: SiteTextPage[] = [
         field("events.titleLine1", "Heading", "heading"),
         field("events.lede", "Opening sentence (shown when no event is coming up)", "body"),
       ]),
+      section("events-calendar", [
+        field("events.calendars.pageTitleLine1", "Heading, first line", "heading"),
+        field("events.calendars.pageTitleLine2", "Heading, second line", "heading"),
+        field("events.calendars.pageLede", "Opening sentence (shown if today’s bookings can’t be loaded)", "body"),
+        field("events.calendars.facilities.description", "Line under “Facilities calendar”", "body"),
+        field("events.calendars.comingEvents.description", "Line under “School holidays & center dates”", "body"),
+      ]),
       section("events-archive", [
         field("events.archive.titleLine1", "Heading, first line", "heading"),
         field("events.archive.titleLine2", "Heading, second line", "heading"),
@@ -226,7 +238,19 @@ function pageWordsLabel(path: string): string {
 // Must mirror the `dict.*` namespaces each public page reads. `fromDatabase`
 // lists dictionary copies that page renders from the database instead.
 const PAGE_WORD_SOURCES: Record<SiteTextPage["id"], { namespaces: string[]; fromDatabase: string[] }> = {
-  home: { namespaces: ["home", "groups", "school"], fromDatabase: [] },
+  home: { namespaces: ["home", "groups"], fromDatabase: [] },
+  about: {
+    namespaces: [
+      "home.history",
+      "home.board",
+      "home.connectKickerAccent",
+      "home.connectKickerCaption",
+      "home.connectTitle",
+      "home.connectText",
+      "home.contact",
+    ],
+    fromDatabase: [],
+  },
   school: {
     namespaces: [
       "school",

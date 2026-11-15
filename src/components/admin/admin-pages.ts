@@ -10,7 +10,7 @@ export type AdminPage = {
   summary: string;
 };
 
-const ADMIN_PAGE_ORDER = ["events", "groups", "home", "donate", "school"] as const satisfies readonly EditablePageId[];
+const ADMIN_PAGE_ORDER = ["events", "groups", "home", "about", "donate", "school"] as const satisfies readonly EditablePageId[];
 
 const ADMIN_PAGE_DETAILS: Record<EditablePageId, Omit<AdminPage, "id">> = {
   events: {
@@ -19,7 +19,7 @@ const ADMIN_PAGE_DETAILS: Record<EditablePageId, Omit<AdminPage, "id">> = {
     hub: "/admin/events",
     action: "Add or change events",
     alsoActiveFor: ["/admin/pages/events"],
-    summary: "The Events page: what's coming up, each event's flyer, and the words and photos around them.",
+    summary: "The Events page: what's coming up, each event's flyer, and the words and photos around them. The Calendar page is here too.",
   },
   groups: {
     menuLabel: "Sports & Classes",
@@ -34,8 +34,16 @@ const ADMIN_PAGE_DETAILS: Record<EditablePageId, Omit<AdminPage, "id">> = {
     surface: "bg-azure",
     hub: "/admin/pages/home",
     action: "Change this page",
-    alsoActiveFor: ["/admin/board", "/admin/videos"],
-    summary: "The welcome a visitor sees first, the board of directors, and our history.",
+    alsoActiveFor: ["/admin/videos"],
+    summary: "The welcome a visitor sees first, the videos, and the 100th anniversary.",
+  },
+  about: {
+    menuLabel: "About Us",
+    surface: "bg-cream",
+    hub: "/admin/pages/about",
+    action: "Change this page",
+    alsoActiveFor: ["/admin/board"],
+    summary: "Our history, from 1925 to today, the board of directors, and how to reach us.",
   },
   donate: {
     menuLabel: "Donations",

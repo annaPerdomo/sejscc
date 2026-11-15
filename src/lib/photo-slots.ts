@@ -8,7 +8,7 @@ import {
 
 export type PhotoShape = "wide" | "photo" | "square";
 
-export type PhotoPageId = "home" | "school" | "events" | "groups" | "donate";
+export type PhotoPageId = "home" | "about" | "school" | "events" | "groups" | "donate";
 
 export type PhotoSlot = {
   id: string;
@@ -38,9 +38,19 @@ export const PHOTO_SLOTS: PhotoSlot[] = [
     page: "home",
     section: "home-top",
     group: "Backdrops",
-    label: "Events and history backdrop",
+    label: "Events backdrop",
     defaultSrc: homePhotos.eventsBackdrop,
     defaultAltPath: "home.eventsHero.photoAlt",
+    shape: "wide",
+  },
+  {
+    id: "about.history-backdrop",
+    page: "about",
+    section: "about-top",
+    group: "Backdrops",
+    label: "History backdrop",
+    defaultSrc: homePhotos.eventsBackdrop,
+    defaultAltPath: null,
     shape: "wide",
   },
   ...homePhotos.schoolSlides.map(
@@ -59,7 +69,7 @@ export const PHOTO_SLOTS: PhotoSlot[] = [
   {
     id: "home.centennial",
     page: "home",
-    section: "home-history",
+    section: "home-centennial",
     group: "Centennial banner",
     label: "Banner photo",
     defaultSrc: homePhotos.centennial.src,
@@ -144,6 +154,19 @@ export const PHOTO_SLOTS: PhotoSlot[] = [
     defaultAltPath: "events.archive.heroPhotoAlt",
     shape: "wide",
   },
+  ...eventsPhotos.calendarReel.map(
+    (defaultSrc, i): PhotoSlot => ({
+      id: `events.calendar.${i}`,
+      page: "events",
+      section: "events-calendar",
+      group: "Calendar photos",
+      label: photoN(i),
+      defaultSrc,
+      defaultAltPath: `events.calendars.reel.photos.${i}.alt`,
+      shape: "wide",
+      takesTurns: true,
+    })
+  ),
   ...groupsPhotos.heroRotation.map(
     (defaultSrc, i): PhotoSlot => ({
       id: `groups.hero-rotation.${i}`,

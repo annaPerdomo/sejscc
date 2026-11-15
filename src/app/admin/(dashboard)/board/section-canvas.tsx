@@ -284,7 +284,7 @@ export function SectionCanvas({
         lang={lang}
         onLangChange={handleLangChange}
         status={status}
-        viewHref="/#board"
+        viewHref="/about#board"
         undo={
           undo.entry
             ? { description: undo.entry.description, busy: undo.undoing, onUndo: () => void onUndo() }

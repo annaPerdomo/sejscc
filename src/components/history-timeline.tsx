@@ -22,37 +22,25 @@ export type Milestone = {
 export function HistoryTimeline({
   milestones,
   photoLabel,
-  finalePhotoCaption,
-  finaleId,
   className = "",
 }: {
   milestones: Milestone[];
   photoLabel: string;
-  finalePhotoCaption: string;
-  finaleId: string;
   className?: string;
 }) {
   const lastIndex = milestones.length - 1;
   return (
     <ol className={className}>
-      {milestones.map((milestone, i) =>
-        i === lastIndex && i > 0 ? (
-          <FinaleMilestone
-            key={milestone.year}
-            milestone={milestone}
-            photoCaption={finalePhotoCaption}
-            id={finaleId}
-          />
-        ) : (
-          <TimelineMilestone
-            key={milestone.year}
-            milestone={milestone}
-            photoLabel={photoLabel}
-            isFirst={i === 0}
-            photoOnTheRight={i % 2 === 1}
-          />
-        ),
-      )}
+      {milestones.map((milestone, i) => (
+        <TimelineMilestone
+          key={milestone.year}
+          milestone={milestone}
+          photoLabel={photoLabel}
+          isFirst={i === 0}
+          isLast={i === lastIndex}
+          photoOnTheRight={i % 2 === 1}
+        />
+      ))}
     </ol>
   );
 }
@@ -61,19 +49,26 @@ function TimelineMilestone({
   milestone,
   photoLabel,
   isFirst,
+  isLast,
   photoOnTheRight,
 }: {
   milestone: Milestone;
   photoLabel: string;
   isFirst: boolean;
+  isLast: boolean;
   photoOnTheRight: boolean;
 }) {
+  const railSpan = isLast
+    ? "top-0 h-6 sm:h-8"
+    : isFirst
+      ? "top-6 bottom-0 sm:top-8"
+      : "inset-y-0";
   const photoSide = photoOnTheRight
     ? "reveal-swing-right lg:col-start-2 lg:row-start-1 lg:justify-start"
     : "reveal-swing-left lg:col-start-1 lg:row-start-1 lg:justify-end";
   return (
     <li className="relative pb-20 pl-16 sm:pb-24 lg:grid lg:grid-cols-2 lg:gap-x-28 lg:pb-32 lg:pl-0">
-      <TimelineRail className={isFirst ? "top-6 bottom-0 sm:top-8" : "inset-y-0"} />
+      {!(isFirst && isLast) && <TimelineRail className={railSpan} />}
       <TimelineMarker
         tickSide={photoOnTheRight ? "start" : "end"}
         className="top-6 sm:top-8"
@@ -113,79 +108,74 @@ function TimelineMilestone({
   );
 }
 
-function FinaleMilestone({
+export function CentennialFinale({
   milestone,
   photoCaption,
   id,
 }: {
   milestone: Milestone;
   photoCaption: string;
-  id?: string;
+  id: string;
 }) {
   return (
-    <li className="relative pt-2">
-      <TimelineRail className="top-0 h-6" />
-      <TimelineMarker finale className="top-6" />
+    <div className="grid overflow-clip">
+      <div className="sticky top-0 col-start-1 row-start-1 h-svh self-start">
+        <div className="absolute inset-x-0 top-28 bottom-0 lg:top-30">
+          {milestone.photo && (
+            <Image
+              src={milestone.photo.image}
+              alt={milestone.photo.alt}
+              fill
+              sizes="100vw"
+              placeholder="blur"
+              className="object-cover"
+            />
+          )}
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 bg-radial from-transparent from-45% to-ink-deep/85"
+          />
+          <div
+            aria-hidden="true"
+            className="absolute inset-x-0 bottom-0 h-1/3 bg-linear-to-t from-ink-deep to-transparent"
+          />
+          <div aria-hidden="true" className="absolute inset-3 border-2 border-gold sm:inset-5">
+            <div className="absolute inset-1.5 border border-gold/50" />
+          </div>
+          {/* Sits on the solid end of the bottom fade, where white clears AA
+              over the paper flowers behind it. */}
+          <p className="absolute inset-x-0 bottom-8 px-8 text-center font-display text-sm font-semibold tracking-[0.2em] text-white uppercase sm:bottom-10">
+            {photoCaption}
+          </p>
+        </div>
+      </div>
 
-      <div className="relative left-1/2 mt-14 grid w-screen -translate-x-1/2 overflow-clip bg-ink-deep lg:mt-20">
-        <div className="sticky top-0 col-start-1 row-start-1 h-svh self-start">
-          <div className="absolute inset-x-0 top-28 bottom-0 lg:top-30">
-            {milestone.photo && (
-              <Image
-                src={milestone.photo.image}
-                alt={milestone.photo.alt}
-                fill
-                sizes="100vw"
-                placeholder="blur"
-                className="object-cover"
-              />
+      {/* At the text this wash is just dark enough for blossom and white to
+          clear AA over the white sign. */}
+      <div className="relative col-start-1 row-start-1 flex flex-col">
+        <div aria-hidden="true" className="h-svh shrink-0" />
+        <div
+          id={id}
+          className="flex min-h-svh flex-col justify-center bg-linear-to-b from-transparent via-ink-deep/80 via-25% to-ink-deep/90 px-4 pt-24 pb-24 text-center sm:px-6"
+        >
+          <div className="reveal-rise mx-auto max-w-3xl">
+            {milestone.era && (
+              <p
+                lang="ja"
+                aria-hidden="true"
+                className="font-accent text-xl font-bold tracking-[0.4em] text-sky"
+              >
+                {milestone.era}
+              </p>
             )}
-            <div
-              aria-hidden="true"
-              className="absolute inset-0 bg-radial from-transparent from-45% to-ink-deep/85"
-            />
-            <div
-              aria-hidden="true"
-              className="absolute inset-x-0 bottom-0 h-1/3 bg-linear-to-t from-ink-deep to-transparent"
-            />
-            <div aria-hidden="true" className="absolute inset-3 border-2 border-gold sm:inset-5">
-              <div className="absolute inset-1.5 border border-gold/50" />
-            </div>
-            {/* Sits on the solid end of the bottom fade, where white clears AA
-                over the paper flowers behind it. */}
-            <p className="absolute inset-x-0 bottom-8 px-8 text-center font-display text-sm font-semibold tracking-[0.2em] text-white uppercase sm:bottom-10">
-              {photoCaption}
+            <MilestoneHeading milestone={milestone} centered />
+            <p className="mt-4 text-lg leading-relaxed text-white lg:text-xl">
+              {milestone.text}
             </p>
           </div>
         </div>
-
-        {/* At the text this wash is just dark enough for blossom and white to
-            clear AA over the white sign. */}
-        <div className="relative col-start-1 row-start-1 flex flex-col">
-          <div aria-hidden="true" className="h-svh shrink-0" />
-          <div
-            id={id}
-            className="flex min-h-svh flex-col justify-center bg-linear-to-b from-transparent via-ink-deep/80 via-25% to-ink-deep/90 px-4 pt-24 pb-24 text-center sm:px-6"
-          >
-            <div className="reveal-rise mx-auto max-w-3xl">
-              {milestone.era && (
-                <p
-                  lang="ja"
-                  aria-hidden="true"
-                  className="font-accent text-xl font-bold tracking-[0.4em] text-sky"
-                >
-                  {milestone.era}
-                </p>
-              )}
-              <MilestoneHeading milestone={milestone} centered />
-              <p className="mt-4 text-lg leading-relaxed text-white lg:text-xl">
-                {milestone.text}
-              </p>
-            </div>
-          </div>
-        </div>
       </div>
-    </li>
+    </div>
   );
 }
 
@@ -202,27 +192,19 @@ function TimelineRail({ className }: { className: string }) {
 
 function TimelineMarker({
   tickSide,
-  finale = false,
   className,
 }: {
-  tickSide?: "start" | "end";
-  finale?: boolean;
+  tickSide: "start" | "end";
   className: string;
 }) {
   return (
     <span aria-hidden="true" className={`absolute left-6 lg:left-1/2 ${className}`}>
-      {tickSide && (
-        <span
-          className={`timeline-tick absolute top-0 left-0 h-0.5 w-8 -translate-y-1/2 origin-left bg-gold lg:w-12 ${
-            tickSide === "start" ? "lg:right-0 lg:left-auto lg:origin-right" : ""
-          }`}
-        />
-      )}
       <span
-        className={`timeline-dot absolute top-0 left-0 -translate-1/2 rounded-full bg-magenta ring-4 ring-paper ${
-          finale ? "size-5" : "size-3.5"
+        className={`timeline-tick absolute top-0 left-0 h-0.5 w-8 -translate-y-1/2 origin-left bg-gold lg:w-12 ${
+          tickSide === "start" ? "lg:right-0 lg:left-auto lg:origin-right" : ""
         }`}
       />
+      <span className="timeline-dot absolute top-0 left-0 size-3.5 -translate-1/2 rounded-full bg-magenta ring-4 ring-paper" />
     </span>
   );
 }
@@ -258,6 +240,7 @@ function MilestoneHeading({
   alignEnd?: boolean;
   centered?: boolean;
 }) {
+  const Heading = centered ? "h2" : "h3";
   const ruleAlignment = centered ? "mx-auto origin-center" : alignEnd ? "lg:ml-auto lg:origin-right" : "";
   return (
     <>
@@ -272,13 +255,13 @@ function MilestoneHeading({
         aria-hidden="true"
         className={`reveal-rule mt-4 block h-0.5 w-16 bg-gold ${ruleAlignment}`}
       />
-      <h3
+      <Heading
         className={`mt-4 font-display leading-snug font-normal tracking-[0.02em] ${
           centered ? "text-3xl text-white sm:text-4xl" : "text-2xl text-ink sm:text-3xl"
         }`}
       >
         {milestone.title}
-      </h3>
+      </Heading>
     </>
   );
 }

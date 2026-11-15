@@ -115,7 +115,7 @@ export function ZoomablePhoto({
           sizes="100vw"
           className="ken-burns-in block h-auto min-h-64 w-full object-cover object-bottom sm:min-h-80 lg:min-h-0"
         />
-        <span className="button-light absolute right-4 bottom-4 flex items-center gap-2 rounded-full px-5 py-3 font-display text-base font-semibold sm:right-6 sm:bottom-6">
+        <span className="button-light absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-full px-5 py-3 font-display text-base font-semibold whitespace-nowrap sm:bottom-6">
           <svg
             viewBox="0 0 24 24"
             fill="none"

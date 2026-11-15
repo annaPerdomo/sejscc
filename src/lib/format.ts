@@ -66,6 +66,30 @@ export function formatCalendarDate(date: Date | null, locale: Locale = "en") {
   });
 }
 
+export function formatMonthYear(date: Date, locale: Locale = "en") {
+  return date.toLocaleDateString(INTL_LOCALES[locale], {
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+export function formatLongDay(date: Date, locale: Locale = "en") {
+  return date.toLocaleDateString(INTL_LOCALES[locale], {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+export function formatShortWeekday(date: Date, locale: Locale = "en") {
+  return date.toLocaleDateString(INTL_LOCALES[locale], {
+    weekday: "short",
+    timeZone: "UTC",
+  });
+}
+
 export function formatEventMonth(date: Date | null, locale: Locale = "en") {
   if (!date) return null;
   return date.toLocaleDateString(INTL_LOCALES[locale], {

@@ -47,7 +47,6 @@ export const homePhotos = {
     "/photos/home-school-1972-christmas.jpg",
     "/photos/home-school-2001-christmas.jpg",
     "/photos/home-school-brush.jpg",
-    "/photos/home-school-shuji-class.jpg",
     "/photos/home-school-2017-nengajo.jpg",
     "/photos/home-school-nengajo.jpg",
     "/photos/home-school-2022-graduates.jpg",
@@ -113,7 +112,7 @@ export const schoolPhotos = {
     "/photos/hero-school-rotation-christmas-santa-2018.jpg",
     "/photos/hero-school-rotation-welcome-day-game.jpg",
   ],
-  join: "/photos/home-school-shuji-class.jpg",
+  join: "/photos/school-join-undokai-2015.jpg",
   then: "/photos/school-then.jpg",
   now: "/photos/school-ohanashikai-2018.jpg",
   /** Matches `school.classes.levels`. */
@@ -153,6 +152,15 @@ export const eventsPhotos = {
     "/photos/events-reel-2025-festival-bon-odori-wide.jpg",
   ],
   archive: "/photos/events-odori-ondo.jpg",
+  /** Matches `events.calendars.reel.photos`; keep these photos off every other page. */
+  calendarReel: [
+    "/photos/calendar-gym-floor-crest.jpg",
+    "/photos/calendar-dojo-name-board.jpg",
+    "/photos/calendar-classroom-koto-2018.jpg",
+    "/photos/calendar-kitchen-bingo-night.jpg",
+    "/photos/calendar-gym-dance-steps-2025.jpg",
+    "/photos/calendar-pancake-breakfast-2023.jpg",
+  ],
 } as const;
 
 export const groupsPhotos = {

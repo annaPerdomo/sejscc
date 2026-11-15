@@ -211,7 +211,7 @@ export default async function GroupsPage() {
 
               <div className="reveal-rise mt-14 flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-8">
                 <Link
-                  href={localePath(lang, "/events#calendars")}
+                  href={localePath(lang, "/calendar")}
                   className="button-light shrink-0 px-7 py-4 text-center text-base"
                 >
                   {dict.groups.weekCalendarCta}

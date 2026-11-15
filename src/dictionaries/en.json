@@ -8,7 +8,6 @@
   "header": {
     "orgTop": "Southeast Japanese School",
     "orgBottom": "& Community Center",
-    "donate": "Donate",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
     "announcementAccent": "次回",
@@ -23,10 +22,10 @@
     "about": "About Us",
     "japaneseSchool": "Japanese School",
     "events": "Events",
+    "calendar": "Calendar",
     "groups": "Sports & Classes",
     "payments": "Support Us",
-    "contact": "Contact",
-    "volunteerSignIn": "Volunteer sign-in"
+    "adminSignIn": "Admin sign-in"
   },
   "footer": {
     "orgName": "Southeast Japanese School & Community Center",
@@ -39,7 +38,6 @@
     "madeBy": "by"
   },
   "home": {
-    "photoSoon": "Photos coming soon",
     "welcome": {
       "kicker": "ようこそ",
       "heading": "Connected Through Culture"
@@ -50,6 +48,7 @@
       "flyerAria": "{title} (opens the flyer in a new tab)"
     },
     "viewAll": "See all events",
+    "calendarCta": "Facilities calendar",
     "noEvents": "New events are being planned — check back soon, or call the center at (562) 863-5996.",
     "japaneseSchool": {
       "kickerAccent": "日本語学校",
@@ -121,11 +120,6 @@
           "alt": "A student writing Japanese characters with a calligraphy brush in 2003"
         },
         {
-          "label": "Today",
-          "caption": "Brush calligraphy class",
-          "alt": "Students practicing brush calligraphy at their desks, with their teacher behind them and finished characters on the wall"
-        },
-        {
           "label": "2017",
           "caption": "New Year's card contest winners",
           "alt": "Students holding their certificates from the 2017 New Year's card contest"
@@ -151,11 +145,6 @@
           "alt": "The school's teachers and staff seated together for a group photo in 2025"
         }
       ],
-      "classesAccent": "クラス案内",
-      "classesCaption": "Kindergarten to Adults",
-      "classesHeading": "A class for every age",
-      "classesFacts": "Every Saturday, 8:45–12:15 · Adult classes online",
-      "classesCta": "See all classes",
       "primaryCta": "Tuition & registration",
       "secondaryCta": "See sports & classes"
     },
@@ -185,6 +174,8 @@
       "videoCaption": "A look inside the center, its history, and its traditions.",
       "photoLabel": "Historic photo coming soon",
       "centennialPhotoCaption": "100th Anniversary · July 26, 2025",
+      "centennialCta": "See our 100th anniversary",
+      "timelineLabel": "Our history, from 1925 to today",
       "foundersLabel": "The people who began it",
       "founders": [
         {
@@ -403,6 +394,10 @@
       "mapTitle": "Map showing the center's location in Norwalk, California"
     }
   },
+  "about": {
+    "metaTitle": "About Us",
+    "metaDescription": "The history of the Southeast Japanese School & Community Center in Norwalk, CA, from 1925 to today, and the board of directors who run it."
+  },
   "events": {
     "metaTitle": "Events",
     "metaDescription": "Upcoming events at the Southeast Japanese School & Community Center in Norwalk, CA.",
@@ -466,13 +461,82 @@
       ],
       "until": "{schedule}, through {date}"
     },
+    "calendarCta": "Facilities calendar",
+    "calendarSectionCta": "See the calendar",
     "calendars": {
       "accent": "スケジュール",
-      "caption": "Room Bookings",
-      "title": "Class & facility calendars",
-      "lede": "The two calendars the center keeps day to day: room bookings for every club and class, and the school's holidays and center-wide events.",
-      "heroCta": "Check the calendars",
-      "sectionCta": "See all the calendars",
+      "caption": "Calendar",
+      "metaTitle": "Calendar",
+      "metaDescription": "The facilities calendar for the Southeast Japanese School & Community Center in Norwalk, CA: room bookings for classes, clubs and events, plus school holidays and closures.",
+      "pageTitleLine1": "What's on",
+      "pageTitleLine2": "at the center",
+      "reel": {
+        "list": "Photos from around the center",
+        "pause": "Stop rotating photos of the center",
+        "play": "Rotate photos of the center automatically",
+        "photo": "Photo {n} of {total}",
+        "photos": [
+          {
+            "alt": "The gym floor at the center, with the SEJSCC crest painted at center court"
+          },
+          {
+            "alt": "The dojo's wooden name board, with each member's name on its own tag"
+          },
+          {
+            "alt": "Japanese School students sitting on a classroom floor, watching a teacher play the koto in 2018"
+          },
+          {
+            "alt": "Taiko volunteers in the center's kitchen behind a counter of desserts on bingo night"
+          },
+          {
+            "alt": "A ballroom couple's feet mid-step on the polished gym floor in 2025"
+          },
+          {
+            "alt": "Volunteers grilling at the 2023 pancake breakfast outside the center"
+          }
+        ]
+      },
+      "monthCta": "See the whole month",
+      "datesCta": "School holidays & center dates",
+      "pageLede": "Every class, club and event booked at the center, day by day.",
+      "today": {
+        "heading": "Today at the center",
+        "none": "Nothing today.",
+        "next": "Next up: {date}"
+      },
+      "month": {
+        "accent": "月間予定",
+        "caption": "Month by Month",
+        "previous": "Previous month",
+        "next": "Next month",
+        "today": "Today",
+        "backToToday": "Back to today",
+        "filter": "Show one space",
+        "allSpaces": "All spaces",
+        "none": "A quiet day. Nothing is on the schedule.",
+        "noneInSpace": "Nothing is booked in this space this day.",
+        "allDay": "All day",
+        "more": "+{count} more",
+        "dayNone": "{date}, nothing booked",
+        "dayOne": "{date}, 1 booking",
+        "dayMany": "{date}, {count} bookings"
+      },
+      "spaces": {
+        "gym": "Gym",
+        "dojo": "Dojo",
+        "school": "Japanese School",
+        "rooms": "Rooms",
+        "kitchen": "Kitchen",
+        "outdoors": "Parking lot",
+        "whole": "Whole center",
+        "other": "Other"
+      },
+      "dates": {
+        "accent": "年間予定",
+        "caption": "Dates to Know",
+        "range": "{start} – {end}",
+        "none": "No dates are posted right now."
+      },
       "openLabel": "Open in Google Calendar",
       "facilities": {
         "label": "Facilities calendar",
@@ -480,7 +544,7 @@
         "frameTitle": "SEJSCC facilities calendar, showing room bookings for classes and clubs"
       },
       "comingEvents": {
-        "label": "Coming events",
+        "label": "School holidays & center dates",
         "description": "School holidays, closures, and center-wide events such as the June Cultural Festival.",
         "frameTitle": "Coming events at the Southeast Japanese School & Community Center"
       }
@@ -556,7 +620,6 @@
     "directoryCaption": "Who Meets Here",
     "directoryTitle": "Every group at the center",
     "website": "Website",
-    "meetsAtCenter": "At the center",
     "askCta": "Ask the center",
     "pausedLabel": "Paused",
     "cancelledLabel": "Discontinued",
@@ -621,6 +684,7 @@
     "kickerCaption": "Saturdays Since 1925",
     "titleLine1": "Southeast Japanese",
     "titleLine2": "Language School",
+    "heroLede": "Japanese language and culture for every age, from five-year-olds to adults. No Japanese background needed.",
     "lede": [
       "Southeast Gakuen also has a class for five-year-olds, who learn happily through songs and crafts. Let your child meet a foreign language while they are small.",
       "The beginning class takes children from age six. Its lessons center on listening and speaking, and little by little the children learn to read hiragana too. Adult classes run from beginning to intermediate level.",
@@ -669,7 +733,6 @@
       "caption": "Class Descriptions",
       "titleLead": "From first words",
       "titleRest": "to fluent conversation",
-      "lede": "The school includes a kindergarten program for children who are five years old. The regular program is recommended for children six years and older, and adult classes meet online.",
       "tablistLabel": "Class levels",
       "statusUnavailable": "Currently unavailable",
       "levels": [
@@ -696,7 +759,7 @@
             "Emphasis on listening and speaking",
             "Culture lessons and crafts"
           ],
-          "photoAlt": "Level 1 students with their teacher"
+          "photoAlt": "Beginning level students with their teacher"
         },
         {
           "name": "Elementary Level",
@@ -985,7 +1048,7 @@
       "registerCta": "Online registration",
       "emailCta": "Email the school",
       "note": "We do not return phone calls to out of area numbers.",
-      "photoAlt": "Students practicing shuji calligraphy at long tables with their teacher"
+      "photoAlt": "Students in matching blue shirts and red headbands balancing eggs on spoons in a relay race at the 2015 undokai"
     }
   },
   "payments": {
