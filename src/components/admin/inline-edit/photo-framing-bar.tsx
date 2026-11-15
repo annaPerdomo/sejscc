@@ -29,6 +29,12 @@ const MOVES = [
   { word: "Down", arrow: "↓", dx: 0, dy: NUDGE },
 ];
 
+function sizeLabel(size: number): string {
+  if (size === SIZE_MIN) return "Showing the whole picture in its frame beside the words.";
+  if (size === SIZE_MAX) return "Showing the whole picture as wide as the top of the page.";
+  return `Showing the whole picture, grown ${size}% of the way to full width.`;
+}
+
 const BIG_BUTTON = `flex min-h-12 flex-1 items-center justify-center gap-2 rounded-lg px-3 text-lg aria-disabled:cursor-not-allowed aria-disabled:opacity-50 ${buttonVariantClass("secondary")}`;
 
 export function PhotoFramingBar({
@@ -47,7 +53,6 @@ export function PhotoFramingBar({
   src: string;
   shape: PhotoShape;
   framing: PhotoFraming;
-  /** A whole photo that can grow from a frame beside the words to the full hero. */
   sizable?: boolean;
   saving: boolean;
   error: string | null;
@@ -191,7 +196,7 @@ export function PhotoFramingBar({
 
         <div className="flex flex-wrap items-center gap-x-6 gap-y-1">
           <p role="status" aria-live="polite" className="text-base text-ink-soft">
-            {framingLabel(framing)}{" "}
+            {sizing ? sizeLabel(framing.size) : framingLabel(framing)}{" "}
             {sizing
               ? "Press Bigger or Smaller, or drag one of the round pink handles on the page. Drag the photo itself to move it."
               : "Drag the photo on the page to move it, or use the buttons."}

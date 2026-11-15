@@ -111,19 +111,30 @@ body {
     object-position: var(--frame-x) var(--frame-y);
   }
 
-  /* A whole photo is mounted like a print: sized to itself instead of to its
-     frame, so the cream border and gold rule hug the picture. !important
-     outranks the inline box next/image gives a filling photo; the slow zooms go
-     too, since they would push the photo's edges back out of view. */
+  .photo-frame-whole {
+    container-type: size;
+  }
+
+  /* !important outranks the object-cover utility every photo carries. The
+     slow zooms go too: they would push the photo's edges back out of view. */
   .photo-frame-whole > img {
+    object-fit: contain !important;
+    animation: none !important;
+  }
+
+  /* Once its shape is known, a whole photo is mounted like a print: sized to
+     its own shape as large as the frame allows, so the cream border and gold
+     rule hug the picture. !important outranks the inline box next/image gives
+     a filling photo. */
+  .photo-frame-whole[data-photo-ratio] > img {
     position: absolute !important;
     inset: auto !important;
     top: var(--frame-y) !important;
     left: var(--frame-x) !important;
-    width: auto !important;
+    width: min(100cqw, calc(100cqh * var(--photo-ratio))) !important;
     height: auto !important;
-    max-width: 100%;
-    max-height: 100%;
+    aspect-ratio: var(--photo-ratio);
+    object-fit: cover !important;
     translate: calc(-1 * var(--frame-x)) calc(-1 * var(--frame-y));
     border: --spacing(2) solid var(--color-cream);
     outline: 1px solid --alpha(var(--color-gold) / 70%);
@@ -131,7 +142,6 @@ body {
     box-shadow:
       0 30px 60px --alpha(var(--color-ink-deep) / 45%),
       0 6px 16px --alpha(var(--color-ink-deep) / 25%);
-    animation: none !important;
   }
 
   .hero-slide {
@@ -153,19 +163,23 @@ body {
   /* A whole photo would be half hidden under the wash that keeps the hero's
      words readable, so on wide screens it stands above that wash, in a box
      beside the words. --photo-size grows the box from there (0) to the whole
-     hero (1); the slide's own wash ends where the words do, so whatever part
-     of the photo reaches under them is dimmed and the rest stays clear. */
+     hero (1). The slide carries its own wash, which ends where the words do:
+     past the text column, and above a row of words along the bottom
+     (--slide-row is how high that row can reach). Whatever part of the photo
+     grows under the words is dimmed as it always was, and the rest stays clear. */
   @media (width >= 64rem) {
     .hero-slide-beside[data-photo-slide="whole"] {
       --slide-rest: calc(1 - var(--photo-size, 0));
-      --slide-left: 66%;
-      --slide-wash-from: 60%;
+      --slide-left: 68%;
+      --slide-wash-from: 62%;
+      --slide-row: 0rem;
       --slide-bottom: 3rem;
       z-index: 10;
     }
 
     .hero-slide-beside.hero-slide-above-row[data-photo-slide="whole"] {
-      --slide-bottom: 15rem;
+      --slide-row: 22rem;
+      --slide-bottom: calc(var(--slide-row) + 4rem);
     }
 
     .hero-slide-beside[data-photo-slide="whole"] > .hero-slide-box {
@@ -178,17 +192,13 @@ body {
       position: absolute;
       inset: 0;
       pointer-events: none;
-      background: linear-gradient(
-        to right,
-        --alpha(var(--color-ink-deep) / 95%),
-        --alpha(var(--color-navy) / 90%) var(--slide-wash-from),
-        transparent var(--slide-left)
-      );
-    }
-
-    .hero-slide-beside.hero-slide-above-row[data-photo-slide="whole"] > .hero-slide-wash {
       background:
-        linear-gradient(to top, var(--color-ink-deep), --alpha(var(--color-ink-deep) / 90%) 9rem, transparent 15rem),
+        linear-gradient(
+          to top,
+          var(--color-ink-deep),
+          --alpha(var(--color-ink-deep) / 90%) var(--slide-row),
+          transparent calc(var(--slide-row) * 1.4)
+        ),
         linear-gradient(
           to right,
           --alpha(var(--color-ink-deep) / 95%),
@@ -200,8 +210,12 @@ body {
 
   @media (width >= 80rem) {
     .hero-slide-beside[data-photo-slide="whole"] {
-      --slide-left: 63%;
-      --slide-wash-from: 57%;
+      --slide-left: 66%;
+      --slide-wash-from: 60%;
+    }
+
+    .hero-slide-beside.hero-slide-above-row[data-photo-slide="whole"] {
+      --slide-row: 16rem;
     }
   }
 

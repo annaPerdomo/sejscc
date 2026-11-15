@@ -15,6 +15,9 @@ export const ORIGINAL_PHOTO_URL = "";
 // admin's framing tool can hide the stage's other slides and preview a change of fit.
 export const PHOTO_SLIDE_ATTRIBUTE = "data-photo-slide";
 
+// Set on a frame once its photo's shape is known, alongside --photo-ratio.
+export const PHOTO_RATIO_ATTRIBUTE = "data-photo-ratio";
+
 export const ZOOM_MIN = 100;
 export const ZOOM_MAX = 300;
 export const ZOOM_STEP = 10;
@@ -46,11 +49,16 @@ export function clampSize(value: number): number {
   return Math.min(SIZE_MAX, Math.max(SIZE_MIN, Math.round(value)));
 }
 
+const RIGHT_EDGE = 100;
+
 // The photo grows leftward out of its frame, so one nobody has moved keeps to
-// the right edge instead of drifting to the middle, under the words.
+// the right edge instead of drifting to the middle, under the words. Shrunk
+// back into the frame, it goes back to the middle.
 export function withSize(framing: PhotoFraming, size: number): PhotoFraming {
-  const unmoved = framing.size === SIZE_MIN && framing.x === DEFAULT_FRAMING.x;
-  return { ...framing, size: clampSize(size), x: unmoved ? 100 : framing.x };
+  const next = clampSize(size);
+  if (framing.size === SIZE_MIN && framing.x === DEFAULT_FRAMING.x) return { ...framing, size: next, x: RIGHT_EDGE };
+  if (next === SIZE_MIN && framing.x === RIGHT_EDGE) return { ...framing, size: next, x: DEFAULT_FRAMING.x };
+  return { ...framing, size: next };
 }
 
 export function clampZoom(value: number): number {

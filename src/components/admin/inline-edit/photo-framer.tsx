@@ -5,6 +5,7 @@ import { AdminButton } from "@/components/admin/admin-button";
 import { SegmentedSwitch } from "@/components/admin/inline-edit/segmented-switch";
 import {
   DEFAULT_FRAMING,
+  PHOTO_RATIO_ATTRIBUTE,
   draggedFraming,
   frameOverflow,
   ZOOM_MAX,
@@ -144,7 +145,8 @@ export function PhotoFramer({
         >
           <div
             className={`photo-frame ${framing.fit === "whole" ? "photo-frame-whole" : ""}`}
-            style={framingStyle(framing)}
+            style={{ ...framingStyle(framing), ...(natural && { "--photo-ratio": natural.width / natural.height }) }}
+            {...(natural && { [PHOTO_RATIO_ATTRIBUTE]: "" })}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img

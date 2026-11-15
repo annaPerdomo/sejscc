@@ -127,9 +127,9 @@ export function startPageFraming(
 
   // The box's left edge follows the handle: `travel` is how far it moves from frame to full width.
   function startResize(event: PointerEvent) {
-    const offset = box.getBoundingClientRect().left - stage.getBoundingClientRect().left;
-    const rest = 1 - current.size / SIZE_MAX;
-    const travel = rest > 0 ? offset / rest : stage.getBoundingClientRect().width / 2;
+    const stageWidth = stage.getBoundingClientRect().width;
+    const framedLeft = fitSlide ? parseFloat(getComputedStyle(fitSlide).getPropertyValue("--slide-left")) : NaN;
+    const travel = Number.isFinite(framedLeft) ? (stageWidth * framedLeft) / 100 : stageWidth / 2;
     resizeFrom = { pointerId: event.pointerId, x: event.clientX, size: current.size, travel };
     box.setPointerCapture(event.pointerId);
   }
