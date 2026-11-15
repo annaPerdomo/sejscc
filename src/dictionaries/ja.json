@@ -30,6 +30,7 @@
   "footer": {
     "orgName": "サウスイースト日本語学園・コミュニティセンター",
     "contact": "お問い合わせ",
+    "addressAria": "センターまでの道順を見る（Googleマップが開きます）",
     "visit": "ご案内",
     "legal": "サウスイースト日本語学園・コミュニティセンター（非営利のコミュニティ団体）",
     "farewellAccent": "またお会いしましょう。",
@@ -373,10 +374,6 @@
       "kickerCaption": "Our Volunteers",
       "membersLabel": "理事一覧"
     },
-    "connectKickerAccent": "コミュニティ",
-    "connectKickerCaption": "Our Community",
-    "connectTitle": "すべての世代が、ひとつのコミュニティに。",
-    "connectText": "サウスイースト日本語学園・コミュニティセンターは、どなたでも歓迎する非営利団体です。人種や信仰に関わらず、すべての活動にご参加いただけます。共に学び、祝い、力を尽くし、一生の思い出を作りましょう。",
     "centennialPhotoAlt": "2025年、創立100周年でセンター前に集まった地域の皆さん",
     "centennialZoom": {
       "open": "拡大して見る",
@@ -385,13 +382,6 @@
       "close": "閉じる",
       "zoomIn": "拡大",
       "zoomOut": "縮小"
-    },
-    "contact": {
-      "addressLabel": "住所",
-      "addressAria": "センターまでの道順を見る（Googleマップが開きます）",
-      "phoneLabel": "電話",
-      "emailLabel": "メール",
-      "mapTitle": "カリフォルニア州ノーウォークにあるセンターの地図"
     }
   },
   "about": {

@@ -166,7 +166,7 @@ export function textFieldValue(
 export const CONTACT_LINK_URL_MAX = 500;
 
 export const CONTACT_LINK_URL_MESSAGE =
-  "Please enter a web address starting with https://, an email address, or leave this empty to send visitors to the Contact section.";
+  "Please enter a web address starting with https://, an email address, or leave this empty to send visitors to the contact details at the bottom of the page.";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

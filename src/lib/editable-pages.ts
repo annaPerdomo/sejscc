@@ -148,16 +148,6 @@ const SECTION_ORDER: Record<EditablePageId, SectionSpec[]> = {
         action: "Change the board section",
       },
     },
-    {
-      id: "about-connect",
-      label: "Our Community",
-      anchor: "contact",
-      manage: {
-        href: "/admin/contact",
-        description: "The address, phone number and email here are the contact details, which show on every page.",
-        action: "Change contact details",
-      },
-    },
   ],
   school: [
     { id: "school-top", label: "Top of the page" },

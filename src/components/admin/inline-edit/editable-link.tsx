@@ -15,7 +15,7 @@ import { isImeComposing } from "./ime";
 import { useInlineEditFocus } from "./use-inline-edit-focus";
 
 const DESTINATION_HELP =
-  "Leave this empty to send visitors to the Contact section of the About Us page. Or paste a web address or an email address.";
+  "Leave this empty to send visitors to the contact details at the bottom of the page. Or paste a web address or an email address.";
 
 export function EditableLink({
   label,

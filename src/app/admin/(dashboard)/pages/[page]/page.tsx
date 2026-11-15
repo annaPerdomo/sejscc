@@ -65,7 +65,7 @@ async function loadPageRecords(pageId: EditablePageId): Promise<PageRecords> {
     shows("school") ? getAllSchoolYearEvents() : [],
     shows("home", "groups") ? getActiveGroups() : [],
     shows("about") ? loadBoard() : null,
-    shows("about", "groups", "donate") ? getCenterContact() : null,
+    shows("groups", "donate") ? getCenterContact() : null,
     shows("donate") ? loadDonation() : null,
     shows("home", "events") ? loadEvents() : [],
   ]);

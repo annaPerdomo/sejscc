@@ -79,10 +79,6 @@ export const SITE_TEXT_PAGES: SiteTextPage[] = [
         field("home.history.body", "Paragraph", "body"),
         field("home.history.missionText", "Mission statement", "body"),
       ]),
-      section("about-connect", [
-        field("home.connectTitle", "Heading", "heading"),
-        field("home.connectText", "Paragraph", "body"),
-      ]),
     ],
   },
   {
@@ -243,11 +239,6 @@ const PAGE_WORD_SOURCES: Record<SiteTextPage["id"], { namespaces: string[]; from
     namespaces: [
       "home.history",
       "home.board",
-      "home.connectKickerAccent",
-      "home.connectKickerCaption",
-      "home.connectTitle",
-      "home.connectText",
-      "home.contact",
     ],
     fromDatabase: [],
   },

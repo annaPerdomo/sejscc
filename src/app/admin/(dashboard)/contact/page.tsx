@@ -11,8 +11,8 @@ export default async function ContactDetailsPage() {
     <AdminPageWidth>
       <h1 className="font-display text-3xl text-ink">Contact info</h1>
       <p className="mt-1 mb-8 max-w-xl text-stone">
-        These appear in the footer, the Contact section of the About Us page, and
-        on the donation page.
+        These appear at the bottom of every page, and on the Sports &amp; Classes
+        and donation pages.
       </p>
 
       <div className="max-w-2xl">

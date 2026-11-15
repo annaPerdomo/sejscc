@@ -30,6 +30,7 @@
   "footer": {
     "orgName": "Southeast Japanese School & Community Center",
     "contact": "Contact",
+    "addressAria": "Get directions to the center (opens in Google Maps)",
     "visit": "Visit",
     "legal": "Southeast Japanese School & Community Center. A nonprofit community organization.",
     "farewellAccent": "またお会いしましょう。",
@@ -373,10 +374,6 @@
       "kickerCaption": "Our Volunteers",
       "membersLabel": "Board members"
     },
-    "connectKickerAccent": "コミュニティ",
-    "connectKickerCaption": "Our Community",
-    "connectTitle": "All Generations. One Community.",
-    "connectText": "Everyone is welcome at SEJSCC. We are a nonprofit organization and all of our activities are open to anyone, regardless of race or religion. Together we learn, celebrate, volunteer, and create memories that last a lifetime.",
     "centennialPhotoAlt": "The whole community gathered outside the center for its 100th anniversary in 2025",
     "centennialZoom": {
       "open": "Zoom in",
@@ -385,13 +382,6 @@
       "close": "Close",
       "zoomIn": "Zoom in",
       "zoomOut": "Zoom out"
-    },
-    "contact": {
-      "addressLabel": "Address",
-      "addressAria": "Get directions to the center (opens in Google Maps)",
-      "phoneLabel": "Phone",
-      "emailLabel": "Email",
-      "mapTitle": "Map showing the center's location in Norwalk, California"
     }
   },
   "about": {

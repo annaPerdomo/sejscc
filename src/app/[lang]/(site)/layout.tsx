@@ -7,6 +7,7 @@ import { PageEditPreviewBridge } from "@/components/page-edit-preview-bridge";
 import { ScrollReset } from "@/components/scroll-reset";
 import { SiteLogo } from "@/components/site-logo";
 import { SiteNav } from "@/components/site-nav";
+import { mapsUrl } from "@/lib/center";
 import { getUpcomingEvents } from "@/lib/events";
 import { formatEventDate } from "@/lib/format";
 import { getDictionary, getLocale } from "@/lib/dictionaries";
@@ -156,18 +157,24 @@ export default async function SiteLayout({
 
       <main className="flex-1">{children}</main>
 
-      <footer className="border-t-4 border-gold bg-navy text-white">
+      <footer id="contact" className="border-t-4 border-gold bg-navy text-white">
         <div className="mx-auto grid max-w-6xl grid-cols-2 gap-x-4 gap-y-8 px-4 py-8 sm:grid-cols-3 sm:gap-10 lg:grid-cols-4 sm:px-6 sm:py-10">
           <div className="col-span-2 sm:col-span-1">
             <SiteLogo label={dict.footer.orgName} className="h-12 w-auto max-w-full text-white" />
-            <p className="mt-4 text-sm leading-relaxed text-white/70">
+            <a
+              href={mapsUrl(contact.address)}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-4 block text-sm leading-relaxed text-white/80 hover:text-white"
+            >
               {contact.address.split(", ").map((line, i) => (
                 <span key={line}>
                   {i > 0 && <br />}
                   {line}
                 </span>
               ))}
-            </p>
+              <span className="sr-only"> {dict.footer.addressAria}</span>
+            </a>
           </div>
           <div className="text-sm">
             <p className="font-display text-xs font-semibold tracking-[0.14em] text-sky uppercase">

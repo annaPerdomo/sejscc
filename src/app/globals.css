@@ -124,14 +124,6 @@ body {
       linear-gradient(180deg, var(--color-paper), var(--color-cream) 60%, var(--color-paper));
   }
 
-  .section-wash-connect {
-    background: linear-gradient(
-      180deg,
-      var(--color-mist) 8rem,
-      color-mix(in srgb, var(--color-sky) 18%, var(--color-mist))
-    );
-  }
-
   /* Sky text clears 4.5:1 here by only ~0.03 relative luminance, and phone
      copy crosses both glows: lightening any layer drops the kicker below AA. */
   .section-navy-scene {
