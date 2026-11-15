@@ -1,4 +1,5 @@
 import type { ComponentProps, ReactNode } from "react";
+import { japaneseEnabled } from "@/lib/i18n";
 
 type FieldSize = "sm" | "lg";
 
@@ -103,6 +104,10 @@ export function AdminRequired() {
 
 export function AdminOptional() {
   return <span className="text-sm font-normal text-stone">Optional</span>;
+}
+
+export function JapaneseOnly({ children }: { children: ReactNode }) {
+  return japaneseEnabled ? children : null;
 }
 
 export function AdminAutoJapanese() {

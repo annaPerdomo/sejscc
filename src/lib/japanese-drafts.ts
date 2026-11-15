@@ -3,6 +3,7 @@ import { count, gte, lt } from "drizzle-orm";
 import { db } from "@/db";
 import { japaneseDrafts } from "@/db/schema";
 import { AdminError } from "@/lib/action-result";
+import { japaneseEnabled } from "@/lib/i18n";
 
 const TRANSLATION_MODEL = "anthropic/claude-sonnet-5.5";
 const TRANSLATION_TIMEOUT_MS = 20_000;
@@ -50,6 +51,7 @@ async function claimDraft(): Promise<boolean> {
 }
 
 export async function draftJapanese(english: string, max: number): Promise<FollowedJapanese> {
+  if (!japaneseEnabled) return { japanese: null, update: null };
   try {
     if (!(await claimDraft())) return { japanese: null, update: "limit" };
     const { output } = await generateText({

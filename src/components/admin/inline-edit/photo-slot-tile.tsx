@@ -9,7 +9,7 @@ import { withJapaneseNote } from "@/lib/admin-messages";
 import type { FollowedJapanese } from "@/lib/japanese-drafts";
 import { AdminAlert } from "@/components/admin/admin-alert";
 import { buttonClass, buttonVariantClass } from "@/components/admin/admin-button";
-import { AdminAutoJapanese, AdminTextArea } from "@/components/admin/admin-field";
+import { AdminAutoJapanese, JapaneseOnly, AdminTextArea } from "@/components/admin/admin-field";
 import { AdminImagePicker } from "@/components/admin/admin-image-picker";
 import type { EditBarStatus } from "@/components/admin/inline-edit/edit-bar";
 import { EditDialog } from "@/components/admin/inline-edit/edit-dialog";
@@ -517,14 +517,16 @@ export function PhotoDialog({
                 </p>
               )}
             </div>
-            <AdminTextArea
-              label={<>Describe the photo (Japanese) <AdminAutoJapanese /></>}
-              value={altJaDraft}
-              onChange={(event) => setAltJaDraft(event.target.value)}
-              rows={3}
-              maxLength={600}
-              disabled={saving}
-            />
+            <JapaneseOnly>
+              <AdminTextArea
+                label={<>Describe the photo (Japanese) <AdminAutoJapanese /></>}
+                value={altJaDraft}
+                onChange={(event) => setAltJaDraft(event.target.value)}
+                rows={3}
+                maxLength={600}
+                disabled={saving}
+              />
+            </JapaneseOnly>
           </>
         ) : (
           <p className="text-sm text-stone">

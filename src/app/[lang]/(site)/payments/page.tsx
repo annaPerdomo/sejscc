@@ -15,7 +15,7 @@ import { SectionDivider } from "@/components/section-divider";
 import { ZeffyEmbed } from "@/components/zeffy-embed";
 import { getDictionary, getDictionaryFor, getLocale } from "@/lib/dictionaries";
 import { ZEFFY_DONATION_URL, ZELLE_FALLBACK_EMAIL } from "@/lib/donate";
-import { hasLocale, localePath } from "@/lib/i18n";
+import { hasLocale, languageAlternates } from "@/lib/i18n";
 import { getCenterContact, getDonationDetails } from "@/lib/site-settings";
 import { getSitePhotos, slotPhoto } from "@/lib/site-photos";
 
@@ -76,14 +76,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: dict.payments.metaTitle,
     description: dict.payments.metaDescription,
-    alternates: {
-      canonical: localePath(lang, "/payments"),
-      languages: {
-        en: "/payments",
-        ja: "/ja/payments",
-        "x-default": "/payments",
-      },
-    },
+    alternates: languageAlternates(lang, "/payments"),
   };
 }
 

@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Analytics } from "@vercel/analytics/next";
 import { jost, shipporiMincho, zenMaruGothic } from "../fonts";
-import { hasLocale, localePath, locales } from "@/lib/i18n";
+import { isPublishedLocale, languageAlternates, publishedLocales } from "@/lib/i18n";
 import { getDictionaryFor } from "@/lib/dictionaries";
 import "../globals.css";
 
 export async function generateStaticParams() {
-  return locales.map((lang) => ({ lang }));
+  return publishedLocales.map((lang) => ({ lang }));
 }
 
 // Google drops relative hreflang URLs, so every page's alternates need a base.
@@ -33,7 +33,7 @@ export async function generateMetadata({
   params,
 }: Pick<Props, "params">): Promise<Metadata> {
   const { lang } = await params;
-  if (!hasLocale(lang)) return {};
+  if (!isPublishedLocale(lang)) return {};
   const dict = await getDictionaryFor(lang);
   return {
     metadataBase: siteUrl,
@@ -56,20 +56,13 @@ export async function generateMetadata({
       ],
     },
     twitter: { card: "summary_large_image" },
-    alternates: {
-      canonical: localePath(lang, "/"),
-      languages: {
-        en: "/",
-        ja: "/ja",
-        "x-default": "/",
-      },
-    },
+    alternates: languageAlternates(lang, "/"),
   };
 }
 
 export default async function RootLayout({ children, params }: Props) {
   const { lang } = await params;
-  if (!hasLocale(lang)) notFound();
+  if (!isPublishedLocale(lang)) notFound();
 
   // iOS Safari paints the html background behind the toolbar and in the
   // overscroll bounce, where body's near-white would band against the footer.

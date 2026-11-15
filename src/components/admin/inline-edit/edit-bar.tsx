@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { SIGN_IN_AGAIN_MESSAGE } from "@/lib/admin-messages";
-import type { Locale } from "@/lib/i18n";
+import { japaneseEnabled, type Locale } from "@/lib/i18n";
 import { SegmentedSwitch } from "./segmented-switch";
 
 export type EditBarStatus =
@@ -39,7 +39,9 @@ export function EditBar({
     >
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-6 gap-y-3">
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-          <SegmentedSwitch label="Website shown in:" value={lang} options={LANGUAGE_OPTIONS} onChange={onLangChange} />
+          {japaneseEnabled && (
+            <SegmentedSwitch label="Website shown in:" value={lang} options={LANGUAGE_OPTIONS} onChange={onLangChange} />
+          )}
           {viewSwitch}
         </div>
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3">

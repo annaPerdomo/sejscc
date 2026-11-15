@@ -4,7 +4,7 @@ import { useState } from "react";
 import { flushSync } from "react-dom";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { expectOk, type ActionResult } from "@/lib/action-result";
-import { JAPANESE_EDIT_NOTE, withJapaneseNote } from "@/lib/admin-messages";
+import { JAPANESE_EDIT_NOTE, languageName, withJapaneseNote, withLanguageName } from "@/lib/admin-messages";
 import { AdminButtonLink, buttonClass } from "@/components/admin/admin-button";
 import { ADMIN_PAGES } from "@/components/admin/admin-pages";
 import { EditBar, type EditBarStatus } from "@/components/admin/inline-edit/edit-bar";
@@ -29,7 +29,7 @@ import type { EditablePage, ManagedElsewhere } from "@/lib/editable-pages";
 import { DEFAULT_FRAMING, isDefaultFraming, sameFraming, type PhotoFraming } from "@/lib/photo-framing";
 import { photoSlot, type PhotoSlot } from "@/lib/photo-slots";
 import type { Dictionary } from "@/lib/dictionaries";
-import type { Locale } from "@/lib/i18n";
+import { japaneseEnabled, type Locale } from "@/lib/i18n";
 import { readPath } from "@/lib/object-path";
 import { normalizeSiteLinkUrl, type SiteLink } from "@/lib/site-links";
 import { siteTextNeighbours, type SiteTextField } from "@/lib/site-text-fields";
@@ -266,15 +266,15 @@ export function PageCanvas({
       }
     }
 
-    const languageNote = item.shared ? "the same in English and Japanese" : lang === "en" ? "English" : "Japanese";
+    const languageNote = item.shared && japaneseEnabled ? "the same in English and Japanese" : languageName(lang);
     const open = editState.fieldProps(item.record).isOpen;
     const inDialog = afterClose !== undefined;
     return (
       <div key={item.record} className={open ? OPEN_TEXT_CLASS : KIND_TEXT_CLASS[item.textKind]}>
         <EditableText
           key={`${item.record}-${lang}`}
-          label={`${item.title} — ${languageNote}`}
-          openLabel={inDialog ? (item.shared ? "English and Japanese" : languageNote) : undefined}
+          label={withLanguageName(item.title, languageNote)}
+          openLabel={inDialog ? (item.shared && japaneseEnabled ? "English and Japanese" : languageNote) : undefined}
           noun={item.title}
           value={stored ?? ""}
           fallback={fallback}
@@ -447,8 +447,8 @@ export function PageCanvas({
         <div className={open ? OPEN_TEXT_CLASS : KIND_TEXT_CLASS[fieldSpec.kind]}>
           <EditableText
             key={`${fieldSpec.path}-${lang}`}
-            label={`${fieldSpec.label} — ${lang === "en" ? "English" : "Japanese"}`}
-            openLabel={inDialog ? (lang === "en" ? "English" : "Japanese") : undefined}
+            label={withLanguageName(fieldSpec.label, languageName(lang))}
+            openLabel={inDialog ? languageName(lang) : undefined}
             noun={fieldSpec.label}
             value={value}
             fallback={fallback}

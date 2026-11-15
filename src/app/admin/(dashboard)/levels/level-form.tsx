@@ -6,7 +6,7 @@ import { upload } from "@vercel/blob/client";
 import { AdminAlert, AdminRequirements } from "@/components/admin/admin-alert";
 import { AdminButton, AdminFormActions } from "@/components/admin/admin-button";
 import { AdminCard, AdminCardHeading, AdminStep } from "@/components/admin/admin-card";
-import { AdminAutoJapanese, AdminCharacterCount, AdminOptional, AdminRequired, AdminSelect, AdminTextArea, AdminTextField } from "@/components/admin/admin-field";
+import { AdminAutoJapanese, JapaneseOnly, AdminCharacterCount, AdminOptional, AdminRequired, AdminSelect, AdminTextArea, AdminTextField } from "@/components/admin/admin-field";
 import { AdminImagePicker } from "@/components/admin/admin-image-picker";
 import { JapaneseNotWritten, japaneseWasNotWritten } from "@/components/admin/japanese-not-written";
 import type { SchoolLevel, SchoolLevelStatus } from "@/db/schema";
@@ -143,15 +143,17 @@ export function LevelForm({ level }: { level?: SchoolLevel }) {
           placeholder="e.g. Beginning Level Japanese"
         />
         <AdminCharacterCount value={name} max={LEVEL_NAME_MAX} />
-        <div className="mt-5">
-          <AdminTextField
-            label={<>Japanese name <AdminAutoJapanese /></>}
-            value={nameJa}
-            onChange={(e) => setNameJa(e.target.value)}
-            maxLength={LEVEL_NAME_MAX}
-            placeholder="e.g. 初級クラス"
-          />
-        </div>
+        <JapaneseOnly>
+          <div className="mt-5">
+            <AdminTextField
+              label={<>Japanese name <AdminAutoJapanese /></>}
+              value={nameJa}
+              onChange={(e) => setNameJa(e.target.value)}
+              maxLength={LEVEL_NAME_MAX}
+              placeholder="e.g. 初級クラス"
+            />
+          </div>
+        </JapaneseOnly>
         <div className="mt-5">
           <AdminTextField
             label="Short kanji label shown on the photo plaque (optional)"
@@ -179,14 +181,16 @@ export function LevelForm({ level }: { level?: SchoolLevel }) {
           />
           <AdminCharacterCount value={summary} max={LEVEL_SUMMARY_MAX} />
         </div>
-        <div className="mt-5">
-          <AdminTextField
-            label={<>Japanese summary <AdminAutoJapanese /></>}
-            value={summaryJa}
-            onChange={(e) => setSummaryJa(e.target.value)}
-            maxLength={LEVEL_SUMMARY_MAX}
-          />
-        </div>
+        <JapaneseOnly>
+          <div className="mt-5">
+            <AdminTextField
+              label={<>Japanese summary <AdminAutoJapanese /></>}
+              value={summaryJa}
+              onChange={(e) => setSummaryJa(e.target.value)}
+              maxLength={LEVEL_SUMMARY_MAX}
+            />
+          </div>
+        </JapaneseOnly>
         <p className="mt-3 text-xs text-stone">
           Shown beside the class name on the list of classes.
         </p>
@@ -209,15 +213,17 @@ export function LevelForm({ level }: { level?: SchoolLevel }) {
           />
           <AdminCharacterCount value={description} max={LEVEL_DESCRIPTION_MAX} />
         </div>
-        <div className="mt-5">
-          <AdminTextArea
-            label={<>Japanese description <AdminAutoJapanese /></>}
-            value={descriptionJa}
-            onChange={(e) => setDescriptionJa(e.target.value)}
-            maxLength={LEVEL_DESCRIPTION_MAX}
-            rows={6}
-          />
-        </div>
+        <JapaneseOnly>
+          <div className="mt-5">
+            <AdminTextArea
+              label={<>Japanese description <AdminAutoJapanese /></>}
+              value={descriptionJa}
+              onChange={(e) => setDescriptionJa(e.target.value)}
+              maxLength={LEVEL_DESCRIPTION_MAX}
+              rows={6}
+            />
+          </div>
+        </JapaneseOnly>
       </AdminCard>
 
       <AdminCard>
@@ -233,14 +239,16 @@ export function LevelForm({ level }: { level?: SchoolLevel }) {
             placeholder={"Ages 6 and up\nEmphasis on listening and speaking"}
           />
         </div>
-        <div className="mt-5">
-          <AdminTextArea
-            label={<>Japanese <AdminAutoJapanese /></>}
-            value={pointsJa}
-            onChange={(e) => setPointsJa(e.target.value)}
-            rows={4}
-          />
-        </div>
+        <JapaneseOnly>
+          <div className="mt-5">
+            <AdminTextArea
+              label={<>Japanese <AdminAutoJapanese /></>}
+              value={pointsJa}
+              onChange={(e) => setPointsJa(e.target.value)}
+              rows={4}
+            />
+          </div>
+        </JapaneseOnly>
         <p className="mt-3 text-xs text-stone">
           Shown as a bulleted list under the description. One item per line.
         </p>
@@ -276,13 +284,15 @@ export function LevelForm({ level }: { level?: SchoolLevel }) {
             placeholder="e.g. Kindergarten students with their teachers"
           />
         </div>
-        <div className="mt-5">
-          <AdminTextField
-            label={<>Japanese <AdminAutoJapanese /></>}
-            value={photoAltJa}
-            onChange={(e) => setPhotoAltJa(e.target.value)}
-          />
-        </div>
+        <JapaneseOnly>
+          <div className="mt-5">
+            <AdminTextField
+              label={<>Japanese <AdminAutoJapanese /></>}
+              value={photoAltJa}
+              onChange={(e) => setPhotoAltJa(e.target.value)}
+            />
+          </div>
+        </JapaneseOnly>
         <p className="mt-3 text-xs text-stone">
           Describe the photo for people who can&apos;t see it.
         </p>

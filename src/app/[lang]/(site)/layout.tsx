@@ -11,7 +11,7 @@ import { mapsUrl } from "@/lib/center";
 import { getUpcomingEvents } from "@/lib/events";
 import { formatEventDate } from "@/lib/format";
 import { getDictionary, getLocale } from "@/lib/dictionaries";
-import { localePath } from "@/lib/i18n";
+import { japaneseEnabled, localePath } from "@/lib/i18n";
 import { getAnnouncement, getCenterContact } from "@/lib/site-settings";
 
 export default async function SiteLayout({
@@ -122,11 +122,13 @@ export default async function SiteLayout({
                 )
               )}
             </div>
-            <LanguageToggle
-              current={lang}
-              label={dict.languageToggle.label}
-              className="shrink-0"
-            />
+            {japaneseEnabled && (
+              <LanguageToggle
+                current={lang}
+                label={dict.languageToggle.label}
+                className="shrink-0"
+              />
+            )}
           </div>
         </div>
         <header className="border-b border-line bg-paper/95 backdrop-blur">

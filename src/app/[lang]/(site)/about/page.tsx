@@ -10,7 +10,7 @@ import { SectionKicker } from "@/components/section-kicker";
 import { VolunteerSection } from "@/components/volunteer-section";
 import { getDictionary, getDictionaryFor, getLocale } from "@/lib/dictionaries";
 import { historyMilestones } from "@/lib/history-milestones";
-import { hasLocale, localePath } from "@/lib/i18n";
+import { hasLocale, languageAlternates, localePath } from "@/lib/i18n";
 import { historyFounderPhotos } from "@/lib/photos";
 import { getSitePhotos, slotPhoto } from "@/lib/site-photos";
 import { getVolunteerSection } from "@/lib/volunteers";
@@ -26,14 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: dict.about.metaTitle,
     description: dict.about.metaDescription,
-    alternates: {
-      canonical: localePath(lang, "/about"),
-      languages: {
-        en: "/about",
-        ja: "/ja/about",
-        "x-default": "/about",
-      },
-    },
+    alternates: languageAlternates(lang, "/about"),
   };
 }
 

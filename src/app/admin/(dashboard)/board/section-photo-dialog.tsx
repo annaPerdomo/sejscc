@@ -7,7 +7,7 @@ import { expectOk } from "@/lib/action-result";
 import { withJapaneseNote } from "@/lib/admin-messages";
 import { AdminAlert } from "@/components/admin/admin-alert";
 import { buttonClass } from "@/components/admin/admin-button";
-import { AdminAutoJapanese, AdminTextArea } from "@/components/admin/admin-field";
+import { AdminAutoJapanese, JapaneseOnly, AdminTextArea } from "@/components/admin/admin-field";
 import { AdminImagePicker } from "@/components/admin/admin-image-picker";
 import type { EditBarStatus } from "@/components/admin/inline-edit/edit-bar";
 import { EditDialog } from "@/components/admin/inline-edit/edit-dialog";
@@ -203,14 +203,16 @@ export function useSectionPhotoDialog({
             </p>
           )}
         </div>
-        <AdminTextArea
-          label={<>Describe who&apos;s in this photo (Japanese) <AdminAutoJapanese /></>}
-          value={altJaDraft}
-          onChange={(event) => setAltJaDraft(event.target.value)}
-          rows={3}
-          maxLength={600}
-          disabled={saving}
-        />
+        <JapaneseOnly>
+          <AdminTextArea
+            label={<>Describe who&apos;s in this photo (Japanese) <AdminAutoJapanese /></>}
+            value={altJaDraft}
+            onChange={(event) => setAltJaDraft(event.target.value)}
+            rows={3}
+            maxLength={600}
+            disabled={saving}
+          />
+        </JapaneseOnly>
         {error && <AdminAlert>{error}</AdminAlert>}
         <div className="flex flex-wrap gap-3">
           <button

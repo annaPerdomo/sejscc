@@ -28,7 +28,7 @@ import {
   upcomingOccurrences,
 } from "@/lib/recurrence";
 import { getDictionary, getDictionaryFor, getLocale } from "@/lib/dictionaries";
-import { hasLocale, localePath } from "@/lib/i18n";
+import { hasLocale, languageAlternates, localePath } from "@/lib/i18n";
 import { getCenterContact } from "@/lib/site-settings";
 import { getSitePhotos, slotPhoto } from "@/lib/site-photos";
 
@@ -53,14 +53,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: event.title,
     description: event.description?.slice(0, 160) ?? undefined,
-    alternates: {
-      canonical: localePath(lang, `/events/${slug}`),
-      languages: {
-        en: `/events/${slug}`,
-        ja: `/ja/events/${slug}`,
-        "x-default": `/events/${slug}`,
-      },
-    },
+    alternates: languageAlternates(lang, `/events/${slug}`),
   };
 }
 

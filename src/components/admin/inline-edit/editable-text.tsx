@@ -4,6 +4,7 @@ import { useId, useRef, useState } from "react";
 import { AdminBadge } from "@/components/admin/admin-badge";
 import { buttonClass } from "@/components/admin/admin-button";
 import { AdminCharacterCount } from "@/components/admin/admin-field";
+import { japaneseEnabled } from "@/lib/i18n";
 import { asOneParagraph, requiredMessage, tooLongMessage } from "@/lib/volunteer-fields";
 import { isImeComposing } from "./ime";
 import { JapaneseReview, type SavedWords } from "./japanese-review";
@@ -24,7 +25,7 @@ export function EditableText({
   value,
   fallback,
   english,
-  japanese,
+  japanese: japaneseTwin,
   note,
   placeholder,
   focusKey,
@@ -63,6 +64,7 @@ export function EditableText({
   onDirtyChange?: (dirty: boolean) => void;
   onReviewChange?: (reviewing: boolean) => void;
 }) {
+  const japanese = japaneseEnabled ? japaneseTwin : undefined;
   const textareaId = useId();
   const containerRef = useRef<HTMLSpanElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
