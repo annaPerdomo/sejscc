@@ -31,18 +31,21 @@ export function proxy(request: NextRequest) {
     (locale) => pathname === `/${locale}` || pathname.startsWith(`/${locale}/`)
   );
 
-  // /en/events → /events, and the same for a locale that isn't published. The
-  // cookie must be set here, or a Japanese Accept-Language header would bounce
-  // the prefix-less follow-up back to /ja.
+  // /en/events → /events, and the same for a locale that isn't published.
   if (pathLocale && (pathLocale === defaultLocale || !isPublishedLocale(pathLocale))) {
     const url = request.nextUrl.clone();
     url.pathname = pathname.slice(pathLocale.length + 1) || "/";
     const response = NextResponse.redirect(url);
-    response.cookies.set(LOCALE_COOKIE, defaultLocale, {
-      path: "/",
-      maxAge: LOCALE_COOKIE_MAX_AGE,
-      sameSite: "lax",
-    });
+    // Choosing /en must stick, or a Japanese Accept-Language header would bounce
+    // the prefix-less follow-up back to /ja. An unpublished locale wasn't a
+    // choice of English, so its reader keeps their own for when it returns.
+    if (pathLocale === defaultLocale) {
+      response.cookies.set(LOCALE_COOKIE, defaultLocale, {
+        path: "/",
+        maxAge: LOCALE_COOKIE_MAX_AGE,
+        sameSite: "lax",
+      });
+    }
     return response;
   }
 

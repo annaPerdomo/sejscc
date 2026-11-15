@@ -203,12 +203,25 @@ export function siteTextField(path: string): SiteTextField | undefined {
 
 export type SiteTextNeighbours = { before?: SiteTextField; after?: SiteTextField };
 
-export function siteTextNeighbours(path: string): SiteTextNeighbours {
+function listPlace(path: string): { at: (index: number) => SiteTextField | undefined; index: number } | undefined {
   const cut = path.lastIndexOf(".");
   const position = path.slice(cut + 1);
-  if (!FIELDS_BY_PATH.has(path) || !/^\d+$/.test(position)) return {};
-  const at = (index: number) => FIELDS_BY_PATH.get(`${path.slice(0, cut)}.${index}`);
-  return { before: at(Number(position) - 1), after: at(Number(position) + 1) };
+  if (!FIELDS_BY_PATH.has(path) || !/^\d+$/.test(position)) return undefined;
+  return { at: (index) => FIELDS_BY_PATH.get(`${path.slice(0, cut)}.${index}`), index: Number(position) };
+}
+
+export function siteTextNeighbours(path: string): SiteTextNeighbours {
+  const place = listPlace(path);
+  return place ? { before: place.at(place.index - 1), after: place.at(place.index + 1) } : {};
+}
+
+export function siteTextSiblings(path: string): SiteTextField[] {
+  const place = listPlace(path);
+  const siblings: SiteTextField[] = [];
+  for (let index = 0, field = place?.at(0); field; field = place?.at(++index)) {
+    if (field.path !== path) siblings.push(field);
+  }
+  return siblings;
 }
 
 export function assertSiteTextRegistry(en: unknown): void {

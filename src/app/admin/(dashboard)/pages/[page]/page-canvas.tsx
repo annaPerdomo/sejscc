@@ -32,7 +32,7 @@ import type { Dictionary } from "@/lib/dictionaries";
 import { japaneseEnabled, type Locale } from "@/lib/i18n";
 import { readPath } from "@/lib/object-path";
 import { normalizeSiteLinkUrl, type SiteLink } from "@/lib/site-links";
-import { siteTextNeighbours, type SiteTextField } from "@/lib/site-text-fields";
+import { siteTextNeighbours, siteTextSiblings, type SiteTextField } from "@/lib/site-text-fields";
 import {
   resetSiteLink,
   resetSitePhoto,
@@ -434,6 +434,10 @@ export function PageCanvas({
     }
 
     const neighbours = siteTextNeighbours(fieldSpec.path);
+    // After a move the original words show in a sibling's place; putting them
+    // back here too would say them twice and lose the sibling's.
+    const original = stringAt(lang === "en" ? en : ja, fieldSpec.path);
+    const originalMoved = siteTextSiblings(fieldSpec.path).some((sibling) => fieldText(sibling).value === original);
     const moves = [
       { neighbour: neighbours.before, direction: "up", label: "↑ Move up" },
       { neighbour: neighbours.after, direction: "down", label: "↓ Move down" },
@@ -482,7 +486,7 @@ export function PageCanvas({
             }}
           />
         </div>
-        {changed && reviewing !== fieldSpec.path && (
+        {changed && !originalMoved && reviewing !== fieldSpec.path && (
           <button
             type="button"
             onClick={() => void reset()}

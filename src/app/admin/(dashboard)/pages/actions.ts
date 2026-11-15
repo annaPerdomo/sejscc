@@ -69,16 +69,18 @@ async function setSiteTextColumns(
   };
 
   await trackChange(editor, "siteText", path, async () => {
-    if (next.en === null && next.ja === null) {
-      await db.delete(siteText).where(eq(siteText.path, path));
-    } else {
-      await db
-        .insert(siteText)
-        .values({ path, ...next })
-        .onConflictDoUpdate({ target: siteText.path, set: next });
-    }
+    await siteTextWrite(path, next);
   });
   return next;
+}
+
+function siteTextWrite(path: string, words: SiteTextPair) {
+  return words.en === null && words.ja === null
+    ? db.delete(siteText).where(eq(siteText.path, path))
+    : db
+        .insert(siteText)
+        .values({ path, ...words })
+        .onConflictDoUpdate({ target: siteText.path, set: words });
 }
 
 async function checkedSiteTextField(path: string) {
@@ -193,12 +195,16 @@ export async function swapSiteText(
     }
 
     const [shown, neighbourShown] = [await shownSiteText(path), await shownSiteText(neighbourPath)];
-    const saved = {
-      [path]: await setSiteTextColumns(editor, path, await asOverride(path, neighbourShown)),
-      [neighbourPath]: await setSiteTextColumns(editor, neighbourPath, await asOverride(neighbourPath, shown)),
-    };
+    const words = await asOverride(path, neighbourShown);
+    const neighbourWords = await asOverride(neighbourPath, shown);
+    // One batch, so a failure can't leave the same paragraph in both places.
+    await trackChange(editor, "siteText", path, () =>
+      trackChange(editor, "siteText", neighbourPath, () =>
+        db.batch([siteTextWrite(path, words), siteTextWrite(neighbourPath, neighbourWords)])
+      )
+    );
     revalidateSite();
-    return saved;
+    return { [path]: words, [neighbourPath]: neighbourWords };
   });
 }
 
