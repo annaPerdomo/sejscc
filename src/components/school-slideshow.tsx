@@ -54,8 +54,9 @@ export function SchoolSlideshow({
             <div
               key={item.src}
               aria-hidden={i !== active}
-              className="absolute inset-0 transition-opacity duration-700 ease-in-out"
-              style={{ opacity: i === active ? 1 : 0 }}
+              className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+                i === active ? "opacity-100" : "opacity-0"
+              }`}
             >
               <PhotoFrame framing={item.framing}>
                 <Image

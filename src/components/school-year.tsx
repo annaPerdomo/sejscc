@@ -5,6 +5,7 @@ import Image from "next/image";
 import {
   useMountedAround,
   useRotation,
+  useShowPhotoOnRequest,
   useSwipeStrip,
 } from "@/components/carousel-hooks";
 import { CarouselPlayToggle } from "@/components/carousel-play-toggle";
@@ -39,6 +40,10 @@ export function SchoolYear({
     start: currentIndex,
   });
   const { active } = rotation;
+  useShowPhotoOnRequest(
+    events.map((item) => item.photo.src),
+    rotation.show
+  );
   const mounted = useMountedAround(active, events.length);
 
   const holdForSwipe = useSwipeStrip(stripRef, active, rotation);
@@ -62,8 +67,9 @@ export function SchoolYear({
                 data-edit-record={yearEventPhotoRecord(item.id)}
                 {...{ [PHOTO_SLIDE_ATTRIBUTE]: item.photo.framing?.fit ?? DEFAULT_FRAMING.fit }}
                 aria-hidden={i !== active}
-                className="absolute inset-0 transition-opacity duration-700 ease-in-out"
-                style={{ opacity: i === active ? 1 : 0 }}
+                className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+                  i === active ? "opacity-100" : "opacity-0"
+                }`}
               >
                 <PhotoFrame framing={item.photo.framing}>
                   <Image
