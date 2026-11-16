@@ -8,7 +8,10 @@ import {
   useSwipeStrip,
 } from "@/components/carousel-hooks";
 import { CarouselPlayToggle } from "@/components/carousel-play-toggle";
+import { PhotoFrame } from "@/components/photo-frame";
 import { RotationProgress } from "@/components/rotation-progress";
+import { DEFAULT_FRAMING, PHOTO_SLIDE_ATTRIBUTE } from "@/lib/photo-framing";
+import { yearEventPhotoRecord } from "@/lib/record-photos";
 import type { SchoolEvent, SeasonId } from "@/lib/school-year";
 
 // Fills and rules only: on navy, gold and sand are not text colors.
@@ -56,18 +59,21 @@ export function SchoolYear({
             mounted.includes(i) ? (
               <div
                 key={item.id}
-                data-edit-record={`year:${item.id}:photo`}
+                data-edit-record={yearEventPhotoRecord(item.id)}
+                {...{ [PHOTO_SLIDE_ATTRIBUTE]: item.photo.framing?.fit ?? DEFAULT_FRAMING.fit }}
                 aria-hidden={i !== active}
                 className="absolute inset-0 transition-opacity duration-700 ease-in-out"
                 style={{ opacity: i === active ? 1 : 0 }}
               >
-                <Image
-                  src={item.photo.src}
-                  alt={item.photo.alt}
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 48rem"
-                  className="object-cover"
-                />
+                <PhotoFrame framing={item.photo.framing}>
+                  <Image
+                    src={item.photo.src}
+                    alt={item.photo.alt}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 48rem"
+                    className="object-cover"
+                  />
+                </PhotoFrame>
               </div>
             ) : null
           )}

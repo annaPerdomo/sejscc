@@ -1,5 +1,6 @@
 import type { StaticImageData } from "next/image";
 import type { SitePhotoSource } from "@/components/site-photo";
+import type { PhotoFraming } from "@/lib/photo-framing";
 
 import history1925 from "../../public/photos/history-1925-nawa-ranch.jpg";
 import history1930 from "../../public/photos/history-1930-dedication.jpg";
@@ -31,9 +32,10 @@ import board2025 from "../../public/photos/home-board-2025.jpg";
 
 export function photoFor(
   src: string | undefined,
-  alt: string
+  alt: string,
+  framing?: PhotoFraming
 ): SitePhotoSource | undefined {
-  return src ? { src, alt } : undefined;
+  return src ? { src, alt, framing } : undefined;
 }
 
 export const homePhotos = {

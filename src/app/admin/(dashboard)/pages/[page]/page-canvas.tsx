@@ -79,8 +79,19 @@ function isWordsItem(item: PageItem): item is WordsItem {
 /** Set while moving through a set of photos, so one that isn't on the page is passed over. */
 type FramingStep = { direction: -1 | 1; from: string };
 
+type FramingSubject =
+  | { kind: "slot"; slot: PhotoSlot }
+  | { kind: "record"; item: RecordPhoto; tile: PhotoTile; frame: (framing: PhotoFraming) => Promise<ActionResult> };
+
+type FramingChange = {
+  unmoved: boolean;
+  description: string;
+  save: () => Promise<void>;
+  revert: () => Promise<void>;
+};
+
 type FramingDraft = {
-  slot: PhotoSlot;
+  subject: FramingSubject;
   step?: FramingStep;
   draft: PhotoFraming;
   placement: PagePlacement | null;
@@ -175,6 +186,7 @@ export function PageCanvas({
   const [recordElsewhere, setRecordElsewhere] = useState<RecordElsewhere | null>(null);
   const [foundKeys, setFoundKeys] = useState<ReadonlySet<string> | null>(null);
   const [framing, setFraming] = useState<FramingDraft | null>(null);
+  const [recordFramings, setRecordFramings] = useState<Record<string, PhotoFraming | undefined>>({});
   const [reviewing, setReviewing] = useState<string | null>(null);
   const [moveBlocked, setMoveBlocked] = useState<string | null>(null);
 
@@ -322,19 +334,24 @@ export function PageCanvas({
   }
 
   function renderRecordPhoto(item: RecordPhoto) {
+    const onPage = recordFramesOnPage(item);
     return (
       <PhotoDialog
         spot={item.spot}
         actions={item.actions}
-        tile={item.tile}
+        tile={latestRecordTile(item)}
         onClose={() => setRecordPhoto(null)}
-        onSaved={(_next, message) => {
+        onSaved={(next, message) => {
           setStatus({ kind: "saved", message });
           undo.clear();
           router.refresh();
           refreshPage();
+          if (next.current.src === item.tile.current.src) return;
+          setRecordFramings((current) => ({ ...current, [item.record]: undefined }));
+          if (onPage) startRecordFraming(item, next);
         }}
         onStatus={setStatus}
+        framesOnPage={onPage}
       />
     );
   }
@@ -627,7 +644,37 @@ export function PageCanvas({
   function startFraming(slot: PhotoSlot, saved: PhotoFraming | undefined, step?: FramingStep) {
     setPickedPhoto(null);
     setPhotoGroup(null);
-    setFraming({ slot, step, draft: saved ?? DEFAULT_FRAMING, placement: null, saving: false, error: null });
+    setFraming({
+      subject: { kind: "slot", slot },
+      step,
+      draft: saved ?? DEFAULT_FRAMING,
+      placement: null,
+      saving: false,
+      error: null,
+    });
+  }
+
+  // A record's saved framing comes back with the page's records, which a refresh brings a moment later.
+  function latestRecordTile(item: RecordPhoto): PhotoTile {
+    if (!Object.hasOwn(recordFramings, item.record)) return item.tile;
+    return { ...item.tile, current: { ...item.tile.current, framing: recordFramings[item.record] } };
+  }
+
+  function recordFramesOnPage(item: RecordPhoto): boolean {
+    return item.frame !== undefined && Boolean(foundKeys?.has(`record:${item.record}`));
+  }
+
+  function startRecordFraming(item: RecordPhoto, tile: PhotoTile) {
+    const { frame } = item;
+    if (!frame) return;
+    setRecordPhoto(null);
+    setFraming({
+      subject: { kind: "record", item, tile, frame },
+      draft: tile.current.framing ?? DEFAULT_FRAMING,
+      placement: null,
+      saving: false,
+      error: null,
+    });
   }
 
   function stepFrom(slot: PhotoSlot, step: FramingStep) {
@@ -638,8 +685,9 @@ export function PageCanvas({
   }
 
   function stepFraming(direction: -1 | 1) {
-    if (!framing || framing.saving) return;
-    const { slot, draft } = framing;
+    if (!framing || framing.saving || framing.subject.kind !== "slot") return;
+    const { draft } = framing;
+    const { slot } = framing.subject;
     const step = { direction, from: slot.id };
     if (sameFraming(draft, tiles[slot.id].current.framing ?? DEFAULT_FRAMING)) stepFrom(slot, step);
     else void saveFraming("one", step);
@@ -652,21 +700,14 @@ export function PageCanvas({
   function frameFromPage(key: string) {
     const item = pageItems.get(key);
     if (item?.kind === "photo" && framesOnPage(item.slot)) startFraming(item.slot, tiles[item.slot.id].current.framing);
+    if (item?.kind === "record" && item.item.kind === "recordPhoto" && recordFramesOnPage(item.item)) {
+      startRecordFraming(item.item, latestRecordTile(item.item));
+    }
   }
 
-  async function saveFraming(scope: "one" | "all", thenStep?: FramingStep) {
-    if (!framing || framing.saving) return;
-    const { slot, draft } = framing;
+  function slotFramingChange(slot: PhotoSlot, scope: "one" | "all", draft: PhotoFraming): FramingChange {
     const slots = scope === "all" ? photosTakingTurnsWith(slot) : [slot];
     const before = slots.map((each) => tiles[each.id]);
-    if (before.every((tile) => sameFraming(draft, tile.current.framing ?? DEFAULT_FRAMING))) {
-      setFraming({ ...framing, error: scope === "all" ? UNMOVED_PHOTOS_MESSAGE : UNMOVED_PHOTO_MESSAGE });
-      return;
-    }
-    setFraming({ ...framing, saving: true, error: null });
-    setStatus({ kind: "saving" });
-    const description =
-      scope === "all" ? `Moved all ${slots.length} photos in ${slot.group}.` : `Moved ${photoSlotTitle(slot)}.`;
     const saved = isDefaultFraming(draft) ? undefined : draft;
     const tile = tiles[slot.id];
 
@@ -674,33 +715,84 @@ export function PageCanvas({
       setTiles((current) => ({ ...current, ...Object.fromEntries(next.map((each) => [each.slot, each])) }));
     }
 
+    return {
+      unmoved: before.every((each) => sameFraming(draft, each.current.framing ?? DEFAULT_FRAMING)),
+      description:
+        scope === "all" ? `Moved all ${slots.length} photos in ${slot.group}.` : `Moved ${photoSlotTitle(slot)}.`,
+      save: async () => {
+        if (scope === "all") {
+          expectOk(await updatePhotoFramings(slots.map((each) => ({ slot: each.id, framing: draft }))));
+        } else {
+          expectOk(await saveSlotFraming(slot, tile, saved));
+        }
+        showTiles(before.map((each) => ({ ...each, current: { ...each.current, framing: saved } })));
+      },
+      revert: async () => {
+        if (scope === "all") {
+          expectOk(
+            await updatePhotoFramings(
+              before.map((each) => ({ slot: each.slot, framing: each.current.framing ?? DEFAULT_FRAMING }))
+            )
+          );
+        } else {
+          expectOk(await saveSlotFraming(slot, tile, tile.current.framing));
+        }
+        showTiles(before);
+      },
+    };
+  }
+
+  function recordFramingChange(
+    item: RecordPhoto,
+    tile: PhotoTile,
+    frame: (framing: PhotoFraming) => Promise<ActionResult>,
+    draft: PhotoFraming
+  ): FramingChange {
+    const before = tile.current.framing ?? DEFAULT_FRAMING;
+
+    async function write(framing: PhotoFraming) {
+      expectOk(await frame(framing));
+      setRecordFramings((current) => ({
+        ...current,
+        [item.record]: isDefaultFraming(framing) ? undefined : framing,
+      }));
+    }
+
+    return {
+      unmoved: sameFraming(draft, before),
+      description: `Moved ${item.title.charAt(0).toLowerCase()}${item.title.slice(1)}.`,
+      save: () => write(draft),
+      revert: () => write(before),
+    };
+  }
+
+  async function saveFraming(scope: "one" | "all", thenStep?: FramingStep) {
+    if (!framing || framing.saving) return;
+    const { subject, draft } = framing;
+    const change =
+      subject.kind === "slot"
+        ? slotFramingChange(subject.slot, scope, draft)
+        : recordFramingChange(subject.item, subject.tile, subject.frame, draft);
+    if (change.unmoved) {
+      setFraming({ ...framing, error: scope === "all" ? UNMOVED_PHOTOS_MESSAGE : UNMOVED_PHOTO_MESSAGE });
+      return;
+    }
+    setFraming({ ...framing, saving: true, error: null });
+    setStatus({ kind: "saving" });
+
     try {
-      if (scope === "all") {
-        expectOk(await updatePhotoFramings(slots.map((each) => ({ slot: each.id, framing: draft }))));
-      } else {
-        expectOk(await saveSlotFraming(slot, tile, saved));
-      }
-      showTiles(before.map((each) => ({ ...each, current: { ...each.current, framing: saved } })));
+      await change.save();
       undo.record({
-        description,
+        description: change.description,
         undo: async () => {
-          if (scope === "all") {
-            expectOk(
-              await updatePhotoFramings(
-                before.map((each) => ({ slot: each.slot, framing: each.current.framing ?? DEFAULT_FRAMING }))
-              )
-            );
-          } else {
-            expectOk(await saveSlotFraming(slot, tile, tile.current.framing));
-          }
-          showTiles(before);
+          await change.revert();
           router.refresh();
         },
       });
       // The edit bar's live region only announces a change, so it must remount before the status does.
-      if (thenStep) stepFrom(slot, thenStep);
+      if (thenStep && subject.kind === "slot") stepFrom(subject.slot, thenStep);
       else flushSync(() => setFraming(null));
-      setStatus({ kind: "saved", message: description });
+      setStatus({ kind: "saved", message: change.description });
       router.refresh();
       refreshPage();
     } catch (e) {
@@ -836,6 +928,7 @@ export function PageCanvas({
           kind: "record",
           record: item.item.record,
           photo: item.item.kind === "recordPhoto",
+          framable: item.item.kind === "recordPhoto" && item.item.frame !== undefined,
         };
     }
   });
@@ -917,6 +1010,25 @@ export function PageCanvas({
 
   const [pickedFirst] = picked ?? [];
 
+  const framed =
+    framing?.subject.kind === "slot"
+      ? {
+          key: `photo:${framing.subject.slot.id}`,
+          title: photoSlotTitle(framing.subject.slot),
+          shape: framing.subject.slot.shape,
+          tile: tiles[framing.subject.slot.id],
+          setSize: photosTakingTurnsWith(framing.subject.slot).length,
+        }
+      : framing?.subject.kind === "record"
+        ? {
+            key: `record:${framing.subject.item.record}`,
+            title: framing.subject.item.title,
+            shape: framing.subject.item.spot.shape,
+            tile: framing.subject.tile,
+            setSize: 1,
+          }
+        : null;
+
   return (
     <>
       <PageEditor
@@ -958,18 +1070,18 @@ export function PageCanvas({
           )
         }
         framing={
-          framing
+          framing && framed
             ? {
-                key: `photo:${framing.slot.id}`,
-                src: tiles[framing.slot.id].current.src,
+                key: framed.key,
+                src: framed.tile.current.src,
                 framing: framing.draft,
                 onChange: (next) =>
                   setFraming((current) => current && { ...current, draft: next, error: null }),
                 onPlacement: (placement) =>
                   setFraming((current) => current && { ...current, placement, step: undefined }),
                 onUnavailable: () => {
-                  if (framing.step) {
-                    stepFrom(framing.slot, framing.step);
+                  if (framing.step && framing.subject.kind === "slot") {
+                    stepFrom(framing.subject.slot, framing.step);
                     return;
                   }
                   setFraming(null);
@@ -978,9 +1090,9 @@ export function PageCanvas({
                 onCancel: () => setFraming((current) => current && !current.saving ? null : current),
                 bar: (
                   <PhotoFramingBar
-                    title={photoSlotTitle(framing.slot)}
-                    src={tiles[framing.slot.id].current.src}
-                    shape={framing.slot.shape}
+                    title={framed.title}
+                    src={framed.tile.current.src}
+                    shape={framed.shape}
                     framing={framing.draft}
                     placement={framing.placement}
                     saving={framing.saving}
@@ -988,7 +1100,7 @@ export function PageCanvas({
                     onChange={(next) =>
                       setFraming((current) => current && { ...current, draft: next, error: null })
                     }
-                    setSize={photosTakingTurnsWith(framing.slot).length}
+                    setSize={framed.setSize}
                     onSave={() => void saveFraming("one")}
                     onSaveAll={() => void saveFraming("all")}
                     onStep={stepFraming}

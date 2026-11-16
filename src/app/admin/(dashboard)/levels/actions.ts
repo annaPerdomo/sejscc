@@ -11,6 +11,8 @@ import {
 import { AdminError, runAction, type ActionResult } from "@/lib/action-result";
 import { requireUser, revalidateSite } from "@/lib/admin";
 import { deleteBlobIfUnused } from "@/lib/blob-cleanup";
+import { forgetRecordPhotoFraming } from "@/lib/record-photo-store";
+import { levelPhotoRecord } from "@/lib/record-photos";
 import { trackChange, trackOrder } from "@/lib/change-log";
 import type { Locale } from "@/lib/i18n";
 import {
@@ -242,7 +244,8 @@ export async function updateSchoolLevel(
         .where(eq(schoolLevels.id, id))
     );
 
-    if (existing.photoUrl && existing.photoUrl !== nextPhotoUrl) {
+    if (existing.photoUrl !== nextPhotoUrl) {
+      await forgetRecordPhotoFraming(levelPhotoRecord(id));
       await deleteBlobIfUnused(existing.photoUrl);
     }
 
@@ -260,6 +263,7 @@ export async function deleteSchoolLevel(id: string): Promise<ActionResult> {
     await trackChange(editor, "schoolLevel", id, () =>
       db.delete(schoolLevels).where(eq(schoolLevels.id, id))
     );
+    await forgetRecordPhotoFraming(levelPhotoRecord(id));
     await deleteBlobIfUnused(existing.photoUrl);
 
     revalidateSite();
@@ -483,7 +487,10 @@ export async function updateSchoolLevelPhoto(input: {
         .set({ photoUrl, photoAlt, photoAltJa: followed.japanese })
         .where(eq(schoolLevels.id, input.id))
     );
-    if (existing.photoUrl !== photoUrl) await deleteBlobIfUnused(existing.photoUrl);
+    if (existing.photoUrl !== photoUrl) {
+      await forgetRecordPhotoFraming(levelPhotoRecord(input.id));
+      await deleteBlobIfUnused(existing.photoUrl);
+    }
     revalidateSite();
     return followed;
   });

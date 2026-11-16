@@ -10,6 +10,7 @@ import { getBaseDictionaryFor } from "@/lib/dictionaries";
 import { readPath } from "@/lib/object-path";
 import { ORIGINAL_PHOTO_URL, framingFromRow } from "@/lib/photo-framing";
 import { getAllSchoolLevels } from "@/lib/school-levels";
+import { levelPhotoRecord, recordPhotoFraming, yearEventPhotoRecord } from "@/lib/record-photos";
 import { getSitePhotos } from "@/lib/site-photos";
 import { getCenterContact, getDonationDetails, getSiteSettings } from "@/lib/site-settings";
 import { getSiteTextOverrides } from "@/lib/site-text";
@@ -60,7 +61,7 @@ async function loadEvents(): Promise<PageRecords["events"]> {
 
 async function loadPageRecords(pageId: EditablePageId): Promise<PageRecords> {
   const shows = (...pages: EditablePageId[]) => pages.includes(pageId);
-  const [levels, yearEvents, groups, board, contact, donation, eventRows] = await Promise.all([
+  const [levels, yearEvents, groups, board, contact, donation, eventRows, photos] = await Promise.all([
     shows("school") ? getAllSchoolLevels() : [],
     shows("school") ? getAllSchoolYearEvents() : [],
     shows("home", "groups") ? getActiveGroups() : [],
@@ -68,8 +69,17 @@ async function loadPageRecords(pageId: EditablePageId): Promise<PageRecords> {
     shows("groups", "donate") ? getCenterContact() : null,
     shows("donate") ? loadDonation() : null,
     shows("home", "events") ? loadEvents() : [],
+    getSitePhotos(),
   ]);
-  return { levels, yearEvents, groups, board, contact, donation, events: eventRows };
+  const photoFramings: PageRecords["photoFramings"] = {};
+  for (const record of [
+    ...levels.map((level) => levelPhotoRecord(level.id)),
+    ...yearEvents.map((row) => yearEventPhotoRecord(row.key)),
+  ]) {
+    const framing = recordPhotoFraming(photos, record);
+    if (framing) photoFramings[record] = framing;
+  }
+  return { levels, yearEvents, groups, board, contact, donation, events: eventRows, photoFramings };
 }
 
 function defaultAltAt(dict: unknown, path: string | null): string {

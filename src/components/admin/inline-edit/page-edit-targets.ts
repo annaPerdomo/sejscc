@@ -12,7 +12,7 @@ export type PageEditTarget = {
   | { kind: "link"; href: string }
   | { kind: "photo"; src: string; turns: number; framable: boolean }
   /** Matches the public page's `data-edit-record` attribute, e.g. "level:<id>:name". */
-  | { kind: "record"; record: string; photo: boolean }
+  | { kind: "record"; record: string; photo: boolean; framable: boolean }
 );
 
 export const TARGET_ATTRIBUTE = "data-page-edit";
@@ -165,8 +165,9 @@ export function markPageEditTargets(doc: Document, targets: PageEditTarget[]): S
     const turns = Math.max(...elTargets.map((t) => (t.kind === "photo" ? t.turns : 1)));
     if (turns > 1) el.setAttribute(TURNS_ATTRIBUTE, String(turns));
     else el.removeAttribute(TURNS_ATTRIBUTE);
-    if (elTargets.some((t) => t.kind === "photo" && t.framable)) el.setAttribute(FRAMABLE_ATTRIBUTE, "");
-    else el.removeAttribute(FRAMABLE_ATTRIBUTE);
+    if (elTargets.some((t) => (t.kind === "photo" || t.kind === "record") && t.framable)) {
+      el.setAttribute(FRAMABLE_ATTRIBUTE, "");
+    } else el.removeAttribute(FRAMABLE_ATTRIBUTE);
     el.setAttribute("aria-label", accessibleName(elTargets));
     if (!FOCUSABLE_TAGS.has(el.tagName)) {
       el.setAttribute("tabindex", "0");
@@ -280,6 +281,7 @@ export function listenForPageEdits(doc: Document, onPick: (keys: string[]) => vo
 
 export const PHOTO_LAYER_CLASS = "page-edit-photo-layer";
 const BADGE_INSET = 12;
+const BUTTONS_ABREAST = 320;
 const BADGE_REFRESH_MS = 400;
 const CAMERA_PATH =
   "M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Zm8 3.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z";
@@ -305,8 +307,8 @@ function visibleBox(image: Element, view: Window, headerBottom: number): Box | n
     if (view.getComputedStyle(el).overflow !== "visible") box = intersect(box, el.getBoundingClientRect());
   }
   box = intersect(box, { top: headerBottom, right: view.innerWidth, bottom: view.innerHeight, left: 0 });
-  const minWidth = image.hasAttribute(FRAMABLE_ATTRIBUTE) ? 320 : 80;
-  const roomy = box.right - box.left > minWidth && box.bottom - box.top > 56;
+  const stacked = image.hasAttribute(FRAMABLE_ATTRIBUTE) && box.right - box.left <= BUTTONS_ABREAST;
+  const roomy = box.right - box.left > 80 && box.bottom - box.top > (stacked ? 128 : 56);
   return roomy ? box : null;
 }
 
@@ -393,6 +395,7 @@ export function showPhotoButtons(
       const button = buttonFor(image);
       button.style.top = `${box.top + BADGE_INSET}px`;
       button.style.right = `${view.innerWidth - box.right + BADGE_INSET}px`;
+      button.style.maxWidth = `${box.right - box.left - 2 * BADGE_INSET}px`;
       if (button.parentElement !== layer) layer.append(button);
       shown.add(button);
     }

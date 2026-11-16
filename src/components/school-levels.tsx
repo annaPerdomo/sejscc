@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { SitePhoto } from "@/components/site-photo";
+import { levelPhotoRecord } from "@/lib/record-photos";
 import type { SchoolLevelView } from "@/lib/school-levels";
 
 export function SchoolLevels({
@@ -105,7 +106,7 @@ export function SchoolLevels({
         aria-labelledby={`school-level-tab-${active}`}
         className="enter-fade lg:col-span-7"
       >
-        <div className="relative" data-edit-record={`level:${level.id}:photo`}>
+        <div className="relative" data-edit-record={levelPhotoRecord(level.id)}>
           <SitePhoto
             photo={level.photo}
             sizes="(max-width: 1024px) 100vw, 52rem"

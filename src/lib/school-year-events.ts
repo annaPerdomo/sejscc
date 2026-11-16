@@ -5,7 +5,9 @@ import { failSoft } from "@/lib/fail-soft";
 import { getBaseDictionaryFor } from "@/lib/dictionaries";
 import type { Locale } from "@/lib/i18n";
 import { photoFor, schoolPhotos } from "@/lib/photos";
+import { recordPhotoFraming, yearEventPhotoRecord } from "@/lib/record-photos";
 import type { SchoolYearEventInput } from "@/lib/school-year";
+import { getSitePhotos } from "@/lib/site-photos";
 
 export type SchoolYearEventRow = SchoolYearEventInput;
 
@@ -28,13 +30,16 @@ async function dictionaryEvents(locale: Locale): Promise<SchoolYearEventRow[]> {
 }
 
 export async function getSchoolYearEvents(locale: Locale): Promise<SchoolYearEventRow[]> {
-  const rows = await failSoft(
-    db
-      .select()
-      .from(schoolYearEvents)
-      .orderBy(asc(schoolYearEvents.month), asc(schoolYearEvents.sortOrder)),
-    []
-  );
+  const [rows, photos] = await Promise.all([
+    failSoft(
+      db
+        .select()
+        .from(schoolYearEvents)
+        .orderBy(asc(schoolYearEvents.month), asc(schoolYearEvents.sortOrder)),
+      []
+    ),
+    getSitePhotos(),
+  ]);
 
   if (rows.length === 0) return dictionaryEvents(locale);
 
@@ -52,7 +57,8 @@ export async function getSchoolYearEvents(locale: Locale): Promise<SchoolYearEve
       description: locale === "ja" ? row.descriptionJa ?? row.description : row.description,
       photo: photoFor(
         row.photoUrl ?? undefined,
-        locale === "ja" ? row.photoAltJa ?? row.photoAlt : row.photoAlt
+        locale === "ja" ? row.photoAltJa ?? row.photoAlt : row.photoAlt,
+        recordPhotoFraming(photos, yearEventPhotoRecord(row.key))
       ),
     }));
 }

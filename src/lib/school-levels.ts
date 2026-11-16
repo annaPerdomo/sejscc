@@ -5,6 +5,8 @@ import { failSoft } from "@/lib/fail-soft";
 import { getBaseDictionaryFor } from "@/lib/dictionaries";
 import type { Locale } from "@/lib/i18n";
 import { photoFor, schoolPhotos } from "@/lib/photos";
+import { levelPhotoRecord, recordPhotoFraming } from "@/lib/record-photos";
+import { getSitePhotos } from "@/lib/site-photos";
 import type { SitePhotoSource } from "@/components/site-photo";
 
 export type SchoolLevelView = {
@@ -37,10 +39,10 @@ async function dictionaryLevels(locale: Locale): Promise<SchoolLevelView[]> {
 }
 
 export async function getSchoolLevels(locale: Locale): Promise<SchoolLevelView[]> {
-  const rows = await failSoft(
-    db.select().from(schoolLevels).orderBy(asc(schoolLevels.sortOrder)),
-    []
-  );
+  const [rows, photos] = await Promise.all([
+    failSoft(db.select().from(schoolLevels).orderBy(asc(schoolLevels.sortOrder)), []),
+    getSitePhotos(),
+  ]);
 
   if (rows.length === 0) return dictionaryLevels(locale);
 
@@ -56,7 +58,8 @@ export async function getSchoolLevels(locale: Locale): Promise<SchoolLevelView[]
       points: locale === "ja" && row.pointsJa.length > 0 ? row.pointsJa : row.points,
       photo: photoFor(
         row.photoUrl ?? undefined,
-        locale === "ja" ? row.photoAltJa ?? row.photoAlt : row.photoAlt
+        locale === "ja" ? row.photoAltJa ?? row.photoAlt : row.photoAlt,
+        recordPhotoFraming(photos, levelPhotoRecord(row.id))
       ),
     }));
 }

@@ -136,6 +136,26 @@ export function framingToRow(framing: PhotoFraming | undefined): FramingRow {
   };
 }
 
+export const IMPOSSIBLE_FRAMING_MESSAGE = "That framing isn't possible. Please move or zoom the photo again.";
+
+function wholeNumberIn(value: number, min: number, max: number): boolean {
+  return Number.isInteger(value) && value >= min && value <= max;
+}
+
+export function isPossibleFraming({ x, y, zoom, fit, size, wash }: PhotoFraming): boolean {
+  return (
+    wholeNumberIn(x, 0, 100) &&
+    wholeNumberIn(y, 0, 100) &&
+    wholeNumberIn(zoom, ZOOM_MIN, ZOOM_MAX) &&
+    PHOTO_FITS.includes(fit) &&
+    (fit === "fill" || zoom === ZOOM_MIN) &&
+    wholeNumberIn(size, SIZE_MIN, SIZE_MAX) &&
+    (fit === "whole" || size === SIZE_MIN) &&
+    (wash === WASH_AUTO || wholeNumberIn(wash, WASH_MIN, WASH_MAX)) &&
+    (size !== SIZE_MIN || wash === WASH_AUTO)
+  );
+}
+
 export type FrameSize = { width: number; height: number };
 
 // How far the photo spills past its frame. A whole photo is smaller than the

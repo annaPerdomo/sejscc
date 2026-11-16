@@ -19,20 +19,16 @@ import {
 } from "@/lib/japanese-drafts";
 import { readPath } from "@/lib/object-path";
 import {
+  IMPOSSIBLE_FRAMING_MESSAGE,
   ORIGINAL_PHOTO_URL,
-  ZOOM_MAX,
-  PHOTO_FITS,
-  SIZE_MAX,
   SIZE_MIN,
-  WASH_AUTO,
-  WASH_MAX,
-  WASH_MIN,
-  ZOOM_MIN,
   framingToRow,
   isDefaultFraming,
+  isPossibleFraming,
   type PhotoFraming,
 } from "@/lib/photo-framing";
 import { PHOTO_SLOTS, photoSlot, type PhotoSlot } from "@/lib/photo-slots";
+import { forgetRecordPhotoFraming, isFramableRecordPhoto } from "@/lib/record-photo-store";
 import { normalizeSiteLinkUrl, siteLink } from "@/lib/site-links";
 import { editableSiteTextField, siteTextNeighbours } from "@/lib/site-text-fields";
 import { checkedBlobImageUrl } from "@/lib/uploads";
@@ -305,25 +301,9 @@ function checkedAlt(alt: string, slot: PhotoSlot): string {
   return trimmed;
 }
 
-function wholePercent(value: number, min: number, max: number): boolean {
-  return Number.isInteger(value) && value >= min && value <= max;
-}
-
 function checkedFraming(framing: PhotoFraming): PhotoFraming {
+  if (!isPossibleFraming(framing)) throw new AdminError(IMPOSSIBLE_FRAMING_MESSAGE);
   const { x, y, zoom, fit, size, wash } = framing;
-  if (
-    !wholePercent(x, 0, 100) ||
-    !wholePercent(y, 0, 100) ||
-    !wholePercent(zoom, ZOOM_MIN, ZOOM_MAX) ||
-    !PHOTO_FITS.includes(fit) ||
-    (fit === "whole" && zoom !== ZOOM_MIN) ||
-    !wholePercent(size, SIZE_MIN, SIZE_MAX) ||
-    (fit === "fill" && size !== SIZE_MIN) ||
-    (wash !== WASH_AUTO && !wholePercent(wash, WASH_MIN, WASH_MAX)) ||
-    (size === SIZE_MIN && wash !== WASH_AUTO)
-  ) {
-    throw new AdminError("That framing isn't possible. Please move or zoom the photo again.");
-  }
   return { x, y, zoom, fit, size, wash };
 }
 
@@ -442,6 +422,32 @@ export async function updateOriginalPhotoFraming(input: {
         .values({ slot: slot.id, ...set })
         .onConflictDoUpdate({ target: sitePhotos.slot, set })
     );
+    revalidateSite();
+  });
+}
+
+export async function updateRecordPhotoFraming(input: {
+  record: string;
+  framing: PhotoFraming;
+}): Promise<ActionResult> {
+  return runAction(async () => {
+    const editor = await requireUser();
+    const record = String(input.record);
+    if (!(await isFramableRecordPhoto(record))) throw new AdminError(NOT_REGISTERED_PHOTO_MESSAGE);
+    const framing = checkedFraming(input.framing);
+    if (framing.size !== SIZE_MIN) throw new AdminError(IMPOSSIBLE_FRAMING_MESSAGE);
+
+    const set = { url: ORIGINAL_PHOTO_URL, alt: "", altJa: null, width: null, height: null, ...framingToRow(framing) };
+    await trackChange(editor, "sitePhoto", record, async () => {
+      if (isDefaultFraming(framing)) {
+        await forgetRecordPhotoFraming(record);
+        return;
+      }
+      await db
+        .insert(sitePhotos)
+        .values({ slot: record, ...set })
+        .onConflictDoUpdate({ target: sitePhotos.slot, set });
+    });
     revalidateSite();
   });
 }

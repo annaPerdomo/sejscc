@@ -16,6 +16,8 @@ import {
   type FollowedJapanese,
   type JapaneseUpdate,
 } from "@/lib/japanese-drafts";
+import { forgetRecordPhotoFraming } from "@/lib/record-photo-store";
+import { yearEventPhotoRecord } from "@/lib/record-photos";
 import { checkedBlobImageUrl } from "@/lib/uploads";
 
 export type SchoolYearEventFormInput = {
@@ -239,7 +241,8 @@ export async function updateSchoolYearEvent(
         .where(eq(schoolYearEvents.id, id))
     );
 
-    if (existing.photoUrl && existing.photoUrl !== nextPhotoUrl) {
+    if (existing.photoUrl !== nextPhotoUrl) {
+      await forgetRecordPhotoFraming(yearEventPhotoRecord(existing.key));
       await deleteBlobIfUnused(existing.photoUrl);
     }
 
@@ -257,6 +260,7 @@ export async function deleteSchoolYearEvent(id: string): Promise<ActionResult> {
     await trackChange(editor, "schoolYearEvent", id, () =>
       db.delete(schoolYearEvents).where(eq(schoolYearEvents.id, id))
     );
+    await forgetRecordPhotoFraming(yearEventPhotoRecord(existing.key));
     await deleteBlobIfUnused(existing.photoUrl);
 
     revalidateSite();
@@ -385,7 +389,10 @@ export async function updateSchoolYearEventPhoto(input: {
         .set({ photoUrl, photoAlt, photoAltJa: followed.japanese })
         .where(eq(schoolYearEvents.id, input.id))
     );
-    if (existing.photoUrl !== photoUrl) await deleteBlobIfUnused(existing.photoUrl);
+    if (existing.photoUrl !== photoUrl) {
+      await forgetRecordPhotoFraming(yearEventPhotoRecord(existing.key));
+      await deleteBlobIfUnused(existing.photoUrl);
+    }
     revalidateSite();
     return followed;
   });

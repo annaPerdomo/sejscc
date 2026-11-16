@@ -390,7 +390,7 @@ export function PhotoDialog({
   }
 
   const pickerValue = mode === "upload" ? previewUrl : null;
-  const framesOnPage = spot.framable && framesOnPageAllowed;
+  const framesOnPage = framesOnPageAllowed;
   const shownSrc = previewUrl ?? libraryUrl ?? tile.current.src;
   const framerSrc = !spot.framable || framesOnPage ? null : shownSrc;
   const natural = useNaturalSize(shownSrc || null);
