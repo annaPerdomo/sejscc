@@ -366,7 +366,7 @@ export function PageCanvas({
           router.refresh();
           refreshPage();
           if (next.current.src === latestRecordTile(item).current.src) return;
-          setRecordPhotos((current) => Object.fromEntries(Object.entries(current).filter(([record]) => record !== item.record)));
+          setRecordPhotos((current) => ({ ...current, [item.record]: { src: next.current.src, crop: undefined } }));
           setRecordFramings((current) => ({ ...current, [item.record]: undefined }));
           if (onPage) startRecordFraming(item, next);
         }}

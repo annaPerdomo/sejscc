@@ -566,10 +566,10 @@ export async function cropPhoto(input: {
 }): Promise<ActionResult> {
   return runAction(async () => {
     const editor = await requireUser();
-    const cropTarget = await checkedCropTarget(input.target);
     const url = checkedBlobImageUrl(input.url);
     if (!url) throw new AdminError("That photo didn't upload correctly. Please try again.");
     try {
+      const cropTarget = await checkedCropTarget(input.target);
       const { left, top, width, height } = input.crop;
       const crop = { left, top, width, height };
       if (!isPossibleCrop(crop) || isFullCrop(crop)) throw new AdminError(IMPOSSIBLE_CROP_MESSAGE);
