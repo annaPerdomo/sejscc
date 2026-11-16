@@ -35,6 +35,10 @@ export type PageFramingSession = {
 const WHOLE_CLASS = "photo-frame-whole";
 const SIZE_HANDLE_CLASS = "page-edit-size-handle";
 const WASH_HANDLE_CLASS = "page-edit-wash-handle";
+const HANDLE_TIP_CLASS = "page-edit-handle-tip";
+const TIP_SHOWN_ATTRIBUTE = "data-tip-shown";
+const SIZE_TIP = "Drag to make the photo bigger or smaller";
+const WASH_TIP = "Drag to move the blue shade off the photo";
 // Must match the fade in `.hero-slide-beside[data-photo-wash]`.
 const WASH_FADE_REM = 4;
 const SIDEWAYS_PATH = "M2 12l5-5v3.5h10V7l5 5-5 5v-3.5H7V17l-5-5Z";
@@ -81,24 +85,40 @@ export function startPageFraming(
   const slide = slideOf(image, stage);
   const sizable = Boolean(fitSlide?.matches(SIZABLE_SLIDE)) && view.matchMedia(SIZABLE_SCREEN).matches;
 
-  function sidewaysHandle(className: string): HTMLElement {
+  function sidewaysHandle(className: string, tip: string): HTMLElement {
     const handle = doc.createElement("div");
     handle.className = className;
-    handle.append(icon(doc, SIDEWAYS_PATH));
+    const label = doc.createElement("span");
+    label.className = HANDLE_TIP_CLASS;
+    label.textContent = tip;
+    handle.append(icon(doc, SIDEWAYS_PATH), label);
     return handle;
   }
 
   const handles = sizable
     ? ["top", "bottom"].map((edge) => {
-        const handle = sidewaysHandle(SIZE_HANDLE_CLASS);
+        const handle = sidewaysHandle(SIZE_HANDLE_CLASS, SIZE_TIP);
         handle.style.setProperty(edge, "0");
         box.append(handle);
         return handle;
       })
     : [];
 
-  const washHandle = sizable && fitSlide ? sidewaysHandle(`${SIZE_HANDLE_CLASS} ${WASH_HANDLE_CLASS}`) : null;
+  const washHandle =
+    sizable && fitSlide ? sidewaysHandle(`${SIZE_HANDLE_CLASS} ${WASH_HANDLE_CLASS}`, WASH_TIP) : null;
   if (washHandle) fitSlide?.append(washHandle);
+  const tipped = washHandle ? [...handles, washHandle] : handles;
+
+  // The page's words lie over the handles, so the pointer never hovers one as far as CSS can tell.
+  function showTips(point: Point | null) {
+    for (const handle of tipped) {
+      const over = point !== null && !handle.hidden && contains(handle.getBoundingClientRect(), point);
+      handle.toggleAttribute(TIP_SHOWN_ATTRIBUTE, over);
+    }
+  }
+  function hideTips() {
+    showTips(null);
+  }
   const hadWash = fitSlide?.hasAttribute(PHOTO_WASH_ATTRIBUTE) ?? false;
 
   // The shade is measured from the left edge of the page's content, in px at a 16px root.
@@ -125,12 +145,13 @@ export function startPageFraming(
     return { auto, min: Math.min(auto, clampWash((wordsEnd + WASH_FADE_REM) * ROOT_PX)) };
   }
   const wash = washRange();
+  // Only the opacity is put back: a save can redraw these slides' other styles while they are hidden.
+  const hiddenSlides = new Map<HTMLElement, string>();
   for (const sibling of stage.children) {
     if (sibling === slide || !(sibling instanceof view.HTMLElement)) continue;
     if (sibling.tagName === "IMG" || sibling.querySelector("img")) {
-      restyle(sibling, (style) => {
-        style.opacity = "0";
-      });
+      hiddenSlides.set(sibling, sibling.style.opacity);
+      sibling.style.opacity = "0";
     }
   }
   for (let el: HTMLElement | null = image; el && el !== stage; el = el.parentElement) {
@@ -209,6 +230,7 @@ export function startPageFraming(
   function onPointerDown(event: PointerEvent) {
     const point = { x: event.clientX, y: event.clientY };
     if (event.button !== 0) return;
+    showTips(point);
     // The page's words lie over the photo, so a handle is found by where it is,
     // not as the target; the shade's can sit left of the photo's box.
     if (washHandle && !washHandle.hidden && contains(washHandle.getBoundingClientRect(), point)) {
@@ -229,6 +251,8 @@ export function startPageFraming(
   }
 
   function onPointerMove(event: PointerEvent) {
+    const dragging = washPointer !== null || resizeFrom !== null || pointers.size > 0;
+    showTips(dragging ? null : { x: event.clientX, y: event.clientY });
     if (washPointer === event.pointerId) {
       onChange(withWash(current, washAt(event.clientX), wash));
       return;
@@ -255,6 +279,7 @@ export function startPageFraming(
   }
 
   function onPointerEnd(event: PointerEvent) {
+    showTips(event.pointerType === "mouse" ? { x: event.clientX, y: event.clientY } : null);
     if (washPointer === event.pointerId || resizeFrom?.pointerId === event.pointerId) {
       washPointer = null;
       resizeFrom = null;
@@ -267,6 +292,7 @@ export function startPageFraming(
   }
 
   function onBlur() {
+    hideTips();
     washPointer = null;
     resizeFrom = null;
     pointers.clear();
@@ -286,6 +312,7 @@ export function startPageFraming(
   ];
   for (const [type, listener] of listeners) doc.addEventListener(type, listener, { capture: true });
   view.addEventListener("blur", onBlur);
+  doc.documentElement.addEventListener("pointerleave", hideTips);
 
   doc.documentElement.setAttribute(PAGE_EDIT_HOLD_ATTRIBUTE, "");
   box.classList.add(FRAMING_BOX_CLASS);
@@ -298,6 +325,7 @@ export function startPageFraming(
     stop() {
       for (const [type, listener] of listeners) doc.removeEventListener(type, listener, { capture: true });
       view.removeEventListener("blur", onBlur);
+      doc.documentElement.removeEventListener("pointerleave", hideTips);
       box.classList.remove(FRAMING_BOX_CLASS);
       for (const handle of handles) handle.remove();
       washHandle?.remove();
@@ -309,6 +337,7 @@ export function startPageFraming(
       view.scrollBy({ top: box.getBoundingClientRect().top - topBefore });
       // A photo that finished loading meanwhile had its shape written to this same attribute.
       const ratio = wrapper?.style.getPropertyValue("--photo-ratio");
+      for (const [el, opacity] of hiddenSlides) el.style.opacity = opacity;
       for (const [el, style] of originalStyles) {
         if (style === null) el.removeAttribute("style");
         else el.setAttribute("style", style);

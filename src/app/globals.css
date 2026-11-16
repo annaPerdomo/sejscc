@@ -1996,6 +1996,30 @@ body {
     background: var(--color-indigo-deep);
   }
 
+  .page-edit-handle-tip {
+    position: absolute;
+    left: calc(100% + --spacing(3));
+    display: none;
+    width: max-content;
+    max-width: --spacing(48);
+    border-radius: var(--radius-lg);
+    background: var(--color-ink-deep);
+    padding: --spacing(2) --spacing(3);
+    font-family: var(--font-display);
+    font-size: var(--text-base);
+    font-weight: 600;
+    line-height: var(--leading-snug);
+    color: var(--color-white);
+    box-shadow:
+      0 0 0 2px var(--color-white),
+      0 2px 8px --alpha(var(--color-ink-deep) / 50%);
+    pointer-events: none;
+  }
+
+  .page-edit-size-handle[data-tip-shown] > .page-edit-handle-tip {
+    display: block;
+  }
+
   [role="tab"][aria-selected="false"] [data-page-edit] {
     outline: none;
     box-shadow: none;
