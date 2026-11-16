@@ -57,6 +57,7 @@ export function PageEditor({
   onFound,
   onPick,
   onFrame,
+  onCrop,
   onDone,
 }: {
   pageLabel: string;
@@ -70,6 +71,7 @@ export function PageEditor({
   onFound: (keys: ReadonlySet<string>) => void;
   onPick: (keys: string[]) => void;
   onFrame: (key: string) => void;
+  onCrop: (key: string) => void;
   onDone: () => void;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -77,6 +79,7 @@ export function PageEditor({
   const targetsRef = useRef(targets);
   const onPickRef = useRef(onPick);
   const onFrameRef = useRef(onFrame);
+  const onCropRef = useRef(onCrop);
   const onFoundRef = useRef(onFound);
   const lastFound = useRef("");
   const scroll = useRef({ src, top: 0 });
@@ -106,6 +109,7 @@ export function PageEditor({
     targetsRef.current = targets;
     onPickRef.current = onPick;
     onFrameRef.current = onFrame;
+    onCropRef.current = onCrop;
     onFoundRef.current = onFound;
     framingRef.current = framing;
   });
@@ -190,7 +194,8 @@ export function PageEditor({
     showPhotoButtons(
       doc,
       (keys) => onPickRef.current(keys),
-      (key) => onFrameRef.current(key)
+      (key) => onFrameRef.current(key),
+      (key) => onCropRef.current(key)
     );
 
     // Client components (slideshows, tabs) redraw after load; re-mark as they do.

@@ -157,7 +157,8 @@ be built from these tokens via Tailwind utility classes.
   holds every rotation, and the editor drops its own header and language
   bar too, so the photo gets the whole screen; the frame being changed
   is outlined by `page-edit-framing-box`), `photo-viewer` (a full-screen
-  dark `<dialog>` for zooming into a photo), and the
+  dark `<dialog>` for zooming into a photo), `crop-box` (the crop tool's box: a white outline and a dim wash over
+  everything outside it, clipped by a wrapper), and the
   `section-wash-*` backgrounds, and the three dark
   scenes, `section-navy-scene`, `section-midnight-scene` (ink-deep, for the
   school) and `section-plum-scene` (magenta-deep into ink-deep under a gold asanoha

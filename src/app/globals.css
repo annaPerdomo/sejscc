@@ -2039,6 +2039,12 @@ body {
     display: none;
   }
 
+  .crop-box {
+    outline: 2px solid var(--color-white);
+    outline-offset: -2px;
+    box-shadow: 0 0 0 100vmax --alpha(var(--color-ink-deep) / 60%);
+  }
+
   .photo-viewer {
     width: 100%;
     max-width: 100%;

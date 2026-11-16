@@ -281,10 +281,11 @@ export function listenForPageEdits(doc: Document, onPick: (keys: string[]) => vo
 
 export const PHOTO_LAYER_CLASS = "page-edit-photo-layer";
 const BADGE_INSET = 12;
-const BUTTONS_ABREAST = 320;
 const BADGE_REFRESH_MS = 400;
 const CAMERA_PATH =
   "M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Zm8 3.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z";
+const CROP_PATH =
+  "M7 2h2v13a2 2 0 0 0 2 2h11v2h-3v3h-2v-3H9a2 2 0 0 1-2-2V7H2V5h5V2Zm10 3h-6V3h6a2 2 0 0 1 2 2v6h-2V5Z";
 const MOVE_PATH =
   "M12 2l3 3h-2v6h6V9l3 3-3 3v-2h-6v6h2l-3 3-3-3h2v-6H5v2l-3-3 3-3v2h6V5H9l3-3Z";
 
@@ -307,9 +308,7 @@ function visibleBox(image: Element, view: Window, headerBottom: number): Box | n
     if (view.getComputedStyle(el).overflow !== "visible") box = intersect(box, el.getBoundingClientRect());
   }
   box = intersect(box, { top: headerBottom, right: view.innerWidth, bottom: view.innerHeight, left: 0 });
-  const stacked = image.hasAttribute(FRAMABLE_ATTRIBUTE) && box.right - box.left <= BUTTONS_ABREAST;
-  const roomy = box.right - box.left > 80 && box.bottom - box.top > (stacked ? 128 : 56);
-  return roomy ? box : null;
+  return box.right - box.left > 80 && box.bottom - box.top > 56 ? box : null;
 }
 
 export function icon(doc: Document, d: string): SVGSVGElement {
@@ -327,7 +326,8 @@ export function icon(doc: Document, d: string): SVGSVGElement {
 export function showPhotoButtons(
   doc: Document,
   onPick: (keys: string[]) => void,
-  onFrame: (key: string) => void
+  onFrame: (key: string) => void,
+  onCrop: (key: string) => void
 ): void {
   const view = doc.defaultView;
   if (!view || !doc.body) return;
@@ -358,6 +358,17 @@ export function showPhotoButtons(
     change.addEventListener("click", () => onPick(id.split(" ")));
     group.append(change);
     if (image.hasAttribute(FRAMABLE_ATTRIBUTE)) {
+      const crop = doc.createElement("button");
+      crop.type = "button";
+      crop.className = "page-edit-photo-button";
+      crop.setAttribute("aria-label", "Crop this photo");
+      crop.append(icon(doc, CROP_PATH), "Crop");
+      crop.addEventListener("click", () => {
+        const keys = id.split(" ");
+        if (keys.length === 1) onCrop(keys[0]);
+        else onPick(keys);
+      });
+      group.append(crop);
       const move = doc.createElement("button");
       move.type = "button";
       move.className = "page-edit-photo-button";
@@ -397,6 +408,17 @@ export function showPhotoButtons(
       button.style.right = `${view.innerWidth - box.right + BADGE_INSET}px`;
       button.style.maxWidth = `${box.right - box.left - 2 * BADGE_INSET}px`;
       if (button.parentElement !== layer) layer.append(button);
+      const optional = [...button.children].slice(1).filter((el): el is HTMLElement => el instanceof HTMLElement);
+      for (const el of optional) el.style.display = "";
+      const tooTall = () => button.offsetHeight + 2 * BADGE_INSET > box.bottom - box.top;
+      for (const el of optional) {
+        if (!tooTall()) break;
+        el.style.display = "none";
+      }
+      if (tooTall()) {
+        button.remove();
+        continue;
+      }
       shown.add(button);
     }
 

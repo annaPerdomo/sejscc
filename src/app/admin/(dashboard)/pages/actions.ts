@@ -569,62 +569,68 @@ export async function cropPhoto(input: {
     const cropTarget = await checkedCropTarget(input.target);
     const url = checkedBlobImageUrl(input.url);
     if (!url) throw new AdminError("That photo didn't upload correctly. Please try again.");
-    const { left, top, width, height } = input.crop;
-    const crop = { left, top, width, height };
-    if (!isPossibleCrop(crop) || isFullCrop(crop)) throw new AdminError(IMPOSSIBLE_CROP_MESSAGE);
+    try {
+      const { left, top, width, height } = input.crop;
+      const crop = { left, top, width, height };
+      if (!isPossibleCrop(crop) || isFullCrop(crop)) throw new AdminError(IMPOSSIBLE_CROP_MESSAGE);
 
-    if (cropTarget.kind === "slot") {
-      const { slot } = cropTarget;
-      const [existing] = await db.select().from(sitePhotos).where(eq(sitePhotos.slot, slot.id));
-      const source =
-        existing?.cropSource ?? (existing && existing.url !== ORIGINAL_PHOTO_URL ? existing.url : ORIGINAL_PHOTO_URL);
-      if (input.source !== (source === ORIGINAL_PHOTO_URL ? slot.defaultSrc : source)) {
-        throw new AdminError(REPLACED_MEANWHILE_MESSAGE);
+      if (cropTarget.kind === "slot") {
+        const { slot } = cropTarget;
+        const [existing] = await db.select().from(sitePhotos).where(eq(sitePhotos.slot, slot.id));
+        const source =
+          existing?.cropSource ?? (existing && existing.url !== ORIGINAL_PHOTO_URL ? existing.url : ORIGINAL_PHOTO_URL);
+        if (input.source !== (source === ORIGINAL_PHOTO_URL ? slot.defaultSrc : source)) {
+          throw new AdminError(REPLACED_MEANWHILE_MESSAGE);
+        }
+        const previousCropped = existing && existing.cropSource !== null ? existing.url : null;
+        const keepsReplacedAlt = existing !== undefined && existing.url !== ORIGINAL_PHOTO_URL;
+        const alt = keepsReplacedAlt ? existing.alt : checkedAlt(input.alt, slot);
+        const altJa = keepsReplacedAlt ? existing.altJa : checkedAltJa(input.altJa);
+        const size = await getImageSize(url);
+        const set = {
+          url,
+          alt,
+          altJa,
+          width: size?.width ?? null,
+          height: size?.height ?? null,
+          ...cropToRow(source, crop),
+          ...framingKeptAfterCrop(existing),
+        };
+        await trackChange(editor, "sitePhoto", slot.id, () =>
+          db
+            .insert(sitePhotos)
+            .values({ slot: slot.id, ...set })
+            .onConflictDoUpdate({ target: sitePhotos.slot, set })
+        );
+        await deleteBlobIfUnused(previousCropped);
+      } else {
+        const { record, photo, photoUrl } = cropTarget;
+        const [row] = await db.select().from(sitePhotos).where(eq(sitePhotos.slot, record));
+        const source = row?.cropSource ?? photoUrl;
+        if (input.source !== source) throw new AdminError(REPLACED_MEANWHILE_MESSAGE);
+        const previousCropped = row && row.cropSource !== null ? photoUrl : null;
+        const set = {
+          url: ORIGINAL_PHOTO_URL,
+          alt: "",
+          altJa: null,
+          width: null,
+          height: null,
+          ...cropToRow(source, crop),
+          ...framingKeptAfterCrop(row),
+        };
+        await trackChange(editor, "sitePhoto", record, () =>
+          db
+            .insert(sitePhotos)
+            .values({ slot: record, ...set })
+            .onConflictDoUpdate({ target: sitePhotos.slot, set })
+        );
+        await trackChange(editor, photo.change, photo.rowId, () => photo.write(url));
+        await deleteBlobIfUnused(previousCropped);
       }
-      const previousCropped = existing && existing.cropSource !== null ? existing.url : null;
-      const keepsReplacedAlt = existing !== undefined && existing.url !== ORIGINAL_PHOTO_URL;
-      const alt = keepsReplacedAlt ? existing.alt : checkedAlt(input.alt, slot);
-      const altJa = keepsReplacedAlt ? existing.altJa : checkedAltJa(input.altJa);
-      const size = await getImageSize(url);
-      const set = {
-        url,
-        alt,
-        altJa,
-        width: size?.width ?? null,
-        height: size?.height ?? null,
-        ...cropToRow(source, crop),
-        ...framingKeptAfterCrop(existing),
-      };
-      await trackChange(editor, "sitePhoto", slot.id, () =>
-        db
-          .insert(sitePhotos)
-          .values({ slot: slot.id, ...set })
-          .onConflictDoUpdate({ target: sitePhotos.slot, set })
-      );
-      await deleteBlobIfUnused(previousCropped);
-    } else {
-      const { record, photo, photoUrl } = cropTarget;
-      const [row] = await db.select().from(sitePhotos).where(eq(sitePhotos.slot, record));
-      const source = row?.cropSource ?? photoUrl;
-      if (input.source !== source) throw new AdminError(REPLACED_MEANWHILE_MESSAGE);
-      const previousCropped = row && row.cropSource !== null ? photoUrl : null;
-      const set = {
-        url: ORIGINAL_PHOTO_URL,
-        alt: "",
-        altJa: null,
-        width: null,
-        height: null,
-        ...cropToRow(source, crop),
-        ...framingKeptAfterCrop(row),
-      };
-      await trackChange(editor, "sitePhoto", record, () =>
-        db
-          .insert(sitePhotos)
-          .values({ slot: record, ...set })
-          .onConflictDoUpdate({ target: sitePhotos.slot, set })
-      );
-      await trackChange(editor, photo.change, photo.rowId, () => photo.write(url));
-      await deleteBlobIfUnused(previousCropped);
+
+    } catch (e) {
+      await deleteBlobIfUnused(url);
+      throw e;
     }
 
     revalidateSite();

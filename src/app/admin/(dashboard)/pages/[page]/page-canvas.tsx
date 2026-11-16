@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { flushSync } from "react-dom";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { upload } from "@vercel/blob/client";
 import { expectOk, type ActionResult } from "@/lib/action-result";
 import { JAPANESE_EDIT_NOTE, languageName, withJapaneseNote, withLanguageName } from "@/lib/admin-messages";
 import { AdminButtonLink, buttonClass } from "@/components/admin/admin-button";
@@ -14,6 +15,7 @@ import { EditableUrl } from "@/components/admin/inline-edit/editable-url";
 import type { PagePlacement } from "@/components/admin/inline-edit/page-edit-framing";
 import type { PageEditTarget } from "@/components/admin/inline-edit/page-edit-targets";
 import { PageEditor } from "@/components/admin/inline-edit/page-editor";
+import { PhotoCropper } from "@/components/admin/inline-edit/photo-cropper";
 import { PhotoFramingBar } from "@/components/admin/inline-edit/photo-framing-bar";
 import {
   PhotoDialog,
@@ -28,13 +30,16 @@ import { useUndo, type UndoEntry } from "@/components/admin/inline-edit/use-undo
 import { useUnsavedChangesGuard } from "@/components/admin/inline-edit/use-unsaved-changes-guard";
 import type { EditablePage, ManagedElsewhere } from "@/lib/editable-pages";
 import { DEFAULT_FRAMING, isDefaultFraming, sameFraming, type PhotoFraming } from "@/lib/photo-framing";
-import { photoSlot, photosTakingTurnsWith, type PhotoSlot } from "@/lib/photo-slots";
+import type { PhotoCrop } from "@/lib/photo-crop";
+import { photoSlot, photosTakingTurnsWith, type PhotoShape, type PhotoSlot } from "@/lib/photo-slots";
 import type { Dictionary } from "@/lib/dictionaries";
 import { japaneseEnabled, type Locale } from "@/lib/i18n";
 import { readPath } from "@/lib/object-path";
 import { normalizeSiteLinkUrl, type SiteLink } from "@/lib/site-links";
 import { siteTextNeighbours, siteTextSiblings, type SiteTextField } from "@/lib/site-text-fields";
 import {
+  cropPhoto,
+  removePhotoCrop,
   resetSiteLink,
   resetSitePhoto,
   resetSiteText,
@@ -83,6 +88,16 @@ type FramingSubject =
   | { kind: "slot"; slot: PhotoSlot }
   | { kind: "record"; item: RecordPhoto; tile: PhotoTile; frame: (framing: PhotoFraming) => Promise<ActionResult> };
 
+type CropSubject =
+  | { kind: "slot"; slot: PhotoSlot; title: string; shape: PhotoShape; tile: PhotoTile }
+  | { kind: "record"; item: RecordPhoto; title: string; shape: PhotoShape; tile: PhotoTile };
+
+type RecordPhotoOverride = { src: string; crop: { source: string; box: PhotoCrop } | undefined };
+
+function framingAfterCrop(framing: PhotoFraming | undefined): PhotoFraming | undefined {
+  return framing?.fit === "whole" ? framing : undefined;
+}
+
 type FramingChange = {
   unmoved: boolean;
   description: string;
@@ -100,6 +115,8 @@ type FramingDraft = {
 };
 
 const GENERIC_SAVE_ERROR = "Something went wrong saving this. Please try again.";
+const CROP_UPLOAD_ERROR =
+  "We couldn't upload the cropped photo. Please check your connection and try again.";
 const UNMOVED_PHOTO_MESSAGE =
   "Move or zoom the photo first, or press Cancel to leave it as it is.";
 const UNMOVED_PHOTOS_MESSAGE =
@@ -187,6 +204,8 @@ export function PageCanvas({
   const [foundKeys, setFoundKeys] = useState<ReadonlySet<string> | null>(null);
   const [framing, setFraming] = useState<FramingDraft | null>(null);
   const [recordFramings, setRecordFramings] = useState<Record<string, PhotoFraming | undefined>>({});
+  const [cropping, setCropping] = useState<{ key: string } | null>(null);
+  const [recordPhotos, setRecordPhotos] = useState<Record<string, RecordPhotoOverride>>({});
   const [reviewing, setReviewing] = useState<string | null>(null);
   const [moveBlocked, setMoveBlocked] = useState<string | null>(null);
 
@@ -346,7 +365,8 @@ export function PageCanvas({
           undo.clear();
           router.refresh();
           refreshPage();
-          if (next.current.src === item.tile.current.src) return;
+          if (next.current.src === latestRecordTile(item).current.src) return;
+          setRecordPhotos((current) => Object.fromEntries(Object.entries(current).filter(([record]) => record !== item.record)));
           setRecordFramings((current) => ({ ...current, [item.record]: undefined }));
           if (onPage) startRecordFraming(item, next);
         }}
@@ -656,8 +676,17 @@ export function PageCanvas({
 
   // A record's saved framing comes back with the page's records, which a refresh brings a moment later.
   function latestRecordTile(item: RecordPhoto): PhotoTile {
-    if (!Object.hasOwn(recordFramings, item.record)) return item.tile;
-    return { ...item.tile, current: { ...item.tile.current, framing: recordFramings[item.record] } };
+    const photo = recordPhotos[item.record];
+    const framed = Object.hasOwn(recordFramings, item.record);
+    if (!photo && !framed) return item.tile;
+    return {
+      ...item.tile,
+      current: {
+        ...item.tile.current,
+        ...(framed && { framing: recordFramings[item.record] }),
+        ...(photo && photo),
+      },
+    };
   }
 
   function recordFramesOnPage(item: RecordPhoto): boolean {
@@ -703,6 +732,112 @@ export function PageCanvas({
     if (item?.kind === "record" && item.item.kind === "recordPhoto" && recordFramesOnPage(item.item)) {
       startRecordFraming(item.item, latestRecordTile(item.item));
     }
+  }
+
+  function cropSubject(key: string): CropSubject | null {
+    const item = pageItems.get(key);
+    if (item?.kind === "photo" && item.slot.framable !== false) {
+      const { slot } = item;
+      return { kind: "slot", slot, title: photoSlotTitle(slot), shape: slot.shape, tile: tiles[slot.id] };
+    }
+    if (item?.kind === "record" && item.item.kind === "recordPhoto" && item.item.frame) {
+      const record = item.item;
+      return { kind: "record", item: record, title: record.title, shape: record.spot.shape, tile: latestRecordTile(record) };
+    }
+    return null;
+  }
+
+  function cropFromPage(key: string) {
+    if (cropSubject(key)) setCropping({ key });
+  }
+
+  async function finishCrop(
+    subject: CropSubject,
+    write: () => Promise<RecordPhotoOverride>,
+    verb: string
+  ) {
+    setStatus({ kind: "saving" });
+    let next: RecordPhotoOverride;
+    try {
+      next = await write();
+    } catch (e) {
+      setStatus({ kind: "error", message: e instanceof Error && e.message ? e.message : GENERIC_SAVE_ERROR });
+      throw e;
+    }
+    const framing = framingAfterCrop(subject.tile.current.framing);
+    if (subject.kind === "slot") {
+      const { tile } = subject;
+      onTileChange({
+        ...tile,
+        isChanged: next.crop ? true : tile.original.src !== next.src,
+        current: { ...tile.current, src: next.src, crop: next.crop, framing },
+      });
+    } else {
+      const { record } = subject.item;
+      setRecordPhotos((current) => ({ ...current, [record]: next }));
+      setRecordFramings((current) => ({ ...current, [record]: framing }));
+    }
+    const name =
+      subject.kind === "slot" ? subject.title : `${subject.title.charAt(0).toLowerCase()}${subject.title.slice(1)}`;
+    setCropping(null);
+    setStatus({ kind: "saved", message: `${verb} ${name}.` });
+    undo.clear();
+    router.refresh();
+    refreshPage();
+  }
+
+  function renderCropper(subject: CropSubject) {
+    const { tile } = subject;
+    const target = subject.kind === "slot" ? subject.slot.id : subject.item.record;
+    const source = tile.current.crop?.source ?? tile.current.src;
+    const saved = tile.current.crop?.box;
+    return (
+      <PhotoCropper
+        title={subject.title}
+        source={source}
+        shape={subject.shape}
+        saved={saved}
+        onSave={async (file, crop) => {
+          await finishCrop(
+            subject,
+            async () => {
+              const uploaded = await upload(`crops/${file.name}`, file, {
+                access: "public",
+                handleUploadUrl: "/api/upload",
+              }).catch(() => {
+                throw new Error(CROP_UPLOAD_ERROR);
+              });
+              expectOk(
+                await cropPhoto({
+                  target,
+                  url: uploaded.url,
+                  crop,
+                  source,
+                  alt: tile.current.alt,
+                  altJa: tile.current.altJa,
+                })
+              );
+              return { src: uploaded.url, crop: { source, box: crop } };
+            },
+            "Cropped"
+          );
+        }}
+        onRemove={
+          saved
+            ? () =>
+                finishCrop(
+                  subject,
+                  async () => {
+                    expectOk(await removePhotoCrop(target));
+                    return { src: source, crop: undefined };
+                  },
+                  "Showing the whole photo again:"
+                )
+            : undefined
+        }
+        onClose={() => setCropping(null)}
+      />
+    );
   }
 
   function slotFramingChange(slot: PhotoSlot, scope: "one" | "all", draft: PhotoFraming): FramingChange {
@@ -1010,6 +1145,8 @@ export function PageCanvas({
 
   const [pickedFirst] = picked ?? [];
 
+  const croppingSubject = cropping && cropSubject(cropping.key);
+
   const framed =
     framing?.subject.kind === "slot"
       ? {
@@ -1115,6 +1252,7 @@ export function PageCanvas({
         onFound={setFoundKeys}
         onPick={pickOnPage}
         onFrame={frameFromPage}
+        onCrop={cropFromPage}
         onDone={() => {
           const hub = ADMIN_PAGES.find((adminPage) => adminPage.id === page.id)?.hub;
           router.push(hub && hub !== pathname ? hub : "/admin");
@@ -1164,6 +1302,8 @@ export function PageCanvas({
       )}
 
       {recordPhoto && renderRecordPhoto(recordPhoto)}
+
+      {croppingSubject && renderCropper(croppingSubject)}
 
       {recordElsewhere && (
         <EditDialog title={recordElsewhere.title} open onClose={() => setRecordElsewhere(null)}>

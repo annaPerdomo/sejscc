@@ -63,3 +63,45 @@ export function cropPixels(
   const height = Math.max(1, Math.min(natural.height - y, Math.round((crop.height / CROP_FULL) * natural.height)));
   return { x, y, width, height };
 }
+
+export type CropHandle = "move" | "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+function movedSpan(start: number, length: number, delta: number): { start: number; length: number } {
+  return { start: clamp(start + delta, 0, CROP_FULL - length), length };
+}
+
+function trimmedSpan(
+  start: number,
+  length: number,
+  delta: number,
+  movesStart: boolean
+): { start: number; length: number } {
+  if (movesStart) {
+    const end = start + length;
+    const nextStart = clamp(start + delta, 0, end - CROP_MIN);
+    return { start: nextStart, length: end - nextStart };
+  }
+  return { start, length: clamp(length + delta, CROP_MIN, CROP_FULL - start) };
+}
+
+export function draggedCrop(from: PhotoCrop, handle: CropHandle, dx: number, dy: number): PhotoCrop {
+  const stepX = Math.round(dx);
+  const stepY = Math.round(dy);
+  const horizontal =
+    handle === "move"
+      ? movedSpan(from.left, from.width, stepX)
+      : handle.includes("e") || handle.includes("w")
+        ? trimmedSpan(from.left, from.width, stepX, handle.includes("w"))
+        : { start: from.left, length: from.width };
+  const vertical =
+    handle === "move"
+      ? movedSpan(from.top, from.height, stepY)
+      : handle.includes("n") || handle.includes("s")
+        ? trimmedSpan(from.top, from.height, stepY, handle.includes("n"))
+        : { start: from.top, length: from.height };
+  return { left: horizontal.start, top: vertical.start, width: horizontal.length, height: vertical.length };
+}
