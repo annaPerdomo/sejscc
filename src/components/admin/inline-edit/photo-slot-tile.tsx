@@ -15,6 +15,7 @@ import type { EditBarStatus } from "@/components/admin/inline-edit/edit-bar";
 import { EditDialog } from "@/components/admin/inline-edit/edit-dialog";
 import { PHOTO_SHAPE_CLASS, PhotoFramer } from "@/components/admin/inline-edit/photo-framer";
 import { PhotoFrame } from "@/components/photo-frame";
+import type { PhotoCrop } from "@/lib/photo-crop";
 import { DEFAULT_FRAMING, sameFraming, type PhotoFraming } from "@/lib/photo-framing";
 import { blurryPhotoMessage } from "@/lib/photo-resolution";
 import { useNaturalSize } from "@/components/admin/inline-edit/use-natural-size";
@@ -41,7 +42,13 @@ const NOTHING_CHOSEN_ON_PAGE_MESSAGE =
 const TILE_SIZES = "(max-width: 640px) 50vw, 33vw";
 const LIBRARY_SIZES = "33vw";
 
-type TilePhoto = { src: string; alt: string; altJa: string; framing?: PhotoFraming };
+type TilePhoto = {
+  src: string;
+  alt: string;
+  altJa: string;
+  framing?: PhotoFraming;
+  crop?: { source: string; box: PhotoCrop };
+};
 
 export type PhotoTile = {
   slot: string;
@@ -325,7 +332,17 @@ export function PhotoDialog({
       );
 
       onSaved(
-        { ...tile, current: { src: url, alt, altJa: saved.japanese ?? "", framing }, isChanged: true },
+        {
+          ...tile,
+          current: {
+            src: url,
+            alt,
+            altJa: saved.japanese ?? "",
+            framing,
+            crop: hasNewPhoto ? undefined : tile.current.crop,
+          },
+          isChanged: true,
+        },
         withJapaneseNote(`Changed ${title}.`, saved.update)
       );
       onClose();

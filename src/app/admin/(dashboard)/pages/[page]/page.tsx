@@ -8,6 +8,7 @@ import { getAllSchoolYearEvents } from "@/lib/school-year-events";
 import { assertEditablePagesRegistry, editablePage } from "@/lib/editable-pages";
 import { getBaseDictionaryFor } from "@/lib/dictionaries";
 import { readPath } from "@/lib/object-path";
+import { cropFromRow } from "@/lib/photo-crop";
 import { ORIGINAL_PHOTO_URL, framingFromRow } from "@/lib/photo-framing";
 import { getAllSchoolLevels } from "@/lib/school-levels";
 import { levelPhotoRecord, recordPhotoFraming, yearEventPhotoRecord } from "@/lib/record-photos";
@@ -72,14 +73,18 @@ async function loadPageRecords(pageId: EditablePageId): Promise<PageRecords> {
     getSitePhotos(),
   ]);
   const photoFramings: PageRecords["photoFramings"] = {};
+  const photoCrops: PageRecords["photoCrops"] = {};
   for (const record of [
     ...levels.map((level) => levelPhotoRecord(level.id)),
     ...yearEvents.map((row) => yearEventPhotoRecord(row.key)),
   ]) {
     const framing = recordPhotoFraming(photos, record);
     if (framing) photoFramings[record] = framing;
+    const row = photos.get(record);
+    const crop = row && cropFromRow(row);
+    if (crop) photoCrops[record] = crop;
   }
-  return { levels, yearEvents, groups, board, contact, donation, events: eventRows, photoFramings };
+  return { levels, yearEvents, groups, board, contact, donation, events: eventRows, photoFramings, photoCrops };
 }
 
 function defaultAltAt(dict: unknown, path: string | null): string {
@@ -121,12 +126,17 @@ export default async function EditablePagePage({
         altJa: defaultAltAt(ja, slot.defaultAltPath),
       };
       const isReplaced = Boolean(row) && row?.url !== ORIGINAL_PHOTO_URL;
+      const rowCrop = row && cropFromRow(row);
+      const crop = rowCrop && {
+        ...rowCrop,
+        source: rowCrop.source === ORIGINAL_PHOTO_URL ? slot.defaultSrc : rowCrop.source,
+      };
       tiles[slot.id] = {
         slot: slot.id,
         current: row
           ? isReplaced
-            ? { src: row.url, alt: row.alt, altJa: row.altJa ?? "", framing: framingFromRow(row) }
-            : { ...original, framing: framingFromRow(row) }
+            ? { src: row.url, alt: row.alt, altJa: row.altJa ?? "", framing: framingFromRow(row), crop }
+            : { ...original, framing: framingFromRow(row), crop }
           : original,
         original,
         isChanged: isReplaced,

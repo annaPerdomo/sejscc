@@ -14,7 +14,11 @@ import { isUploadedFileUrl } from "@/lib/format";
 
 async function isInUse(url: string): Promise<boolean> {
   const checks = await Promise.all([
-    db.select({ id: sitePhotos.slot }).from(sitePhotos).where(eq(sitePhotos.url, url)).limit(1),
+    db
+      .select({ id: sitePhotos.slot })
+      .from(sitePhotos)
+      .where(or(eq(sitePhotos.url, url), eq(sitePhotos.cropSource, url)))
+      .limit(1),
     db.select({ id: schoolLevels.id }).from(schoolLevels).where(eq(schoolLevels.photoUrl, url)).limit(1),
     db
       .select({ id: schoolYearEvents.id })

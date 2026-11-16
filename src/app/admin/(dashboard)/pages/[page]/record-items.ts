@@ -5,6 +5,7 @@ import type { FollowedJapanese } from "@/lib/japanese-drafts";
 import type { ActionResult } from "@/lib/action-result";
 import type { Locale } from "@/lib/i18n";
 import { levelPhotoRecord, yearEventPhotoRecord } from "@/lib/record-photos";
+import type { PhotoCrop } from "@/lib/photo-crop";
 import type { PhotoFraming } from "@/lib/photo-framing";
 import {
   LEVEL_DESCRIPTION_MAX,
@@ -56,6 +57,7 @@ export type PageRecords = {
   } | null;
   events: { id: string; title: string; description: string | null; location: string | null; view?: string }[];
   photoFramings: Record<string, PhotoFraming>;
+  photoCrops: Record<string, { source: string; box: PhotoCrop }>;
 };
 
 type RecordBase = {
@@ -129,9 +131,10 @@ function photoTile(
   src: string | null,
   alt: string,
   altJa: string | null,
-  framing?: PhotoFraming
+  framing?: PhotoFraming,
+  crop?: { source: string; box: PhotoCrop }
 ): PhotoTile {
-  const current = { src: src ?? "", alt, altJa: altJa ?? "", framing };
+  const current = { src: src ?? "", alt, altJa: altJa ?? "", framing, crop };
   return { slot: record, current, original: current, isChanged: true };
 }
 
@@ -146,7 +149,11 @@ function framedOnPage(
   };
 }
 
-function levelItems(level: SchoolLevel, framings: PageRecords["photoFramings"]): RecordItem[] {
+function levelItems(
+  level: SchoolLevel,
+  framings: PageRecords["photoFramings"],
+  crops: PageRecords["photoCrops"]
+): RecordItem[] {
   const id = level.id;
   const photo = levelPhotoRecord(id);
   const { frame, framing } = framedOnPage(photo, level.photoUrl, framings);
@@ -207,7 +214,7 @@ function levelItems(level: SchoolLevel, framings: PageRecords["photoFramings"]):
         updateDetails: ({ alt, altJa }) => updateSchoolLevelPhoto({ id, url: "unchanged", alt, altJa }),
       },
       frame,
-      tile: photoTile(photo, level.photoUrl, level.photoAlt, level.photoAltJa, framing),
+      tile: photoTile(photo, level.photoUrl, level.photoAlt, level.photoAltJa, framing, crops[photo]),
     },
   ];
 }
@@ -221,7 +228,11 @@ const YEAR_WORDS = [
   { field: "description", ja: "descriptionJa", label: "Description", textKind: "body", max: 600 },
 ] as const;
 
-function yearEventItems(row: SchoolYearEvent, framings: PageRecords["photoFramings"]): RecordItem[] {
+function yearEventItems(
+  row: SchoolYearEvent,
+  framings: PageRecords["photoFramings"],
+  crops: PageRecords["photoCrops"]
+): RecordItem[] {
   const of = (part: string) => `year:${row.key}:${part}`;
   const photo = yearEventPhotoRecord(row.key);
   const { frame, framing } = framedOnPage(photo, row.photoUrl, framings);
@@ -262,7 +273,7 @@ function yearEventItems(row: SchoolYearEvent, framings: PageRecords["photoFramin
         updateDetails: ({ alt, altJa }) => updateSchoolYearEventPhoto({ id: row.id, url: "unchanged", alt, altJa }),
       },
       frame,
-      tile: photoTile(photo, row.photoUrl, row.photoAlt, row.photoAltJa, framing),
+      tile: photoTile(photo, row.photoUrl, row.photoAlt, row.photoAltJa, framing, crops[photo]),
     },
   ];
 }
@@ -548,8 +559,8 @@ const TOP_BANNER: RecordElsewhere = {
 export function recordItems(records: PageRecords): RecordItem[] {
   return [
     TOP_BANNER,
-    ...records.levels.flatMap((level) => levelItems(level, records.photoFramings)),
-    ...records.yearEvents.flatMap((row) => yearEventItems(row, records.photoFramings)),
+    ...records.levels.flatMap((level) => levelItems(level, records.photoFramings, records.photoCrops)),
+    ...records.yearEvents.flatMap((row) => yearEventItems(row, records.photoFramings, records.photoCrops)),
     ...records.groups.flatMap(groupItems),
     ...(records.board ? boardItems(records.board.section, records.board.members) : []),
     ...(records.contact ? contactItems(records.contact) : []),

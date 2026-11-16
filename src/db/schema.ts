@@ -325,6 +325,11 @@ export const sitePhotos = pgTable("site_photo", {
   size: integer("size"),
   // Where the hero's blue shade stops over that photo; null leaves it to the design.
   wash: integer("wash"),
+  cropSource: text("crop_source"),
+  cropLeft: integer("crop_left"),
+  cropTop: integer("crop_top"),
+  cropWidth: integer("crop_width"),
+  cropHeight: integer("crop_height"),
   updatedAt: timestamp("updated_at", { mode: "date" })
     .notNull()
     .defaultNow()

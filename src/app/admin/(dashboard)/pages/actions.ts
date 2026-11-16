@@ -18,17 +18,19 @@ import {
   type JapaneseUpdate,
 } from "@/lib/japanese-drafts";
 import { readPath } from "@/lib/object-path";
+import { NO_CROP_ROW, cropToRow, isFullCrop, isPossibleCrop, type PhotoCrop } from "@/lib/photo-crop";
 import {
   IMPOSSIBLE_FRAMING_MESSAGE,
   ORIGINAL_PHOTO_URL,
   SIZE_MIN,
+  framingFromRow,
   framingToRow,
   isDefaultFraming,
   isPossibleFraming,
   type PhotoFraming,
 } from "@/lib/photo-framing";
 import { PHOTO_SLOTS, photoSlot, type PhotoSlot } from "@/lib/photo-slots";
-import { forgetRecordPhotoFraming, isFramableRecordPhoto } from "@/lib/record-photo-store";
+import { isFramableRecordPhoto, recordPhoto } from "@/lib/record-photo-store";
 import { normalizeSiteLinkUrl, siteLink } from "@/lib/site-links";
 import { editableSiteTextField, siteTextNeighbours } from "@/lib/site-text-fields";
 import { checkedBlobImageUrl } from "@/lib/uploads";
@@ -356,6 +358,7 @@ export async function updateSitePhoto(input: {
       altJa,
       width: size?.width ?? null,
       height: size?.height ?? null,
+      ...(existing?.url === url ? {} : NO_CROP_ROW),
       ...framing,
     };
 
@@ -369,6 +372,7 @@ export async function updateSitePhoto(input: {
     if (existing && existing.url !== url) {
       await deleteBlobIfUnused(existing.url);
     }
+    if (existing?.cropSource && existing.url !== url) await deleteBlobIfUnused(existing.cropSource);
 
     revalidateSite();
     return followed;
@@ -412,7 +416,7 @@ export async function updateOriginalPhotoFraming(input: {
 
     const [existing] = await db.select().from(sitePhotos).where(eq(sitePhotos.slot, slot.id));
     if (existing && existing.url !== ORIGINAL_PHOTO_URL) {
-      throw new AdminError("This photo was replaced in the meantime. Please close this and try again.");
+      throw new AdminError(REPLACED_MEANWHILE_MESSAGE);
     }
 
     const set = { url: ORIGINAL_PHOTO_URL, alt: "", altJa: null, width: null, height: null, ...framing };
@@ -437,10 +441,16 @@ export async function updateRecordPhotoFraming(input: {
     const framing = checkedFraming(input.framing);
     if (framing.size !== SIZE_MIN) throw new AdminError(IMPOSSIBLE_FRAMING_MESSAGE);
 
+    const [existing] = await db.select().from(sitePhotos).where(eq(sitePhotos.slot, record));
     const set = { url: ORIGINAL_PHOTO_URL, alt: "", altJa: null, width: null, height: null, ...framingToRow(framing) };
     await trackChange(editor, "sitePhoto", record, async () => {
       if (isDefaultFraming(framing)) {
-        await forgetRecordPhotoFraming(record);
+        if (!existing) return;
+        if (existing.cropSource === null) {
+          await db.delete(sitePhotos).where(eq(sitePhotos.slot, record));
+        } else {
+          await db.update(sitePhotos).set(framingToRow(framing)).where(eq(sitePhotos.slot, record));
+        }
         return;
       }
       await db
@@ -512,6 +522,173 @@ export async function resetSitePhoto(slotId: string): Promise<ActionResult> {
       db.delete(sitePhotos).where(eq(sitePhotos.slot, slot.id))
     );
     await deleteBlobIfUnused(existing.url);
+    if (existing.cropSource) await deleteBlobIfUnused(existing.cropSource);
+
+    revalidateSite();
+  });
+}
+
+const REPLACED_MEANWHILE_MESSAGE = "This photo was replaced in the meantime. Please close this and try again.";
+const IMPOSSIBLE_CROP_MESSAGE = "That crop isn't possible. Please drag the corners again.";
+
+type CropTarget =
+  | { kind: "slot"; slot: PhotoSlot }
+  | { kind: "record"; record: string; photoUrl: string; photo: NonNullable<Awaited<ReturnType<typeof recordPhoto>>> };
+
+async function checkedCropTarget(target: string): Promise<CropTarget> {
+  const name = String(target);
+  const slot = photoSlot(name);
+  if (slot) {
+    if (slot.framable === false) throw new AdminError(NOT_REGISTERED_PHOTO_MESSAGE);
+    return { kind: "slot", slot };
+  }
+  const photo = await recordPhoto(name);
+  if (!photo?.photoUrl) throw new AdminError(NOT_REGISTERED_PHOTO_MESSAGE);
+  return { kind: "record", record: name, photoUrl: photo.photoUrl, photo };
+}
+
+function framingKeptAfterCrop(row: Parameters<typeof framingFromRow>[0] | undefined) {
+  const framing = row && framingFromRow(row);
+  return framingToRow(framing?.fit === "whole" ? framing : undefined);
+}
+
+function isDefaultFramingRow(row: ReturnType<typeof framingToRow>): boolean {
+  return Object.values(row).every((value) => value === null);
+}
+
+export async function cropPhoto(input: {
+  target: string;
+  url: string;
+  source: string;
+  crop: PhotoCrop;
+  alt: string;
+  altJa: string;
+}): Promise<ActionResult> {
+  return runAction(async () => {
+    const editor = await requireUser();
+    const cropTarget = await checkedCropTarget(input.target);
+    const url = checkedBlobImageUrl(input.url);
+    if (!url) throw new AdminError("That photo didn't upload correctly. Please try again.");
+    const { left, top, width, height } = input.crop;
+    const crop = { left, top, width, height };
+    if (!isPossibleCrop(crop) || isFullCrop(crop)) throw new AdminError(IMPOSSIBLE_CROP_MESSAGE);
+
+    if (cropTarget.kind === "slot") {
+      const { slot } = cropTarget;
+      const [existing] = await db.select().from(sitePhotos).where(eq(sitePhotos.slot, slot.id));
+      const source =
+        existing?.cropSource ?? (existing && existing.url !== ORIGINAL_PHOTO_URL ? existing.url : ORIGINAL_PHOTO_URL);
+      if (input.source !== (source === ORIGINAL_PHOTO_URL ? slot.defaultSrc : source)) {
+        throw new AdminError(REPLACED_MEANWHILE_MESSAGE);
+      }
+      const previousCropped = existing && existing.cropSource !== null ? existing.url : null;
+      const keepsReplacedAlt = existing !== undefined && existing.url !== ORIGINAL_PHOTO_URL;
+      const alt = keepsReplacedAlt ? existing.alt : checkedAlt(input.alt, slot);
+      const altJa = keepsReplacedAlt ? existing.altJa : checkedAltJa(input.altJa);
+      const size = await getImageSize(url);
+      const set = {
+        url,
+        alt,
+        altJa,
+        width: size?.width ?? null,
+        height: size?.height ?? null,
+        ...cropToRow(source, crop),
+        ...framingKeptAfterCrop(existing),
+      };
+      await trackChange(editor, "sitePhoto", slot.id, () =>
+        db
+          .insert(sitePhotos)
+          .values({ slot: slot.id, ...set })
+          .onConflictDoUpdate({ target: sitePhotos.slot, set })
+      );
+      await deleteBlobIfUnused(previousCropped);
+    } else {
+      const { record, photo, photoUrl } = cropTarget;
+      const [row] = await db.select().from(sitePhotos).where(eq(sitePhotos.slot, record));
+      const source = row?.cropSource ?? photoUrl;
+      if (input.source !== source) throw new AdminError(REPLACED_MEANWHILE_MESSAGE);
+      const previousCropped = row && row.cropSource !== null ? photoUrl : null;
+      const set = {
+        url: ORIGINAL_PHOTO_URL,
+        alt: "",
+        altJa: null,
+        width: null,
+        height: null,
+        ...cropToRow(source, crop),
+        ...framingKeptAfterCrop(row),
+      };
+      await trackChange(editor, "sitePhoto", record, () =>
+        db
+          .insert(sitePhotos)
+          .values({ slot: record, ...set })
+          .onConflictDoUpdate({ target: sitePhotos.slot, set })
+      );
+      await trackChange(editor, photo.change, photo.rowId, () => photo.write(url));
+      await deleteBlobIfUnused(previousCropped);
+    }
+
+    revalidateSite();
+  });
+}
+
+export async function removePhotoCrop(target: string): Promise<ActionResult> {
+  return runAction(async () => {
+    const editor = await requireUser();
+    const cropTarget = await checkedCropTarget(target);
+    const name = cropTarget.kind === "slot" ? cropTarget.slot.id : cropTarget.record;
+    const [row] = await db.select().from(sitePhotos).where(eq(sitePhotos.slot, name));
+    if (!row || row.cropSource === null) throw new AdminError("This photo isn't cropped.");
+    const cropSource = row.cropSource;
+    const framing = framingKeptAfterCrop(row);
+
+    if (cropTarget.kind === "slot") {
+      const croppedCopy = row.url;
+      if (cropSource === ORIGINAL_PHOTO_URL) {
+        await trackChange(editor, "sitePhoto", name, async () => {
+          if (isDefaultFramingRow(framing)) {
+            await db.delete(sitePhotos).where(eq(sitePhotos.slot, name));
+            return;
+          }
+          const set = {
+            url: ORIGINAL_PHOTO_URL,
+            alt: "",
+            altJa: null,
+            width: null,
+            height: null,
+            ...NO_CROP_ROW,
+            ...framing,
+          };
+          await db.update(sitePhotos).set(set).where(eq(sitePhotos.slot, name));
+        });
+      } else {
+        const size = await getImageSize(cropSource);
+        const set = {
+          url: cropSource,
+          width: size?.width ?? null,
+          height: size?.height ?? null,
+          ...NO_CROP_ROW,
+          ...framing,
+        };
+        await trackChange(editor, "sitePhoto", name, () =>
+          db.update(sitePhotos).set(set).where(eq(sitePhotos.slot, name))
+        );
+      }
+      await deleteBlobIfUnused(croppedCopy);
+    } else {
+      const { photo, photoUrl: croppedCopy } = cropTarget;
+      await trackChange(editor, photo.change, photo.rowId, () => photo.write(cropSource));
+      await trackChange(editor, "sitePhoto", name, async () => {
+        if (isDefaultFramingRow(framing)) {
+          await db.delete(sitePhotos).where(eq(sitePhotos.slot, name));
+          return;
+        }
+        await db
+          .update(sitePhotos)
+          .set({ ...NO_CROP_ROW, ...framing })
+          .where(eq(sitePhotos.slot, name));
+      });
+      await deleteBlobIfUnused(croppedCopy);
+    }
 
     revalidateSite();
   });
