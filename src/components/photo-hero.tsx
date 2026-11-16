@@ -2,7 +2,7 @@
 
 import Image, { type StaticImageData } from "next/image";
 import { useEffect, useRef, type ReactNode } from "react";
-import { useMountedAround, useRotation } from "@/components/carousel-hooks";
+import { useMountedAround, useRotation, useShowPhotoOnRequest } from "@/components/carousel-hooks";
 import { CarouselDots } from "@/components/carousel-dots";
 import { CarouselPlayToggle } from "@/components/carousel-play-toggle";
 import { HeroTitle } from "@/components/hero-title";
@@ -146,6 +146,10 @@ export function PhotoHero({
     viewRef: sectionRef,
   });
   const { active } = rotation;
+  useShowPhotoOnRequest(
+    isRotating && photos ? photos.map((item) => (typeof item.src === "string" ? item.src : item.src.src)) : [],
+    rotation.show
+  );
   const mounted = useMountedAround(active, photos?.length ?? 1);
 
   const showsWholePhoto =

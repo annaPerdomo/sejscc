@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import Image from "next/image";
-import { useMountedAround, useRotation } from "@/components/carousel-hooks";
+import { useMountedAround, useRotation, useShowPhotoOnRequest } from "@/components/carousel-hooks";
 import { CarouselDots } from "@/components/carousel-dots";
 import { CarouselPlayToggle } from "@/components/carousel-play-toggle";
 import { PhotoFrame } from "@/components/photo-frame";
@@ -30,6 +30,10 @@ export function SchoolSlideshow({
   const stageRef = useRef<HTMLDivElement>(null);
   const rotation = useRotation({ count: slides.length, viewRef: stageRef });
   const { active } = rotation;
+  useShowPhotoOnRequest(
+    slides.map((item) => item.src),
+    rotation.show
+  );
   const mounted = useMountedAround(active, slides.length);
   const slide = slides[active];
 

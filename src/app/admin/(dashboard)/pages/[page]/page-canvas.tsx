@@ -76,8 +76,12 @@ function isWordsItem(item: PageItem): item is WordsItem {
   return item.kind === "text" || item.kind === "link" || (item.kind === "record" && item.item.kind === "recordWords");
 }
 
+/** Set while moving through a set of photos, so one that isn't on the page is passed over. */
+type FramingStep = { direction: -1 | 1; from: string };
+
 type FramingDraft = {
   slot: PhotoSlot;
+  step?: FramingStep;
   draft: PhotoFraming;
   placement: PagePlacement | null;
   saving: boolean;
@@ -620,10 +624,25 @@ export function PageCanvas({
     if (slot && slot.framable !== false && isNewPhoto && onPage) startFraming(slot, next.current.framing);
   }
 
-  function startFraming(slot: PhotoSlot, saved: PhotoFraming | undefined) {
+  function startFraming(slot: PhotoSlot, saved: PhotoFraming | undefined, step?: FramingStep) {
     setPickedPhoto(null);
     setPhotoGroup(null);
-    setFraming({ slot, draft: saved ?? DEFAULT_FRAMING, placement: null, saving: false, error: null });
+    setFraming({ slot, step, draft: saved ?? DEFAULT_FRAMING, placement: null, saving: false, error: null });
+  }
+
+  function stepFrom(slot: PhotoSlot, step: FramingStep) {
+    const set = photosTakingTurnsWith(slot);
+    const at = set.findIndex((each) => each.id === slot.id);
+    const next = set[(at + step.direction + set.length) % set.length];
+    startFraming(next, tiles[next.id].current.framing, next.id === step.from ? undefined : step);
+  }
+
+  function stepFraming(direction: -1 | 1) {
+    if (!framing || framing.saving) return;
+    const { slot, draft } = framing;
+    const step = { direction, from: slot.id };
+    if (sameFraming(draft, tiles[slot.id].current.framing ?? DEFAULT_FRAMING)) stepFrom(slot, step);
+    else void saveFraming("one", step);
   }
 
   function framesOnPage(slot: PhotoSlot): boolean {
@@ -635,7 +654,7 @@ export function PageCanvas({
     if (item?.kind === "photo" && framesOnPage(item.slot)) startFraming(item.slot, tiles[item.slot.id].current.framing);
   }
 
-  async function saveFraming(scope: "one" | "all") {
+  async function saveFraming(scope: "one" | "all", thenStep?: FramingStep) {
     if (!framing || framing.saving) return;
     const { slot, draft } = framing;
     const slots = scope === "all" ? photosTakingTurnsWith(slot) : [slot];
@@ -679,7 +698,8 @@ export function PageCanvas({
         },
       });
       // The edit bar's live region only announces a change, so it must remount before the status does.
-      flushSync(() => setFraming(null));
+      if (thenStep) stepFrom(slot, thenStep);
+      else flushSync(() => setFraming(null));
       setStatus({ kind: "saved", message: description });
       router.refresh();
       refreshPage();
@@ -941,11 +961,17 @@ export function PageCanvas({
           framing
             ? {
                 key: `photo:${framing.slot.id}`,
+                src: tiles[framing.slot.id].current.src,
                 framing: framing.draft,
                 onChange: (next) =>
                   setFraming((current) => current && { ...current, draft: next, error: null }),
-                onPlacement: (placement) => setFraming((current) => current && { ...current, placement }),
+                onPlacement: (placement) =>
+                  setFraming((current) => current && { ...current, placement, step: undefined }),
                 onUnavailable: () => {
+                  if (framing.step) {
+                    stepFrom(framing.slot, framing.step);
+                    return;
+                  }
                   setFraming(null);
                   setStatus({ kind: "error", message: PHOTO_NOT_SHOWING_MESSAGE });
                 },
@@ -965,6 +991,7 @@ export function PageCanvas({
                     setSize={photosTakingTurnsWith(framing.slot).length}
                     onSave={() => void saveFraming("one")}
                     onSaveAll={() => void saveFraming("all")}
+                    onStep={stepFraming}
                     onCancel={() => {
                       if (!framing.saving) setFraming(null);
                     }}

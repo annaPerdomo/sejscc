@@ -32,6 +32,11 @@ const MOVES = [
   { word: "Down", arrow: "↓", dx: 0, dy: NUDGE },
 ];
 
+const STEPS = [
+  { label: "Previous photo", direction: -1 },
+  { label: "Next photo", direction: 1 },
+] as const;
+
 type StepScale = {
   name: string;
   less: string;
@@ -111,6 +116,7 @@ export function PhotoFramingBar({
   onChange,
   onSave,
   onSaveAll,
+  onStep,
   onCancel,
 }: {
   title: string;
@@ -126,6 +132,8 @@ export function PhotoFramingBar({
   onChange: (next: PhotoFraming) => void;
   onSave: () => void;
   onSaveAll: () => void;
+  /** Moves on to the photo before (-1) or after (1) this one in its set. */
+  onStep: (direction: -1 | 1) => void;
   onCancel: () => void;
 }) {
   const headingId = useId();
@@ -227,10 +235,28 @@ export function PhotoFramingBar({
         </div>
 
         {inSet && (
-          <p id={setHintId} className="text-base text-ink-soft">
-            {setSize} photos take turns here. “Save for all {setSize} photos” gives every one of them this same look.
-            You can still adjust any one on its own afterwards.
-          </p>
+          <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
+            <p id={setHintId} className="max-w-3xl text-base text-ink-soft">
+              {setSize} photos take turns here. “Save for all {setSize} photos” gives every one of them this same look.
+              You can still adjust any one on its own afterwards. “Previous photo” and “Next photo” save what you
+              changed on this one, then show you another.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              {STEPS.map(({ label, direction }) => (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => onStep(direction)}
+                  aria-disabled={saving}
+                  className={`min-h-12 ${buttonClass("secondary")}`}
+                >
+                  {direction === -1 && <span aria-hidden="true">← </span>}
+                  {label}
+                  {direction === 1 && <span aria-hidden="true"> →</span>}
+                </button>
+              ))}
+            </div>
+          </div>
         )}
 
         <PhotoFitSwitch framing={framing} onChange={(next) => !saving && onChange(next)} />

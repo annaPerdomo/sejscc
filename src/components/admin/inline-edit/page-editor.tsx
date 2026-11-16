@@ -2,7 +2,12 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { buttonClass } from "@/components/admin/admin-button";
-import { PREVIEW_REFRESH_EVENT, PREVIEW_SHOWN_EVENT, PREVIEW_SHOW_EVENT } from "@/lib/page-edit-preview";
+import {
+  PREVIEW_PHOTO_EVENT,
+  PREVIEW_REFRESH_EVENT,
+  PREVIEW_SHOWN_EVENT,
+  PREVIEW_SHOW_EVENT,
+} from "@/lib/page-edit-preview";
 import type { PhotoFraming } from "@/lib/photo-framing";
 import { startPageFraming, type PageFramingSession, type PagePlacement } from "./page-edit-framing";
 import {
@@ -18,6 +23,7 @@ import {
 
 export type PageFraming = {
   key: string;
+  src: string;
   framing: PhotoFraming;
   onChange: (next: PhotoFraming) => void;
   onUnavailable: () => void;
@@ -25,6 +31,10 @@ export type PageFraming = {
   onCancel: () => void;
   bar: ReactNode;
 };
+
+// A slideshow asked to bring a photo up draws it a moment later.
+const PHOTO_WAIT_MS = 100;
+const PHOTO_WAIT_TRIES = 20;
 
 function askPreview(frame: HTMLIFrameElement | null, name: string, detail?: string): boolean {
   const doc = frame?.contentDocument;
@@ -104,21 +114,37 @@ export function PageEditor({
   const loaded = loadedKey === frame.load;
   useEffect(() => {
     const doc = frameRef.current?.contentDocument;
+    const view = doc?.defaultView;
     const active = framingRef.current;
-    if (!framingKey || !loaded || !doc || !active) return;
-    const session = startPageFraming(doc, framingKey, active.framing, (next) =>
-      framingRef.current?.onChange(next)
-    );
-    if (!session) {
-      active.onUnavailable();
-      return;
+    if (!framingKey || !loaded || !doc || !view || !active) return;
+    const page = doc;
+    const key = framingKey;
+    const draft = active.framing;
+    const timers = view;
+    let triesLeft = askPreview(frameRef.current, PREVIEW_PHOTO_EVENT, active.src) ? PHOTO_WAIT_TRIES : 0;
+    let waiting: number | undefined;
+
+    function start() {
+      const session = startPageFraming(page, key, framingRef.current?.framing ?? draft, (next) =>
+        framingRef.current?.onChange(next)
+      );
+      if (session) {
+        sessionRef.current = session;
+        framingRef.current?.onPlacement(session.placement);
+      } else if (triesLeft > 0) {
+        triesLeft -= 1;
+        waiting = timers.setTimeout(start, PHOTO_WAIT_MS);
+      } else {
+        framingRef.current?.onUnavailable();
+      }
     }
-    sessionRef.current = session;
-    active.onPlacement(session.placement);
+    start();
+
     return () => {
-      session.stop();
+      view.clearTimeout(waiting);
+      sessionRef.current?.stop();
       sessionRef.current = null;
-      if (doc.defaultView) scroll.current = { ...scroll.current, top: doc.defaultView.scrollY };
+      if (page.defaultView) scroll.current = { ...scroll.current, top: view.scrollY };
     };
   }, [framingKey, loaded]);
 

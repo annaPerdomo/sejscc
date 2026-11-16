@@ -7,6 +7,7 @@ import {
   type RefObject,
 } from "react";
 import { PAGE_EDIT_HOLD_ATTRIBUTE } from "@/lib/page-edit-hold";
+import { PREVIEW_PHOTO_EVENT } from "@/lib/page-edit-preview";
 
 export function useReducedMotion() {
   const [reduceMotion, setReduceMotion] = useState(false);
@@ -35,6 +36,21 @@ function usePageEditHold() {
   }, []);
 
   return held;
+}
+
+export function useShowPhotoOnRequest(sources: readonly string[], show: (index: number) => void) {
+  useEffect(() => {
+    if (window.parent === window) return;
+    function onRequest(event: Event) {
+      if (!(event instanceof CustomEvent)) return;
+      const index = sources.indexOf(event.detail);
+      if (index < 0) return;
+      event.preventDefault();
+      show(index);
+    }
+    document.addEventListener(PREVIEW_PHOTO_EVENT, onRequest);
+    return () => document.removeEventListener(PREVIEW_PHOTO_EVENT, onRequest);
+  });
 }
 
 // A middle-of-screen band, not a visible-fraction threshold: a fraction never
