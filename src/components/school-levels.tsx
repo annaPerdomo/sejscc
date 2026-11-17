@@ -106,19 +106,21 @@ export function SchoolLevels({
         aria-labelledby={`school-level-tab-${active}`}
         className="enter-fade lg:col-span-7"
       >
-        <div className="relative" data-edit-record={levelPhotoRecord(level.id)}>
-          <SitePhoto
-            photo={level.photo}
-            sizes="(max-width: 1024px) 100vw, 52rem"
-            placeholderLabel={photoLabel}
-            className="aspect-photo w-full rounded-sm shadow-xl"
-          />
+        <div className="flex items-start gap-4 sm:gap-6">
+          <div className="relative min-w-0 flex-1 sm:max-w-md" data-edit-record={levelPhotoRecord(level.id)}>
+            <SitePhoto
+              photo={level.photo}
+              sizes="(max-width: 640px) calc(100vw - 6rem), 28rem"
+              placeholderLabel={photoLabel}
+              className="aspect-photo w-full rounded-sm shadow-xl"
+            />
+          </div>
           {level.kanji && (
             <p
               lang="ja"
               aria-hidden="true"
               data-edit-record={`level:${level.id}:kanji`}
-              className="school-plaque absolute -top-4 right-4 font-accent text-xl font-bold tracking-[0.2em] sm:right-6 sm:text-2xl"
+              className="school-plaque shrink-0 font-accent text-xl font-bold tracking-[0.2em] sm:text-2xl"
             >
               {level.kanji}
             </p>
